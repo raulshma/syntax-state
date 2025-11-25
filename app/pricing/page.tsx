@@ -4,8 +4,6 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@clerk/nextjs';
-import { Header } from '@/components/landing/header';
-import { Footer } from '@/components/landing/footer';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Check, X, HelpCircle, Key, Loader2 } from 'lucide-react';
@@ -220,10 +218,7 @@ function PricingCard({ tier }: { tier: Tier }) {
 
 export default function PricingPage() {
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <Header />
-
-      <main className="flex-1">
+    <main className="flex-1 overflow-auto">
         {/* Hero */}
         <section className="py-16 px-6 border-b border-border">
           <div className="max-w-4xl mx-auto text-center">
@@ -340,9 +335,6 @@ export default function PricingPage() {
             </div>
           </div>
         </section>
-      </main>
-
-      <Footer />
-    </div>
+    </main>
   );
 }
