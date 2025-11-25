@@ -1,0 +1,108 @@
+# SearXNG Configuration for Interview Prep Platform
+# Requirements: 4.1 - AI-powered content generation with web search
+
+use_default_settings: true
+
+general:
+  debug: false
+  instance_name: "Syntax State Search"
+  privacypolicy_url: false
+  donation_url: false
+  contact_url: false
+  enable_metrics: false
+
+search:
+  safe_search: 1
+  autocomplete: ""
+  default_lang: "en"
+  max_page: 0
+  formats:
+    - html
+    - json
+
+server:
+  port: 8080
+  bind_address: "0.0.0.0"
+  secret_key: "test_0f8a5cfaaea8194290429a7214bb9539"
+  limiter: false
+  image_proxy: false
+  http_protocol_version: "1.0"
+  method: "GET"
+
+ui:
+  static_use_hash: true
+  default_locale: "en"
+  query_in_title: false
+  infinite_scroll: false
+  center_alignment: false
+  default_theme: simple
+  theme_args:
+    simple_style: dark
+
+# Rate limiting disabled for local development
+outgoing:
+  request_timeout: 10.0
+  max_request_timeout: 15.0
+  useragent_suffix: ""
+  pool_connections: 100
+  pool_maxsize: 20
+  enable_http2: true
+
+# Enabled search engines for technical content
+engines:
+  - name: google
+    engine: google
+    shortcut: g
+    disabled: false
+
+  - name: duckduckgo
+    engine: duckduckgo
+    shortcut: ddg
+    disabled: false
+
+  - name: bing
+    engine: bing
+    shortcut: bi
+    disabled: false
+
+  - name: stackoverflow
+    engine: stackoverflow
+    shortcut: st
+    disabled: false
+    categories: it
+
+  - name: github
+    engine: github
+    shortcut: gh
+    disabled: false
+    categories: it
+
+  - name: mdn
+    engine: mdn
+    shortcut: mdn
+    disabled: false
+    categories: it
+
+  - name: npm
+    engine: npm
+    shortcut: npm
+    disabled: false
+    categories: it
+
+  - name: wikipedia
+    engine: wikipedia
+    shortcut: wp
+    disabled: false
+
+# Categories configuration
+categories_as_tabs:
+  general:
+  it:
+  science:
+
+# Plugins
+enabled_plugins:
+  - 'Hash plugin'
+  - 'Hostname replace'
+  - 'Open Access DOI rewrite'
+  - 'Tracker URL remover'

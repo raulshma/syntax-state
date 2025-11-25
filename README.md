@@ -56,14 +56,32 @@ Syntax State is an AI-powered platform for coding interview preparation and prac
    ```bash
    cp .env.example .env.local
    ```
-   Fill in your keys for `CLERK_*`, `MONGODB_URI`, `STRIPE_*`, `OPENROUTER_API_KEY`, etc.
+   Fill in your keys for `CLERK_*`, `STRIPE_*`, `OPENROUTER_API_KEY`, etc.
 
-4. Run the development server:
+### Development Setup
+
+#### Option 1: Using Docker for MongoDB & SearXNG (Recommended)
+
+1. Start MongoDB and SearXNG containers:
+   ```bash
+   docker-compose up -d
+   ```
+
+2. Run the Next.js dev server locally:
    ```bash
    pnpm dev
    ```
 
    Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+#### Option 2: Local MongoDB & SearXNG
+
+1. Ensure MongoDB is running locally on `mongodb://localhost:27017`
+2. Ensure SearXNG is running on `http://localhost:8080` (or update `SEARXNG_URL` in `.env.local`)
+3. Run the dev server:
+   ```bash
+   pnpm dev
+   ```
 
 ### Build & Start
 
