@@ -20,6 +20,7 @@ export const UserSchema = z.object({
   plan: UserPlanSchema.default('FREE'),
   iterations: UserIterationsSchema,
   preferences: UserPreferencesSchema,
+  suspended: z.boolean().default(false),
   createdAt: z.date(),
   updatedAt: z.date(),
 });

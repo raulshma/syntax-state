@@ -8,21 +8,15 @@ import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Settings, Users, Activity, Terminal, MoreHorizontal, Search, FileText, Filter, Cpu, Zap, Clock, Database } from "lucide-react"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { getAdminStats, getAILogs, getSearchToolStatus, getAIUsageByAction, getModelConfig } from "@/lib/actions/admin"
+import { Settings, Users, Activity, Terminal, Search, FileText, Filter, Cpu, Zap, Clock, Database } from "lucide-react"
+import { getAdminStats, getAILogs, getSearchToolStatus, getAIUsageByAction, getModelConfig, getAdminUsers } from "@/lib/actions/admin"
 import { SearchToolToggle } from "@/components/admin/search-tool-toggle"
 import { AILogViewer } from "@/components/admin/ai-log-viewer"
 import { ModelSelector } from "@/components/admin/model-selector"
+import { UserActions } from "@/components/admin/user-management"
 import { isAdmin } from "@/lib/auth/get-user"
 
-// Mock users data - in production this would come from the database
-const users = [
-  { id: "1", name: "Alex Chen", email: "alex@example.com", plan: "Pro", preps: 12, lastActive: "2h ago" },
-  { id: "2", name: "Sarah Kim", email: "sarah@example.com", plan: "Free", preps: 3, lastActive: "1d ago" },
-  { id: "3", name: "Mike Johnson", email: "mike@example.com", plan: "Max", preps: 45, lastActive: "5m ago" },
-  { id: "4", name: "Emma Wilson", email: "emma@example.com", plan: "Pro", preps: 8, lastActive: "3h ago" },
-]
+
 
 function formatNumber(num: number): string {
   if (num >= 1000000) {
@@ -42,12 +36,13 @@ export default async function AdminPage() {
   }
 
   // Fetch real data from the database
-  const [stats, aiLogs, searchStatus, usageByAction, modelConfig] = await Promise.all([
+  const [stats, aiLogs, searchStatus, usageByAction, modelConfig, users] = await Promise.all([
     getAdminStats(),
     getAILogs({ limit: 50 }),
     getSearchToolStatus(),
     getAIUsageByAction(),
     getModelConfig(),
+    getAdminUsers(),
   ]);
 
   const statsCards = [
@@ -243,42 +238,45 @@ export default async function AdminPage() {
                     <TableRow>
                       <TableHead>User</TableHead>
                       <TableHead>Plan</TableHead>
-                      <TableHead>Preps</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Interviews</TableHead>
                       <TableHead>Last Active</TableHead>
                       <TableHead></TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {users.map((user) => (
-                      <TableRow key={user.id}>
-                        <TableCell>
-                          <div>
-                            <p className="font-mono text-foreground">{user.name}</p>
-                            <p className="text-xs text-muted-foreground">{user.email}</p>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant={user.plan === "Max" ? "default" : "secondary"}>{user.plan}</Badge>
-                        </TableCell>
-                        <TableCell className="font-mono">{user.preps}</TableCell>
-                        <TableCell className="text-muted-foreground">{user.lastActive}</TableCell>
-                        <TableCell>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon">
-                                <MoreHorizontal className="w-4 h-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem>View Details</DropdownMenuItem>
-                              <DropdownMenuItem>Edit User</DropdownMenuItem>
-                              <DropdownMenuItem>Impersonate</DropdownMenuItem>
-                              <DropdownMenuItem className="text-destructive">Suspend</DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                    {users.length > 0 ? (
+                      users.map((user) => (
+                        <TableRow key={user.id} className={user.suspended ? 'opacity-60' : ''}>
+                          <TableCell>
+                            <div>
+                              <p className="font-mono text-foreground">{user.name}</p>
+                              <p className="text-xs text-muted-foreground">{user.email}</p>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant={user.plan === "MAX" ? "default" : "secondary"}>{user.plan}</Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant={user.suspended ? "destructive" : "outline"}>
+                              {user.suspended ? "Suspended" : "Active"}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="font-mono">{user.interviewCount}</TableCell>
+                          <TableCell className="text-muted-foreground">{user.lastActive}</TableCell>
+                          <TableCell>
+                            <UserActions user={user} />
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    ) : (
+                      <TableRow>
+                        <TableCell colSpan={6} className="text-center py-8">
+                          <Users className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                          <p className="text-sm text-muted-foreground">No users found</p>
                         </TableCell>
                       </TableRow>
-                    ))}
+                    )}
                   </TableBody>
                 </Table>
               </CardContent>

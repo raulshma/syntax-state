@@ -5,6 +5,31 @@ import { getUsersCollection, getInterviewsCollection, getAILogsCollection, getSe
 import { setSearchEnabled, isSearchEnabled } from '@/lib/services/search-service';
 import { AILog, AIAction } from '@/lib/db/schemas/ai-log';
 import { SETTINGS_KEYS } from '@/lib/db/schemas/settings';
+import { clerkClient } from '@clerk/nextjs/server';
+
+export interface AdminUser {
+  id: string;
+  clerkId: string;
+  name: string;
+  email: string;
+  plan: string;
+  interviewCount: number;
+  lastActive: string;
+  suspended: boolean;
+  createdAt: string;
+  iterationCount: number;
+  iterationLimit: number;
+}
+
+export interface AdminUserDetails extends AdminUser {
+  stripeCustomerId?: string;
+  interviews: Array<{
+    id: string;
+    jobTitle: string;
+    company: string;
+    createdAt: string;
+  }>;
+}
 
 export interface AdminStats {
   totalUsers: number;
@@ -267,4 +292,248 @@ export async function updateModelConfig(config: Partial<ModelConfig>): Promise<{
   
   await Promise.all(updates);
   return { success: true };
+}
+
+
+/**
+ * Get all users for admin management
+ * Fetches users from MongoDB and enriches with Clerk data
+ */
+export async function getAdminUsers(): Promise<AdminUser[]> {
+  const usersCollection = await getUsersCollection();
+  const interviewsCollection = await getInterviewsCollection();
+  
+  // Get all users from MongoDB, sorted by most recently active
+  const dbUsers = await usersCollection.find({}).sort({ updatedAt: -1 }).toArray();
+  
+  if (dbUsers.length === 0) {
+    return [];
+  }
+  
+  // Get interview counts per user
+  const interviewCounts = await interviewsCollection.aggregate([
+    { $group: { _id: '$userId', count: { $sum: 1 } } }
+  ]).toArray();
+  
+  const interviewCountMap = new Map(
+    interviewCounts.map(item => [item._id as string, item.count as number])
+  );
+  
+  // Fetch Clerk user data for all users
+  const client = await clerkClient();
+  const clerkUserIds = dbUsers.map(u => u.clerkId);
+  
+  // Clerk getUserList supports filtering by userId array
+  const clerkUsersResponse = await client.users.getUserList({
+    userId: clerkUserIds,
+    limit: 100,
+  });
+  
+  const clerkUserMap = new Map(
+    clerkUsersResponse.data.map(u => [u.id, u])
+  );
+  
+  // Combine data (preserving the sort order from MongoDB)
+  return dbUsers.map(dbUser => {
+    const clerkUser = clerkUserMap.get(dbUser.clerkId);
+    const interviewCount = interviewCountMap.get(dbUser._id) ?? 0;
+    
+    // Calculate last active time
+    const lastActiveDate = dbUser.updatedAt;
+    const lastActive = formatRelativeTime(lastActiveDate);
+    
+    // Build name from Clerk data
+    const firstName = clerkUser?.firstName ?? '';
+    const lastName = clerkUser?.lastName ?? '';
+    const name = [firstName, lastName].filter(Boolean).join(' ') || 'Unknown User';
+    const email = clerkUser?.emailAddresses[0]?.emailAddress ?? 'No email';
+    
+    return {
+      id: dbUser._id,
+      clerkId: dbUser.clerkId,
+      name,
+      email,
+      plan: dbUser.plan,
+      interviewCount,
+      lastActive,
+      suspended: dbUser.suspended ?? false,
+      createdAt: dbUser.createdAt.toISOString(),
+      iterationCount: dbUser.iterations.count,
+      iterationLimit: dbUser.iterations.limit,
+    };
+  });
+}
+
+/**
+ * Format a date as relative time (e.g., "2h ago", "1d ago")
+ */
+function formatRelativeTime(date: Date): string {
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffMins = Math.floor(diffMs / (1000 * 60));
+  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  
+  if (diffMins < 1) return 'Just now';
+  if (diffMins < 60) return `${diffMins}m ago`;
+  if (diffHours < 24) return `${diffHours}h ago`;
+  if (diffDays < 30) return `${diffDays}d ago`;
+  return `${Math.floor(diffDays / 30)}mo ago`;
+}
+
+
+/**
+ * Get detailed user information for admin view
+ */
+export async function getAdminUserDetails(userId: string): Promise<AdminUserDetails | null> {
+  const usersCollection = await getUsersCollection();
+  const interviewsCollection = await getInterviewsCollection();
+  
+  const dbUser = await usersCollection.findOne({ _id: userId });
+  if (!dbUser) return null;
+  
+  // Get user's interviews
+  const interviews = await interviewsCollection
+    .find({ userId })
+    .sort({ createdAt: -1 })
+    .limit(10)
+    .toArray();
+  
+  // Get Clerk user data
+  const client = await clerkClient();
+  let clerkUser;
+  try {
+    clerkUser = await client.users.getUser(dbUser.clerkId);
+  } catch {
+    clerkUser = null;
+  }
+  
+  const firstName = clerkUser?.firstName ?? '';
+  const lastName = clerkUser?.lastName ?? '';
+  const name = [firstName, lastName].filter(Boolean).join(' ') || 'Unknown User';
+  const email = clerkUser?.emailAddresses[0]?.emailAddress ?? 'No email';
+  
+  return {
+    id: dbUser._id,
+    clerkId: dbUser.clerkId,
+    name,
+    email,
+    plan: dbUser.plan,
+    interviewCount: interviews.length,
+    lastActive: formatRelativeTime(dbUser.updatedAt),
+    suspended: dbUser.suspended ?? false,
+    createdAt: dbUser.createdAt.toISOString(),
+    iterationCount: dbUser.iterations.count,
+    iterationLimit: dbUser.iterations.limit,
+    stripeCustomerId: dbUser.stripeCustomerId,
+    interviews: interviews.map(i => ({
+      id: i._id,
+      jobTitle: i.jobDetails.title,
+      company: i.jobDetails.company,
+      createdAt: i.createdAt.toISOString(),
+    })),
+  };
+}
+
+/**
+ * Update user plan (admin only)
+ */
+export async function updateUserPlan(
+  userId: string, 
+  plan: 'FREE' | 'PRO' | 'MAX'
+): Promise<{ success: boolean; error?: string }> {
+  const usersCollection = await getUsersCollection();
+  
+  // Set iteration limits based on plan
+  const iterationLimits: Record<string, number> = {
+    FREE: 5,
+    PRO: 50,
+    MAX: 999999, // Unlimited
+  };
+  
+  const result = await usersCollection.updateOne(
+    { _id: userId },
+    { 
+      $set: { 
+        plan,
+        'iterations.limit': iterationLimits[plan],
+        updatedAt: new Date(),
+      } 
+    }
+  );
+  
+  if (result.matchedCount === 0) {
+    return { success: false, error: 'User not found' };
+  }
+  
+  return { success: true };
+}
+
+/**
+ * Suspend or unsuspend a user (admin only)
+ */
+export async function toggleUserSuspension(
+  userId: string,
+  suspended: boolean
+): Promise<{ success: boolean; error?: string }> {
+  const usersCollection = await getUsersCollection();
+  
+  const result = await usersCollection.updateOne(
+    { _id: userId },
+    { 
+      $set: { 
+        suspended,
+        updatedAt: new Date(),
+      } 
+    }
+  );
+  
+  if (result.matchedCount === 0) {
+    return { success: false, error: 'User not found' };
+  }
+  
+  return { success: true };
+}
+
+/**
+ * Reset user iteration count (admin only)
+ */
+export async function resetUserIterations(
+  userId: string
+): Promise<{ success: boolean; error?: string }> {
+  const usersCollection = await getUsersCollection();
+  
+  const result = await usersCollection.updateOne(
+    { _id: userId },
+    { 
+      $set: { 
+        'iterations.count': 0,
+        updatedAt: new Date(),
+      } 
+    }
+  );
+  
+  if (result.matchedCount === 0) {
+    return { success: false, error: 'User not found' };
+  }
+  
+  return { success: true };
+}
+
+/**
+ * Generate impersonation token for a user (admin only)
+ * This creates a signed token that allows admin to view as user
+ */
+export async function generateImpersonationToken(
+  userId: string
+): Promise<{ success: boolean; clerkId?: string; error?: string }> {
+  const usersCollection = await getUsersCollection();
+  
+  const user = await usersCollection.findOne({ _id: userId });
+  if (!user) {
+    return { success: false, error: 'User not found' };
+  }
+  
+  // Return the clerkId for Clerk's impersonation feature
+  return { success: true, clerkId: user.clerkId };
 }

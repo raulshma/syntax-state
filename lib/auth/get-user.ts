@@ -89,3 +89,20 @@ export async function isAdmin(): Promise<boolean> {
   }
   return (user.publicMetadata?.role as string) === 'admin';
 }
+
+
+/**
+ * Check if the current user is suspended
+ * Returns true if suspended, false otherwise
+ */
+export async function isUserSuspended(): Promise<boolean> {
+  const { userId } = await auth();
+  if (!userId) return false;
+  
+  // Dynamic import to avoid circular dependencies
+  const { getUsersCollection } = await import('@/lib/db/collections');
+  const usersCollection = await getUsersCollection();
+  const user = await usersCollection.findOne({ clerkId: userId });
+  
+  return user?.suspended ?? false;
+}
