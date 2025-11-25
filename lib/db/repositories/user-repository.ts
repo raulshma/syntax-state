@@ -6,7 +6,9 @@ export interface UserRepository {
   create(data: Omit<CreateUser, 'iterations'> & { iterations?: Partial<CreateUser['iterations']> }): Promise<User>;
   findByClerkId(clerkId: string): Promise<User | null>;
   findById(id: string): Promise<User | null>;
+  findByStripeCustomerId(stripeCustomerId: string): Promise<User | null>;
   updatePlan(clerkId: string, plan: UserPlan, newLimit: number): Promise<User | null>;
+  updateStripeCustomerId(clerkId: string, stripeCustomerId: string): Promise<User | null>;
   incrementIteration(clerkId: string): Promise<User | null>;
   resetIterations(clerkId: string): Promise<User | null>;
   updatePreferences(clerkId: string, preferences: Partial<UserPreferences>): Promise<User | null>;
@@ -77,6 +79,12 @@ export const userRepository: UserRepository = {
     return user as User | null;
   },
 
+  async findByStripeCustomerId(stripeCustomerId: string) {
+    const collection = await getUsersCollection();
+    const user = await collection.findOne({ stripeCustomerId });
+    return user as User | null;
+  },
+
   async updatePlan(clerkId: string, plan: UserPlan, newLimit: number) {
     const collection = await getUsersCollection();
     const now = new Date();
@@ -89,6 +97,24 @@ export const userRepository: UserRepository = {
           'iterations.limit': newLimit,
           'iterations.count': 0,
           'iterations.resetDate': getDefaultResetDate(),
+          updatedAt: now,
+        },
+      },
+      { returnDocument: 'after' }
+    );
+    
+    return result as User | null;
+  },
+
+  async updateStripeCustomerId(clerkId: string, stripeCustomerId: string) {
+    const collection = await getUsersCollection();
+    const now = new Date();
+    
+    const result = await collection.findOneAndUpdate(
+      { clerkId },
+      {
+        $set: {
+          stripeCustomerId,
           updatedAt: now,
         },
       },
