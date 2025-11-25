@@ -6,6 +6,7 @@ export const COLLECTIONS = {
   USERS: 'users',
   INTERVIEWS: 'interviews',
   AI_LOGS: 'ai_logs',
+  SETTINGS: 'settings',
 } as const;
 
 // Type definitions for documents (will be replaced with Zod inferred types later)
@@ -103,4 +104,16 @@ export async function getInterviewsCollection(): Promise<Collection<InterviewDoc
 export async function getAILogsCollection(): Promise<Collection<AILogDocument>> {
   const db = await getDb();
   return db.collection<AILogDocument>(COLLECTIONS.AI_LOGS);
+}
+
+export interface SettingsDocument extends Document {
+  _id: string;
+  key: string;
+  value: unknown;
+  updatedAt: Date;
+}
+
+export async function getSettingsCollection(): Promise<Collection<SettingsDocument>> {
+  const db = await getDb();
+  return db.collection<SettingsDocument>(COLLECTIONS.SETTINGS);
 }

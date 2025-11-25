@@ -1,16 +1,16 @@
-import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
+import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 
 // Define public routes that don't require authentication
 const isPublicRoute = createRouteMatcher([
-  '/',
-  '/login(.*)',
-  '/pricing(.*)',
-  '/plan/(.*)',
-  '/api/webhooks/(.*)',
+  "/",
+  "/login(.*)",
+  "/pricing(.*)",
+  "/plan/(.*)",
+  "/api/webhooks/(.*)",
 ]);
 
 // Define admin routes that require admin role
-const isAdminRoute = createRouteMatcher(['/admin(.*)']);
+const isAdminRoute = createRouteMatcher(["/admin(.*)"]);
 
 export default clerkMiddleware(async (auth, req) => {
   // Allow public routes without authentication
@@ -24,8 +24,8 @@ export default clerkMiddleware(async (auth, req) => {
   // Check admin access for admin routes
   if (isAdminRoute(req)) {
     const role = sessionClaims?.metadata?.role;
-    if (role !== 'admin') {
-      return Response.redirect(new URL('/dashboard', req.url));
+    if (role !== "admin") {
+      return Response.redirect(new URL("/dashboard", req.url));
     }
   }
 });
@@ -33,8 +33,8 @@ export default clerkMiddleware(async (auth, req) => {
 export const config = {
   matcher: [
     // Skip Next.js internals and all static files
-    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
+    "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
     // Always run for API routes
-    '/(api|trpc)(.*)',
+    "/(api|trpc)(.*)",
   ],
 };

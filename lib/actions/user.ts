@@ -231,3 +231,102 @@ function getDefaultResetDate(): Date {
   resetDate.setHours(0, 0, 0, 0);
   return resetDate;
 }
+
+/**
+ * Get user profile data including Clerk info
+ */
+export async function getUserProfile(): Promise<ActionResult<{
+  clerkId: string;
+  email: string | null;
+  firstName: string | null;
+  lastName: string | null;
+  imageUrl: string | null;
+  plan: string;
+  iterations: { count: number; limit: number; resetDate: Date };
+  hasStripeSubscription: boolean;
+  hasByokKey: boolean;
+}>> {
+  try {
+    const authUser = await getAuthUser();
+    
+    if (!authUser) {
+      return {
+        success: false,
+        error: createAPIError('AUTH_ERROR', 'Not authenticated'),
+      };
+    }
+
+    const dbUser = await userRepository.findByClerkId(authUser.clerkId);
+    
+    return {
+      success: true,
+      data: {
+        clerkId: authUser.clerkId,
+        email: authUser.email,
+        firstName: authUser.firstName,
+        lastName: authUser.lastName,
+        imageUrl: authUser.imageUrl,
+        plan: dbUser?.plan ?? 'FREE',
+        iterations: dbUser?.iterations ?? { count: 0, limit: 5, resetDate: getDefaultResetDate() },
+        hasStripeSubscription: !!dbUser?.stripeCustomerId,
+        hasByokKey: !!authUser.byokApiKey,
+      },
+    };
+  } catch (error) {
+    console.error('getUserProfile error:', error);
+    return {
+      success: false,
+      error: createAPIError('DATABASE_ERROR', 'Failed to get user profile'),
+    };
+  }
+}
+
+/**
+ * Save BYOK API key to Clerk user metadata
+ */
+export async function saveByokApiKey(apiKey: string): Promise<ActionResult<{ saved: boolean }>> {
+  try {
+    const { clerkClient } = await import('@clerk/nextjs/server');
+    const clerkId = await getAuthUserId();
+    const client = await clerkClient();
+    
+    await client.users.updateUserMetadata(clerkId, {
+      privateMetadata: {
+        openRouterApiKey: apiKey || null,
+      },
+    });
+
+    return { success: true, data: { saved: true } };
+  } catch (error) {
+    console.error('saveByokApiKey error:', error);
+    return {
+      success: false,
+      error: createAPIError('DATABASE_ERROR', 'Failed to save API key'),
+    };
+  }
+}
+
+/**
+ * Remove BYOK API key from Clerk user metadata
+ */
+export async function removeByokApiKey(): Promise<ActionResult<{ removed: boolean }>> {
+  try {
+    const { clerkClient } = await import('@clerk/nextjs/server');
+    const clerkId = await getAuthUserId();
+    const client = await clerkClient();
+    
+    await client.users.updateUserMetadata(clerkId, {
+      privateMetadata: {
+        openRouterApiKey: null,
+      },
+    });
+
+    return { success: true, data: { removed: true } };
+  } catch (error) {
+    console.error('removeByokApiKey error:', error);
+    return {
+      success: false,
+      error: createAPIError('DATABASE_ERROR', 'Failed to remove API key'),
+    };
+  }
+}

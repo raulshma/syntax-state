@@ -34,11 +34,27 @@ export interface GenerationContext {
   existingContent?: string[];
 }
 
+import { getSettingsCollection } from '@/lib/db/collections';
+import { SETTINGS_KEYS } from '@/lib/db/schemas/settings';
+
 // Default configuration
 const DEFAULT_CONFIG: AIEngineConfig = {
   model: 'anthropic/claude-sonnet-4',
   searchEnabled: true,
 };
+
+/**
+ * Get the configured default model from database
+ */
+async function getConfiguredModel(): Promise<string> {
+  try {
+    const collection = await getSettingsCollection();
+    const doc = await collection.findOne({ key: SETTINGS_KEYS.DEFAULT_MODEL });
+    return doc?.value as string || DEFAULT_CONFIG.model;
+  } catch {
+    return DEFAULT_CONFIG.model;
+  }
+}
 
 /**
  * Get OpenRouter client
@@ -127,7 +143,8 @@ export async function generateOpeningBrief(
   config: Partial<AIEngineConfig> = {},
   apiKey?: string
 ) {
-  const finalConfig = { ...DEFAULT_CONFIG, ...config };
+  const configuredModel = await getConfiguredModel();
+  const finalConfig = { ...DEFAULT_CONFIG, model: configuredModel, ...config };
   const openrouter = getOpenRouterClient(apiKey);
 
   const prompt = `Generate an opening brief for an interview preparation plan.
@@ -168,7 +185,8 @@ export async function generateTopics(
   config: Partial<AIEngineConfig> = {},
   apiKey?: string
 ) {
-  const finalConfig = { ...DEFAULT_CONFIG, ...config };
+  const configuredModel = await getConfiguredModel();
+  const finalConfig = { ...DEFAULT_CONFIG, model: configuredModel, ...config };
   const openrouter = getOpenRouterClient(apiKey);
 
   const existingTopicsNote = ctx.existingContent?.length 
@@ -214,7 +232,8 @@ export async function generateMCQs(
   config: Partial<AIEngineConfig> = {},
   apiKey?: string
 ) {
-  const finalConfig = { ...DEFAULT_CONFIG, ...config };
+  const configuredModel = await getConfiguredModel();
+  const finalConfig = { ...DEFAULT_CONFIG, model: configuredModel, ...config };
   const openrouter = getOpenRouterClient(apiKey);
 
   const existingQuestionsNote = ctx.existingContent?.length 
@@ -262,7 +281,8 @@ export async function generateRapidFire(
   config: Partial<AIEngineConfig> = {},
   apiKey?: string
 ) {
-  const finalConfig = { ...DEFAULT_CONFIG, ...config };
+  const configuredModel = await getConfiguredModel();
+  const finalConfig = { ...DEFAULT_CONFIG, model: configuredModel, ...config };
   const openrouter = getOpenRouterClient(apiKey);
 
   const existingQuestionsNote = ctx.existingContent?.length 
@@ -307,7 +327,8 @@ export async function regenerateTopicAnalogy(
   config: Partial<AIEngineConfig> = {},
   apiKey?: string
 ) {
-  const finalConfig = { ...DEFAULT_CONFIG, ...config };
+  const configuredModel = await getConfiguredModel();
+  const finalConfig = { ...DEFAULT_CONFIG, model: configuredModel, ...config };
   const openrouter = getOpenRouterClient(apiKey);
 
   const styleDescriptions = {

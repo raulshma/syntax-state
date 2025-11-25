@@ -1,9 +1,10 @@
 'use server';
 
 import { aiLogRepository, AILogQueryOptions } from '@/lib/db/repositories/ai-log-repository';
-import { getUsersCollection, getInterviewsCollection, getAILogsCollection } from '@/lib/db/collections';
+import { getUsersCollection, getInterviewsCollection, getAILogsCollection, getSettingsCollection } from '@/lib/db/collections';
 import { setSearchEnabled, isSearchEnabled } from '@/lib/services/search-service';
 import { AILog, AIAction } from '@/lib/db/schemas/ai-log';
+import { SETTINGS_KEYS } from '@/lib/db/schemas/settings';
 
 export interface AdminStats {
   totalUsers: number;
@@ -163,4 +164,95 @@ export async function getRecentAIActivity(limit: number = 10): Promise<AILogWith
       second: '2-digit',
     }),
   }));
+}
+
+/**
+ * Model Configuration Interface
+ */
+export interface ModelConfig {
+  defaultModel: string;
+  fallbackModel: string;
+  temperature: number;
+  maxTokens: number;
+}
+
+const DEFAULT_MODEL_CONFIG: ModelConfig = {
+  defaultModel: 'anthropic/claude-sonnet-4',
+  fallbackModel: 'openai/gpt-3.5-turbo',
+  temperature: 0.7,
+  maxTokens: 2048,
+};
+
+/**
+ * Get a setting value from the database
+ */
+async function getSetting<T>(key: string, defaultValue: T): Promise<T> {
+  const collection = await getSettingsCollection();
+  const doc = await collection.findOne({ key });
+  return doc ? (doc.value as T) : defaultValue;
+}
+
+/**
+ * Set a setting value in the database
+ */
+async function setSetting<T>(key: string, value: T): Promise<void> {
+  const collection = await getSettingsCollection();
+  await collection.updateOne(
+    { key },
+    { $set: { key, value, updatedAt: new Date() } },
+    { upsert: true }
+  );
+}
+
+/**
+ * Get the current model configuration
+ */
+export async function getModelConfig(): Promise<ModelConfig> {
+  const [defaultModel, fallbackModel, temperature, maxTokens] = await Promise.all([
+    getSetting(SETTINGS_KEYS.DEFAULT_MODEL, DEFAULT_MODEL_CONFIG.defaultModel),
+    getSetting(SETTINGS_KEYS.FALLBACK_MODEL, DEFAULT_MODEL_CONFIG.fallbackModel),
+    getSetting(SETTINGS_KEYS.TEMPERATURE, DEFAULT_MODEL_CONFIG.temperature),
+    getSetting(SETTINGS_KEYS.MAX_TOKENS, DEFAULT_MODEL_CONFIG.maxTokens),
+  ]);
+
+  return { defaultModel, fallbackModel, temperature, maxTokens };
+}
+
+/**
+ * Update the default AI model
+ */
+export async function setDefaultModel(modelId: string): Promise<{ success: boolean; model: string }> {
+  await setSetting(SETTINGS_KEYS.DEFAULT_MODEL, modelId);
+  return { success: true, model: modelId };
+}
+
+/**
+ * Update the fallback AI model
+ */
+export async function setFallbackModel(modelId: string): Promise<{ success: boolean; model: string }> {
+  await setSetting(SETTINGS_KEYS.FALLBACK_MODEL, modelId);
+  return { success: true, model: modelId };
+}
+
+/**
+ * Update model configuration (temperature, max tokens)
+ */
+export async function updateModelConfig(config: Partial<ModelConfig>): Promise<{ success: boolean }> {
+  const updates: Promise<void>[] = [];
+  
+  if (config.defaultModel !== undefined) {
+    updates.push(setSetting(SETTINGS_KEYS.DEFAULT_MODEL, config.defaultModel));
+  }
+  if (config.fallbackModel !== undefined) {
+    updates.push(setSetting(SETTINGS_KEYS.FALLBACK_MODEL, config.fallbackModel));
+  }
+  if (config.temperature !== undefined) {
+    updates.push(setSetting(SETTINGS_KEYS.TEMPERATURE, config.temperature));
+  }
+  if (config.maxTokens !== undefined) {
+    updates.push(setSetting(SETTINGS_KEYS.MAX_TOKENS, config.maxTokens));
+  }
+  
+  await Promise.all(updates);
+  return { success: true };
 }

@@ -9,9 +9,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Settings, Users, Activity, Terminal, MoreHorizontal, Search, FileText, Filter, Cpu, Zap, Clock, Database } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { getAdminStats, getAILogs, getSearchToolStatus, getAIUsageByAction } from "@/lib/actions/admin"
+import { getAdminStats, getAILogs, getSearchToolStatus, getAIUsageByAction, getModelConfig } from "@/lib/actions/admin"
 import { SearchToolToggle } from "@/components/admin/search-tool-toggle"
 import { AILogViewer } from "@/components/admin/ai-log-viewer"
+import { ModelSelector } from "@/components/admin/model-selector"
 
 // Mock users data - in production this would come from the database
 const users = [
@@ -33,11 +34,12 @@ function formatNumber(num: number): string {
 
 export default async function AdminPage() {
   // Fetch real data from the database
-  const [stats, aiLogs, searchStatus, usageByAction] = await Promise.all([
+  const [stats, aiLogs, searchStatus, usageByAction, modelConfig] = await Promise.all([
     getAdminStats(),
     getAILogs({ limit: 50 }),
     getSearchToolStatus(),
     getAIUsageByAction(),
+    getModelConfig(),
   ]);
 
   const statsCards = [
@@ -276,34 +278,17 @@ export default async function AdminPage() {
           </TabsContent>
 
           <TabsContent value="models">
-            <Card className="bg-card border-border">
-              <CardHeader>
-                <CardTitle className="font-mono">Model Configuration</CardTitle>
-                <CardDescription>Configure AI model settings</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid grid-cols-2 gap-6">
-                  <div>
-                    <Label className="text-sm text-muted-foreground mb-2 block">Primary Model</Label>
-                    <Input defaultValue="gpt-4-turbo-preview" className="font-mono" />
-                  </div>
-                  <div>
-                    <Label className="text-sm text-muted-foreground mb-2 block">Fallback Model</Label>
-                    <Input defaultValue="gpt-3.5-turbo" className="font-mono" />
-                  </div>
-                  <div>
-                    <Label className="text-sm text-muted-foreground mb-2 block">Temperature</Label>
-                    <Input type="number" defaultValue="0.7" step="0.1" className="font-mono" />
-                  </div>
-                  <div>
-                    <Label className="text-sm text-muted-foreground mb-2 block">Max Tokens</Label>
-                    <Input type="number" defaultValue="2048" className="font-mono" />
-                  </div>
-                </div>
+            <div className="space-y-6">
+              {/* Model Selector Component */}
+              <ModelSelector initialConfig={modelConfig} />
 
-                {/* Tool Configuration with Search Toggle - Requirements: 9.3 */}
-                <div className="border-t border-border pt-6">
-                  <h3 className="font-mono text-foreground mb-4">Tool Configuration</h3>
+              {/* Tool Configuration with Search Toggle - Requirements: 9.3 */}
+              <Card className="bg-card border-border">
+                <CardHeader>
+                  <CardTitle className="font-mono">Tool Configuration</CardTitle>
+                  <CardDescription>Enable or disable AI tools</CardDescription>
+                </CardHeader>
+                <CardContent>
                   <div className="space-y-4">
                     <div className="flex items-center justify-between p-4 border border-border rounded-lg">
                       <div>
@@ -329,11 +314,9 @@ export default async function AdminPage() {
                       <Badge variant="outline">Coming Soon</Badge>
                     </div>
                   </div>
-                </div>
-
-                <Button>Save Configuration</Button>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
 
 
