@@ -39,7 +39,7 @@ export function InterviewCard({
         className="bg-card border-border hover:border-muted-foreground/50 transition-colors cursor-pointer h-full"
         style={{ viewTransitionName: `interview-card-${id}` } as React.CSSProperties}
       >
-        <CardContent className="p-6">
+        <CardContent className="p-6 overflow-hidden">
           <div className="flex items-start justify-between mb-4">
             <div className="flex-1 min-w-0">
               <h3 className="font-mono text-foreground truncate">{role}</h3>
@@ -89,14 +89,14 @@ export function InterviewCard({
             )}
           </div>
 
-          <div className="flex flex-wrap gap-1.5 mb-4">
+          <div className="flex flex-wrap gap-1.5 mb-4 overflow-hidden">
             {topics.slice(0, 3).map((topic) => (
-              <Badge key={topic} variant="secondary" className="font-mono text-xs">
+              <Badge key={topic} variant="secondary" className="font-mono text-xs truncate max-w-[120px]">
                 {topic}
               </Badge>
             ))}
             {topics.length > 3 && (
-              <Badge variant="secondary" className="font-mono text-xs">
+              <Badge variant="secondary" className="font-mono text-xs shrink-0">
                 +{topics.length - 3}
               </Badge>
             )}
