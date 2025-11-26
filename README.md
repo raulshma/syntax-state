@@ -1,6 +1,6 @@
-# Syntax State
+# SyntaxState
 
-Syntax State is an AI-powered platform for coding interview preparation and practice. It provides interactive interview simulations, real-time code streaming, topic-based learning, and comprehensive dashboards for tracking progress.
+SyntaxState is an AI-powered platform for coding interview preparation and practice. It provides interactive interview simulations, real-time code streaming, topic-based learning, and comprehensive dashboards for tracking progress.
 
 ## Features
 

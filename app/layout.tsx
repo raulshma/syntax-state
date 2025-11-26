@@ -12,7 +12,7 @@ const _geistMono = V0_Font_Geist_Mono({ subsets: ['latin'], weight: ["100","200"
 
 // <CHANGE> Updated metadata for IT Interview Prep Platform
 export const metadata: Metadata = {
-  title: "PrepPath | AI-Powered IT Interview Preparation",
+  title: "SyntaxState | AI-Powered IT Interview Preparation",
   description:
     "Ace your next technical interview with personalized, AI-driven preparation tailored to your specific role and company.",
   generator: "v0.app",

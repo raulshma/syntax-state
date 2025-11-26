@@ -64,7 +64,7 @@ export function Footer() {
         </div>
         <div className="mt-12 pt-8 border-t border-border">
           <p className="text-xs text-muted-foreground">
-            &copy; {new Date().getFullYear()} PrepPath. All rights reserved.
+            &copy; {new Date().getFullYear()} SyntaxState. All rights reserved.
           </p>
         </div>
       </div>

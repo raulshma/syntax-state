@@ -33,13 +33,13 @@ export async function generateMetadata({ params }: PublicPlanPageProps): Promise
   
   if (!result.success) {
     return {
-      title: 'Plan Not Found | PrepPath',
+      title: 'Plan Not Found | SyntaxState',
       description: 'This interview preparation plan is not available.',
     };
   }
 
   const plan = result.data;
-  const title = `${plan.jobDetails.title} at ${plan.jobDetails.company} | PrepPath`;
+  const title = `${plan.jobDetails.title} at ${plan.jobDetails.company} | SyntaxState`;
   const description = `AI-generated interview preparation plan for ${plan.jobDetails.title} position at ${plan.jobDetails.company}. Includes revision topics, MCQs, and rapid-fire questions.`;
 
   return {
@@ -49,7 +49,7 @@ export async function generateMetadata({ params }: PublicPlanPageProps): Promise
       title,
       description,
       type: 'article',
-      siteName: 'PrepPath',
+      siteName: 'SyntaxState',
     },
     twitter: {
       card: 'summary_large_image',
