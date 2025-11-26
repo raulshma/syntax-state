@@ -12,19 +12,28 @@ import { createCheckout } from '@/lib/actions/stripe';
 import { toast } from 'sonner';
 import { PRICING_TIERS, COMPARISON_FEATURES, formatPrice, type PricingTier } from '@/lib/pricing-data';
 import { useSharedHeader } from '@/components/dashboard/shared-header-context';
+import { getCurrentUser } from '@/lib/actions/user';
 
-function UpgradeCard({ tier, index }: { tier: PricingTier; index: number }) {
+function UpgradeCard({ tier, index, userPlan }: { tier: PricingTier; index: number; userPlan: string }) {
   const [isLoading, setIsLoading] = useState(false);
   const { isSignedIn } = useAuth();
   const router = useRouter();
 
+  // Determine if this tier is the user's current plan
+  // FREE tier has no plan property, PRO has 'PRO', MAX has 'MAX'
+  const isCurrentPlan = tier.plan ? tier.plan === userPlan : userPlan === 'FREE';
+
   const handleSubscribe = async () => {
-    if (!tier.plan) {
-      toast.info("You're already on the Free plan");
+    if (isCurrentPlan) {
+      toast.info(`You're already on the ${tier.name} plan`);
       return;
     }
     if (!isSignedIn) {
       router.push(`/login?redirect_url=/settings/upgrade`);
+      return;
+    }
+    if (!tier.plan) {
+      // Can't subscribe to free tier
       return;
     }
     setIsLoading(true);
@@ -41,8 +50,6 @@ function UpgradeCard({ tier, index }: { tier: PricingTier; index: number }) {
       setIsLoading(false);
     }
   };
-
-  const isFreeTier = !tier.plan;
 
   return (
     <motion.div
@@ -85,13 +92,13 @@ function UpgradeCard({ tier, index }: { tier: PricingTier; index: number }) {
           </li>
         ))}
       </ul>
-      <Button variant={tier.featured ? 'default' : 'outline'} className="w-full" onClick={handleSubscribe} disabled={isLoading || isFreeTier}>
+      <Button variant={tier.featured && !isCurrentPlan ? 'default' : 'outline'} className="w-full" onClick={handleSubscribe} disabled={isLoading || isCurrentPlan}>
         {isLoading ? (
           <>
             <Loader2 className="w-4 h-4 mr-2 animate-spin" />
             Processing...
           </>
-        ) : isFreeTier ? (
+        ) : isCurrentPlan ? (
           'Current Plan'
         ) : (
           tier.cta
@@ -141,6 +148,8 @@ function ComparisonTable() {
 
 export function UpgradePageContent() {
   const { setHeader } = useSharedHeader();
+  const [userPlan, setUserPlan] = useState<string>('FREE');
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     setHeader({
@@ -151,12 +160,28 @@ export function UpgradePageContent() {
     });
   }, [setHeader]);
 
+  useEffect(() => {
+    async function fetchUserPlan() {
+      try {
+        const result = await getCurrentUser();
+        if (result.success) {
+          setUserPlan(result.data.plan);
+        }
+      } catch (error) {
+        console.error('Failed to fetch user plan:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    fetchUserPlan();
+  }, []);
+
   return (
     <>
       <TooltipProvider>
         <div className="grid md:grid-cols-3 gap-4 mb-12">
           {PRICING_TIERS.map((tier, index) => (
-            <UpgradeCard key={tier.id} tier={tier} index={index} />
+            <UpgradeCard key={tier.id} tier={tier} index={index} userPlan={userPlan} />
           ))}
         </div>
       </TooltipProvider>

@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import { motion, AnimatePresence } from "framer-motion";
 import { InterviewHeader } from "@/components/interview/interview-header";
 import { InterviewSidebar } from "@/components/interview/interview-sidebar";
+import { MobileInterviewSidebar } from "@/components/interview/mobile-interview-sidebar";
 import { ModuleCard } from "@/components/interview/module-card";
 import { ModuleProgress } from "@/components/interview/module-progress";
 import { type StreamingCardStatus } from "@/components/streaming/streaming-card";
@@ -425,6 +426,13 @@ export function InterviewWorkspace({
             moduleStatus={moduleStatus.revisionTopics}
           />
 
+          {/* Mobile Interview Sidebar - floating button trigger */}
+          <MobileInterviewSidebar
+            interviewId={interviewId}
+            topics={revisionTopics}
+            moduleStatus={moduleStatus.revisionTopics}
+          />
+
           <main className="flex-1 p-6 lg:p-8 space-y-8 max-w-5xl">
             {/* Generation Status */}
             <AnimatePresence>
@@ -494,7 +502,7 @@ export function InterviewWorkspace({
                     isStreaming={false}
                     className="text-muted-foreground leading-relaxed"
                   />
-                  <div className="grid grid-cols-3 gap-4 pt-6 border-t border-border">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-6 border-t border-border">
                     <div className="space-y-1">
                       <p className="text-xs text-muted-foreground">
                         Experience Match
@@ -714,7 +722,7 @@ export function InterviewWorkspace({
                             )}
                           </div>
                         </div>
-                        <div className="grid grid-cols-2 gap-2">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                           {mcq.options?.map((option, optIndex) => {
                             const isCorrect = option === mcq.answer;
                             return (
@@ -808,7 +816,7 @@ export function InterviewWorkspace({
                     </TooltipProvider>
                   </div>
 
-                  <div className="grid gap-3 md:grid-cols-2">
+                  <div className="grid gap-3 grid-cols-1 sm:grid-cols-2">
                     {rapidFire.map((q, index) => {
                       const rfId = q.id || `rapid-${index}`;
                       const isRevealed = showRapidFireAnswers || revealedRapidFire.has(rfId);

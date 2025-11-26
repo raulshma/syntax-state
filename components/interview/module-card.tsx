@@ -62,10 +62,10 @@ export function ModuleCard({
         }`}
       >
         {/* Header */}
-        <div className="flex items-start justify-between p-6 pb-4">
-          <div className="flex items-start gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between p-4 md:p-6 pb-3 md:pb-4 gap-3 sm:gap-0">
+          <div className="flex items-start gap-3 md:gap-4">
             <div
-              className={`w-10 h-10 flex items-center justify-center transition-colors ${
+              className={`w-9 h-9 md:w-10 md:h-10 flex-shrink-0 flex items-center justify-center transition-colors ${
                 isLoading || isStreaming
                   ? "bg-primary/10"
                   : isError
@@ -78,28 +78,28 @@ export function ModuleCard({
                   animate={{ rotate: 360 }}
                   transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
                 >
-                  <Loader2 className="w-5 h-5 text-primary" />
+                  <Loader2 className="w-4 h-4 md:w-5 md:h-5 text-primary" />
                 </motion.div>
               ) : isError ? (
-                <AlertCircle className="w-5 h-5 text-destructive" />
+                <AlertCircle className="w-4 h-4 md:w-5 md:h-5 text-destructive" />
               ) : (
-                <Icon className="w-5 h-5 text-muted-foreground" />
+                <Icon className="w-4 h-4 md:w-5 md:h-5 text-muted-foreground" />
               )}
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h3 className="font-mono text-foreground">{title}</h3>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h3 className="font-mono text-sm md:text-base text-foreground">{title}</h3>
                 {count !== undefined && count > 0 && (
                   <Badge variant="secondary" className="text-xs">
                     {count}
                   </Badge>
                 )}
               </div>
-              <p className="text-sm text-muted-foreground">{description}</p>
+              <p className="text-xs md:text-sm text-muted-foreground">{description}</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 self-end sm:self-auto">
             {/* Status indicator */}
             {(isLoading || isStreaming) && (
               <motion.div
@@ -143,7 +143,7 @@ export function ModuleCard({
         </div>
 
         {/* Content */}
-        <div className="px-6 pb-6">
+        <div className="px-4 md:px-6 pb-4 md:pb-6">
           <AnimatePresence mode="wait">
             {isLoading && (
               <motion.div

@@ -95,7 +95,7 @@ export const PRICING_TIERS: PricingTier[] = [
       'Export to PDF',
       'Priority support',
     ],
-    cta: 'Start Free Trial',
+    cta: 'Subscribe to Pro',
     plan: 'PRO',
     featured: true,
   },

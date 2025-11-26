@@ -28,7 +28,7 @@ export function Hero() {
       <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-pulse delay-1000" />
 
       <div className="relative max-w-6xl mx-auto px-6 py-12 md:py-16">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
+        <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
           {/* Left content */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -45,7 +45,7 @@ export function Hero() {
               <span>AI-Powered Interview Preparation</span>
             </motion.div>
             
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-mono tracking-tight text-foreground mb-6 leading-[1.1]">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-mono tracking-tight text-foreground mb-6 leading-[1.1]">
               Ace your next{" "}
               <span className="relative">
                 <span className="relative z-10">technical</span>
@@ -74,25 +74,25 @@ export function Hero() {
             </div>
 
             {/* Stats */}
-            <div className="flex gap-8 pt-8 border-t border-border">
+            <div className="flex flex-wrap gap-6 sm:gap-8 pt-8 border-t border-border">
               <div>
-                <div className="text-2xl font-mono text-foreground">10k+</div>
-                <div className="text-sm text-muted-foreground">Interviews Prepped</div>
+                <div className="text-xl sm:text-2xl font-mono text-foreground">10k+</div>
+                <div className="text-xs sm:text-sm text-muted-foreground">Interviews Prepped</div>
               </div>
               <div>
-                <div className="text-2xl font-mono text-foreground">95%</div>
-                <div className="text-sm text-muted-foreground">Success Rate</div>
+                <div className="text-xl sm:text-2xl font-mono text-foreground">95%</div>
+                <div className="text-xs sm:text-sm text-muted-foreground">Success Rate</div>
               </div>
               <div>
-                <div className="text-2xl font-mono text-foreground">500+</div>
-                <div className="text-sm text-muted-foreground">Companies</div>
+                <div className="text-xl sm:text-2xl font-mono text-foreground">500+</div>
+                <div className="text-xs sm:text-sm text-muted-foreground">Companies</div>
               </div>
             </div>
           </motion.div>
 
-          {/* Right visual - Interactive code preview */}
+          {/* Right visual - Interactive code preview (hidden on mobile) */}
           <motion.div
-            className="relative hidden lg:block"
+            className="relative hidden md:block"
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, delay: 0.3 }}

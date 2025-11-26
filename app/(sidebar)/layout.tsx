@@ -1,18 +1,23 @@
-import { Sidebar } from '@/components/dashboard/sidebar';
+import { Sidebar, getSidebarData } from '@/components/dashboard/sidebar';
 import { SharedHeaderProvider } from '@/components/dashboard/shared-header-context';
 import { SidebarPageWrapper } from '@/components/dashboard/sidebar-page-wrapper';
+import { ResponsiveSidebarLayout } from '@/components/dashboard/responsive-sidebar-layout';
 
-export default function SidebarLayout({
+export default async function SidebarLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const sidebarData = await getSidebarData();
+
   return (
     <SharedHeaderProvider>
-      <div className="flex min-h-screen bg-background">
-        <Sidebar />
+      <ResponsiveSidebarLayout
+        sidebarData={sidebarData}
+        desktopSidebar={<Sidebar />}
+      >
         <SidebarPageWrapper>{children}</SidebarPageWrapper>
-      </div>
+      </ResponsiveSidebarLayout>
     </SharedHeaderProvider>
   );
 }

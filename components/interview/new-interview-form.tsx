@@ -241,13 +241,13 @@ export function NewInterviewForm({ usageData }: NewInterviewFormProps) {
         </motion.div>
       )}
 
-      <div className="grid lg:grid-cols-5 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 md:gap-8">
         {/* Main form area */}
-        <div className="lg:col-span-3 space-y-6">
+        <div className="lg:col-span-3 space-y-4 md:space-y-6">
           {/* Quick Start Card */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
             <form onSubmit={handlePromptSubmit}>
-              <div className="bg-card border border-border p-6 md:p-8 hover:border-primary/30 transition-colors">
+              <div className="bg-card border border-border p-4 md:p-8 hover:border-primary/30 transition-colors">
                 <div className="flex items-center gap-3 mb-6">
                   <div className="w-10 h-10 bg-primary/10 flex items-center justify-center">
                     <Wand2 className="w-5 h-5 text-primary" />
@@ -314,11 +314,11 @@ export function NewInterviewForm({ usageData }: NewInterviewFormProps) {
           <AnimatePresence>
             {showDetailedForm && (
               <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.3 }}>
-                <form onSubmit={handleDetailedSubmit} className="space-y-6">
-                  <div className="bg-card border border-border p-6 md:p-8 space-y-6">
-                    <div className="grid sm:grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="jobTitle" className="text-sm text-muted-foreground mb-2 block">
+                <form onSubmit={handleDetailedSubmit} className="space-y-4 md:space-y-6">
+                  <div className="bg-card border border-border p-4 md:p-8 space-y-4 md:space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="jobTitle" className="text-sm text-muted-foreground block">
                           Job Title <span className="text-destructive">*</span>
                         </Label>
                         <Input
@@ -331,8 +331,8 @@ export function NewInterviewForm({ usageData }: NewInterviewFormProps) {
                         />
                         {errors.jobTitle && <p className="text-xs text-destructive mt-1">{errors.jobTitle}</p>}
                       </div>
-                      <div>
-                        <Label htmlFor="company" className="text-sm text-muted-foreground mb-2 block">
+                      <div className="space-y-2">
+                        <Label htmlFor="company" className="text-sm text-muted-foreground block">
                           Company <span className="text-destructive">*</span>
                         </Label>
                         <Input
@@ -348,8 +348,8 @@ export function NewInterviewForm({ usageData }: NewInterviewFormProps) {
                     </div>
 
                     {/* Resume Upload */}
-                    <div>
-                      <Label className="text-sm text-muted-foreground mb-2 block">Resume (optional)</Label>
+                    <div className="space-y-2">
+                      <Label className="text-sm text-muted-foreground block">Resume (optional)</Label>
                       {!showManualResume ? (
                         <div
                           onDragOver={handleDragOver}
@@ -405,8 +405,8 @@ export function NewInterviewForm({ usageData }: NewInterviewFormProps) {
                     </div>
 
                     {/* Job Description */}
-                    <div>
-                      <Label htmlFor="jobDescription" className="text-sm text-muted-foreground mb-2 block">
+                    <div className="space-y-2">
+                      <Label htmlFor="jobDescription" className="text-sm text-muted-foreground block">
                         Job Description <span className="text-destructive">*</span>
                       </Label>
                       <Textarea
@@ -448,7 +448,7 @@ export function NewInterviewForm({ usageData }: NewInterviewFormProps) {
         </div>
 
         {/* Side panel */}
-        <motion.div className="lg:col-span-2 space-y-6" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.4, delay: 0.2 }}>
+        <motion.div className="lg:col-span-2 space-y-4 md:space-y-6" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.4, delay: 0.2 }}>
           <div className="bg-card border border-border p-6">
             <div className="flex items-center gap-2 mb-4">
               <Target className="w-4 h-4 text-primary" />

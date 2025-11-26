@@ -84,9 +84,9 @@ export function ApiKeysSection({ hasByokKey, plan }: ApiKeysSectionProps) {
       transition={{ delay: 0.4 }}
       className="bg-card border border-border p-6 hover:border-primary/30 transition-colors group"
     >
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-secondary flex items-center justify-center group-hover:bg-primary/10 transition-colors">
+          <div className="w-10 h-10 bg-secondary flex items-center justify-center group-hover:bg-primary/10 transition-colors shrink-0">
             <Key className="w-5 h-5 text-foreground" />
           </div>
           <div>
@@ -95,7 +95,7 @@ export function ApiKeysSection({ hasByokKey, plan }: ApiKeysSectionProps) {
           </div>
         </div>
         {isSaved && (
-          <Badge variant="default" className="bg-green-500/10 text-green-500 border-green-500/30">
+          <Badge variant="default" className="bg-green-500/10 text-green-500 border-green-500/30 self-start sm:self-auto">
             <Check className="w-3 h-3 mr-1" />
             Active
           </Badge>
@@ -104,8 +104,8 @@ export function ApiKeysSection({ hasByokKey, plan }: ApiKeysSectionProps) {
 
       <div className="space-y-4">
         {/* BYOK benefits */}
-        <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-primary/5 to-transparent border border-primary/20">
-          <Infinity className="w-8 h-8 text-primary" />
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 p-4 bg-gradient-to-r from-primary/5 to-transparent border border-primary/20">
+          <Infinity className="w-8 h-8 text-primary shrink-0" />
           <div>
             <p className="text-sm font-mono text-foreground">Unlimited Usage</p>
             <p className="text-xs text-muted-foreground">
@@ -116,8 +116,8 @@ export function ApiKeysSection({ hasByokKey, plan }: ApiKeysSectionProps) {
 
         {isSaved ? (
           <div className="space-y-4">
-            <div className="flex items-center gap-3 p-4 bg-green-500/5 border border-green-500/20">
-              <Check className="w-5 h-5 text-green-500" />
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 p-4 bg-green-500/5 border border-green-500/20">
+              <Check className="w-5 h-5 text-green-500 shrink-0" />
               <div>
                 <p className="text-sm text-foreground">API key configured</p>
                 <p className="text-xs text-muted-foreground">Your key is encrypted and stored securely</p>

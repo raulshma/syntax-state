@@ -198,7 +198,139 @@
   }
   body {
     @apply bg-background text-foreground;
+    /* Mobile typography: minimum 14px font size */
+    font-size: 14px;
   }
+  
+  /* Responsive typography scale for mobile */
+  @media (min-width: 768px) {
+    body {
+      font-size: 16px;
+    }
+  }
+  
+  /* Responsive heading sizes - mobile first approach */
+  h1 {
+    @apply text-2xl font-bold;
+  }
+  h2 {
+    @apply text-xl font-semibold;
+  }
+  h3 {
+    @apply text-lg font-semibold;
+  }
+  h4 {
+    @apply text-base font-medium;
+  }
+  h5 {
+    @apply text-sm font-medium;
+  }
+  h6 {
+    @apply text-sm font-medium;
+  }
+  
+  /* Scale up headings on tablet and desktop */
+  @media (min-width: 768px) {
+    h1 {
+      @apply text-4xl;
+    }
+    h2 {
+      @apply text-3xl;
+    }
+    h3 {
+      @apply text-2xl;
+    }
+    h4 {
+      @apply text-xl;
+    }
+    h5 {
+      @apply text-lg;
+    }
+    h6 {
+      @apply text-base;
+    }
+  }
+  
+  /* Code blocks - horizontal scroll with visible indicators on mobile */
+  pre {
+    @apply overflow-x-auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+  }
+  
+  /* Visible scroll indicator for code blocks on mobile */
+  pre::-webkit-scrollbar {
+    height: 6px;
+  }
+  
+  pre::-webkit-scrollbar-track {
+    @apply bg-muted rounded;
+  }
+  
+  pre::-webkit-scrollbar-thumb {
+    @apply bg-muted-foreground/30 rounded;
+  }
+  
+  pre::-webkit-scrollbar-thumb:hover {
+    @apply bg-muted-foreground/50;
+  }
+  
+  /* Inline code styling */
+  code:not(pre code) {
+    @apply text-sm break-words;
+  }
+}
+
+/* Mobile-optimized code block container */
+.code-block-mobile {
+  @apply relative max-w-full;
+}
+
+.code-block-mobile pre {
+  @apply overflow-x-auto max-w-full;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Scroll indicator gradient for code blocks on mobile */
+@media (max-width: 767px) {
+  .code-block-mobile::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 24px;
+    background: linear-gradient(to right, transparent, var(--muted));
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  
+  .code-block-mobile.has-overflow::after {
+    opacity: 1;
+  }
+}
+
+/* Scrollbar utility classes */
+.scrollbar-thin {
+  scrollbar-width: thin;
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  height: 6px;
+  width: 6px;
+}
+
+.scrollbar-track-muted::-webkit-scrollbar-track {
+  @apply bg-muted rounded;
+}
+
+.scrollbar-thumb-muted-foreground\/30::-webkit-scrollbar-thumb {
+  @apply bg-muted-foreground/30 rounded;
+}
+
+.scrollbar-thumb-muted-foreground\/30::-webkit-scrollbar-thumb:hover {
+  @apply bg-muted-foreground/50;
 }
 
 /* Streaming animations */

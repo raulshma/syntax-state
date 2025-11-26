@@ -7,7 +7,23 @@ import { SidebarUsage } from "./sidebar-usage";
 import { SidebarUser } from "./sidebar-user";
 import { Sparkles } from "lucide-react";
 
-async function getSidebarData() {
+export interface SidebarData {
+  isAdmin: boolean;
+  usage: {
+    iterations: { count: number; limit: number };
+    interviews: { count: number; limit: number };
+    plan: string;
+    isByok: boolean;
+  };
+  user: {
+    firstName: string | null;
+    lastName: string | null;
+    email: string | null;
+    imageUrl: string | null;
+  };
+}
+
+export async function getSidebarData(): Promise<SidebarData> {
   const [userIsAdmin, iterationResult, profileResult] = await Promise.all([
     isAdmin(),
     getIterationStatus(),

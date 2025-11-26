@@ -68,14 +68,14 @@ const CodeBlock: LLMOutputComponent = ({ blockMatch }) => {
   if (!html) {
     // Fallback while Shiki is loading
     return (
-      <pre className="shiki bg-muted p-4 rounded-lg overflow-x-auto my-4">
+      <pre className="shiki bg-muted p-4 rounded-lg overflow-x-auto my-4 max-w-full scrollbar-thin scrollbar-track-muted scrollbar-thumb-muted-foreground/30">
         <code className="text-sm font-mono">{code}</code>
       </pre>
     );
   }
 
   return (
-    <div className="my-4 rounded-lg overflow-hidden [&_pre]:p-4 [&_pre]:overflow-x-auto [&_code]:text-sm">
+    <div className="my-4 rounded-lg overflow-hidden max-w-full [&_pre]:p-4 [&_pre]:overflow-x-auto [&_pre]:max-w-full [&_pre]:-webkit-overflow-scrolling-touch [&_code]:text-sm [&_pre]:scrollbar-thin [&_pre]:scrollbar-track-muted [&_pre]:scrollbar-thumb-muted-foreground/30">
       {parseHtml(html)}
     </div>
   );

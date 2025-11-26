@@ -4,10 +4,10 @@ import { Github, Twitter } from "lucide-react"
 
 export function Footer() {
   return (
-    <footer className="border-t border-border py-16 px-6 bg-card">
+    <footer className="border-t border-border py-12 md:py-16 px-4 md:px-6 bg-card">
       <div className="max-w-6xl mx-auto">
-        <div className="grid md:grid-cols-4 gap-12 mb-12">
-          <div className="md:col-span-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 md:gap-12 mb-12">
+          <div className="sm:col-span-2">
             <Logo className="mb-4" />
             <p className="text-sm text-muted-foreground max-w-sm mb-6">
               AI-powered interview preparation for software engineers. 

@@ -40,7 +40,7 @@ const features = [
 
 export function FeaturesGrid() {
   return (
-    <section id="features" className="py-24 px-6">
+    <section id="features" className="py-16 md:py-24 px-4 md:px-6">
       <div className="max-w-6xl mx-auto">
         <motion.div 
           className="mb-16"
@@ -51,7 +51,7 @@ export function FeaturesGrid() {
           <div className="inline-flex items-center gap-2 border border-border bg-secondary/50 px-4 py-2 mb-6 text-sm">
             <span className="text-muted-foreground">Features</span>
           </div>
-          <h2 className="text-3xl md:text-4xl font-mono text-foreground mb-4">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-mono text-foreground mb-4">
             Everything you need to prepare
           </h2>
           <p className="text-muted-foreground max-w-xl">
@@ -60,11 +60,11 @@ export function FeaturesGrid() {
           </p>
         </motion.div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {features.map((feature, index) => (
             <motion.div
               key={feature.title}
-              className={`group relative bg-card border border-border p-8 hover:border-primary/50 transition-all duration-300 ${
+              className={`group relative bg-card border border-border p-6 md:p-8 hover:border-primary/50 transition-all duration-300 ${
                 feature.highlight ? 'lg:col-span-1 bg-gradient-to-br from-card to-secondary/20' : ''
               }`}
               initial={{ opacity: 0, y: 20 }}

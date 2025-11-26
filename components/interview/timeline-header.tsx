@@ -14,32 +14,32 @@ interface TimelineHeaderProps {
 export function TimelineHeader({ role, company, date, daysUntil, progress }: TimelineHeaderProps) {
   return (
     <header className="border-b border-border bg-background sticky top-0 z-40">
-      <div className="px-6 py-4">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-4">
+      <div className="px-4 md:px-6 py-3 md:py-4">
+        <div className="flex items-center justify-between mb-3 md:mb-4 gap-2">
+          <div className="flex items-center gap-2 md:gap-4 min-w-0 flex-1">
             <Link href="/dashboard">
-              <Button variant="ghost" size="icon">
+              <Button variant="ghost" size="icon" className="flex-shrink-0 h-9 w-9 md:h-10 md:w-10">
                 <ArrowLeft className="w-4 h-4" />
               </Button>
             </Link>
-            <div>
-              <h1 className="font-mono text-foreground">{role}</h1>
-              <p className="text-sm text-muted-foreground">{company}</p>
+            <div className="min-w-0 flex-1">
+              <h1 className="font-mono text-sm md:text-base text-foreground truncate">{role}</h1>
+              <p className="text-xs md:text-sm text-muted-foreground truncate">{company}</p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon">
+          <div className="flex items-center gap-1 md:gap-2 flex-shrink-0">
+            <Button variant="ghost" size="icon" className="h-9 w-9 md:h-10 md:w-10">
               <Share2 className="w-4 h-4" />
             </Button>
-            <Button variant="ghost" size="icon">
+            <Button variant="ghost" size="icon" className="h-9 w-9 md:h-10 md:w-10">
               <Download className="w-4 h-4" />
             </Button>
           </div>
         </div>
 
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-6 text-sm">
-            <span className="flex items-center gap-2 text-muted-foreground">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
+          <div className="flex items-center gap-3 md:gap-6 text-xs md:text-sm">
+            <span className="hidden sm:flex items-center gap-2 text-muted-foreground">
               <Calendar className="w-4 h-4" />
               {date}
             </span>
@@ -48,9 +48,9 @@ export function TimelineHeader({ role, company, date, daysUntil, progress }: Tim
               {daysUntil} days left
             </Badge>
           </div>
-          <div className="flex items-center gap-3">
-            <span className="text-sm text-muted-foreground">{progress}% complete</span>
-            <div className="w-32 h-2 bg-muted">
+          <div className="flex items-center gap-2 md:gap-3">
+            <span className="text-xs md:text-sm text-muted-foreground">{progress}% complete</span>
+            <div className="w-20 md:w-32 h-1.5 md:h-2 bg-muted">
               <div className="h-full bg-foreground" style={{ width: `${progress}%` }} />
             </div>
           </div>

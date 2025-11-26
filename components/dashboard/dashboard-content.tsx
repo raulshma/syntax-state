@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { InterviewCardNew } from "./interview-card";
 import { deleteInterview } from "@/lib/actions/interview";
-import type { InterviewWithMeta } from "@/app/dashboard/page";
+import type { InterviewWithMeta } from "@/app/(sidebar)/dashboard/page";
 
 type FilterStatus = "all" | "active" | "completed";
 type ViewMode = "grid" | "list";
@@ -72,15 +72,15 @@ export function DashboardContent({
           />
         </div>
 
-        <div className="flex items-center gap-2 w-full sm:w-auto">
-          <div className="flex items-center gap-1 border border-border bg-card p-1">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
+          <div className="flex items-center gap-1 border border-border bg-card p-1 w-full sm:w-auto">
             <Filter className="w-4 h-4 text-muted-foreground ml-2" />
             {(["all", "active", "completed"] as const).map((status) => (
               <Button
                 key={status}
                 variant={filterStatus === status ? "secondary" : "ghost"}
                 size="sm"
-                className="text-xs capitalize"
+                className="text-xs capitalize flex-1 sm:flex-none"
                 onClick={() => setFilterStatus(status)}
               >
                 {status}
@@ -88,11 +88,11 @@ export function DashboardContent({
             ))}
           </div>
 
-          <div className="flex items-center border border-border bg-card p-1">
+          <div className="flex items-center border border-border bg-card p-1 w-full sm:w-auto justify-center sm:justify-start">
             <Button
               variant={viewMode === "grid" ? "secondary" : "ghost"}
               size="sm"
-              className="px-2"
+              className="px-2 flex-1 sm:flex-none"
               onClick={() => setViewMode("grid")}
             >
               <LayoutGrid className="w-4 h-4" />
@@ -100,7 +100,7 @@ export function DashboardContent({
             <Button
               variant={viewMode === "list" ? "secondary" : "ghost"}
               size="sm"
-              className="px-2"
+              className="px-2 flex-1 sm:flex-none"
               onClick={() => setViewMode("list")}
             >
               <List className="w-4 h-4" />
@@ -114,7 +114,7 @@ export function DashboardContent({
         <motion.div
           className={
             viewMode === "grid"
-              ? "grid md:grid-cols-2 lg:grid-cols-3 gap-4"
+              ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
               : "flex flex-col gap-3"
           }
           layout

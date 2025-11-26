@@ -22,7 +22,7 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { ViewTransitionLink } from "@/components/transitions/view-transition-link";
-import type { InterviewWithMeta } from "@/app/dashboard/page";
+import type { InterviewWithMeta } from "@/app/(sidebar)/dashboard/page";
 
 interface InterviewCardNewProps {
   interview: InterviewWithMeta;
