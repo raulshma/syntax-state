@@ -79,6 +79,11 @@ export function AIMonitoringDashboard({
   const [pricingCache, setPricingCache] = useState<PricingCacheStatus | null>(null);
   const [isRefreshingPricing, setIsRefreshingPricing] = useState(false);
 
+  // Helper to check if response is unauthorized
+  const isUnauthorized = <T,>(data: T | { success: false; error: string }): data is { success: false; error: string } => {
+    return data !== null && typeof data === 'object' && 'success' in data && data.success === false;
+  };
+
   // Load additional data on mount
   useEffect(() => {
     async function loadData() {
@@ -92,14 +97,14 @@ export function AIMonitoringDashboard({
         getUniqueModels(),
         getPricingCacheStatus(),
       ]);
-      setErrorStats(errors);
-      setLatencyPercentiles(percentiles);
-      setHourlyUsage(hourly);
-      setCostBreakdown(costs);
-      setRecentErrors(errLogs);
-      setSlowRequests(slow);
-      setModels(uniqueModels);
-      setPricingCache(pricing);
+      if (!isUnauthorized(errors)) setErrorStats(errors);
+      if (!isUnauthorized(percentiles)) setLatencyPercentiles(percentiles);
+      if (!isUnauthorized(hourly)) setHourlyUsage(hourly);
+      if (!isUnauthorized(costs)) setCostBreakdown(costs);
+      if (!isUnauthorized(errLogs)) setRecentErrors(errLogs);
+      if (!isUnauthorized(slow)) setSlowRequests(slow);
+      if (!isUnauthorized(uniqueModels)) setModels(uniqueModels);
+      if (!isUnauthorized(pricing)) setPricingCache(pricing);
     }
     loadData();
   }, []);
@@ -109,7 +114,7 @@ export function AIMonitoringDashboard({
     try {
       await forceRefreshPricingCache();
       const newStatus = await getPricingCacheStatus();
-      setPricingCache(newStatus);
+      if (!isUnauthorized(newStatus)) setPricingCache(newStatus);
     } finally {
       setIsRefreshingPricing(false);
     }
@@ -135,8 +140,8 @@ export function AIMonitoringDashboard({
   const handleRefresh = () => {
     startTransition(async () => {
       const { logs: newLogs, count } = await fetchLogs(currentPage, filters);
-      setLogs(newLogs);
-      setLogsCount(count);
+      if (!isUnauthorized(newLogs)) setLogs(newLogs);
+      if (!isUnauthorized(count)) setLogsCount(count);
     });
   };
 
@@ -144,8 +149,8 @@ export function AIMonitoringDashboard({
     setCurrentPage(page);
     startTransition(async () => {
       const { logs: newLogs, count } = await fetchLogs(page, filters);
-      setLogs(newLogs);
-      setLogsCount(count);
+      if (!isUnauthorized(newLogs)) setLogs(newLogs);
+      if (!isUnauthorized(count)) setLogsCount(count);
     });
   };
 
@@ -155,8 +160,8 @@ export function AIMonitoringDashboard({
     setCurrentPage(1); // Reset to first page on filter change
     startTransition(async () => {
       const { logs: newLogs, count } = await fetchLogs(1, newFilters);
-      setLogs(newLogs);
-      setLogsCount(count);
+      if (!isUnauthorized(newLogs)) setLogs(newLogs);
+      if (!isUnauthorized(count)) setLogsCount(count);
     });
   };
 

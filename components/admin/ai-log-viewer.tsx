@@ -111,7 +111,8 @@ export function AILogViewer({ logs, totalCount, currentPage, pageSize, onPageCha
       // Load full data on expand
       startExpandTransition(async () => {
         const fullLog = await getAILogById(id);
-        setExpandedData(fullLog);
+        if (fullLog && 'success' in fullLog && fullLog.success === false) return;
+        setExpandedData(fullLog as AILog | null);
       });
     }
   };
@@ -405,7 +406,8 @@ function LogDetailDialog({ logId, logSummary }: { logId: string; logSummary: AIL
     if (open && !fullLog) {
       startTransition(async () => {
         const data = await getAILogById(logId);
-        setFullLog(data);
+        if (data && 'success' in data && data.success === false) return;
+        setFullLog(data as AILog | null);
       });
     }
   };

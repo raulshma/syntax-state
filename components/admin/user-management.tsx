@@ -66,7 +66,8 @@ export function UserActions({ user }: UserActionsProps) {
   const handleViewDetails = () => {
     startTransition(async () => {
       const details = await getAdminUserDetails(user.id);
-      setUserDetails(details);
+      if (details && 'success' in details && details.success === false) return;
+      setUserDetails(details as AdminUserDetails | null);
       setDetailsOpen(true);
     });
   };

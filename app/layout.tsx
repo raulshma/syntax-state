@@ -5,19 +5,19 @@ import { ClerkProvider } from "@clerk/nextjs"
 import { Analytics } from "@vercel/analytics/next"
 import "./globals.css"
 
-import { Geist_Mono, Geist_Mono as V0_Font_Geist_Mono } from 'next/font/google'
+import { Geist_Mono } from 'next/font/google'
 import { SidebarProvider } from "@/components/dashboard/sidebar-context"
 import { ThemeProvider } from "@/components/theme-provider"
 
 // Initialize fonts
-const _geistMono = V0_Font_Geist_Mono({ subsets: ['latin'], weight: ["100","200","300","400","500","600","700","800","900"] })
+const _geistMono = Geist_Mono({ subsets: ['latin'], weight: ["100","200","300","400","500","600","700","800","900"] })
 
 // <CHANGE> Updated metadata for IT Interview Prep Platform
 export const metadata: Metadata = {
   title: "SyntaxState | AI-Powered IT Interview Preparation",
   description:
     "Ace your next technical interview with personalized, AI-driven preparation tailored to your specific role and company.",
-  generator: "v0.app",
+  generator: "Next.js",
   icons: {
     icon: [
       {
