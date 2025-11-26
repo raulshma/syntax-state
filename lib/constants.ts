@@ -1,0 +1,1 @@
+export const DEFAULT_AI_CONCURRENCY_LIMIT = 2;

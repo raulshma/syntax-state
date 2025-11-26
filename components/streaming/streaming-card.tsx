@@ -84,11 +84,11 @@ export function StreamingCard({
       initial="idle"
       animate={status}
       variants={statusVariants}
-      className={cn("h-full", className)}
+      className={className}
     >
       <Card
         className={cn(
-          "h-full transition-colors duration-200",
+          "transition-colors duration-200",
           isError && "border-destructive/50",
           (isLoading || isStreaming) && "border-primary/30"
         )}

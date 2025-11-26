@@ -76,17 +76,40 @@ export interface AILogDocument extends Document {
   _id: string;
   interviewId: string;
   userId: string;
-  action: 'GENERATE_BRIEF' | 'GENERATE_TOPICS' | 'GENERATE_MCQ' | 'GENERATE_RAPID_FIRE' | 'REGENERATE_ANALOGY';
+  action: 'GENERATE_BRIEF' | 'GENERATE_TOPICS' | 'GENERATE_MCQ' | 'GENERATE_RAPID_FIRE' | 'REGENERATE_ANALOGY' | 'PARSE_PROMPT';
+  status: 'success' | 'error' | 'timeout' | 'rate_limited' | 'cancelled';
   model: string;
   prompt: string;
+  systemPrompt?: string;
   response: string;
+  errorMessage?: string;
+  errorCode?: string;
   toolsUsed: string[];
   searchQueries: string[];
+  searchResults?: Array<{
+    query: string;
+    resultCount: number;
+    sources: string[];
+  }>;
   tokenUsage: {
     input: number;
     output: number;
   };
+  estimatedCost?: number;
   latencyMs: number;
+  timeToFirstToken?: number;
+  metadata?: {
+    temperature?: number;
+    maxTokens?: number;
+    stopReason?: string;
+    modelVersion?: string;
+    requestId?: string;
+    streaming?: boolean;
+    retryCount?: number;
+    userAgent?: string;
+    ipAddress?: string;
+    byokUsed?: boolean;
+  };
   timestamp: Date;
 }
 

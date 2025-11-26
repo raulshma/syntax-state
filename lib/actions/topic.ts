@@ -11,7 +11,7 @@ import { getAuthUserId, getByokApiKey, hasByokApiKey } from '@/lib/auth/get-user
 import { interviewRepository } from '@/lib/db/repositories/interview-repository';
 import { userRepository } from '@/lib/db/repositories/user-repository';
 import { aiEngine, type GenerationContext } from '@/lib/services/ai-engine';
-import { logAIRequest, createLoggerContext, extractTokenUsage } from '@/lib/services/ai-logger';
+import { logAIRequest, createLoggerContext, extractTokenUsage, extractModelId } from '@/lib/services/ai-logger';
 import { createAPIError, type APIError } from '@/lib/schemas/error';
 import type { RevisionTopic } from '@/lib/db/schemas/interview';
 
@@ -91,7 +91,10 @@ export async function regenerateAnalogy(
         company: interview.jobDetails.company,
       };
 
-      const loggerCtx = createLoggerContext();
+      const loggerCtx = createLoggerContext({
+        streaming: true,
+        byokUsed: !!apiKey,
+      });
       let responseText = '';
 
       // Generate new analogy
@@ -104,8 +107,13 @@ export async function regenerateAnalogy(
         apiKey ?? undefined
       );
 
+      let firstTokenMarked = false;
       for await (const partialObject of result.partialObjectStream) {
         if (partialObject.content) {
+          if (!firstTokenMarked) {
+            loggerCtx.markFirstToken();
+            firstTokenMarked = true;
+          }
           stream.update(partialObject.content);
           responseText = partialObject.content;
         }
@@ -122,19 +130,23 @@ export async function regenerateAnalogy(
         style
       );
 
-      // Log the request
+      // Log the request with full metadata
       const usage = await result.usage;
+      const modelId = extractModelId(result);
       await logAIRequest({
         interviewId,
         userId: user._id,
         action: 'REGENERATE_ANALOGY',
-        model: 'anthropic/claude-sonnet-4',
+        model: modelId,
         prompt: `Regenerate topic "${topic.title}" with ${style} style`,
         response: responseText,
         toolsUsed: loggerCtx.toolsUsed,
         searchQueries: loggerCtx.searchQueries,
+        searchResults: loggerCtx.searchResults,
         tokenUsage: extractTokenUsage(usage),
         latencyMs: loggerCtx.getLatencyMs(),
+        timeToFirstToken: loggerCtx.getTimeToFirstToken(),
+        metadata: loggerCtx.metadata,
       });
 
       stream.done();
@@ -198,3 +210,4 @@ export async function getTopic(
     };
   }
 }
+

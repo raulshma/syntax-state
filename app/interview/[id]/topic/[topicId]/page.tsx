@@ -16,7 +16,14 @@ import {
   RefreshCw,
 } from "lucide-react"
 import Link from "next/link"
+import dynamic from "next/dynamic"
 import { getTopic, regenerateAnalogy, type AnalogyStyle } from "@/lib/actions/topic"
+
+// Dynamic import for Shiki (code highlighting) - prevents SSR issues
+const MarkdownRenderer = dynamic(
+  () => import("@/components/streaming/markdown-renderer"),
+  { ssr: false }
+)
 import { getInterview } from "@/lib/actions/interview"
 import type { RevisionTopic, Interview } from "@/lib/db/schemas/interview"
 import { readStreamableValue } from "@ai-sdk/rsc"
@@ -218,12 +225,13 @@ export default function TopicDetailPage() {
               </div>
               
               <div className="prose prose-invert max-w-none">
-                <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap">
-                  {displayContent}
-                  {isRegenerating && !streamingContent && (
-                    <span className="inline-block w-2 h-4 bg-primary ml-1 animate-pulse" />
-                  )}
-                </p>
+                <MarkdownRenderer
+                  content={displayContent}
+                  isStreaming={isRegenerating && !!streamingContent}
+                />
+                {isRegenerating && !streamingContent && (
+                  <span className="inline-block w-2 h-4 bg-primary ml-1 animate-pulse" />
+                )}
               </div>
 
               {/* Analogy Style Info */}

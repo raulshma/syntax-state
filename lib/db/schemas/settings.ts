@@ -21,6 +21,7 @@ export const SETTINGS_KEYS = {
   MAX_TOKENS: 'max_tokens',
   FALLBACK_TEMPERATURE: 'fallback_temperature',
   FALLBACK_MAX_TOKENS: 'fallback_max_tokens',
+  AI_CONCURRENCY_LIMIT: 'ai_concurrency_limit',
 } as const;
 
 export type SettingsKey = typeof SETTINGS_KEYS[keyof typeof SETTINGS_KEYS];

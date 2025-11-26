@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useParams } from "next/navigation";
+import dynamic from "next/dynamic";
 import { TimelineHeader } from "@/components/interview/timeline-header";
 import { TimelineSidebar } from "@/components/interview/timeline-sidebar";
 import {
@@ -29,7 +30,9 @@ import {
   getInterview,
   generateModule,
   addMoreContent,
+  getAIConcurrencyLimit,
 } from "@/lib/actions/interview";
+import { runWithConcurrencyLimit } from "@/lib/utils/concurrency-limiter";
 import type {
   Interview,
   RevisionTopic,
@@ -39,6 +42,12 @@ import type {
 } from "@/lib/db/schemas/interview";
 import { type StreamableValue, readStreamableValue } from "@ai-sdk/rsc";
 import Link from "next/link";
+
+// Dynamic import for Shiki (code highlighting) - prevents SSR issues
+const MarkdownRenderer = dynamic(
+  () => import("@/components/streaming/markdown-renderer"),
+  { ssr: false }
+);
 
 type ModuleStatus = {
   openingBrief: StreamingCardStatus;
@@ -69,6 +78,9 @@ export default function InterviewWorkspacePage() {
   const [streamingTopics, setStreamingTopics] = useState<RevisionTopic[]>([]);
   const [streamingMcqs, setStreamingMcqs] = useState<MCQ[]>([]);
   const [streamingRapidFire, setStreamingRapidFire] = useState<RapidFire[]>([]);
+
+  // Track if initial generation has started to prevent duplicate runs
+  const generationStartedRef = useRef(false);
 
   // Load interview data
   useEffect(() => {
@@ -104,9 +116,9 @@ export default function InterviewWorkspacePage() {
     loadInterview();
   }, [interviewId]);
 
-  // Generate all modules in parallel on first load if empty
+  // Generate all modules on first load if empty (runs only once)
   useEffect(() => {
-    if (!interview || isLoading) return;
+    if (!interview || isLoading || generationStartedRef.current) return;
 
     const hasNoContent =
       !interview.modules.openingBrief &&
@@ -115,6 +127,7 @@ export default function InterviewWorkspacePage() {
       interview.modules.rapidFire.length === 0;
 
     if (hasNoContent) {
+      generationStartedRef.current = true;
       generateAllModules();
     }
   }, [interview, isLoading]);
@@ -122,13 +135,18 @@ export default function InterviewWorkspacePage() {
   const generateAllModules = async () => {
     if (!interview) return;
 
-    // Start all generations in parallel
-    await Promise.all([
-      handleGenerateModule("openingBrief"),
-      handleGenerateModule("revisionTopics"),
-      handleGenerateModule("mcqs"),
-      handleGenerateModule("rapidFire"),
-    ]);
+    // Get the admin-configured concurrency limit (default: 2)
+    const concurrencyLimit = await getAIConcurrencyLimit();
+
+    // Generate modules with controlled concurrency
+    const moduleTasks = [
+      () => handleGenerateModule("openingBrief"),
+      () => handleGenerateModule("revisionTopics"),
+      () => handleGenerateModule("mcqs"),
+      () => handleGenerateModule("rapidFire"),
+    ];
+
+    await runWithConcurrencyLimit(moduleTasks, concurrencyLimit);
   };
 
   const handleGenerateModule = async (module: keyof ModuleStatus) => {
@@ -315,7 +333,11 @@ export default function InterviewWorkspacePage() {
       />
 
       <div className="flex">
-        <TimelineSidebar />
+        <TimelineSidebar
+          interviewId={interviewId}
+          topics={revisionTopics}
+          moduleStatus={moduleStatus.revisionTopics}
+        />
 
         <main className="flex-1 p-6 space-y-6">
           {/* Tool Status Indicator */}
@@ -344,18 +366,20 @@ export default function InterviewWorkspacePage() {
           >
             {moduleStatus.openingBrief === "streaming" ? (
               <div className="space-y-2">
-                <p className="text-muted-foreground leading-relaxed">
-                  {streamingBrief}
-                </p>
-                {streamingBrief && (
-                  <span className="inline-block w-2 h-4 bg-primary animate-pulse" />
-                )}
+                <MarkdownRenderer
+                  content={streamingBrief}
+                  isStreaming={true}
+                  className="text-muted-foreground leading-relaxed"
+                />
               </div>
             ) : openingBrief ? (
               <>
-                <p className="text-muted-foreground leading-relaxed mb-4">
-                  {openingBrief.content}
-                </p>
+                <div className="text-muted-foreground leading-relaxed mb-4">
+                  <MarkdownRenderer
+                    content={openingBrief.content}
+                    isStreaming={false}
+                  />
+                </div>
                 <div className="grid grid-cols-3 gap-4 pt-4 border-t border-border">
                   <div>
                     <p className="text-xs text-muted-foreground mb-1">
@@ -415,7 +439,7 @@ export default function InterviewWorkspacePage() {
               <div className="space-y-3">
                 {revisionTopics.map((topic, index) => (
                   <Link
-                    key={topic.id}
+                    key={topic.id || `topic-${index}`}
                     href={`/interview/${interviewId}/topic/${topic.id}`}
                     className="block"
                     style={{
@@ -484,7 +508,7 @@ export default function InterviewWorkspacePage() {
               <div className="space-y-3">
                 {mcqs.map((mcq, index) => (
                   <div
-                    key={mcq.id}
+                    key={mcq.id || `mcq-${index}`}
                     className="p-3 border border-border hover:border-muted-foreground transition-colors"
                     style={{
                       animation:
@@ -507,7 +531,7 @@ export default function InterviewWorkspacePage() {
                       )}
                     </div>
                     <div className="grid grid-cols-2 gap-2 text-xs">
-                      {mcq.options.map((option, optIndex) => (
+                      {mcq.options?.map((option, optIndex) => (
                         <div
                           key={optIndex}
                           className={`p-2 border ${
@@ -553,7 +577,7 @@ export default function InterviewWorkspacePage() {
               <div className="space-y-2">
                 {rapidFire.map((q, index) => (
                   <div
-                    key={q.id}
+                    key={q.id || `rapid-${index}`}
                     className="p-3 border border-border hover:border-muted-foreground transition-colors"
                     style={{
                       animation:

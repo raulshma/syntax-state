@@ -1,6 +1,7 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import { getPublicPlan } from '@/lib/actions/public';
 import { Header } from '@/components/landing/header';
 import { Footer } from '@/components/landing/footer';
@@ -18,6 +19,12 @@ import {
   ArrowRight,
   Sparkles
 } from 'lucide-react';
+
+// Dynamic import for Shiki (code highlighting) - prevents SSR issues
+const MarkdownRenderer = dynamic(
+  () => import("@/components/streaming/markdown-renderer"),
+  { ssr: false }
+);
 
 interface PublicPlanPageProps {
   params: Promise<{ id: string }>;
@@ -142,9 +149,9 @@ export default async function PublicPlanPage({ params }: PublicPlanPageProps) {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-muted-foreground leading-relaxed mb-4">
-                    {modules.openingBrief.content}
-                  </p>
+                  <div className="text-muted-foreground leading-relaxed mb-4">
+                    <MarkdownRenderer content={modules.openingBrief.content} isStreaming={false} />
+                  </div>
                   <div className="grid grid-cols-3 gap-4 pt-4 border-t border-border">
                     <div>
                       <p className="text-xs text-muted-foreground mb-1">Experience Match</p>
@@ -193,7 +200,9 @@ export default async function PublicPlanPage({ params }: PublicPlanPageProps) {
                           <div>
                             <p className="font-mono text-foreground mb-1">{topic.title}</p>
                             <p className="text-sm text-muted-foreground mb-2">{topic.reason}</p>
-                            <p className="text-sm text-muted-foreground/80">{topic.content}</p>
+                            <div className="text-sm text-muted-foreground/80">
+                              <MarkdownRenderer content={topic.content} isStreaming={false} />
+                            </div>
                           </div>
                         </div>
                         <Badge variant="secondary" className="text-xs capitalize flex-shrink-0 ml-4">

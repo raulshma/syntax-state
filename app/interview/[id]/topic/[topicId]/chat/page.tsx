@@ -1,12 +1,19 @@
 "use client"
 
 import { useState } from "react"
+import dynamic from "next/dynamic"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { ArrowLeft, Send, RefreshCw, Lightbulb, Code, BookOpen, Copy, Check, History, Sparkles } from "lucide-react"
 import Link from "next/link"
+
+// Dynamic import for Shiki (code highlighting) - prevents SSR issues
+const MarkdownRenderer = dynamic(
+  () => import("@/components/streaming/markdown-renderer"),
+  { ssr: false }
+)
 
 interface Message {
   id: string
@@ -109,7 +116,7 @@ export default function ChatRefinementPage() {
           <div className="space-y-4">
             <Card className="bg-card border-border">
               <CardContent className="p-4">
-                <p className="text-sm text-muted-foreground leading-relaxed">{contentPreview.content}</p>
+                <MarkdownRenderer content={contentPreview.content} isStreaming={false} className="text-sm text-muted-foreground" />
               </CardContent>
             </Card>
 
@@ -176,7 +183,11 @@ export default function ChatRefinementPage() {
                     message.role === "user" ? "bg-foreground text-background" : "bg-card border border-border"
                   } p-4`}
                 >
-                  <p className="text-sm whitespace-pre-wrap leading-relaxed">{message.content}</p>
+                  {message.role === "assistant" ? (
+                    <MarkdownRenderer content={message.content} isStreaming={false} className="text-sm" />
+                  ) : (
+                    <p className="text-sm whitespace-pre-wrap leading-relaxed">{message.content}</p>
+                  )}
                   <p
                     className={`text-xs mt-2 ${
                       message.role === "user" ? "text-background/60" : "text-muted-foreground"
