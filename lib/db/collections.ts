@@ -7,6 +7,7 @@ export const COLLECTIONS = {
   INTERVIEWS: 'interviews',
   AI_LOGS: 'ai_logs',
   SETTINGS: 'settings',
+  TOPIC_CHATS: 'topic_chats',
 } as const;
 
 // Type definitions for documents (will be replaced with Zod inferred types later)
@@ -76,7 +77,7 @@ export interface AILogDocument extends Document {
   _id: string;
   interviewId: string;
   userId: string;
-  action: 'GENERATE_BRIEF' | 'GENERATE_TOPICS' | 'GENERATE_MCQ' | 'GENERATE_RAPID_FIRE' | 'REGENERATE_ANALOGY' | 'PARSE_PROMPT';
+  action: 'GENERATE_BRIEF' | 'GENERATE_TOPICS' | 'GENERATE_MCQ' | 'GENERATE_RAPID_FIRE' | 'REGENERATE_ANALOGY' | 'PARSE_PROMPT' | 'TOPIC_CHAT';
   status: 'success' | 'error' | 'timeout' | 'rate_limited' | 'cancelled';
   model: string;
   prompt: string;
@@ -139,4 +140,24 @@ export interface SettingsDocument extends Document {
 export async function getSettingsCollection(): Promise<Collection<SettingsDocument>> {
   const db = await getDb();
   return db.collection<SettingsDocument>(COLLECTIONS.SETTINGS);
+}
+
+export interface TopicChatDocument extends Document {
+  _id: string;
+  interviewId: string;
+  topicId: string;
+  userId: string;
+  messages: Array<{
+    id: string;
+    role: 'user' | 'assistant';
+    content: string;
+    createdAt: Date;
+  }>;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export async function getTopicChatsCollection(): Promise<Collection<TopicChatDocument>> {
+  const db = await getDb();
+  return db.collection<TopicChatDocument>(COLLECTIONS.TOPIC_CHATS);
 }

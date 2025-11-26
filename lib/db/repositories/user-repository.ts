@@ -9,7 +9,7 @@ export interface UserRepository {
   findByStripeCustomerId(stripeCustomerId: string): Promise<User | null>;
   updatePlan(clerkId: string, plan: UserPlan, newIterationLimit: number, newInterviewLimit: number): Promise<User | null>;
   updateStripeCustomerId(clerkId: string, stripeCustomerId: string): Promise<User | null>;
-  incrementIteration(clerkId: string): Promise<User | null>;
+  incrementIteration(clerkId: string, amount?: number): Promise<User | null>;
   incrementInterview(clerkId: string): Promise<User | null>;
   resetIterations(clerkId: string): Promise<User | null>;
   resetInterviews(clerkId: string): Promise<User | null>;
@@ -149,14 +149,14 @@ export const userRepository: UserRepository = {
     return result as User | null;
   },
 
-  async incrementIteration(clerkId: string) {
+  async incrementIteration(clerkId: string, amount: number = 1) {
     const collection = await getUsersCollection();
     const now = new Date();
     
     const result = await collection.findOneAndUpdate(
       { clerkId },
       {
-        $inc: { 'iterations.count': 1 },
+        $inc: { 'iterations.count': amount },
         $set: { updatedAt: now },
       },
       { returnDocument: 'after' }

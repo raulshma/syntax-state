@@ -7,6 +7,7 @@ export const AIActionSchema = z.enum([
   'GENERATE_RAPID_FIRE',
   'REGENERATE_ANALOGY',
   'PARSE_PROMPT',
+  'TOPIC_CHAT',
 ]);
 
 export const AIStatusSchema = z.enum([
