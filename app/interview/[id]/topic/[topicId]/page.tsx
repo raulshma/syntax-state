@@ -140,7 +140,9 @@ export default function TopicDetailPage() {
     )
   }
 
-  const displayContent = isRegenerating && streamingContent ? streamingContent : topic.content
+  // Show streaming content when regenerating, otherwise show saved content
+  const isStreaming = isRegenerating && streamingContent.length > 0
+  const displayContent = isStreaming ? streamingContent : topic.content
 
   return (
     <div className="min-h-screen bg-background">
@@ -220,17 +222,26 @@ export default function TopicDetailPage() {
                 <BookOpen className="w-5 h-5 text-muted-foreground" />
                 <h2 className="font-mono text-lg text-foreground">Deep Dive</h2>
                 {isRegenerating && (
-                  <Loader2 className="w-4 h-4 animate-spin text-primary ml-2" />
+                  <div className="flex items-center gap-2 ml-2">
+                    <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                    <span className="text-sm text-muted-foreground">
+                      {streamingContent ? "Streaming response..." : "Generating..."}
+                    </span>
+                  </div>
                 )}
               </div>
               
               <div className="prose prose-invert max-w-none">
-                <MarkdownRenderer
-                  content={displayContent}
-                  isStreaming={isRegenerating && !!streamingContent}
-                />
-                {isRegenerating && !streamingContent && (
-                  <span className="inline-block w-2 h-4 bg-primary ml-1 animate-pulse" />
+                {isRegenerating && !streamingContent ? (
+                  <div className="flex items-center gap-2 text-muted-foreground py-4">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span className="text-sm">Preparing {styleLabels[selectedStyle].toLowerCase()} explanation...</span>
+                  </div>
+                ) : (
+                  <MarkdownRenderer
+                    content={displayContent}
+                    isStreaming={isStreaming}
+                  />
                 )}
               </div>
 
