@@ -256,27 +256,6 @@ export async function getRecentAIActivity(
 }
 
 /**
- * Model Configuration Interface
- */
-export interface ModelConfig {
-  defaultModel: string;
-  fallbackModel: string;
-  temperature: number;
-  maxTokens: number;
-  fallbackTemperature: number;
-  fallbackMaxTokens: number;
-}
-
-const DEFAULT_MODEL_CONFIG: ModelConfig = {
-  defaultModel: "anthropic/claude-sonnet-4",
-  fallbackModel: "openai/gpt-3.5-turbo",
-  temperature: 0.7,
-  maxTokens: 2048,
-  fallbackTemperature: 0.7,
-  fallbackMaxTokens: 2048,
-};
-
-/**
  * Get a setting value from the database
  */
 async function getSetting<T>(key: string, defaultValue: T): Promise<T> {
@@ -295,102 +274,6 @@ async function setSetting<T>(key: string, value: T): Promise<void> {
     { $set: { key, value, updatedAt: new Date() } },
     { upsert: true }
   );
-}
-
-/**
- * Get the current model configuration
- */
-export async function getModelConfig(): Promise<ModelConfig> {
-  const [
-    defaultModel,
-    fallbackModel,
-    temperature,
-    maxTokens,
-    fallbackTemperature,
-    fallbackMaxTokens,
-  ] = await Promise.all([
-    getSetting(SETTINGS_KEYS.DEFAULT_MODEL, DEFAULT_MODEL_CONFIG.defaultModel),
-    getSetting(
-      SETTINGS_KEYS.FALLBACK_MODEL,
-      DEFAULT_MODEL_CONFIG.fallbackModel
-    ),
-    getSetting(SETTINGS_KEYS.TEMPERATURE, DEFAULT_MODEL_CONFIG.temperature),
-    getSetting(SETTINGS_KEYS.MAX_TOKENS, DEFAULT_MODEL_CONFIG.maxTokens),
-    getSetting(
-      SETTINGS_KEYS.FALLBACK_TEMPERATURE,
-      DEFAULT_MODEL_CONFIG.fallbackTemperature
-    ),
-    getSetting(
-      SETTINGS_KEYS.FALLBACK_MAX_TOKENS,
-      DEFAULT_MODEL_CONFIG.fallbackMaxTokens
-    ),
-  ]);
-
-  return {
-    defaultModel,
-    fallbackModel,
-    temperature,
-    maxTokens,
-    fallbackTemperature,
-    fallbackMaxTokens,
-  };
-}
-
-/**
- * Update the default AI model
- */
-export async function setDefaultModel(
-  modelId: string
-): Promise<{ success: boolean; model: string }> {
-  await setSetting(SETTINGS_KEYS.DEFAULT_MODEL, modelId);
-  return { success: true, model: modelId };
-}
-
-/**
- * Update the fallback AI model
- */
-export async function setFallbackModel(
-  modelId: string
-): Promise<{ success: boolean; model: string }> {
-  await setSetting(SETTINGS_KEYS.FALLBACK_MODEL, modelId);
-  return { success: true, model: modelId };
-}
-
-/**
- * Update model configuration (temperature, max tokens)
- */
-export async function updateModelConfig(
-  config: Partial<ModelConfig>
-): Promise<{ success: boolean }> {
-  const updates: Promise<void>[] = [];
-
-  if (config.defaultModel !== undefined) {
-    updates.push(setSetting(SETTINGS_KEYS.DEFAULT_MODEL, config.defaultModel));
-  }
-  if (config.fallbackModel !== undefined) {
-    updates.push(
-      setSetting(SETTINGS_KEYS.FALLBACK_MODEL, config.fallbackModel)
-    );
-  }
-  if (config.temperature !== undefined) {
-    updates.push(setSetting(SETTINGS_KEYS.TEMPERATURE, config.temperature));
-  }
-  if (config.maxTokens !== undefined) {
-    updates.push(setSetting(SETTINGS_KEYS.MAX_TOKENS, config.maxTokens));
-  }
-  if (config.fallbackTemperature !== undefined) {
-    updates.push(
-      setSetting(SETTINGS_KEYS.FALLBACK_TEMPERATURE, config.fallbackTemperature)
-    );
-  }
-  if (config.fallbackMaxTokens !== undefined) {
-    updates.push(
-      setSetting(SETTINGS_KEYS.FALLBACK_MAX_TOKENS, config.fallbackMaxTokens)
-    );
-  }
-
-  await Promise.all(updates);
-  return { success: true };
 }
 
 /**
@@ -1248,3 +1131,177 @@ export async function setAIConcurrencyLimit(
   await setSetting(SETTINGS_KEYS.AI_CONCURRENCY_LIMIT, validLimit);
   return { success: true, limit: validLimit };
 }
+
+// ============================================
+// Tiered Model Configuration
+// ============================================
+
+import {
+  TASK_TIER_MAPPING,
+  TASK_DESCRIPTIONS,
+  DEFAULT_TIER_CONFIG,
+  type ModelTier,
+  type AITask,
+  type TierModelConfig,
+  type FullTieredModelConfig,
+} from '@/lib/db/schemas/settings';
+
+/**
+ * Task tier information for display
+ */
+export interface TaskTierInfo {
+  task: AITask;
+  tier: ModelTier;
+  description: string;
+}
+
+/**
+ * Get all task-to-tier mappings with descriptions
+ * Made async to comply with Server Actions requirement
+ */
+export async function getTaskTierMappings(): Promise<TaskTierInfo[]> {
+  return Object.entries(TASK_TIER_MAPPING).map(([task, tier]) => ({
+    task: task as AITask,
+    tier,
+    description: TASK_DESCRIPTIONS[task] || task,
+  }));
+}
+
+/**
+ * Get tier setting key
+ */
+function getTierKey(tier: ModelTier): string {
+  return {
+    high: SETTINGS_KEYS.MODEL_TIER_HIGH,
+    medium: SETTINGS_KEYS.MODEL_TIER_MEDIUM,
+    low: SETTINGS_KEYS.MODEL_TIER_LOW,
+  }[tier];
+}
+
+/**
+ * Get a single tier's configuration from single document
+ */
+async function getTierConfig(tier: ModelTier): Promise<TierModelConfig> {
+  const collection = await getSettingsCollection();
+  const doc = await collection.findOne({ key: getTierKey(tier) });
+  
+  if (!doc?.value) {
+    return { ...DEFAULT_TIER_CONFIG };
+  }
+  
+  const value = doc.value as Partial<TierModelConfig>;
+  return {
+    primaryModel: value.primaryModel ?? null,
+    fallbackModel: value.fallbackModel ?? null,
+    temperature: value.temperature ?? 0.7,
+    maxTokens: value.maxTokens ?? 4096,
+  };
+}
+
+/**
+ * Get the full tiered model configuration
+ * Returns null for models that haven't been configured
+ */
+export async function getTieredModelConfig(): Promise<FullTieredModelConfig> {
+  const [high, medium, low] = await Promise.all([
+    getTierConfig('high'),
+    getTierConfig('medium'),
+    getTierConfig('low'),
+  ]);
+
+  return { high, medium, low };
+}
+
+/**
+ * Check if all tiers are properly configured (have at least primary model set)
+ */
+export async function areTieredModelsConfigured(): Promise<{
+  configured: boolean;
+  missingTiers: ModelTier[];
+}> {
+  const config = await getTieredModelConfig();
+  const missingTiers: ModelTier[] = [];
+
+  if (!config.high.primaryModel) missingTiers.push('high');
+  if (!config.medium.primaryModel) missingTiers.push('medium');
+  if (!config.low.primaryModel) missingTiers.push('low');
+
+  return {
+    configured: missingTiers.length === 0,
+    missingTiers,
+  };
+}
+
+/**
+ * Update a specific tier's full configuration (single document)
+ */
+export async function updateTierConfig(
+  tier: ModelTier,
+  config: Partial<TierModelConfig>
+): Promise<{ success: boolean }> {
+  const collection = await getSettingsCollection();
+  const key = getTierKey(tier);
+  
+  // Get existing config
+  const existing = await getTierConfig(tier);
+  
+  // Merge with new values
+  const newConfig: TierModelConfig = {
+    primaryModel: config.primaryModel !== undefined ? config.primaryModel : existing.primaryModel,
+    fallbackModel: config.fallbackModel !== undefined ? config.fallbackModel : existing.fallbackModel,
+    temperature: config.temperature !== undefined ? config.temperature : existing.temperature,
+    maxTokens: config.maxTokens !== undefined ? config.maxTokens : existing.maxTokens,
+  };
+
+  await collection.updateOne(
+    { key },
+    { $set: { key, value: newConfig, updatedAt: new Date() } },
+    { upsert: true }
+  );
+
+  return { success: true };
+}
+
+/**
+ * Update all tiered models at once
+ */
+export async function updateFullTieredModelConfig(
+  config: Partial<FullTieredModelConfig>
+): Promise<{ success: boolean }> {
+  const updates: Promise<{ success: boolean }>[] = [];
+
+  if (config.high) {
+    updates.push(updateTierConfig('high', config.high));
+  }
+  if (config.medium) {
+    updates.push(updateTierConfig('medium', config.medium));
+  }
+  if (config.low) {
+    updates.push(updateTierConfig('low', config.low));
+  }
+
+  await Promise.all(updates);
+  return { success: true };
+}
+
+/**
+ * Clear all tier configurations (for reset)
+ */
+export async function clearTieredModelConfig(): Promise<{ success: boolean }> {
+  const collection = await getSettingsCollection();
+
+  await collection.deleteMany({
+    key: {
+      $in: [
+        SETTINGS_KEYS.MODEL_TIER_HIGH,
+        SETTINGS_KEYS.MODEL_TIER_MEDIUM,
+        SETTINGS_KEYS.MODEL_TIER_LOW,
+      ],
+    },
+  });
+
+  return { success: true };
+}
+
+// Re-export types for external use
+export type { TierModelConfig, FullTieredModelConfig };

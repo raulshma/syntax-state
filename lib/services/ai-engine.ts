@@ -1,6 +1,6 @@
 /**
  * AI Engine Core
- * Configures OpenRouter provider with model selection and tool definitions
+ * Configures OpenRouter provider with tiered model selection
  * Requirements: 4.1, 4.2, 4.5
  */
 
@@ -17,11 +17,22 @@ import {
   type RapidFire,
   type OpeningBrief,
 } from '@/lib/db/schemas/interview';
-import { searchService, isSearchEnabled, type SearchResult } from './search-service';
+import { searchService, isSearchEnabled } from './search-service';
+import { getSettingsCollection } from '@/lib/db/collections';
+import { 
+  SETTINGS_KEYS, 
+  TASK_TIER_MAPPING, 
+  type ModelTier, 
+  type AITask,
+  type TierModelConfig,
+} from '@/lib/db/schemas/settings';
 
 // AI Engine Configuration
 export interface AIEngineConfig {
   model: string;
+  fallbackModel?: string;
+  temperature?: number;
+  maxTokens?: number;
   searchEnabled: boolean;
 }
 
@@ -34,26 +45,99 @@ export interface GenerationContext {
   existingContent?: string[];
 }
 
-import { getSettingsCollection } from '@/lib/db/collections';
-import { SETTINGS_KEYS } from '@/lib/db/schemas/settings';
-
-// Default configuration
-const DEFAULT_CONFIG: AIEngineConfig = {
-  model: 'anthropic/claude-sonnet-4',
-  searchEnabled: true,
-};
+// Error for unconfigured tiers
+export class TierNotConfiguredError extends Error {
+  constructor(public tier: ModelTier, public task: string) {
+    super(`Model tier "${tier}" is not configured. Please configure it in admin settings before using ${task}.`);
+    this.name = 'TierNotConfiguredError';
+  }
+}
 
 /**
- * Get the configured default model from database
+ * Get tier setting key
  */
-async function getConfiguredModel(): Promise<string> {
-  try {
-    const collection = await getSettingsCollection();
-    const doc = await collection.findOne({ key: SETTINGS_KEYS.DEFAULT_MODEL });
-    return doc?.value as string || DEFAULT_CONFIG.model;
-  } catch {
-    return DEFAULT_CONFIG.model;
+function getTierKey(tier: ModelTier): string {
+  return {
+    high: SETTINGS_KEYS.MODEL_TIER_HIGH,
+    medium: SETTINGS_KEYS.MODEL_TIER_MEDIUM,
+    low: SETTINGS_KEYS.MODEL_TIER_LOW,
+  }[tier];
+}
+
+/**
+ * Get a single tier's configuration from database (single document per tier)
+ */
+async function getTierConfigFromDB(tier: ModelTier): Promise<TierModelConfig> {
+  const collection = await getSettingsCollection();
+  const doc = await collection.findOne({ key: getTierKey(tier) });
+
+  if (!doc?.value) {
+    return {
+      primaryModel: null,
+      fallbackModel: null,
+      temperature: 0.7,
+      maxTokens: 4096,
+    };
   }
+
+  const value = doc.value as Partial<TierModelConfig>;
+  return {
+    primaryModel: value.primaryModel ?? null,
+    fallbackModel: value.fallbackModel ?? null,
+    temperature: value.temperature ?? 0.7,
+    maxTokens: value.maxTokens ?? 4096,
+  };
+}
+
+/**
+ * Get the configuration for a specific AI task
+ * Throws TierNotConfiguredError if the tier's primary model is not set
+ */
+async function getConfigForTask(task: AITask): Promise<{
+  model: string;
+  fallbackModel: string | null;
+  temperature: number;
+  maxTokens: number;
+  tier: ModelTier;
+}> {
+  const tier = TASK_TIER_MAPPING[task] || 'high';
+  const config = await getTierConfigFromDB(tier);
+
+  if (!config.primaryModel) {
+    throw new TierNotConfiguredError(tier, task);
+  }
+
+  return {
+    model: config.primaryModel,
+    fallbackModel: config.fallbackModel,
+    temperature: config.temperature,
+    maxTokens: config.maxTokens,
+    tier,
+  };
+}
+
+/**
+ * Check if all required tiers are configured
+ */
+export async function checkTiersConfigured(): Promise<{
+  configured: boolean;
+  missingTiers: ModelTier[];
+}> {
+  const [high, medium, low] = await Promise.all([
+    getTierConfigFromDB('high'),
+    getTierConfigFromDB('medium'),
+    getTierConfigFromDB('low'),
+  ]);
+
+  const missingTiers: ModelTier[] = [];
+  if (!high.primaryModel) missingTiers.push('high');
+  if (!medium.primaryModel) missingTiers.push('medium');
+  if (!low.primaryModel) missingTiers.push('low');
+
+  return {
+    configured: missingTiers.length === 0,
+    missingTiers,
+  };
 }
 
 /**
@@ -69,7 +153,6 @@ function getOpenRouterClient(apiKey?: string) {
 
 /**
  * Search Web Tool Definition Schema
- * Requirements: 4.1, 4.2
  */
 const searchWebToolSchema = z.object({
   query: z.string().describe('The search query to find relevant information'),
@@ -77,12 +160,11 @@ const searchWebToolSchema = z.object({
 
 /**
  * Create search web tool
- * Requirements: 4.1, 4.2
  */
 function createSearchWebTool() {
   return {
     searchWeb: tool({
-      description: 'Search the web for current information about technologies, frameworks, or interview topics. Use this when you need up-to-date information.',
+      description: 'Search the web for current information about technologies, frameworks, or interview topics.',
       inputSchema: searchWebToolSchema,
       execute: async (params: { query: string }) => {
         const response = await searchService.query(params.query, 5);
@@ -92,13 +174,11 @@ function createSearchWebTool() {
   };
 }
 
-
 /**
  * Get tools based on configuration
- * Requirements: 4.4
  */
-function getTools(config: AIEngineConfig) {
-  if (config.searchEnabled && isSearchEnabled()) {
+function getTools(searchEnabled: boolean) {
+  if (searchEnabled && isSearchEnabled()) {
     return createSearchWebTool();
   }
   return undefined;
@@ -142,17 +222,56 @@ Guidelines:
 - Use web search when you need current information about technologies or frameworks`;
 }
 
+
+/**
+ * BYOK (Bring Your Own Key) tier configuration for users
+ */
+export interface BYOKTierConfig {
+  high?: { model: string; fallback?: string; temperature?: number; maxTokens?: number };
+  medium?: { model: string; fallback?: string; temperature?: number; maxTokens?: number };
+  low?: { model: string; fallback?: string; temperature?: number; maxTokens?: number };
+}
+
+/**
+ * Get effective config for a task, considering BYOK overrides
+ */
+async function getEffectiveConfig(
+  task: AITask,
+  byokConfig?: BYOKTierConfig
+): Promise<{
+  model: string;
+  fallbackModel: string | null;
+  temperature: number;
+  maxTokens: number;
+}> {
+  const tier = TASK_TIER_MAPPING[task] || 'high';
+  
+  // Check if BYOK user has configured this tier
+  if (byokConfig?.[tier]?.model) {
+    const byok = byokConfig[tier]!;
+    return {
+      model: byok.model,
+      fallbackModel: byok.fallback || null,
+      temperature: byok.temperature ?? 0.7,
+      maxTokens: byok.maxTokens ?? 4096,
+    };
+  }
+
+  // Fall back to system tier config
+  return getConfigForTask(task);
+}
+
 /**
  * Generate Opening Brief with streaming
- * Requirements: 3.1
+ * Uses HIGH tier model - complex reasoning and comprehensive analysis
  */
 export async function generateOpeningBrief(
   ctx: GenerationContext,
   config: Partial<AIEngineConfig> = {},
-  apiKey?: string
+  apiKey?: string,
+  byokTierConfig?: BYOKTierConfig
 ) {
-  const configuredModel = await getConfiguredModel();
-  const finalConfig = { ...DEFAULT_CONFIG, model: configuredModel, ...config };
+  const tierConfig = await getEffectiveConfig('generate_opening_brief', byokTierConfig);
   const openrouter = getOpenRouterClient(apiKey);
 
   const prompt = `Generate an opening brief for an interview preparation plan.
@@ -175,26 +294,26 @@ Generate a comprehensive opening brief that includes:
 Format your response as a structured brief with clear sections.`;
 
   return streamObject({
-    model: openrouter(finalConfig.model),
+    model: openrouter(config.model || tierConfig.model),
     schema: OpeningBriefSchema,
     system: getSystemPrompt(),
     prompt,
+    temperature: config.temperature ?? tierConfig.temperature,
   });
 }
 
-
 /**
  * Generate Revision Topics with streaming
- * Requirements: 3.2
+ * Uses HIGH tier model - requires deep technical knowledge and explanation
  */
 export async function generateTopics(
   ctx: GenerationContext,
   count: number = 5,
   config: Partial<AIEngineConfig> = {},
-  apiKey?: string
+  apiKey?: string,
+  byokTierConfig?: BYOKTierConfig
 ) {
-  const configuredModel = await getConfiguredModel();
-  const finalConfig = { ...DEFAULT_CONFIG, model: configuredModel, ...config };
+  const tierConfig = await getEffectiveConfig('generate_topics', byokTierConfig);
   const openrouter = getOpenRouterClient(apiKey);
 
   const existingTopicsNote = ctx.existingContent?.length 
@@ -226,25 +345,26 @@ For each topic, provide:
 Focus on topics that bridge the gap between the candidate's experience and job requirements.`;
 
   return streamObject({
-    model: openrouter(finalConfig.model),
+    model: openrouter(config.model || tierConfig.model),
     schema: TopicsArraySchema,
     system: getSystemPrompt(),
     prompt,
+    temperature: config.temperature ?? tierConfig.temperature,
   });
 }
 
 /**
  * Generate MCQs with streaming and duplicate prevention
- * Requirements: 5.1, 5.2
+ * Uses MEDIUM tier model - structured output with moderate complexity
  */
 export async function generateMCQs(
   ctx: GenerationContext,
   count: number = 5,
   config: Partial<AIEngineConfig> = {},
-  apiKey?: string
+  apiKey?: string,
+  byokTierConfig?: BYOKTierConfig
 ) {
-  const configuredModel = await getConfiguredModel();
-  const finalConfig = { ...DEFAULT_CONFIG, model: configuredModel, ...config };
+  const tierConfig = await getEffectiveConfig('generate_mcqs', byokTierConfig);
   const openrouter = getOpenRouterClient(apiKey);
 
   const existingQuestionsNote = ctx.existingContent?.length 
@@ -274,26 +394,26 @@ For each MCQ, provide:
 Focus on practical knowledge that would be tested in a technical interview for this role.`;
 
   return streamObject({
-    model: openrouter(finalConfig.model),
+    model: openrouter(config.model || tierConfig.model),
     schema: MCQsArraySchema,
     system: getSystemPrompt(),
     prompt,
+    temperature: config.temperature ?? tierConfig.temperature,
   });
 }
 
-
 /**
  * Generate Rapid Fire Questions with streaming
- * Requirements: 3.2
+ * Uses MEDIUM tier model - structured Q&A generation
  */
 export async function generateRapidFire(
   ctx: GenerationContext,
   count: number = 10,
   config: Partial<AIEngineConfig> = {},
-  apiKey?: string
+  apiKey?: string,
+  byokTierConfig?: BYOKTierConfig
 ) {
-  const configuredModel = await getConfiguredModel();
-  const finalConfig = { ...DEFAULT_CONFIG, model: configuredModel, ...config };
+  const tierConfig = await getEffectiveConfig('generate_rapid_fire', byokTierConfig);
   const openrouter = getOpenRouterClient(apiKey);
 
   const existingQuestionsNote = ctx.existingContent?.length 
@@ -320,24 +440,25 @@ For each question, provide:
 These should be quick-fire questions that test fundamental knowledge relevant to the role.`;
 
   return streamObject({
-    model: openrouter(finalConfig.model),
+    model: openrouter(config.model || tierConfig.model),
     schema: RapidFireArraySchema,
     system: getSystemPrompt(),
     prompt,
+    temperature: config.temperature ?? tierConfig.temperature,
   });
 }
 
 /**
  * Parse a user prompt to extract interview details
- * Requirements: 2.3 - Simplified interview creation from natural language prompt
+ * Uses LOW tier model - simple extraction and parsing task
  */
 export async function parseInterviewPrompt(
   prompt: string,
   config: Partial<AIEngineConfig> = {},
-  apiKey?: string
+  apiKey?: string,
+  byokTierConfig?: BYOKTierConfig
 ) {
-  const configuredModel = await getConfiguredModel();
-  const finalConfig = { ...DEFAULT_CONFIG, model: configuredModel, ...config };
+  const tierConfig = await getEffectiveConfig('parse_interview_prompt', byokTierConfig);
   const openrouter = getOpenRouterClient(apiKey);
 
   const systemPrompt = `You are an expert at understanding interview preparation requests. Your job is to extract structured information from a user's natural language prompt about their interview preparation needs.
@@ -360,29 +481,28 @@ Extract:
 3. Job Description - generate a comprehensive job description based on the role and any context provided. Include typical responsibilities, required skills, and qualifications for this type of role.
 4. Resume Context - any background, experience, or skills they mentioned about themselves (optional)`;
 
-  // Use generateObject instead of streamObject since we don't need streaming here
-  // and need to await the final object directly
   return generateObject({
-    model: openrouter(finalConfig.model),
+    model: openrouter(config.model || tierConfig.model),
     schema: ParsedInterviewDetailsSchema,
     system: systemPrompt,
     prompt: userPrompt,
+    temperature: config.temperature ?? tierConfig.temperature,
   });
 }
 
 /**
  * Regenerate topic with different analogy style
- * Requirements: 6.2, 6.3, 6.4
+ * Uses HIGH tier model - creative rewriting with style adaptation
  */
 export async function regenerateTopicAnalogy(
   topic: RevisionTopic,
   style: 'professional' | 'construction' | 'simple',
   _ctx: GenerationContext,
   config: Partial<AIEngineConfig> = {},
-  apiKey?: string
+  apiKey?: string,
+  byokTierConfig?: BYOKTierConfig
 ) {
-  const configuredModel = await getConfiguredModel();
-  const finalConfig = { ...DEFAULT_CONFIG, model: configuredModel, ...config };
+  const tierConfig = await getEffectiveConfig('regenerate_topic_analogy', byokTierConfig);
   const openrouter = getOpenRouterClient(apiKey);
 
   const styleDescriptions = {
@@ -408,10 +528,11 @@ Keep the same topic ID, title, and reason. Only change the content to match the 
 The explanation should be comprehensive but match the requested style throughout.`;
 
   return streamObject({
-    model: openrouter(finalConfig.model),
+    model: openrouter(config.model || tierConfig.model),
     schema: RevisionTopicSchema,
     system: getSystemPrompt(),
     prompt,
+    temperature: config.temperature ?? tierConfig.temperature,
   });
 }
 
@@ -429,6 +550,7 @@ export interface AIEngine {
   generateRapidFire: typeof generateRapidFire;
   regenerateTopicAnalogy: typeof regenerateTopicAnalogy;
   parseInterviewPrompt: typeof parseInterviewPrompt;
+  checkTiersConfigured: typeof checkTiersConfigured;
 }
 
 export const aiEngine: AIEngine = {
@@ -438,4 +560,5 @@ export const aiEngine: AIEngine = {
   generateRapidFire,
   regenerateTopicAnalogy,
   parseInterviewPrompt,
+  checkTiersConfigured,
 };

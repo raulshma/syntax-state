@@ -21,20 +21,12 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
   Settings,
   Users,
   Activity,
   Terminal,
   Search,
   FileText,
-  Filter,
   Cpu,
   Zap,
   Clock,
@@ -47,7 +39,6 @@ import {
   getAILogs,
   getSearchToolStatus,
   getAIUsageByAction,
-  getModelConfig,
   getAdminUsers,
   getUsageTrends,
   getPopularTopics,
@@ -56,10 +47,11 @@ import {
   getTopCompanies,
   getModelUsageDistribution,
   getAIConcurrencyLimit,
+  getTieredModelConfig,
 } from "@/lib/actions/admin";
 import { SearchToolToggle } from "@/components/admin/search-tool-toggle";
 import { AIMonitoringDashboard } from "@/components/admin/ai-monitoring-dashboard";
-import { ModelSelector } from "@/components/admin/model-selector";
+import { TieredModelConfig } from "@/components/admin/tiered-model-config";
 import { ConcurrencyConfig } from "@/components/admin/concurrency-config";
 import { UserActions } from "@/components/admin/user-management";
 import { AnalyticsDashboard } from "@/components/admin/analytics-dashboard";
@@ -88,7 +80,6 @@ export default async function AdminPage() {
     aiLogs,
     searchStatus,
     usageByAction,
-    modelConfig,
     users,
     usageTrends,
     popularTopics,
@@ -97,12 +88,12 @@ export default async function AdminPage() {
     topCompanies,
     modelUsage,
     concurrencyLimit,
+    tieredModelConfig,
   ] = await Promise.all([
     getAdminStats(),
     getAILogs({ limit: 50 }),
     getSearchToolStatus(),
     getAIUsageByAction(),
-    getModelConfig(),
     getAdminUsers(),
     getUsageTrends(30),
     getPopularTopics(10),
@@ -111,6 +102,7 @@ export default async function AdminPage() {
     getTopCompanies(10),
     getModelUsageDistribution(),
     getAIConcurrencyLimit(),
+    getTieredModelConfig(),
   ]);
 
   const statsCards = [
@@ -335,8 +327,8 @@ export default async function AdminPage() {
 
           <TabsContent value="models">
             <div className="space-y-6">
-              {/* Model Selector Component */}
-              <ModelSelector initialConfig={modelConfig} />
+              {/* Tiered Model Configuration - Different models for different task complexities */}
+              <TieredModelConfig initialConfig={tieredModelConfig} />
 
               {/* AI Concurrency Configuration */}
               <ConcurrencyConfig initialLimit={concurrencyLimit} />
