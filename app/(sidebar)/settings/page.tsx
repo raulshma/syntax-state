@@ -8,6 +8,7 @@ import { ApiKeysSection } from '@/app/settings/components/api-keys-section';
 import { DataManagementSection } from '@/app/settings/components/data-management-section';
 import { BYOKTierConfigSection } from '@/app/settings/components/byok-tier-config';
 import { BYOKUsageStatsSection } from '@/app/settings/components/byok-usage-stats';
+import { CustomThemeSection } from '@/app/settings/components/custom-theme-section';
 
 export default async function SettingsPage() {
   const [profileResult, subscriptionResult] = await Promise.all([
@@ -36,6 +37,7 @@ export default async function SettingsPage() {
         <div className="space-y-6">
           <SubscriptionSection profile={profile} subscription={subscription} />
           <BYOKUsageStatsSection hasByokKey={profile.hasByokKey} />
+          <CustomThemeSection />
           <DataManagementSection />
         </div>
       </div>
