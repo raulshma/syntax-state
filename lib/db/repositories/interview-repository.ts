@@ -10,6 +10,21 @@ import {
   RapidFire,
 } from '../schemas/interview';
 
+/**
+ * Ensures interview modules have default empty arrays to prevent undefined errors
+ */
+function normalizeInterview(interview: Interview): Interview {
+  return {
+    ...interview,
+    modules: {
+      openingBrief: interview.modules?.openingBrief,
+      revisionTopics: interview.modules?.revisionTopics ?? [],
+      mcqs: interview.modules?.mcqs ?? [],
+      rapidFire: interview.modules?.rapidFire ?? [],
+    },
+  };
+}
+
 export interface InterviewRepository {
   create(data: CreateInterview): Promise<Interview>;
   findById(id: string): Promise<Interview | null>;
@@ -55,7 +70,8 @@ export const interviewRepository: InterviewRepository = {
   async findById(id: string) {
     const collection = await getInterviewsCollection();
     const interview = await collection.findOne({ _id: id });
-    return interview as Interview | null;
+    if (!interview) return null;
+    return normalizeInterview(interview as Interview);
   },
 
   async findByUserId(userId: string) {
@@ -64,7 +80,7 @@ export const interviewRepository: InterviewRepository = {
       .find({ userId })
       .sort({ updatedAt: -1 })
       .toArray();
-    return interviews as Interview[];
+    return (interviews as Interview[]).map(normalizeInterview);
   },
 
   async updateModule(id: string, module: ModuleType, content: unknown) {
