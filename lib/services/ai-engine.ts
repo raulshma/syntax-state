@@ -216,7 +216,10 @@ ${existingTopicsNote}
 For each topic, provide:
 1. A unique ID (use format: topic_<random_string>)
 2. A clear title
-3. Detailed content explaining the topic
+3. Content structured as follows (use markdown formatting):
+   - **Quick Overview**: A 2-3 sentence summary of what this topic is about
+   - **Detailed Explanation**: In-depth explanation covering key concepts, how it works, and why it matters
+   - **Code Example** (if applicable): Practical code snippet demonstrating the concept with comments
 4. The reason why this topic is important for this interview
 5. A confidence level (low, medium, high) indicating how likely this topic will come up
 
@@ -383,22 +386,26 @@ export async function regenerateTopicAnalogy(
   const openrouter = getOpenRouterClient(apiKey);
 
   const styleDescriptions = {
-    professional: 'Use professional, technical language appropriate for a senior developer or architect.',
-    construction: 'Explain using house construction analogies - compare software concepts to building a house.',
-    simple: 'Explain as if to a 5-year-old - use simple words, everyday examples, and avoid jargon.',
+    professional: 'Use professional, technical language appropriate for a senior developer or architect. Include industry terminology and best practices.',
+    construction: 'Explain using house construction analogies - compare software concepts to building a house. Make technical concepts relatable through building metaphors.',
+    simple: 'Explain as if to a 5-year-old - use simple words, everyday examples, and avoid jargon. Use fun analogies kids would understand.',
   };
 
   const prompt = `Regenerate the explanation for this interview topic using a different style.
 
 Topic: ${topic.title}
-Original Content: ${topic.content}
 Reason for importance: ${topic.reason}
 
 New Style: ${style}
 Style Guidelines: ${styleDescriptions[style]}
 
+Structure your content with markdown formatting:
+- **Quick Overview**: A 2-3 sentence summary of what this topic is about (in the requested style)
+- **Detailed Explanation**: In-depth explanation covering key concepts, how it works, and why it matters (in the requested style)
+- **Code Example** (if applicable): Practical code snippet demonstrating the concept with comments
+
 Keep the same topic ID, title, and reason. Only change the content to match the new style.
-The explanation should be comprehensive but match the requested style.`;
+The explanation should be comprehensive but match the requested style throughout.`;
 
   return streamObject({
     model: openrouter(finalConfig.model),
