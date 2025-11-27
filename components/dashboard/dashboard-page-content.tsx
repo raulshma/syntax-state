@@ -48,7 +48,7 @@ export function DashboardPageContent({
   }, [setHeader]);
 
   return (
-    <div className="max-w-7xl mx-auto space-y-12 pb-20">
+    <div className="w-full space-y-12 pb-20">
       {/* Learning Path Section */}
       <section>
         <div className="flex items-center justify-between mb-6 px-1">

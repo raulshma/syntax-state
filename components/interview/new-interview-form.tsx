@@ -463,7 +463,7 @@ export function NewInterviewForm({ usageData }: NewInterviewFormProps) {
                           onDragOver={handleDragOver}
                           onDragLeave={handleDragLeave}
                           onDrop={handleDrop}
-                          className={`border-2 border-dashed rounded-2xl p-8 text-center transition-all duration-300 min-h-[120px] flex flex-col items-center justify-center group ${isDragging ? 'border-primary bg-primary/5' : resumeFile ? 'border-primary/20 bg-primary/5' : errors.resumeFile ? 'border-destructive/50' : 'border-border/50 hover:border-primary/20 hover:bg-secondary/20'
+                          className={`relative border-2 border-dashed rounded-2xl p-8 text-center transition-all duration-300 min-h-[120px] flex flex-col items-center justify-center group ${isDragging ? 'border-primary bg-primary/5' : resumeFile ? 'border-primary/20 bg-primary/5' : errors.resumeFile ? 'border-destructive/50' : 'border-border/50 hover:border-primary/20 hover:bg-secondary/20'
                             }`}
                         >
                           {resumeFile ? (
