@@ -83,9 +83,9 @@ export async function Sidebar() {
   const data = await getSidebarData();
 
   return (
-    <aside className="w-72 bg-sidebar/80 backdrop-blur-xl border-r border-white/10 flex flex-col h-screen sticky top-0 z-50">
-      {/* Subtle gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-b from-white/5 to-transparent pointer-events-none" />
+    <aside className="w-72 bg-black/20 backdrop-blur-md border-r border-white/10 flex flex-col h-screen sticky top-0 z-50">
+      {/* Subtle tint overlay */}
+      <div className="absolute inset-0 bg-gradient-to-b from-white/5 via-transparent to-white/5 pointer-events-none" />
 
       {/* Logo Section */}
       <div className="relative p-8 pb-6">

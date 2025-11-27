@@ -53,10 +53,10 @@ export function MobileSidebar({ isAdmin, usage, user }: MobileSidebarProps) {
           <Menu className="h-5 w-5" />
         </Button>
       </SheetTrigger>
-      <SheetContent side="left" className="w-64 p-0 bg-sidebar">
+      <SheetContent side="left" className="w-64 p-0 bg-black/20 backdrop-blur-md border-r border-white/10">
         <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
-        {/* Subtle gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-b from-primary/[0.02] via-transparent to-primary/[0.02] pointer-events-none" />
+        {/* Subtle tint overlay */}
+        <div className="absolute inset-0 bg-gradient-to-b from-white/5 via-transparent to-white/5 pointer-events-none" />
 
         {/* Logo Section */}
         <div className="relative p-6">
