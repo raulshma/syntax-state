@@ -231,7 +231,7 @@ export async function POST(
             case "revisionTopics": {
               const result = await aiEngine.generateTopics(
                 ctx,
-                5,
+                8,
                 {},
                 apiKey ?? undefined,
                 byokTierConfig ?? undefined
@@ -280,7 +280,7 @@ export async function POST(
             case "mcqs": {
               const result = await aiEngine.generateMCQs(
                 ctx,
-                5,
+                10,
                 {},
                 apiKey ?? undefined,
                 byokTierConfig ?? undefined
@@ -329,7 +329,7 @@ export async function POST(
             case "rapidFire": {
               const result = await aiEngine.generateRapidFire(
                 ctx,
-                10,
+                20,
                 {},
                 apiKey ?? undefined,
                 byokTierConfig ?? undefined

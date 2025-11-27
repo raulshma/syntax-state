@@ -1,11 +1,6 @@
 import { getIterationStatus, getUserProfile } from "@/lib/actions/user";
 import { isAdmin } from "@/lib/auth/get-user";
-import { Logo } from "@/components/ui/logo";
-import { ViewTransitionLink } from "@/components/transitions/view-transition-link";
-import { SidebarNav } from "./sidebar-nav";
-import { SidebarUsage } from "./sidebar-usage";
-import { SidebarUser } from "./sidebar-user";
-import { Sparkles } from "lucide-react";
+import { SidebarUi } from "./sidebar-ui";
 
 export interface SidebarData {
   isAdmin: boolean;
@@ -82,72 +77,5 @@ export async function getSidebarData(): Promise<SidebarData> {
 export async function Sidebar() {
   const data = await getSidebarData();
 
-  return (
-    <aside className="w-72 bg-white dark:bg-black/20 backdrop-blur-md border-r border-border dark:border-white/10 flex flex-col h-screen sticky top-0 z-50">
-      {/* Subtle tint overlay */}
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-transparent dark:from-white/5 dark:via-transparent dark:to-white/5 pointer-events-none" />
-
-      {/* Logo Section */}
-      <div className="relative p-8 pb-6">
-        <ViewTransitionLink href="/" viewTransitionName="logo">
-          <Logo />
-        </ViewTransitionLink>
-      </div>
-
-      {/* Navigation */}
-      <div className="relative flex-1 overflow-y-auto px-4">
-        <SidebarNav isAdmin={data.isAdmin} />
-      </div>
-
-      {/* Bottom Section */}
-      <div className="relative p-4 space-y-4">
-        {/* Usage Stats */}
-        <div className="px-2">
-          <SidebarUsage
-            iterations={data.usage.iterations}
-            interviews={data.usage.interviews}
-            plan={data.usage.plan}
-            isByok={data.usage.isByok}
-          />
-        </div>
-
-        {/* Plan Badge */}
-        <div className="px-4 py-3 bg-muted dark:bg-white/5 rounded-2xl border border-border dark:border-white/5 backdrop-blur-sm">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div
-                className={`w-2 h-2 rounded-full ${
-                  data.usage.plan === "FREE"
-                    ? "bg-muted-foreground"
-                    : data.usage.plan === "PRO"
-                    ? "bg-blue-500"
-                    : "bg-amber-500"
-                }`}
-              />
-              <span className="text-xs font-medium text-foreground">
-                {data.usage.isByok ? "BYOK" : data.usage.plan} Plan
-              </span>
-            </div>
-            {data.usage.plan === "FREE" && !data.usage.isByok && (
-              <ViewTransitionLink
-                href="/settings/upgrade"
-                className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:text-primary/80 transition-colors"
-              >
-                <Sparkles className="w-3 h-3" />
-                <span>Upgrade</span>
-              </ViewTransitionLink>
-            )}
-          </div>
-        </div>
-
-        {/* User Section */}
-        <SidebarUser
-          firstName={data.user.firstName}
-          lastName={data.user.lastName}
-          email={data.user.email}
-          imageUrl={data.user.imageUrl}
-        />
-      </div>
-    </aside>
-  );
+  return <SidebarUi data={data} />;
 }

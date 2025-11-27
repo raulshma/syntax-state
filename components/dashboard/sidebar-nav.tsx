@@ -50,14 +50,21 @@ interface SidebarNavProps {
   isAdmin?: boolean;
 }
 
-export function SidebarNav({ isAdmin = false }: SidebarNavProps) {
+export function SidebarNav({
+  isAdmin = false,
+  isCollapsed = false,
+}: SidebarNavProps & { isCollapsed?: boolean }) {
   const pathname = usePathname();
 
   const items = isAdmin ? [...navItems, adminItem] : navItems;
 
   const isActiveRoute = (href: string) => {
     // Exact match for specific routes
-    if (href === "/dashboard" || href === "/settings" || href === "/settings/upgrade") {
+    if (
+      href === "/dashboard" ||
+      href === "/settings" ||
+      href === "/settings/upgrade"
+    ) {
       return pathname === href;
     }
     // For other routes, use startsWith
@@ -77,18 +84,22 @@ export function SidebarNav({ isAdmin = false }: SidebarNavProps) {
                 "group relative flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-2xl transition-all duration-300",
                 active
                   ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25"
-                  : "text-muted-foreground hover:text-foreground hover:bg-white/5"
+                  : "text-muted-foreground hover:text-foreground hover:bg-white/5",
+                isCollapsed && "justify-center px-2"
               )}
+              title={isCollapsed ? item.label : undefined}
             >
               <item.icon
                 className={cn(
                   "w-5 h-5 transition-transform duration-300 group-hover:scale-110",
-                  active ? "text-primary-foreground" : "text-muted-foreground group-hover:text-foreground"
+                  active
+                    ? "text-primary-foreground"
+                    : "text-muted-foreground group-hover:text-foreground"
                 )}
               />
-              <span>{item.label}</span>
+              {!isCollapsed && <span>{item.label}</span>}
 
-              {active && (
+              {!isCollapsed && active && (
                 <ChevronRight className="w-4 h-4 ml-auto text-primary-foreground/50" />
               )}
             </ViewTransitionLink>

@@ -4,6 +4,7 @@ import { useClerk } from "@clerk/nextjs";
 import { LogOut, Sun, Moon, Monitor } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { cn } from "@/lib/utils";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,7 +28,8 @@ export function SidebarUser({
   lastName,
   email,
   imageUrl,
-}: SidebarUserProps) {
+  isCollapsed = false,
+}: SidebarUserProps & { isCollapsed?: boolean }) {
   const { signOut } = useClerk();
   const { setTheme, theme } = useTheme();
 
@@ -35,27 +37,38 @@ export function SidebarUser({
   const displayName = getDisplayName(firstName, lastName, email);
 
   return (
-    <div className="p-3 py-0">
+    <div className={cn("p-3 py-0", isCollapsed && "p-0 flex justify-center")}>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <button className="w-full flex items-center gap-3 p-2 hover:bg-sidebar-accent/50 transition-colors text-left group">
+          <button
+            className={cn(
+              "w-full flex items-center gap-3 p-2 hover:bg-sidebar-accent/50 transition-colors text-left group",
+              isCollapsed
+                ? "justify-center rounded-full w-10 h-10 p-0"
+                : "rounded-lg"
+            )}
+          >
             <Avatar className="h-9 w-9 border border-sidebar-border">
               <AvatarImage src={imageUrl ?? undefined} alt={displayName} />
               <AvatarFallback className="bg-sidebar-accent text-sidebar-accent-foreground text-xs font-mono">
                 {initials}
               </AvatarFallback>
             </Avatar>
-            <div className="flex-1 min-w-0">
-              <div className="text-sm font-mono text-sidebar-foreground truncate">
-                {displayName}
-              </div>
-              {email && (
-                <div className="text-xs text-muted-foreground truncate">
-                  {email}
+            {!isCollapsed && (
+              <>
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-mono text-sidebar-foreground truncate">
+                    {displayName}
+                  </div>
+                  {email && (
+                    <div className="text-xs text-muted-foreground truncate">
+                      {email}
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-            <div className="w-1.5 h-1.5 bg-green-500 rounded-full" />
+                <div className="w-1.5 h-1.5 bg-green-500 rounded-full" />
+              </>
+            )}
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" side="top" className="w-56">

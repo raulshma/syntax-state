@@ -6,6 +6,9 @@ import { MobileSidebar } from "./mobile-sidebar";
 import { MobileHeader } from "./mobile-header";
 import type { SidebarData } from "./sidebar";
 
+import { SidebarProvider, useSidebar } from "./sidebar-context";
+import { cn } from "@/lib/utils";
+
 interface ResponsiveSidebarLayoutProps {
   children: React.ReactNode;
   sidebarData: SidebarData;
@@ -13,12 +16,13 @@ interface ResponsiveSidebarLayoutProps {
   desktopSidebar: React.ReactNode;
 }
 
-export function ResponsiveSidebarLayout({
+function ResponsiveSidebarLayoutContent({
   children,
   sidebarData,
   desktopSidebar,
 }: ResponsiveSidebarLayoutProps) {
   const isMobile = useIsMobile();
+  const { isCollapsed } = useSidebar();
 
   return (
     <div className="flex min-h-screen bg-background relative">
@@ -30,7 +34,12 @@ export function ResponsiveSidebarLayout({
       </div>
 
       {/* Desktop sidebar - hidden on mobile via CSS */}
-      <div className="hidden md:block w-72 flex-shrink-0 relative z-10">
+      <div
+        className={cn(
+          "hidden md:block flex-shrink-0 relative z-10 transition-all duration-300",
+          isCollapsed ? "w-20" : "w-72"
+        )}
+      >
         {desktopSidebar}
       </div>
 
@@ -53,5 +62,13 @@ export function ResponsiveSidebarLayout({
         {children}
       </div>
     </div>
+  );
+}
+
+export function ResponsiveSidebarLayout(props: ResponsiveSidebarLayoutProps) {
+  return (
+    <SidebarProvider>
+      <ResponsiveSidebarLayoutContent {...props} />
+    </SidebarProvider>
   );
 }

@@ -62,11 +62,18 @@ export async function POST(
   try {
     // Parse request body
     const body = await request.json();
-    const { module, count = 5, instructions } = body as {
+    // Default counts: more topics (5), more MCQs (5), more rapid-fire (10)
+    const defaultCounts: Record<AddMoreModule, number> = {
+      revisionTopics: 5,
+      mcqs: 5,
+      rapidFire: 10,
+    };
+    const { module, count, instructions } = body as {
       module: AddMoreModule;
       count?: number;
       instructions?: string;
     };
+    const effectiveCount = count ?? defaultCounts[module] ?? 5;
 
     if (!module || !["mcqs", "rapidFire", "revisionTopics"].includes(module)) {
       return NextResponse.json(
@@ -204,7 +211,7 @@ export async function POST(
             case "mcqs": {
               const result = await aiEngine.generateMCQs(
                 ctx,
-                count,
+                effectiveCount,
                 {},
                 apiKey ?? undefined,
                 byokTierConfig ?? undefined
@@ -244,7 +251,7 @@ export async function POST(
                 userId: user._id,
                 action: "GENERATE_MCQ",
                 model: modelId,
-                prompt: `Add ${count} more MCQs for ${interview.jobDetails.title}`,
+                prompt: `Add ${effectiveCount} more MCQs for ${interview.jobDetails.title}`,
                 response: responseText,
                 tokenUsage: extractTokenUsage(usage),
                 latencyMs: loggerCtx.getLatencyMs(),
@@ -257,7 +264,7 @@ export async function POST(
             case "revisionTopics": {
               const result = await aiEngine.generateTopics(
                 ctx,
-                count,
+                effectiveCount,
                 {},
                 apiKey ?? undefined,
                 byokTierConfig ?? undefined
@@ -298,7 +305,7 @@ export async function POST(
                 userId: user._id,
                 action: "GENERATE_TOPICS",
                 model: modelId,
-                prompt: `Add ${count} more revision topics for ${interview.jobDetails.title}`,
+                prompt: `Add ${effectiveCount} more revision topics for ${interview.jobDetails.title}`,
                 response: responseText,
                 tokenUsage: extractTokenUsage(usage),
                 latencyMs: loggerCtx.getLatencyMs(),
@@ -311,7 +318,7 @@ export async function POST(
             case "rapidFire": {
               const result = await aiEngine.generateRapidFire(
                 ctx,
-                count,
+                effectiveCount,
                 {},
                 apiKey ?? undefined,
                 byokTierConfig ?? undefined
@@ -352,7 +359,7 @@ export async function POST(
                 userId: user._id,
                 action: "GENERATE_RAPID_FIRE",
                 model: modelId,
-                prompt: `Add ${count} more rapid fire questions for ${interview.jobDetails.title}`,
+                prompt: `Add ${effectiveCount} more rapid fire questions for ${interview.jobDetails.title}`,
                 response: responseText,
                 tokenUsage: extractTokenUsage(usage),
                 latencyMs: loggerCtx.getLatencyMs(),

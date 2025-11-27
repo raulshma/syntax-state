@@ -226,15 +226,20 @@ const RapidFireArraySchema = z.object({
  * Generate system prompt for interview preparation
  */
 function getSystemPrompt(): string {
-  return `You are an expert interview preparation assistant. Your role is to help candidates prepare for technical interviews by generating relevant, high-quality content based on their resume and the job description.
+  return `You are an expert interview preparation assistant with deep knowledge across software engineering, system design, algorithms, and industry best practices. Your role is to help candidates prepare for technical interviews by generating comprehensive, in-depth, and highly relevant content based on their resume and the job description.
 
 Guidelines:
-- Be specific and relevant to the job requirements
-- Use the candidate's experience to personalize content
-- Focus on practical, actionable preparation material
-- When generating MCQs, ensure all options are plausible
-- For revision topics, explain concepts clearly and concisely
-- Use web search when you need current information about technologies or frameworks`;
+- Be extremely thorough and detailed in all content you generate
+- Provide extensive explanations with real-world examples and practical applications
+- Cover edge cases, common pitfalls, and advanced considerations
+- Use the candidate's experience to personalize content and identify skill gaps
+- Focus on practical, actionable preparation material that mirrors real interview scenarios
+- When generating MCQs, ensure all options are plausible and test deep understanding
+- For revision topics, provide comprehensive explanations with code examples, diagrams descriptions, and multiple perspectives
+- Include industry best practices, performance considerations, and trade-offs
+- Reference common interview patterns and what top companies typically ask
+- Use web search when you need current information about technologies or frameworks
+- Always aim for interview-ready depth that would satisfy a senior interviewer`;
 }
 
 /**
@@ -316,7 +321,7 @@ export async function generateOpeningBrief(
   const openrouter = getOpenRouterClient(apiKey);
   const modelToUse = config.model || tierConfig.model;
 
-  const prompt = `Generate an opening brief for an interview preparation plan.
+  const prompt = `Generate a comprehensive and detailed opening brief for an interview preparation plan.
 
 Job Title: ${ctx.jobTitle}
 Company: ${ctx.company}
@@ -327,13 +332,38 @@ ${ctx.jobDescription}
 Candidate's Resume:
 ${ctx.resumeText}
 
-Generate a comprehensive opening brief that includes:
-1. A summary of how well the candidate's experience matches the job requirements
-2. Key skills to highlight during the interview
-3. Estimated preparation time needed
-4. An experience match percentage (0-100)
+Generate an EXTENSIVE opening brief that includes:
 
-Format your response as a structured brief with clear sections.${
+1. **Executive Summary** (3-4 paragraphs):
+   - Detailed analysis of how well the candidate's experience matches the job requirements
+   - Specific strengths that align with the role
+   - Areas where the candidate may need to demonstrate growth or learning
+   - Overall assessment of interview readiness
+
+2. **Key Skills to Highlight** (8-12 skills):
+   - List the most important skills from the candidate's background that match the job
+   - For each skill, briefly explain WHY it's relevant and HOW to present it
+   - Include both technical and soft skills
+
+3. **Gap Analysis**:
+   - Identify any requirements in the job description that aren't clearly covered by the resume
+   - Suggest how to address these gaps in the interview (transferable skills, quick learning, etc.)
+
+4. **Company & Role Insights**:
+   - What the candidate should research about the company
+   - Likely interview focus areas based on the job description
+   - Questions the candidate should prepare to ask
+
+5. **Preparation Strategy**:
+   - Estimated preparation time needed (be specific: X hours for topics, Y hours for practice)
+   - Priority areas to focus on
+   - Recommended preparation sequence
+
+6. **Experience Match Analysis**:
+   - Provide an experience match percentage (0-100) with justification
+   - Break down the match by category (technical skills, experience level, domain knowledge)
+
+Format your response as a structured brief with clear markdown sections and bullet points for readability.${
     ctx.customInstructions
       ? `\n\nAdditional Instructions from user:\n${ctx.customInstructions}`
       : ""
@@ -358,7 +388,7 @@ Format your response as a structured brief with clear sections.${
  */
 export async function generateTopics(
   ctx: GenerationContext,
-  count: number = 5,
+  count: number = 8,
   config: Partial<AIEngineConfig> = {},
   apiKey?: string,
   byokTierConfig?: BYOKTierConfig
@@ -376,7 +406,7 @@ export async function generateTopics(
       )}`
     : "";
 
-  const prompt = `Generate ${count} revision topics for interview preparation.
+  const prompt = `Generate ${count} comprehensive revision topics for interview preparation. Each topic should be EXTENSIVE and interview-ready.
 
 Job Title: ${ctx.jobTitle}
 Company: ${ctx.company}
@@ -388,17 +418,56 @@ Candidate's Resume:
 ${ctx.resumeText}
 ${existingTopicsNote}
 
-For each topic, provide:
-1. A unique ID (use format: topic_<random_string>)
-2. A clear title
-3. Content structured as follows (use markdown formatting):
-   - **Quick Overview**: A 2-3 sentence summary of what this topic is about
-   - **Detailed Explanation**: In-depth explanation covering key concepts, how it works, and why it matters
-   - **Code Example** (if applicable): Practical code snippet demonstrating the concept with comments
-4. The reason why this topic is important for this interview
-5. A confidence level (low, medium, high) indicating how likely this topic will come up
+For each topic, provide DETAILED content structured as follows:
 
-Focus on topics that bridge the gap between the candidate's experience and job requirements.${
+1. A unique ID (use format: topic_<random_string>)
+2. A clear, specific title
+
+3. **Content** (use markdown formatting, aim for 800-1200 words per topic):
+
+   ## Quick Overview
+   A 3-4 sentence summary explaining what this topic is, why it matters, and how it's typically used in industry.
+
+   ## Core Concepts
+   - Explain the fundamental principles (5-7 key concepts)
+   - Define important terminology
+   - Describe how components interact
+
+   ## How It Works
+   - Step-by-step explanation of the mechanism/process
+   - Include diagrams descriptions where helpful (e.g., "Imagine a flow: Client → Load Balancer → Server Pool")
+   - Explain the underlying architecture or algorithm
+
+   ## Practical Implementation
+   \`\`\`language
+   // Comprehensive code example with detailed comments
+   // Show real-world usage patterns
+   // Include error handling and edge cases
+   \`\`\`
+
+   ## Common Interview Questions
+   - List 3-5 questions interviewers commonly ask about this topic
+   - Provide brief answer frameworks for each
+
+   ## Best Practices & Pitfalls
+   - What are the industry best practices?
+   - Common mistakes to avoid
+   - Performance considerations
+   - Trade-offs to discuss
+
+   ## Real-World Applications
+   - How is this used at scale in production systems?
+   - Examples from well-known companies or systems
+
+4. **Reason**: A detailed explanation (2-3 sentences) of why this topic is critical for THIS specific interview, referencing the job description
+
+5. **Confidence Level**: (low, medium, high) - how likely this topic will come up, with brief justification
+
+Focus on topics that:
+- Bridge gaps between the candidate's experience and job requirements
+- Are commonly asked in technical interviews for this role level
+- Demonstrate both theoretical understanding and practical application
+- Cover a mix of fundamentals and advanced concepts${
     ctx.customInstructions
       ? `\n\nAdditional Instructions from user:\n${ctx.customInstructions}`
       : ""
@@ -423,7 +492,7 @@ Focus on topics that bridge the gap between the candidate's experience and job r
  */
 export async function generateMCQs(
   ctx: GenerationContext,
-  count: number = 5,
+  count: number = 10,
   config: Partial<AIEngineConfig> = {},
   apiKey?: string,
   byokTierConfig?: BYOKTierConfig
@@ -438,7 +507,7 @@ export async function generateMCQs(
       )}`
     : "";
 
-  const prompt = `Generate ${count} multiple choice questions for interview preparation.
+  const prompt = `Generate ${count} challenging multiple choice questions for interview preparation. These should test DEEP understanding, not surface-level knowledge.
 
 Job Title: ${ctx.jobTitle}
 Company: ${ctx.company}
@@ -450,15 +519,33 @@ Candidate's Resume:
 ${ctx.resumeText}
 ${existingQuestionsNote}
 
+Generate a diverse mix of question types:
+- 3-4 conceptual questions (testing understanding of WHY things work)
+- 2-3 scenario-based questions (given a situation, what's the best approach?)
+- 2-3 code analysis questions (what does this code do, what's wrong with it?)
+- 1-2 best practices questions (what's the recommended approach?)
+
 For each MCQ, provide:
 1. A unique ID (use format: mcq_<random_string>)
-2. A clear, specific question
-3. Exactly 4 options (one correct, three plausible distractors)
+2. A clear, specific question that tests real interview-level knowledge
+   - Questions should be challenging enough for a technical interview
+   - Include code snippets where relevant
+   - Reference real-world scenarios when possible
+3. Exactly 4 options:
+   - One correct answer
+   - Three plausible distractors that represent common misconceptions or partial understanding
+   - All options should be similar in length and detail
 4. The correct answer (must match one of the options exactly)
-5. A detailed explanation of why the answer is correct
+5. A COMPREHENSIVE explanation (3-5 sentences) that:
+   - Explains why the correct answer is right
+   - Explains why each wrong answer is incorrect
+   - Provides additional context or tips for the interview
 6. Source as "ai" (or "search" if you used web search to verify)
 
-Focus on practical knowledge that would be tested in a technical interview for this role.${
+Focus on:
+- Topics that are commonly asked in technical interviews for this role
+- Questions that differentiate between candidates who truly understand vs. those who memorized
+- Practical knowledge that demonstrates job readiness${
     ctx.customInstructions
       ? `\n\nAdditional Instructions from user:\n${ctx.customInstructions}`
       : ""
@@ -483,7 +570,7 @@ Focus on practical knowledge that would be tested in a technical interview for t
  */
 export async function generateRapidFire(
   ctx: GenerationContext,
-  count: number = 10,
+  count: number = 20,
   config: Partial<AIEngineConfig> = {},
   apiKey?: string,
   byokTierConfig?: BYOKTierConfig
@@ -501,7 +588,7 @@ export async function generateRapidFire(
       )}`
     : "";
 
-  const prompt = `Generate ${count} rapid-fire interview questions with short answers.
+  const prompt = `Generate ${count} rapid-fire interview questions with concise but complete answers. These are the quick knowledge-check questions that interviewers use to assess baseline competency.
 
 Job Title: ${ctx.jobTitle}
 Company: ${ctx.company}
@@ -513,12 +600,29 @@ Candidate's Resume:
 ${ctx.resumeText}
 ${existingQuestionsNote}
 
+Generate a comprehensive mix of rapid-fire questions covering:
+- Core language/framework concepts (5-6 questions)
+- Data structures & algorithms basics (3-4 questions)
+- System design fundamentals (3-4 questions)
+- Best practices & patterns (3-4 questions)
+- Tools & technologies from the job description (3-4 questions)
+- Debugging & troubleshooting (2-3 questions)
+
 For each question, provide:
 1. A unique ID (use format: rf_<random_string>)
-2. A concise question that can be answered quickly
-3. A brief, direct answer (1-2 sentences max)
+2. A clear, direct question that tests fundamental knowledge
+   - These should be questions an interviewer might ask to quickly gauge competency
+   - Mix of "What is...", "How does...", "When would you...", "What's the difference between..."
+3. A concise but COMPLETE answer (2-4 sentences):
+   - The answer should be what a strong candidate would say
+   - Include the key points that an interviewer is looking for
+   - Be specific, not vague
 
-These should be quick-fire questions that test fundamental knowledge relevant to the role.${
+These questions should:
+- Cover the breadth of knowledge expected for this role
+- Be answerable in 30-60 seconds by a prepared candidate
+- Test practical, job-relevant knowledge
+- Progress from fundamental to slightly more advanced${
     ctx.customInstructions
       ? `\n\nAdditional Instructions from user:\n${ctx.customInstructions}`
       : ""
