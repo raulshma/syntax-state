@@ -84,11 +84,11 @@ export function UpgradePageContent({ profile }: UpgradePageContentProps) {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
-              className={`relative p-8 rounded-[2.5rem] overflow-hidden flex flex-col h-full ${isMax
-                  ? 'bg-gradient-to-b from-primary/50 to-purple-500/50 shadow-2xl shadow-primary/20'
-                  : isPro
-                    ? 'border border-primary/50 bg-card/50 backdrop-blur-xl shadow-xl shadow-primary/10'
-                    : 'border border-white/10 bg-card/30 backdrop-blur-xl'
+              className={`relative rounded-[2.5rem] overflow-hidden flex flex-col h-full ${isMax
+                ? 'p-[4px] bg-gradient-to-b from-primary/50 to-purple-500/50 shadow-2xl shadow-primary/20'
+                : isPro
+                  ? 'p-8 border border-primary/50 bg-card/50 backdrop-blur-xl shadow-xl shadow-primary/10'
+                  : 'p-8 border border-white/10 bg-card/30 backdrop-blur-xl'
                 }`}
             >
               {isMax && (
@@ -96,7 +96,7 @@ export function UpgradePageContent({ profile }: UpgradePageContentProps) {
               )}
 
               {/* Inner container for Max plan to create the border effect */}
-              <div className={`relative z-10 flex flex-col h-full ${isMax ? 'bg-card/90 backdrop-blur-xl rounded-[2.3rem] p-6 -m-6' : ''}`}>
+              <div className={`relative z-10 flex flex-col h-full ${isMax ? 'bg-card/90 backdrop-blur-xl rounded-[2.4rem] p-8' : ''}`}>
 
                 {/* Background Icon */}
                 <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
@@ -126,8 +126,8 @@ export function UpgradePageContent({ profile }: UpgradePageContentProps) {
                   {tier.features.map((feature, i) => (
                     <div key={i} className="flex items-start gap-3">
                       <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${feature.included
-                          ? isMax ? 'bg-primary/20' : 'bg-secondary/50'
-                          : 'bg-transparent'
+                        ? isMax ? 'bg-primary/20' : 'bg-secondary/50'
+                        : 'bg-transparent'
                         }`}>
                         {feature.included ? (
                           <Check className={`w-3 h-3 ${isMax ? 'text-primary' : 'text-foreground'}`} />
@@ -177,8 +177,8 @@ export function UpgradePageContent({ profile }: UpgradePageContentProps) {
                       disabled={isLoading}
                       variant={isMax ? 'default' : 'outline'}
                       className={`w-full h-12 rounded-full transition-all ${isMax
-                          ? 'bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90 shadow-lg shadow-primary/25 hover:scale-[1.02] active:scale-[0.98]'
-                          : 'border-primary/20 hover:bg-primary/10 hover:text-primary'
+                        ? 'bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90 shadow-lg shadow-primary/25 hover:scale-[1.02] active:scale-[0.98]'
+                        : 'border-primary/20 hover:bg-primary/10 hover:text-primary'
                         }`}
                     >
                       {isLoading ? (
@@ -198,23 +198,25 @@ export function UpgradePageContent({ profile }: UpgradePageContentProps) {
         })}
       </div>
 
-      {profile.hasStripeSubscription && (
-        <div className="mt-12 flex justify-center">
-          <Button
-            onClick={handleManage}
-            disabled={isLoading}
-            variant="ghost"
-            className="text-muted-foreground hover:text-foreground"
-          >
-            {isLoading ? (
-              <Loader2 className="w-4 h-4 animate-spin mr-2" />
-            ) : (
-              <Settings className="w-4 h-4 mr-2" />
-            )}
-            Manage Billing & Subscription
-          </Button>
-        </div>
-      )}
+      {
+        profile.hasStripeSubscription && (
+          <div className="mt-12 flex justify-center">
+            <Button
+              onClick={handleManage}
+              disabled={isLoading}
+              variant="ghost"
+              className="text-muted-foreground hover:text-foreground"
+            >
+              {isLoading ? (
+                <Loader2 className="w-4 h-4 animate-spin mr-2" />
+              ) : (
+                <Settings className="w-4 h-4 mr-2" />
+              )}
+              Manage Billing & Subscription
+            </Button>
+          </div>
+        )
+      }
 
       {/* Comparison Table */}
       <motion.div
@@ -261,6 +263,6 @@ export function UpgradePageContent({ profile }: UpgradePageContentProps) {
           </table>
         </div>
       </motion.div>
-    </div>
+    </div >
   );
 }
