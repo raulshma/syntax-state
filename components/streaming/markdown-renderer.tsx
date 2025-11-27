@@ -42,7 +42,11 @@ const highlighter = loadHighlighter(
 );
 
 const codeToHtmlOptions: CodeToHtmlOptions = {
-  theme: "github-dark",
+  themes: {
+    light: "github-light",
+    dark: "github-dark",
+  },
+  defaultColor: false,
 };
 
 // Code block component with Shiki syntax highlighting
