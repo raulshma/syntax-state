@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useCallback } from 'react';
-import Link from 'next/link';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useEffect, useCallback } from "react";
+import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   BookOpen,
   ArrowLeft,
@@ -11,39 +11,37 @@ import {
   Clock,
   XCircle,
   Loader2,
-  ChevronRight,
   Code,
   Bug,
   FileText,
   HelpCircle,
-  BarChart3,
-  History,
   RefreshCw,
-} from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   submitReflection,
   getLearningInsights,
-} from '@/lib/actions/learning-path';
-import { useActivityStream } from '@/hooks/use-activity-stream';
+} from "@/lib/actions/learning-path";
+import { useActivityStream } from "@/hooks/use-activity-stream";
 import type {
   LearningPath,
   Activity,
   ActivityContent,
-  LearningTopic,
   Reflection,
-} from '@/lib/db/schemas/learning-path';
-import type { LearningInsights } from '@/lib/services/insight-generator';
-import { MCQActivityView } from './activity-views/mcq-activity';
-import { CodingChallengeView } from './activity-views/coding-challenge';
-import { DebuggingTaskView } from './activity-views/debugging-task';
-import { ConceptExplanationView } from './activity-views/concept-explanation';
-import { ReflectionForm } from './reflection-form';
-import { TimelineView } from './timeline-view';
-import { InsightsDashboard } from './insights-dashboard';
+} from "@/lib/db/schemas/learning-path";
+import type { LearningInsights } from "@/lib/services/insight-generator";
+import { MCQActivityView } from "./activity-views/mcq-activity";
+import { CodingChallengeView } from "./activity-views/coding-challenge";
+import { DebuggingTaskView } from "./activity-views/debugging-task";
+import { ConceptExplanationView } from "./activity-views/concept-explanation";
+import { ReflectionForm } from "./reflection-form";
+import { TimelineView } from "./timeline-view";
+import { InsightsDashboard } from "./insights-dashboard";
+import { TopicCard } from "./topic-card";
+import { MobileLearningSidebar } from "./mobile-learning-sidebar";
 
 interface LearningWorkspaceProps {
   learningPath: LearningPath;
@@ -51,30 +49,32 @@ interface LearningWorkspaceProps {
 
 const activityTypeIcons: Record<string, typeof BookOpen> = {
   mcq: HelpCircle,
-  'coding-challenge': Code,
-  'debugging-task': Bug,
-  'concept-explanation': FileText,
-  'real-world-assignment': Target,
-  'mini-case-study': Brain,
+  "coding-challenge": Code,
+  "debugging-task": Bug,
+  "concept-explanation": FileText,
+  "real-world-assignment": Target,
+  "mini-case-study": Brain,
 };
 
 const activityTypeLabels: Record<string, string> = {
-  mcq: 'Multiple Choice',
-  'coding-challenge': 'Coding Challenge',
-  'debugging-task': 'Debugging Task',
-  'concept-explanation': 'Concept Explanation',
-  'real-world-assignment': 'Real-World Assignment',
-  'mini-case-study': 'Mini Case Study',
+  mcq: "Multiple Choice",
+  "coding-challenge": "Coding Challenge",
+  "debugging-task": "Debugging Task",
+  "concept-explanation": "Concept Explanation",
+  "real-world-assignment": "Real-World Assignment",
+  "mini-case-study": "Mini Case Study",
 };
 
-export function LearningWorkspace({ learningPath: initialPath }: LearningWorkspaceProps) {
+export function LearningWorkspace({
+  learningPath: initialPath,
+}: LearningWorkspaceProps) {
   const [learningPath, setLearningPath] = useState(initialPath);
   const [showReflection, setShowReflection] = useState(false);
   const [isSubmittingReflection, setIsSubmittingReflection] = useState(false);
-  const [userAnswer, setUserAnswer] = useState<string>('');
+  const [userAnswer, setUserAnswer] = useState<string>("");
   const [startTime, setStartTime] = useState(Date.now());
   const [insights, setInsights] = useState<LearningInsights | null>(null);
-  const [activeTab, setActiveTab] = useState('activity');
+  const [activeTab, setActiveTab] = useState("activity");
 
   const currentTopic = learningPath.topics.find(
     (t) => t.id === learningPath.currentTopicId
@@ -89,7 +89,6 @@ export function LearningWorkspace({ learningPath: initialPath }: LearningWorkspa
     streamingContent,
     activityType,
     startStream,
-    cancelStream,
   } = useActivityStream({
     learningPathId: learningPath._id,
     onComplete: () => {
@@ -97,21 +96,25 @@ export function LearningWorkspace({ learningPath: initialPath }: LearningWorkspa
       setStartTime(Date.now());
     },
     onError: (error) => {
-      console.error('Activity stream error:', error);
+      console.error("Activity stream error:", error);
     },
   });
 
   // Determine current activity - prefer streamed activity, fall back to persisted currentActivity
   const currentActivity = streamedActivity || learningPath.currentActivity;
-  const isLoadingActivity = streamStatus === 'loading' || streamStatus === 'streaming';
+  const isLoadingActivity =
+    streamStatus === "loading" || streamStatus === "streaming";
   const activityError = streamError;
 
   // Load initial activity via streaming if no currentActivity exists
-  const loadActivity = useCallback(async (regenerate = false) => {
-    setShowReflection(false);
-    setUserAnswer('');
-    await startStream({ regenerate });
-  }, [startStream]);
+  const loadActivity = useCallback(
+    async (regenerate = false) => {
+      setShowReflection(false);
+      setUserAnswer("");
+      await startStream({ regenerate });
+    },
+    [startStream]
+  );
 
   // Load insights
   const loadInsights = useCallback(async () => {
@@ -132,11 +135,20 @@ export function LearningWorkspace({ learningPath: initialPath }: LearningWorkspa
   // Load activity on mount if no currentActivity exists
   useEffect(() => {
     // Only start streaming if there's no existing activity, we're idle, and haven't attempted yet
-    if (!learningPath.currentActivity && streamStatus === 'idle' && !hasAttemptedLoad) {
+    if (
+      !learningPath.currentActivity &&
+      streamStatus === "idle" &&
+      !hasAttemptedLoad
+    ) {
       setHasAttemptedLoad(true);
       loadActivity();
     }
-  }, [learningPath.currentActivity, streamStatus, hasAttemptedLoad, loadActivity]);
+  }, [
+    learningPath.currentActivity,
+    streamStatus,
+    hasAttemptedLoad,
+    loadActivity,
+  ]);
 
   // Load insights once on mount
   useEffect(() => {
@@ -157,18 +169,24 @@ export function LearningWorkspace({ learningPath: initialPath }: LearningWorkspa
     loadActivity(true);
   }, [loadActivity]);
 
-  const handleReflectionSubmit = async (reflection: Omit<Reflection, 'timeTakenSeconds'>) => {
+  const handleReflectionSubmit = async (
+    reflection: Omit<Reflection, "timeTakenSeconds">
+  ) => {
     if (!currentActivity) return;
 
     setIsSubmittingReflection(true);
     const timeTakenSeconds = Math.floor((Date.now() - startTime) / 1000);
 
     try {
-      const result = await submitReflection(learningPath._id, currentActivity.id, {
-        ...reflection,
-        userAnswer,
-        timeTakenSeconds,
-      });
+      const result = await submitReflection(
+        learningPath._id,
+        currentActivity.id,
+        {
+          ...reflection,
+          userAnswer,
+          timeTakenSeconds,
+        }
+      );
 
       if (result.success) {
         // Update local state with new timeline entry and clear currentActivity
@@ -183,10 +201,10 @@ export function LearningWorkspace({ learningPath: initialPath }: LearningWorkspa
         await loadActivity();
         await loadInsights();
       } else {
-        console.error('Reflection submission failed:', result.error.message);
+        console.error("Reflection submission failed:", result.error.message);
       }
     } catch {
-      console.error('Failed to submit reflection');
+      console.error("Failed to submit reflection");
     } finally {
       setIsSubmittingReflection(false);
     }
@@ -223,8 +241,12 @@ export function LearningWorkspace({ learningPath: initialPath }: LearningWorkspa
 
             <div className="flex items-center gap-4">
               <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full bg-secondary/50 border border-border/50">
-                <span className="text-xs font-medium text-muted-foreground">Progress</span>
-                <span className="text-xs font-bold text-foreground">{learningPath.timeline.length} activities</span>
+                <span className="text-xs font-medium text-muted-foreground">
+                  Progress
+                </span>
+                <span className="text-xs font-bold text-foreground">
+                  {learningPath.timeline.length} activities
+                </span>
               </div>
             </div>
           </div>
@@ -234,12 +256,14 @@ export function LearningWorkspace({ learningPath: initialPath }: LearningWorkspa
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* Sidebar */}
-          <aside className="lg:col-span-3 space-y-8">
+          <aside className="hidden lg:block lg:col-span-3 space-y-8">
             {/* Topics */}
             <div className="space-y-4">
               <div className="flex items-center gap-2 px-2">
                 <Target className="w-4 h-4 text-primary" />
-                <span className="text-sm font-semibold text-foreground">Topics</span>
+                <span className="text-sm font-semibold text-foreground">
+                  Topics
+                </span>
               </div>
               <div className="space-y-1">
                 {learningPath.topics.map((topic) => (
@@ -251,7 +275,9 @@ export function LearningWorkspace({ learningPath: initialPath }: LearningWorkspa
                 ))}
                 {learningPath.topics.length === 0 && (
                   <div className="px-4 py-8 text-center rounded-2xl bg-secondary/30 border border-border/50 border-dashed">
-                    <p className="text-sm text-muted-foreground">No topics yet</p>
+                    <p className="text-sm text-muted-foreground">
+                      No topics yet
+                    </p>
                   </div>
                 )}
               </div>
@@ -261,30 +287,52 @@ export function LearningWorkspace({ learningPath: initialPath }: LearningWorkspa
             <div className="space-y-4">
               <div className="flex items-center gap-2 px-2">
                 <Brain className="w-4 h-4 text-primary" />
-                <span className="text-sm font-semibold text-foreground">Skills</span>
+                <span className="text-sm font-semibold text-foreground">
+                  Skills
+                </span>
               </div>
               <div className="p-4 rounded-3xl bg-secondary/20 border border-border/50 space-y-4">
-                {Object.entries(learningPath.skillScores).map(([cluster, score]) => (
-                  <div key={cluster} className="space-y-2">
-                    <div className="flex justify-between text-xs font-medium">
-                      <span className="text-muted-foreground capitalize">
-                        {cluster.replace('-', ' ')}
-                      </span>
-                      <span className="text-foreground">{Math.round(score)}</span>
+                {Object.entries(learningPath.skillScores).map(
+                  ([cluster, score]) => (
+                    <div key={cluster} className="space-y-2">
+                      <div className="flex justify-between text-xs font-medium">
+                        <span className="text-muted-foreground capitalize">
+                          {cluster.replace("-", " ")}
+                        </span>
+                        <span className="text-foreground">
+                          {Math.round(score)}
+                        </span>
+                      </div>
+                      <Progress
+                        value={Math.min((score / 2000) * 100, 100)}
+                        className="h-2 rounded-full bg-secondary"
+                      />
                     </div>
-                    <Progress value={Math.min((score / 2000) * 100, 100)} className="h-2 rounded-full bg-secondary" />
-                  </div>
-                ))}
+                  )
+                )}
                 {Object.keys(learningPath.skillScores).length === 0 && (
-                  <p className="text-sm text-muted-foreground text-center py-2">Complete activities to see skills</p>
+                  <p className="text-sm text-muted-foreground text-center py-2">
+                    Complete activities to see skills
+                  </p>
                 )}
               </div>
             </div>
           </aside>
 
+          {/* Mobile Sidebar */}
+          <MobileLearningSidebar
+            topics={learningPath.topics}
+            currentTopicId={learningPath.currentTopicId ?? undefined}
+            skillScores={learningPath.skillScores}
+          />
+
           {/* Main Content */}
           <main className="lg:col-span-9">
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
+            <Tabs
+              value={activeTab}
+              onValueChange={setActiveTab}
+              className="space-y-8"
+            >
               <div className="flex justify-center">
                 <TabsList className="h-10 p-1 bg-secondary/50 backdrop-blur-sm rounded-full border border-border/50">
                   <TabsTrigger
@@ -308,7 +356,10 @@ export function LearningWorkspace({ learningPath: initialPath }: LearningWorkspa
                 </TabsList>
               </div>
 
-              <TabsContent value="activity" className="space-y-6 focus-visible:outline-none">
+              <TabsContent
+                value="activity"
+                className="space-y-6 focus-visible:outline-none"
+              >
                 {/* Current Topic Header */}
                 {currentTopic && (
                   <motion.div
@@ -317,8 +368,11 @@ export function LearningWorkspace({ learningPath: initialPath }: LearningWorkspa
                     className="flex items-start justify-between gap-4 px-2"
                   >
                     <div className="space-y-2">
-                      <Badge variant="secondary" className="rounded-full px-3 py-0.5 text-xs font-medium bg-primary/10 text-primary border-primary/20">
-                        {currentTopic.skillCluster.replace('-', ' ')}
+                      <Badge
+                        variant="secondary"
+                        className="rounded-full px-3 py-0.5 text-xs font-medium bg-primary/10 text-primary border-primary/20"
+                      >
+                        {currentTopic.skillCluster.replace("-", " ")}
                       </Badge>
                       <h2 className="text-3xl font-bold tracking-tight text-foreground">
                         {currentTopic.title}
@@ -328,23 +382,27 @@ export function LearningWorkspace({ learningPath: initialPath }: LearningWorkspa
                       </p>
                     </div>
                     {/* Regenerate button - Requirements: 4.4 */}
-                    {currentActivity && !showReflection && !isLoadingActivity && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={handleRegenerate}
-                        className="rounded-full h-9 px-4 gap-2 bg-background/50 backdrop-blur-sm hover:bg-secondary/80 border-border/50 shadow-sm"
-                      >
-                        <RefreshCw className="w-3.5 h-3.5" />
-                        <span className="text-xs font-medium">New Activity</span>
-                      </Button>
-                    )}
+                    {currentActivity &&
+                      !showReflection &&
+                      !isLoadingActivity && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={handleRegenerate}
+                          className="rounded-full h-9 px-4 gap-2 bg-background/50 backdrop-blur-sm hover:bg-secondary/80 border-border/50 shadow-sm"
+                        >
+                          <RefreshCw className="w-3.5 h-3.5" />
+                          <span className="text-xs font-medium">
+                            New Activity
+                          </span>
+                        </Button>
+                      )}
                   </motion.div>
                 )}
 
                 {/* Activity Content */}
                 <AnimatePresence mode="wait">
-                  {streamStatus === 'streaming' && streamingContent ? (
+                  {streamStatus === "streaming" && streamingContent ? (
                     <StreamingActivityCard
                       content={streamingContent}
                       activityType={activityType}
@@ -352,7 +410,10 @@ export function LearningWorkspace({ learningPath: initialPath }: LearningWorkspa
                   ) : isLoadingActivity ? (
                     <ActivityLoadingSkeleton />
                   ) : activityError ? (
-                    <ActivityError error={activityError} onRetry={() => loadActivity()} />
+                    <ActivityError
+                      error={activityError}
+                      onRetry={() => loadActivity()}
+                    />
                   ) : currentActivity && !showReflection ? (
                     <ActivityCard
                       activity={currentActivity}
@@ -370,14 +431,20 @@ export function LearningWorkspace({ learningPath: initialPath }: LearningWorkspa
                 </AnimatePresence>
               </TabsContent>
 
-              <TabsContent value="timeline" className="focus-visible:outline-none">
+              <TabsContent
+                value="timeline"
+                className="focus-visible:outline-none"
+              >
                 <TimelineView
                   timeline={learningPath.timeline}
                   pathId={learningPath._id}
                 />
               </TabsContent>
 
-              <TabsContent value="insights" className="focus-visible:outline-none">
+              <TabsContent
+                value="insights"
+                className="focus-visible:outline-none"
+              >
                 <InsightsDashboard
                   insights={insights}
                   learningPath={learningPath}
@@ -391,37 +458,12 @@ export function LearningWorkspace({ learningPath: initialPath }: LearningWorkspa
   );
 }
 
-
-// Topic Card Component
-function TopicCard({ topic, isActive }: { topic: LearningTopic; isActive: boolean }) {
-  return (
-    <div
-      className={`group relative p-4 rounded-2xl transition-all duration-300 ${isActive
-          ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/25'
-          : 'bg-secondary/30 hover:bg-secondary/50 text-muted-foreground hover:text-foreground'
-        }`}
-    >
-      <div className="flex items-center justify-between mb-1">
-        <span className={`text-sm font-semibold line-clamp-1 ${isActive ? 'text-primary-foreground' : 'text-foreground'}`}>
-          {topic.title}
-        </span>
-        {isActive && <ChevronRight className="w-4 h-4 text-primary-foreground/80" />}
-      </div>
-      <div className={`flex items-center gap-2 text-xs ${isActive ? 'text-primary-foreground/80' : 'text-muted-foreground'}`}>
-        <span className="capitalize font-medium">{topic.skillCluster.replace('-', ' ')}</span>
-        <span>•</span>
-        <span>Lvl {topic.difficulty}</span>
-      </div>
-    </div>
-  );
-}
-
 // Activity Card Component
 function ActivityCard({
   activity,
   onComplete,
   ActivityIcon,
-  language = 'typescript',
+  language = "typescript",
 }: {
   activity: Activity;
   onComplete: (answer: string, isCorrect?: boolean) => void;
@@ -448,7 +490,10 @@ function ActivityCard({
                 {activityTypeLabels[activity.type] || activity.type}
               </h3>
               <div className="flex items-center gap-2 mt-1">
-                <Badge variant="outline" className="rounded-full px-2.5 py-0.5 text-xs font-medium border-border/50 bg-secondary/30">
+                <Badge
+                  variant="outline"
+                  className="rounded-full px-2.5 py-0.5 text-xs font-medium border-border/50 bg-secondary/30"
+                >
                   Difficulty {activity.difficulty}
                 </Badge>
               </div>
@@ -462,7 +507,11 @@ function ActivityCard({
       </div>
 
       <div className="p-8">
-        <ActivityContentView content={activity.content} onComplete={onComplete} language={language} />
+        <ActivityContentView
+          content={activity.content}
+          onComplete={onComplete}
+          language={language}
+        />
       </div>
     </motion.div>
   );
@@ -472,30 +521,51 @@ function ActivityCard({
 function ActivityContentView({
   content,
   onComplete,
-  language = 'typescript',
+  language = "typescript",
 }: {
   content: ActivityContent;
   onComplete: (answer: string, isCorrect?: boolean) => void;
   language?: string;
 }) {
   switch (content.type) {
-    case 'mcq':
+    case "mcq":
       return <MCQActivityView content={content} onComplete={onComplete} />;
-    case 'coding-challenge':
-      return <CodingChallengeView content={content} onComplete={onComplete} language={language} />;
-    case 'debugging-task':
-      return <DebuggingTaskView content={content} onComplete={onComplete} language={language} />;
-    case 'concept-explanation':
-      return <ConceptExplanationView content={content} onComplete={onComplete} />;
+    case "coding-challenge":
+      return (
+        <CodingChallengeView
+          content={content}
+          onComplete={onComplete}
+          language={language}
+        />
+      );
+    case "debugging-task":
+      return (
+        <DebuggingTaskView
+          content={content}
+          onComplete={onComplete}
+          language={language}
+        />
+      );
+    case "concept-explanation":
+      return (
+        <ConceptExplanationView content={content} onComplete={onComplete} />
+      );
     default:
       return (
         <div className="text-center py-12">
           <div className="w-16 h-16 rounded-full bg-secondary/50 flex items-center justify-center mx-auto mb-4">
             <HelpCircle className="w-8 h-8 text-muted-foreground" />
           </div>
-          <h3 className="text-lg font-semibold text-foreground mb-2">Unknown Activity Type</h3>
-          <p className="text-muted-foreground mb-6">This activity type is not yet supported.</p>
-          <Button onClick={() => onComplete('', false)} className="rounded-full px-6">
+          <h3 className="text-lg font-semibold text-foreground mb-2">
+            Unknown Activity Type
+          </h3>
+          <p className="text-muted-foreground mb-6">
+            This activity type is not yet supported.
+          </p>
+          <Button
+            onClick={() => onComplete("", false)}
+            className="rounded-full px-6"
+          >
             Continue
           </Button>
         </div>
@@ -527,7 +597,10 @@ function ActivityLoadingSkeleton() {
         <div className="h-4 w-5/6 bg-secondary/50 rounded-lg animate-pulse" />
         <div className="space-y-4 mt-8">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-16 w-full bg-secondary/30 rounded-xl animate-pulse" />
+            <div
+              key={i}
+              className="h-16 w-full bg-secondary/30 rounded-xl animate-pulse"
+            />
           ))}
         </div>
       </div>
@@ -539,7 +612,13 @@ function ActivityLoadingSkeleton() {
 }
 
 // Error State
-function ActivityError({ error, onRetry }: { error: string; onRetry: () => void }) {
+function ActivityError({
+  error,
+  onRetry,
+}: {
+  error: string;
+  onRetry: () => void;
+}) {
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.98 }}
@@ -550,9 +629,14 @@ function ActivityError({ error, onRetry }: { error: string; onRetry: () => void 
       <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center mx-auto mb-6">
         <XCircle className="w-8 h-8 text-destructive" />
       </div>
-      <h3 className="text-xl font-bold text-foreground mb-2">Failed to Load Activity</h3>
+      <h3 className="text-xl font-bold text-foreground mb-2">
+        Failed to Load Activity
+      </h3>
       <p className="text-muted-foreground mb-8 max-w-md mx-auto">{error}</p>
-      <Button onClick={onRetry} className="rounded-full px-8 shadow-lg shadow-primary/25">
+      <Button
+        onClick={onRetry}
+        className="rounded-full px-8 shadow-lg shadow-primary/25"
+      >
         <Loader2 className="w-4 h-4 mr-2" />
         Try Again
       </Button>
@@ -569,28 +653,34 @@ function StreamingActivityCard({
   content: unknown;
   activityType: string | null;
 }) {
-  const ActivityIcon = activityType ? activityTypeIcons[activityType] || BookOpen : BookOpen;
-  const activityLabel = activityType ? activityTypeLabels[activityType] || activityType : 'Activity';
+  const ActivityIcon = activityType
+    ? activityTypeIcons[activityType] || BookOpen
+    : BookOpen;
+  const activityLabel = activityType
+    ? activityTypeLabels[activityType] || activityType
+    : "Activity";
 
   // Type guard for content with question property
   const hasQuestion = (c: unknown): c is { question?: string } =>
-    typeof c === 'object' && c !== null && 'question' in c;
+    typeof c === "object" && c !== null && "question" in c;
 
   // Type guard for content with options property
   const hasOptions = (c: unknown): c is { options?: string[] } =>
-    typeof c === 'object' && c !== null && 'options' in c;
+    typeof c === "object" && c !== null && "options" in c;
 
   // Type guard for content with problemDescription property
-  const hasProblemDescription = (c: unknown): c is { problemDescription?: string } =>
-    typeof c === 'object' && c !== null && 'problemDescription' in c;
+  const hasProblemDescription = (
+    c: unknown
+  ): c is { problemDescription?: string } =>
+    typeof c === "object" && c !== null && "problemDescription" in c;
 
   // Type guard for content with content property (concept explanation)
   const hasContent = (c: unknown): c is { content?: string } =>
-    typeof c === 'object' && c !== null && 'content' in c;
+    typeof c === "object" && c !== null && "content" in c;
 
   // Type guard for content with buggyCode property
   const hasBuggyCode = (c: unknown): c is { buggyCode?: string } =>
-    typeof c === 'object' && c !== null && 'buggyCode' in c;
+    typeof c === "object" && c !== null && "buggyCode" in c;
 
   return (
     <motion.div
@@ -606,9 +696,14 @@ function StreamingActivityCard({
               <ActivityIcon className="w-6 h-6 text-primary" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-foreground tracking-tight">{activityLabel}</h3>
+              <h3 className="text-lg font-bold text-foreground tracking-tight">
+                {activityLabel}
+              </h3>
               <div className="flex items-center gap-2 mt-1">
-                <Badge variant="outline" className="rounded-full px-2.5 py-0.5 text-xs font-medium border-border/50 bg-secondary/30">
+                <Badge
+                  variant="outline"
+                  className="rounded-full px-2.5 py-0.5 text-xs font-medium border-border/50 bg-secondary/30"
+                >
                   Generating...
                 </Badge>
               </div>
@@ -625,35 +720,45 @@ function StreamingActivityCard({
         {/* Display question for MCQ */}
         {hasQuestion(content) && content.question && (
           <div className="space-y-2">
-            <p className="text-xl font-medium text-foreground leading-relaxed">{content.question}</p>
+            <p className="text-xl font-medium text-foreground leading-relaxed">
+              {content.question}
+            </p>
           </div>
         )}
 
         {/* Display options for MCQ */}
-        {hasOptions(content) && content.options && content.options.length > 0 && (
-          <div className="space-y-3 mt-6">
-            {content.options.map((option, index) => (
-              <div
-                key={index}
-                className="p-4 rounded-xl border border-border/50 bg-secondary/20 text-muted-foreground"
-              >
-                {option || <span className="animate-pulse">Loading option...</span>}
-              </div>
-            ))}
-          </div>
-        )}
+        {hasOptions(content) &&
+          content.options &&
+          content.options.length > 0 && (
+            <div className="space-y-3 mt-6">
+              {content.options.map((option, index) => (
+                <div
+                  key={index}
+                  className="p-4 rounded-xl border border-border/50 bg-secondary/20 text-muted-foreground"
+                >
+                  {option || (
+                    <span className="animate-pulse">Loading option...</span>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
 
         {/* Display problem description for coding challenge */}
         {hasProblemDescription(content) && content.problemDescription && (
           <div className="space-y-2">
-            <p className="text-lg text-foreground leading-relaxed">{content.problemDescription}</p>
+            <p className="text-lg text-foreground leading-relaxed">
+              {content.problemDescription}
+            </p>
           </div>
         )}
 
         {/* Display content for concept explanation */}
         {hasContent(content) && content.content && (
           <div className="space-y-2">
-            <p className="text-lg text-foreground leading-relaxed whitespace-pre-wrap">{content.content}</p>
+            <p className="text-lg text-foreground leading-relaxed whitespace-pre-wrap">
+              {content.content}
+            </p>
           </div>
         )}
 
