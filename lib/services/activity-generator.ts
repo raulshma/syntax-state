@@ -376,7 +376,7 @@ ${topicContext}${commonMistakesContext}
 
 Generate a JSON object with:
 - type: "debugging-task"
-- buggyCode: code containing intentional bugs (use realistic, production-like code)
+- buggyCode: code containing intentional bugs (use realistic, production-like code). IMPORTANT: Format the code with proper newlines (\\n) and indentation - do NOT put all code on a single line.
 - expectedBehavior: description of what the code should do when fixed
 - hints: array of hints to help find the bugs (adjust quantity based on difficulty)`;
 
@@ -653,7 +653,7 @@ ${baseContext}
 
 Create realistic buggy code that incorporates common mistakes. Provide hints appropriate for the difficulty level.
 
-Generate a JSON object with type "debugging-task", buggyCode, expectedBehavior, and hints array.`;
+Generate a JSON object with type "debugging-task", buggyCode (IMPORTANT: format with proper newlines and indentation, NOT on a single line), expectedBehavior, and hints array.`;
 
     case 'concept-explanation':
     default:
