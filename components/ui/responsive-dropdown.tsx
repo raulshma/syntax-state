@@ -82,7 +82,7 @@ export function ResponsiveDropdown({
 
 interface ResponsiveDropdownItemProps {
   children: React.ReactNode
-  onClick?: () => void
+  onClick?: (e: React.MouseEvent) => void
   disabled?: boolean
   className?: string
   variant?: 'default' | 'destructive'
@@ -106,7 +106,7 @@ export function ResponsiveDropdownItem({
   if (isMobile) {
     return (
       <button
-        onClick={onClick}
+        onClick={(e) => onClick?.(e)}
         disabled={disabled}
         className={cn(
           'flex w-full items-center gap-3 rounded-md px-4 py-3 text-left text-sm transition-colors min-h-[44px]',
@@ -124,7 +124,7 @@ export function ResponsiveDropdownItem({
 
   return (
     <DropdownMenuItem
-      onClick={onClick}
+      onClick={(e) => onClick?.(e)}
       disabled={disabled}
       className={className}
       variant={variant}

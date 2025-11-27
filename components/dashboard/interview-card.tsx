@@ -143,7 +143,10 @@ export function InterviewCardNew({
                 variant="destructive"
                 disabled={isDeleting}
                 icon={<Trash2 className="w-4 h-4" />}
-                onClick={onDelete}
+                onClick={(e: React.MouseEvent) => {
+                  e.stopPropagation();
+                  onDelete();
+                }}
               >
                 Delete
               </ResponsiveDropdownItem>
@@ -200,7 +203,10 @@ export function InterviewCardNew({
                   variant="destructive"
                   disabled={isDeleting}
                   icon={<Trash2 className="w-4 h-4" />}
-                  onClick={onDelete}
+                  onClick={(e: React.MouseEvent) => {
+                    e.stopPropagation();
+                    onDelete();
+                  }}
                 >
                   Delete
                 </ResponsiveDropdownItem>
