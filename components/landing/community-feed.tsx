@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import { motion } from "framer-motion"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Clock, Eye, Copy, ArrowRight } from "lucide-react"
-import Link from "next/link"
+import { motion } from "framer-motion";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Clock, Eye, Copy, ArrowRight } from "lucide-react";
+import Link from "next/link";
 
 const communityPreps = [
   {
@@ -14,6 +14,7 @@ const communityPreps = [
     topics: ["React", "System Design", "TypeScript"],
     views: 1240,
     daysAgo: 2,
+    color: "bg-blue-500/10 text-blue-500",
   },
   {
     role: "Backend Developer",
@@ -21,6 +22,7 @@ const communityPreps = [
     topics: ["Node.js", "PostgreSQL", "Microservices"],
     views: 890,
     daysAgo: 5,
+    color: "bg-green-500/10 text-green-500",
   },
   {
     role: "Full Stack Engineer",
@@ -28,6 +30,7 @@ const communityPreps = [
     topics: ["Next.js", "GraphQL", "AWS"],
     views: 2100,
     daysAgo: 1,
+    color: "bg-purple-500/10 text-purple-500",
   },
   {
     role: "DevOps Engineer",
@@ -35,39 +38,41 @@ const communityPreps = [
     topics: ["Kubernetes", "CI/CD", "Terraform"],
     views: 650,
     daysAgo: 7,
+    color: "bg-orange-500/10 text-orange-500",
   },
-]
+];
 
 export function CommunityFeed() {
   return (
-    <section id="community" className="py-24 px-6">
-      <div className="max-w-6xl mx-auto">
-        <motion.div 
-          className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-12"
+    <section id="community" className="py-24 px-6 bg-background">
+      <div className="max-w-[1200px] mx-auto">
+        <motion.div
+          className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-16"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
         >
           <div>
-            <div className="inline-flex items-center gap-2 border border-border bg-secondary/50 px-4 py-2 mb-6 text-sm">
-              <span className="text-muted-foreground">Community</span>
-            </div>
-            <h2 className="text-3xl md:text-4xl font-mono text-foreground mb-4">
-              Community Preps
+            <h2 className="text-3xl md:text-5xl font-semibold tracking-tight mb-6">
+              Community Preps.
             </h2>
-            <p className="text-muted-foreground max-w-xl">
-              See what others are preparing for. Clone and customize for your own interviews.
+            <p className="text-xl text-muted-foreground max-w-xl">
+              See what others are preparing for. Clone and customize for your
+              own interviews.
             </p>
           </div>
           <Link href="/community">
-            <Button variant="outline" className="bg-transparent group">
+            <Button
+              variant="outline"
+              className="rounded-full px-6 border-border/50 bg-secondary/30 hover:bg-secondary/50 group"
+            >
               View All
               <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
             </Button>
           </Link>
         </motion.div>
 
-        <div className="grid md:grid-cols-2 gap-4">
+        <div className="grid md:grid-cols-2 gap-6">
           {communityPreps.map((prep, index) => (
             <motion.div
               key={index}
@@ -76,46 +81,50 @@ export function CommunityFeed() {
               viewport={{ once: true }}
               transition={{ delay: index * 0.05 }}
             >
-              <Card className="bg-card border-border hover:border-primary/50 transition-all duration-300 group">
-                <CardContent className="p-6">
-                  <div className="flex items-start justify-between mb-4">
+              <Card className="bg-secondary/30 border-border/50 hover:bg-secondary/50 transition-all duration-300 group rounded-3xl overflow-hidden hover:shadow-lg">
+                <CardContent className="p-8">
+                  <div className="flex items-start justify-between mb-6">
                     <div>
-                      <h3 className="font-mono text-foreground mb-1 group-hover:text-primary transition-colors">
+                      <h3 className="text-xl font-medium text-foreground mb-2 group-hover:text-primary transition-colors">
                         {prep.role}
                       </h3>
-                      <p className="text-sm text-muted-foreground">{prep.company}</p>
+                      <p className="text-muted-foreground">{prep.company}</p>
                     </div>
-                    <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                      <span className="flex items-center gap-1">
-                        <Eye className="w-3 h-3" />
-                        {prep.views.toLocaleString()}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Clock className="w-3 h-3" />
-                        {prep.daysAgo}d ago
-                      </span>
+                    <div className={`p-2 rounded-xl ${prep.color}`}>
+                      <Eye className="w-5 h-5" />
                     </div>
                   </div>
-                  
-                  <div className="flex flex-wrap gap-2 mb-4">
+
+                  <div className="flex flex-wrap gap-2 mb-8">
                     {prep.topics.map((topic) => (
-                      <Badge key={topic} variant="secondary" className="font-mono text-xs">
+                      <Badge
+                        key={topic}
+                        variant="secondary"
+                        className="font-medium px-3 py-1 rounded-lg bg-background/50"
+                      >
                         {topic}
                       </Badge>
                     ))}
                   </div>
-                  
-                  <div className="flex items-center justify-between pt-4 border-t border-border">
+
+                  <div className="flex items-center justify-between pt-6 border-t border-border/50">
+                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                      <span className="flex items-center gap-1.5">
+                        <Eye className="w-4 h-4" />
+                        {prep.views.toLocaleString()}
+                      </span>
+                      <span className="flex items-center gap-1.5">
+                        <Clock className="w-4 h-4" />
+                        {prep.daysAgo}d ago
+                      </span>
+                    </div>
                     <Button
-                      variant="outline"
+                      variant="ghost"
                       size="sm"
-                      className="opacity-0 group-hover:opacity-100 transition-opacity bg-transparent"
+                      className="rounded-full hover:bg-background/50"
                     >
-                      <Copy className="w-3 h-3 mr-2" />
-                      Clone Prep
-                    </Button>
-                    <Button variant="ghost" size="sm" className="text-muted-foreground">
-                      View Details
+                      <Copy className="w-4 h-4 mr-2" />
+                      Clone
                     </Button>
                   </div>
                 </CardContent>
@@ -125,5 +134,5 @@ export function CommunityFeed() {
         </div>
       </div>
     </section>
-  )
+  );
 }

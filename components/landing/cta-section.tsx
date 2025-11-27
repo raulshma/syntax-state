@@ -1,57 +1,64 @@
-'use client';
+"use client";
 
-import Link from "next/link"
-import { motion } from "framer-motion"
-import { Button } from "@/components/ui/button"
-import { ArrowRight, Terminal } from "lucide-react"
+import Link from "next/link";
+import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { ArrowRight } from "lucide-react";
 
 export function CTASection() {
   return (
-    <section className="py-24 px-6">
-      <div className="max-w-6xl mx-auto">
-        <motion.div 
-          className="relative bg-card border border-border p-12 md:p-16 text-center overflow-hidden"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
+    <section className="py-24 px-6 bg-background">
+      <div className="max-w-[1200px] mx-auto">
+        <motion.div
+          className="relative rounded-[2.5rem] overflow-hidden bg-foreground text-background px-6 py-24 md:px-20 md:py-32 text-center"
+          initial={{ opacity: 0, scale: 0.95 }}
+          whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
         >
-          {/* Background pattern */}
-          <div className="absolute inset-0 bg-[linear-gradient(to_right,var(--border)_1px,transparent_1px),linear-gradient(to_bottom,var(--border)_1px,transparent_1px)] bg-[size:2rem_2rem] opacity-50" />
-          
-          {/* Gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/10" />
-          
-          <div className="relative">
-            <div className="inline-flex items-center gap-2 border border-border bg-background px-4 py-2 mb-6 text-sm">
-              <Terminal className="w-4 h-4" />
-              <span className="text-muted-foreground">Ready to start?</span>
-            </div>
-            
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-mono text-foreground mb-6 max-w-2xl mx-auto">
-              Your next interview is waiting
+          {/* Abstract background shapes */}
+          <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+            <div className="absolute top-[-50%] left-[-20%] w-[80%] h-[80%] rounded-full bg-gradient-to-br from-primary/20 to-transparent blur-3xl" />
+            <div className="absolute bottom-[-50%] right-[-20%] w-[80%] h-[80%] rounded-full bg-gradient-to-tl from-secondary/20 to-transparent blur-3xl" />
+          </div>
+
+          <div className="relative z-10 max-w-3xl mx-auto">
+            <h2 className="text-4xl md:text-6xl md:leading-[1.1] font-semibold tracking-tight mb-8">
+              Ready to ace your next interview?
             </h2>
-            
-            <p className="text-muted-foreground mb-8 max-w-xl mx-auto">
-              Join thousands of developers who've transformed their interview prep. 
-              Start free, no credit card required.
+
+            <p className="text-xl md:text-2xl text-background/80 mb-12 font-medium">
+              Join thousands of engineers who've transformed their career
+              trajectory.
             </p>
-            
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <Link href="/onboarding">
-                <Button size="lg" className="group">
+                <Button
+                  size="lg"
+                  className="rounded-full h-14 px-8 text-lg font-medium bg-background text-foreground hover:bg-background/90 hover:scale-105 transition-all"
+                >
                   Start Preparing Free
-                  <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                  <ArrowRight className="w-5 h-5 ml-2" />
                 </Button>
               </Link>
               <Link href="/pricing">
-                <Button variant="outline" size="lg" className="bg-transparent">
-                  View Pricing
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="rounded-full h-14 px-8 text-lg font-medium border-background/20 text-background hover:bg-background/10 bg-transparent"
+                >
+                  View Plans
                 </Button>
               </Link>
             </div>
+
+            <p className="mt-8 text-sm text-background/60">
+              No credit card required for free tier.
+            </p>
           </div>
         </motion.div>
       </div>
     </section>
-  )
+  );
 }
