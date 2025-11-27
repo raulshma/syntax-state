@@ -1,5 +1,13 @@
 import Stripe from 'stripe';
 import { UserPlan } from '@/lib/db/schemas/user';
+import {
+  FREE_INTERVIEW_LIMIT,
+  PRO_INTERVIEW_LIMIT,
+  MAX_INTERVIEW_LIMIT,
+  FREE_ITERATION_LIMIT,
+  PRO_ITERATION_LIMIT,
+  MAX_ITERATION_LIMIT,
+} from '@/lib/pricing-data';
 
 if (!process.env.STRIPE_SECRET_KEY) {
   throw new Error('STRIPE_SECRET_KEY is not set');
@@ -21,15 +29,15 @@ export const PLAN_CONFIGS: Record<string, PlanConfig> = {
   PRO: {
     name: 'Pro',
     priceId: process.env.STRIPE_PRICE_PRO || '',
-    iterationLimit: 150,
-    interviewLimit: 25,
+    iterationLimit: PRO_ITERATION_LIMIT,
+    interviewLimit: PRO_INTERVIEW_LIMIT,
     plan: 'PRO',
   },
   MAX: {
     name: 'Max',
     priceId: process.env.STRIPE_PRICE_MAX || '',
-    iterationLimit: 250,
-    interviewLimit: 100,
+    iterationLimit: MAX_ITERATION_LIMIT,
+    interviewLimit: MAX_INTERVIEW_LIMIT,
     plan: 'MAX',
   },
 };
@@ -46,26 +54,26 @@ export function getPlanFromPriceId(priceId: string): PlanConfig | null {
 export function getPlanLimit(plan: UserPlan): number {
   switch (plan) {
     case 'FREE':
-      return 20;
+      return FREE_ITERATION_LIMIT;
     case 'PRO':
-      return 150;
+      return PRO_ITERATION_LIMIT;
     case 'MAX':
-      return 250;
+      return MAX_ITERATION_LIMIT;
     default:
-      return 20;
+      return FREE_ITERATION_LIMIT;
   }
 }
 
 export function getPlanInterviewLimit(plan: UserPlan): number {
   switch (plan) {
     case 'FREE':
-      return 3;
+      return FREE_INTERVIEW_LIMIT;
     case 'PRO':
-      return 25;
+      return PRO_INTERVIEW_LIMIT;
     case 'MAX':
-      return 100;
+      return MAX_INTERVIEW_LIMIT;
     default:
-      return 3;
+      return FREE_INTERVIEW_LIMIT;
   }
 }
 
@@ -81,7 +89,7 @@ export interface CreateCheckoutSessionParams {
 
 export async function createCheckoutSession(params: CreateCheckoutSessionParams): Promise<string> {
   const { userId, clerkId, email, plan, successUrl, cancelUrl } = params;
-  
+
   const planConfig = PLAN_CONFIGS[plan];
   if (!planConfig || !planConfig.priceId) {
     throw new Error(`Invalid plan or missing price ID for plan: ${plan}`);
@@ -154,6 +162,6 @@ export function constructWebhookEvent(
   if (!webhookSecret) {
     throw new Error('STRIPE_WEBHOOK_SECRET is not set');
   }
-  
+
   return stripe.webhooks.constructEvent(payload, signature, webhookSecret);
 }

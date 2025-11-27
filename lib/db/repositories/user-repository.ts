@@ -25,29 +25,38 @@ function getDefaultResetDate(): Date {
   return resetDate;
 }
 
+import {
+  FREE_INTERVIEW_LIMIT,
+  PRO_INTERVIEW_LIMIT,
+  MAX_INTERVIEW_LIMIT,
+  FREE_ITERATION_LIMIT,
+  PRO_ITERATION_LIMIT,
+  MAX_ITERATION_LIMIT,
+} from '@/lib/pricing-data';
+
 function getPlanIterationLimit(plan: UserPlan): number {
   switch (plan) {
     case 'FREE':
-      return 20;
+      return FREE_ITERATION_LIMIT;
     case 'PRO':
-      return 150;
+      return PRO_ITERATION_LIMIT;
     case 'MAX':
-      return 250;
+      return MAX_ITERATION_LIMIT;
     default:
-      return 20;
+      return FREE_ITERATION_LIMIT;
   }
 }
 
 function getPlanInterviewLimit(plan: UserPlan): number {
   switch (plan) {
     case 'FREE':
-      return 3;
+      return FREE_INTERVIEW_LIMIT;
     case 'PRO':
-      return 25;
+      return PRO_INTERVIEW_LIMIT;
     case 'MAX':
-      return 100;
+      return MAX_INTERVIEW_LIMIT;
     default:
-      return 3;
+      return FREE_INTERVIEW_LIMIT;
   }
 }
 
@@ -56,11 +65,11 @@ export const userRepository: UserRepository = {
     const collection = await getUsersCollection();
     const now = new Date();
     const id = new ObjectId().toString();
-    
+
     const plan = data.plan ?? 'FREE';
     const iterationLimit = data.iterations?.limit ?? getPlanIterationLimit(plan);
     const interviewLimit = data.interviews?.limit ?? getPlanInterviewLimit(plan);
-    
+
     const user: User = {
       _id: id,
       clerkId: data.clerkId,
@@ -110,7 +119,7 @@ export const userRepository: UserRepository = {
   async updatePlan(clerkId: string, plan: UserPlan, newIterationLimit: number, newInterviewLimit: number) {
     const collection = await getUsersCollection();
     const now = new Date();
-    
+
     const result = await collection.findOneAndUpdate(
       { clerkId },
       {
@@ -127,14 +136,14 @@ export const userRepository: UserRepository = {
       },
       { returnDocument: 'after' }
     );
-    
+
     return result as User | null;
   },
 
   async updateStripeCustomerId(clerkId: string, stripeCustomerId: string) {
     const collection = await getUsersCollection();
     const now = new Date();
-    
+
     const result = await collection.findOneAndUpdate(
       { clerkId },
       {
@@ -145,14 +154,14 @@ export const userRepository: UserRepository = {
       },
       { returnDocument: 'after' }
     );
-    
+
     return result as User | null;
   },
 
   async incrementIteration(clerkId: string, amount: number = 1) {
     const collection = await getUsersCollection();
     const now = new Date();
-    
+
     const result = await collection.findOneAndUpdate(
       { clerkId },
       {
@@ -161,14 +170,14 @@ export const userRepository: UserRepository = {
       },
       { returnDocument: 'after' }
     );
-    
+
     return result as User | null;
   },
 
   async incrementInterview(clerkId: string) {
     const collection = await getUsersCollection();
     const now = new Date();
-    
+
     const result = await collection.findOneAndUpdate(
       { clerkId },
       {
@@ -177,14 +186,14 @@ export const userRepository: UserRepository = {
       },
       { returnDocument: 'after' }
     );
-    
+
     return result as User | null;
   },
 
   async resetIterations(clerkId: string) {
     const collection = await getUsersCollection();
     const now = new Date();
-    
+
     const result = await collection.findOneAndUpdate(
       { clerkId },
       {
@@ -196,14 +205,14 @@ export const userRepository: UserRepository = {
       },
       { returnDocument: 'after' }
     );
-    
+
     return result as User | null;
   },
 
   async resetInterviews(clerkId: string) {
     const collection = await getUsersCollection();
     const now = new Date();
-    
+
     const result = await collection.findOneAndUpdate(
       { clerkId },
       {
@@ -215,29 +224,29 @@ export const userRepository: UserRepository = {
       },
       { returnDocument: 'after' }
     );
-    
+
     return result as User | null;
   },
 
   async updatePreferences(clerkId: string, preferences: Partial<UserPreferences>) {
     const collection = await getUsersCollection();
     const now = new Date();
-    
+
     const updateFields: Record<string, unknown> = { updatedAt: now };
-    
+
     if (preferences.theme !== undefined) {
       updateFields['preferences.theme'] = preferences.theme;
     }
     if (preferences.defaultAnalogy !== undefined) {
       updateFields['preferences.defaultAnalogy'] = preferences.defaultAnalogy;
     }
-    
+
     const result = await collection.findOneAndUpdate(
       { clerkId },
       { $set: updateFields },
       { returnDocument: 'after' }
     );
-    
+
     return result as User | null;
   },
 };

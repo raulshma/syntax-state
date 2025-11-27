@@ -47,6 +47,14 @@ import {
   resetUserIterations,
   generateImpersonationToken,
 } from '@/lib/actions/admin';
+import {
+  FREE_INTERVIEW_LIMIT,
+  PRO_INTERVIEW_LIMIT,
+  MAX_INTERVIEW_LIMIT,
+  FREE_ITERATION_LIMIT,
+  PRO_ITERATION_LIMIT,
+  MAX_ITERATION_LIMIT,
+} from '@/lib/pricing-data';
 import { useRouter } from 'next/navigation';
 
 interface UserActionsProps {
@@ -110,9 +118,9 @@ export function UserActions({ user }: UserActionsProps) {
         // Open Clerk's impersonation URL in a new tab
         // Note: This requires Clerk's impersonation feature to be enabled
         window.open(`https://dashboard.clerk.com/impersonate/${result.clerkId}`, '_blank');
-        toast({ 
-          title: 'Impersonation', 
-          description: 'Opening Clerk dashboard for impersonation. Make sure impersonation is enabled in your Clerk settings.' 
+        toast({
+          title: 'Impersonation',
+          description: 'Opening Clerk dashboard for impersonation. Make sure impersonation is enabled in your Clerk settings.'
         });
       } else {
         toast({ title: 'Error', description: result.error, variant: 'destructive' });
@@ -124,10 +132,10 @@ export function UserActions({ user }: UserActionsProps) {
     startTransition(async () => {
       const result = await toggleUserSuspension(user.id, !user.suspended);
       if (result.success) {
-        toast({ 
+        toast({
           title: user.suspended ? 'User unsuspended' : 'User suspended',
-          description: user.suspended 
-            ? 'User can now access the platform' 
+          description: user.suspended
+            ? 'User can now access the platform'
             : 'User has been suspended from the platform'
         });
         setSuspendOpen(false);
@@ -160,7 +168,7 @@ export function UserActions({ user }: UserActionsProps) {
             Impersonate
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem 
+          <DropdownMenuItem
             onClick={() => setSuspendOpen(true)}
             className={user.suspended ? 'text-green-600' : 'text-destructive'}
           >
@@ -223,14 +231,14 @@ export function UserActions({ user }: UserActionsProps) {
                   </div>
                 )}
               </div>
-              
+
               {userDetails.interviews.length > 0 && (
                 <div>
                   <Label className="text-muted-foreground mb-2 block">Recent Interviews</Label>
                   <div className="space-y-2 max-h-48 overflow-auto">
                     {userDetails.interviews.map((interview) => (
-                      <div 
-                        key={interview.id} 
+                      <div
+                        key={interview.id}
                         className="flex items-center justify-between p-2 bg-muted rounded text-sm"
                       >
                         <div>
@@ -267,9 +275,9 @@ export function UserActions({ user }: UserActionsProps) {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="FREE">FREE - 3 interviews, 20 iterations/month</SelectItem>
-                  <SelectItem value="PRO">PRO - 25 interviews, 150 iterations/month</SelectItem>
-                  <SelectItem value="MAX">MAX - 100 interviews, 250 iterations/month</SelectItem>
+                  <SelectItem value="FREE">FREE - {FREE_INTERVIEW_LIMIT} interviews, {FREE_ITERATION_LIMIT} iterations/month</SelectItem>
+                  <SelectItem value="PRO">PRO - {PRO_INTERVIEW_LIMIT} interviews, {PRO_ITERATION_LIMIT} iterations/month</SelectItem>
+                  <SelectItem value="MAX">MAX - {MAX_INTERVIEW_LIMIT} interviews, {MAX_ITERATION_LIMIT} iterations/month</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -279,9 +287,9 @@ export function UserActions({ user }: UserActionsProps) {
                 <span className="text-sm">
                   Current: {user.iterationCount} / {user.iterationLimit}
                 </span>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
+                <Button
+                  variant="outline"
+                  size="sm"
                   onClick={handleResetIterations}
                   disabled={isPending}
                 >
@@ -308,7 +316,7 @@ export function UserActions({ user }: UserActionsProps) {
               {user.suspended ? 'Unsuspend User?' : 'Suspend User?'}
             </AlertDialogTitle>
             <AlertDialogDescription>
-              {user.suspended 
+              {user.suspended
                 ? `This will restore ${user.name}'s access to the platform.`
                 : `This will prevent ${user.name} from accessing the platform. They will not be able to log in or use any features.`
               }

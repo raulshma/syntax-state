@@ -35,6 +35,14 @@ export interface ComparisonFeature {
   max: string | boolean;
 }
 
+export const FREE_INTERVIEW_LIMIT = 3;
+export const PRO_INTERVIEW_LIMIT = 10;
+export const MAX_INTERVIEW_LIMIT = 50;
+
+export const FREE_ITERATION_LIMIT = 20;
+export const PRO_ITERATION_LIMIT = 100;
+export const MAX_ITERATION_LIMIT = 250;
+
 export const PRICING_TIERS: PricingTier[] = [
   {
     id: 'free',
@@ -44,12 +52,12 @@ export const PRICING_TIERS: PricingTier[] = [
     description: 'Perfect for trying out the platform',
     shortDescription: 'Try it out',
     limits: {
-      interviews: 3,
-      iterations: 20,
+      interviews: FREE_INTERVIEW_LIMIT,
+      iterations: FREE_ITERATION_LIMIT,
     },
     features: [
-      { name: '3 interviews/month', included: true },
-      { name: '20 iterations/month', included: true },
+      { name: `${FREE_INTERVIEW_LIMIT} interviews/month`, included: true },
+      { name: `${FREE_ITERATION_LIMIT} iterations/month`, included: true },
       { name: 'Basic AI generation', included: true },
       { name: 'Community preps access', included: true },
       { name: 'Standard analogies', included: true },
@@ -58,8 +66,8 @@ export const PRICING_TIERS: PricingTier[] = [
       { name: 'BYOK option', included: false },
     ],
     previewFeatures: [
-      '3 interviews/month',
-      '20 iterations/month',
+      `${FREE_INTERVIEW_LIMIT} interviews/month`,
+      `${FREE_ITERATION_LIMIT} iterations/month`,
       'Basic AI generation',
       'Community access',
     ],
@@ -75,12 +83,12 @@ export const PRICING_TIERS: PricingTier[] = [
     shortDescription: 'For active job seekers',
     badge: 'Most Popular',
     limits: {
-      interviews: 25,
-      iterations: 150,
+      interviews: PRO_INTERVIEW_LIMIT,
+      iterations: PRO_ITERATION_LIMIT,
     },
     features: [
-      { name: '25 interviews/month', included: true },
-      { name: '150 iterations/month', included: true },
+      { name: `${PRO_INTERVIEW_LIMIT} interviews/month`, included: true },
+      { name: `${PRO_ITERATION_LIMIT} iterations/month`, included: true },
       { name: 'Advanced AI generation', included: true },
       { name: 'Community preps access', included: true },
       { name: 'All analogy levels', included: true },
@@ -89,8 +97,8 @@ export const PRICING_TIERS: PricingTier[] = [
       { name: 'BYOK option', included: false },
     ],
     previewFeatures: [
-      '25 interviews/month',
-      '150 iterations/month',
+      `${PRO_INTERVIEW_LIMIT} interviews/month`,
+      `${PRO_ITERATION_LIMIT} iterations/month`,
       'Advanced analogies',
       'Export to PDF',
       'Priority support',
@@ -107,12 +115,12 @@ export const PRICING_TIERS: PricingTier[] = [
     description: 'For power users and teams',
     shortDescription: 'For power users',
     limits: {
-      interviews: 100,
-      iterations: 250,
+      interviews: MAX_INTERVIEW_LIMIT,
+      iterations: MAX_ITERATION_LIMIT,
     },
     features: [
-      { name: '100 interviews/month', included: true },
-      { name: '250 iterations/month', included: true },
+      { name: `${MAX_INTERVIEW_LIMIT} interviews/month`, included: true },
+      { name: `${MAX_ITERATION_LIMIT} iterations/month`, included: true },
       { name: 'Everything in Pro', included: true },
       { name: 'BYOK option', included: true, tooltip: 'Bring Your Own Key - use your own OpenRouter API key' },
       { name: 'API access', included: true },
@@ -121,8 +129,8 @@ export const PRICING_TIERS: PricingTier[] = [
       { name: 'Priority support', included: true },
     ],
     previewFeatures: [
-      '100 interviews/month',
-      '250 iterations/month',
+      `${MAX_INTERVIEW_LIMIT} interviews/month`,
+      `${MAX_ITERATION_LIMIT} iterations/month`,
       'BYOK option',
       'API access',
       'Custom integrations',
@@ -133,8 +141,8 @@ export const PRICING_TIERS: PricingTier[] = [
 ];
 
 export const COMPARISON_FEATURES: ComparisonFeature[] = [
-  { name: 'Monthly Interviews', free: '3', pro: '25', max: '100' },
-  { name: 'Monthly Iterations', free: '20', pro: '150', max: '250' },
+  { name: 'Monthly Interviews', free: `${FREE_INTERVIEW_LIMIT}`, pro: `${PRO_INTERVIEW_LIMIT}`, max: `${MAX_INTERVIEW_LIMIT}` },
+  { name: 'Monthly Iterations', free: `${FREE_ITERATION_LIMIT}`, pro: `${PRO_ITERATION_LIMIT}`, max: `${MAX_ITERATION_LIMIT}` },
   { name: 'AI Model', free: 'Standard', pro: 'Advanced', max: 'Advanced' },
   { name: 'Web Search', free: false, pro: true, max: true },
   { name: 'PDF Export', free: false, pro: true, max: true },
