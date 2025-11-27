@@ -33,15 +33,15 @@ export function ModuleProgress({ moduleStatus }: ModuleProgressProps) {
   ).length;
 
   return (
-    <div className="border border-border bg-card/50 backdrop-blur-sm p-3 md:p-4">
-      <div className="flex items-center justify-between mb-3 md:mb-4">
-        <span className="text-xs md:text-sm text-muted-foreground">Module Progress</span>
-        <span className="text-xs md:text-sm font-mono text-foreground">
-          {completedCount}/{modules.length}
+    <div className="rounded-3xl border border-border/50 bg-background/60 backdrop-blur-xl shadow-lg p-6">
+      <div className="flex items-center justify-between mb-6">
+        <span className="text-sm font-bold text-foreground tracking-tight">Module Progress</span>
+        <span className="text-xs font-medium text-muted-foreground bg-secondary/50 px-2.5 py-1 rounded-full">
+          {completedCount}/{modules.length} Completed
         </span>
       </div>
 
-      <div className="grid grid-cols-4 gap-1.5 md:gap-2">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {modules.map((module, index) => {
           const status = moduleStatus[module.key];
           const isComplete = status === "complete";
@@ -56,45 +56,41 @@ export function ModuleProgress({ moduleStatus }: ModuleProgressProps) {
               transition={{ delay: index * 0.05 }}
             >
               <div
-                className={`flex flex-col items-center gap-1.5 md:gap-2 p-2 md:p-3 border transition-all ${
-                  isComplete
-                    ? "border-foreground bg-foreground/5"
+                className={`flex flex-col items-center gap-3 p-4 rounded-2xl border transition-all duration-300 ${isComplete
+                    ? "border-primary/20 bg-primary/5 shadow-sm"
                     : isLoading
-                    ? "border-primary/50 bg-primary/5"
-                    : isError
-                    ? "border-destructive/50 bg-destructive/5"
-                    : "border-border"
-                }`}
+                      ? "border-primary/30 bg-primary/5 shadow-[0_0_15px_-3px_rgba(var(--primary),0.2)]"
+                      : isError
+                        ? "border-destructive/30 bg-destructive/5"
+                        : "border-border/50 bg-secondary/20 hover:bg-secondary/40"
+                  }`}
               >
                 <div
-                  className={`w-6 h-6 md:w-8 md:h-8 flex items-center justify-center ${
-                    isComplete
-                      ? "bg-foreground"
+                  className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${isComplete
+                      ? "bg-primary text-primary-foreground shadow-md"
                       : isLoading
-                      ? "bg-primary/20"
-                      : "bg-secondary"
-                  }`}
+                        ? "bg-primary/10 text-primary"
+                        : "bg-background shadow-sm border border-border/50"
+                    }`}
                 >
                   {isComplete ? (
-                    <Check className="w-3 h-3 md:w-4 md:h-4 text-background" />
+                    <Check className="w-5 h-5" />
                   ) : isLoading ? (
-                    <Loader2 className="w-3 h-3 md:w-4 md:h-4 text-primary animate-spin" />
+                    <Loader2 className="w-5 h-5 animate-spin" />
                   ) : (
                     <module.icon
-                      className={`w-3 h-3 md:w-4 md:h-4 ${
-                        isError ? "text-destructive" : "text-muted-foreground"
-                      }`}
+                      className={`w-5 h-5 ${isError ? "text-destructive" : "text-muted-foreground"
+                        }`}
                     />
                   )}
                 </div>
                 <span
-                  className={`text-[10px] md:text-xs font-mono text-center ${
-                    isComplete
-                      ? "text-foreground"
-                      : isLoading
+                  className={`text-xs font-semibold text-center tracking-wide ${isComplete
                       ? "text-primary"
-                      : "text-muted-foreground"
-                  }`}
+                      : isLoading
+                        ? "text-primary"
+                        : "text-muted-foreground"
+                    }`}
                 >
                   {module.label}
                 </span>

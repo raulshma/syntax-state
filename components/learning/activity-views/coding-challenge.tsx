@@ -44,10 +44,10 @@ interface CodingChallengeViewProps {
   onComplete: (answer: string, isCorrect?: boolean) => void;
 }
 
-export function CodingChallengeView({ 
-  content, 
+export function CodingChallengeView({
+  content,
   language: initialLanguage = 'typescript',
-  onComplete 
+  onComplete
 }: CodingChallengeViewProps) {
   const [code, setCode] = useState(content.starterCode || '');
   const [copied, setCopied] = useState(false);
@@ -64,56 +64,58 @@ export function CodingChallengeView({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Problem Description */}
-      <div className="prose prose-sm dark:prose-invert max-w-none">
-        <p className="text-lg text-foreground font-medium">{content.problemDescription}</p>
+      <div className="prose prose-lg dark:prose-invert max-w-none">
+        <p className="text-xl text-foreground font-medium leading-relaxed">{content.problemDescription}</p>
       </div>
 
       {/* Input/Output Format */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="p-4 border border-border bg-secondary/30">
-          <h4 className="text-sm font-mono text-muted-foreground mb-2">Input Format</h4>
-          <p className="text-sm text-foreground">{content.inputFormat}</p>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="p-6 rounded-2xl border border-border/50 bg-secondary/20">
+          <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">Input Format</h4>
+          <p className="text-base text-foreground leading-relaxed">{content.inputFormat}</p>
         </div>
-        <div className="p-4 border border-border bg-secondary/30">
-          <h4 className="text-sm font-mono text-muted-foreground mb-2">Output Format</h4>
-          <p className="text-sm text-foreground">{content.outputFormat}</p>
+        <div className="p-6 rounded-2xl border border-border/50 bg-secondary/20">
+          <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">Output Format</h4>
+          <p className="text-base text-foreground leading-relaxed">{content.outputFormat}</p>
         </div>
       </div>
 
       {/* Sample Input/Output */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="p-4 border border-border bg-card">
-          <div className="flex items-center justify-between mb-2">
-            <h4 className="text-sm font-mono text-muted-foreground">Sample Input</h4>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="group relative rounded-2xl border border-border/50 bg-background/50 overflow-hidden">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-border/50 bg-secondary/30">
+            <h4 className="text-xs font-mono font-medium text-muted-foreground">Sample Input</h4>
             <Button
               variant="ghost"
-              size="sm"
+              size="icon"
               onClick={() => handleCopy(content.sampleInput)}
-              className="h-6 px-2"
+              className="h-6 w-6 rounded-md hover:bg-background/80"
             >
-              {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+              {copied ? <Check className="w-3 h-3 text-green-500" /> : <Copy className="w-3 h-3" />}
             </Button>
           </div>
-          <pre className="text-sm font-mono text-foreground bg-secondary/50 p-3 overflow-x-auto">
+          <pre className="p-4 text-sm font-mono text-foreground overflow-x-auto">
             {content.sampleInput}
           </pre>
         </div>
-        <div className="p-4 border border-border bg-card">
-          <h4 className="text-sm font-mono text-muted-foreground mb-2">Sample Output</h4>
-          <pre className="text-sm font-mono text-foreground bg-secondary/50 p-3 overflow-x-auto">
+        <div className="rounded-2xl border border-border/50 bg-background/50 overflow-hidden">
+          <div className="px-4 py-3 border-b border-border/50 bg-secondary/30">
+            <h4 className="text-xs font-mono font-medium text-muted-foreground">Sample Output</h4>
+          </div>
+          <pre className="p-4 text-sm font-mono text-foreground overflow-x-auto">
             {content.sampleOutput}
           </pre>
         </div>
       </div>
 
       {/* Evaluation Criteria */}
-      <div className="p-4 border border-border bg-secondary/20">
-        <h4 className="text-sm font-mono text-muted-foreground mb-3">Evaluation Criteria</h4>
+      <div className="p-6 rounded-2xl border border-border/50 bg-secondary/10">
+        <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">Evaluation Criteria</h4>
         <div className="flex flex-wrap gap-2">
           {content.evaluationCriteria.map((criteria, index) => (
-            <Badge key={index} variant="outline" className="text-xs">
+            <Badge key={index} variant="secondary" className="rounded-lg px-3 py-1.5 text-sm font-medium bg-secondary/50 text-foreground border-border/50">
               {criteria}
             </Badge>
           ))}
@@ -121,40 +123,40 @@ export function CodingChallengeView({
       </div>
 
       {/* Code Editor */}
-      <div className="space-y-2">
+      <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h4 className="text-sm font-mono text-muted-foreground flex items-center gap-2">
+          <h4 className="text-sm font-semibold text-muted-foreground flex items-center gap-2">
             <Code className="w-4 h-4" />
             Your Solution
           </h4>
           <Select value={language} onValueChange={setLanguage}>
-            <SelectTrigger className="w-[140px] h-8 text-xs font-mono">
+            <SelectTrigger className="w-[160px] h-9 rounded-full text-xs font-medium bg-secondary/30 border-border/50">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
               {SUPPORTED_LANGUAGES.map((lang) => (
-                <SelectItem key={lang.value} value={lang.value} className="text-xs font-mono">
+                <SelectItem key={lang.value} value={lang.value} className="text-xs font-medium">
                   {lang.label}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
-        <div className="border border-border">
+        <div className="rounded-2xl border border-border/50 overflow-hidden shadow-sm">
           <CodeEditor
             value={code}
             onChange={setCode}
             language={language}
-            height="300px"
+            height="400px"
           />
         </div>
       </div>
 
       {/* Actions */}
-      <div className="flex justify-end gap-3">
-        <Button onClick={handleSubmit}>
+      <div className="flex justify-end pt-4">
+        <Button onClick={handleSubmit} size="lg" className="rounded-full px-8 text-base shadow-lg shadow-primary/25">
           Submit Solution
-          <ChevronRight className="w-4 h-4 ml-2" />
+          <ChevronRight className="w-5 h-5 ml-2" />
         </Button>
       </div>
     </div>

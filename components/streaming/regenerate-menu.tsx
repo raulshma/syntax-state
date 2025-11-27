@@ -48,16 +48,17 @@ export function RegenerateMenu({
 
   return (
     <>
-      <div className={cn("flex items-center", className)}>
+      <div className={cn("flex items-center shadow-sm rounded-full", className)}>
         <Button
           variant="outline"
           size="sm"
           onClick={onRegenerate}
           disabled={disabled}
-          className="rounded-r-none border-r-0 flex-1 min-h-[44px]"
+          className="rounded-l-full rounded-r-none border-r-0 pl-4 pr-3 h-9 hover:bg-secondary/80 focus:z-10"
         >
           {label}
         </Button>
+        <div className="w-px h-9 bg-border/50" />
         <ResponsiveDropdown
           title={label}
           trigger={
@@ -65,9 +66,9 @@ export function RegenerateMenu({
               variant="outline"
               size="sm"
               disabled={disabled}
-              className="rounded-l-none px-2 min-h-[44px]"
+              className="rounded-l-none rounded-r-full px-2 h-9 hover:bg-secondary/80 focus:z-10"
             >
-              <ChevronDown className="h-4 w-4" />
+              <ChevronDown className="h-4 w-4 text-muted-foreground" />
             </Button>
           }
         >
@@ -87,26 +88,33 @@ export function RegenerateMenu({
       </div>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-[425px] rounded-3xl border-border/50 bg-background/95 backdrop-blur-xl shadow-2xl">
           <DialogHeader>
-            <DialogTitle>{label} with Instructions</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-xl font-bold tracking-tight">{label} with Instructions</DialogTitle>
+            <DialogDescription className="text-muted-foreground">
               Provide specific instructions for regenerating the {contextHint}.
             </DialogDescription>
           </DialogHeader>
-          <Textarea
-            placeholder={`e.g., "Focus more on practical examples" or "Make it more concise"`}
-            value={instructions}
-            onChange={(e) => setInstructions(e.target.value)}
-            className="min-h-24"
-          />
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>
+          <div className="py-4">
+            <Textarea
+              placeholder={`e.g., "Focus more on practical examples" or "Make it more concise"`}
+              value={instructions}
+              onChange={(e) => setInstructions(e.target.value)}
+              className="min-h-[120px] rounded-2xl border-border/50 bg-secondary/20 resize-none focus:ring-primary/20"
+            />
+          </div>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              variant="ghost"
+              onClick={() => setDialogOpen(false)}
+              className="rounded-full hover:bg-secondary/80"
+            >
               Cancel
             </Button>
             <Button
               onClick={handleSubmitInstructions}
               disabled={!instructions.trim()}
+              className="rounded-full shadow-lg shadow-primary/20"
             >
               {label}
             </Button>

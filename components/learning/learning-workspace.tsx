@@ -197,58 +197,51 @@ export function LearningWorkspace({ learningPath: initialPath }: LearningWorkspa
     : BookOpen;
 
   return (
-    <div className="min-h-screen bg-background relative overflow-hidden">
-      {/* Background effects */}
-      <div className="fixed inset-0 bg-gradient-to-br from-background via-background to-secondary/20 pointer-events-none" />
-      <div className="fixed inset-0 bg-[linear-gradient(to_right,var(--border)_1px,transparent_1px),linear-gradient(to_bottom,var(--border)_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_0%,#000_70%,transparent_100%)] pointer-events-none opacity-40" />
-
-      <div className="relative z-10">
-        {/* Header */}
-        <header className="border-b border-border bg-background/80 backdrop-blur-sm sticky top-0 z-40">
-          <div className="px-6 py-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <Button variant="ghost" size="icon" asChild>
-                  <Link href="/dashboard">
-                    <ArrowLeft className="w-5 h-5" />
-                  </Link>
-                </Button>
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 bg-primary/10 flex items-center justify-center">
-                    <BookOpen className="w-5 h-5 text-primary" />
-                  </div>
-                  <div>
-                    <h1 className="font-mono text-lg text-foreground line-clamp-1">
-                      {learningPath.goal}
-                    </h1>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <span>ELO: {Math.round(learningPath.overallElo)}</span>
-                      <span>•</span>
-                      <span>Difficulty: {learningPath.currentDifficulty}/10</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className="hidden md:flex items-center gap-4">
-                <div className="flex items-center gap-2 text-sm">
-                  <span className="text-muted-foreground">Progress</span>
-                  <span className="font-mono">{learningPath.timeline.length} activities</span>
+    <div className="min-h-screen bg-background text-foreground font-sans selection:bg-primary/20">
+      {/* Header */}
+      <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/50 supports-[backdrop-filter]:bg-background/60">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            <div className="flex items-center gap-4">
+              <Link
+                href="/dashboard"
+                className="p-2 -ml-2 rounded-full hover:bg-secondary/80 transition-colors text-muted-foreground hover:text-foreground"
+              >
+                <ArrowLeft className="w-5 h-5" />
+              </Link>
+              <div className="flex flex-col">
+                <h1 className="text-lg font-semibold tracking-tight text-foreground">
+                  {learningPath.goal}
+                </h1>
+                <div className="flex items-center gap-2 text-xs text-muted-foreground font-medium">
+                  <span>ELO {Math.round(learningPath.overallElo)}</span>
+                  <span className="w-1 h-1 rounded-full bg-border" />
+                  <span>Lvl {learningPath.currentDifficulty}</span>
                 </div>
               </div>
             </div>
-          </div>
-        </header>
 
-        <div className="flex">
-          {/* Sidebar */}
-          <aside className="w-72 border-r border-border bg-sidebar/50 p-6 hidden lg:block min-h-[calc(100vh-73px)]">
-            {/* Topics */}
-            <div className="mb-8">
-              <div className="flex items-center gap-2 mb-4">
-                <Target className="w-4 h-4 text-primary" />
-                <span className="text-sm font-mono text-foreground">Topics</span>
+            <div className="flex items-center gap-4">
+              <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full bg-secondary/50 border border-border/50">
+                <span className="text-xs font-medium text-muted-foreground">Progress</span>
+                <span className="text-xs font-bold text-foreground">{learningPath.timeline.length} activities</span>
               </div>
-              <div className="space-y-2">
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          {/* Sidebar */}
+          <aside className="lg:col-span-3 space-y-8">
+            {/* Topics */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 px-2">
+                <Target className="w-4 h-4 text-primary" />
+                <span className="text-sm font-semibold text-foreground">Topics</span>
+              </div>
+              <div className="space-y-1">
                 {learningPath.topics.map((topic) => (
                   <TopicCard
                     key={topic.id}
@@ -257,85 +250,95 @@ export function LearningWorkspace({ learningPath: initialPath }: LearningWorkspa
                   />
                 ))}
                 {learningPath.topics.length === 0 && (
-                  <p className="text-sm text-muted-foreground">No topics yet</p>
+                  <div className="px-4 py-8 text-center rounded-2xl bg-secondary/30 border border-border/50 border-dashed">
+                    <p className="text-sm text-muted-foreground">No topics yet</p>
+                  </div>
                 )}
               </div>
             </div>
 
             {/* Skill Scores */}
-            <div>
-              <div className="flex items-center gap-2 mb-4">
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 px-2">
                 <Brain className="w-4 h-4 text-primary" />
-                <span className="text-sm font-mono text-foreground">Skills</span>
+                <span className="text-sm font-semibold text-foreground">Skills</span>
               </div>
-              <div className="space-y-3">
+              <div className="p-4 rounded-3xl bg-secondary/20 border border-border/50 space-y-4">
                 {Object.entries(learningPath.skillScores).map(([cluster, score]) => (
-                  <div key={cluster} className="space-y-1">
-                    <div className="flex justify-between text-xs">
+                  <div key={cluster} className="space-y-2">
+                    <div className="flex justify-between text-xs font-medium">
                       <span className="text-muted-foreground capitalize">
                         {cluster.replace('-', ' ')}
                       </span>
-                      <span className="font-mono">{Math.round(score)}</span>
+                      <span className="text-foreground">{Math.round(score)}</span>
                     </div>
-                    <Progress value={Math.min((score / 2000) * 100, 100)} className="h-1.5" />
+                    <Progress value={Math.min((score / 2000) * 100, 100)} className="h-2 rounded-full bg-secondary" />
                   </div>
                 ))}
                 {Object.keys(learningPath.skillScores).length === 0 && (
-                  <p className="text-sm text-muted-foreground">Complete activities to see skills</p>
+                  <p className="text-sm text-muted-foreground text-center py-2">Complete activities to see skills</p>
                 )}
               </div>
             </div>
           </aside>
 
           {/* Main Content */}
-          <main className="flex-1 p-6 lg:p-8">
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="max-w-4xl mx-auto">
-              <TabsList className="mb-6">
-                <TabsTrigger value="activity" className="gap-2">
-                  <BookOpen className="w-4 h-4" />
-                  Activity
-                </TabsTrigger>
-                <TabsTrigger value="timeline" className="gap-2">
-                  <History className="w-4 h-4" />
-                  Timeline
-                </TabsTrigger>
-                <TabsTrigger value="insights" className="gap-2">
-                  <BarChart3 className="w-4 h-4" />
-                  Insights
-                </TabsTrigger>
-              </TabsList>
+          <main className="lg:col-span-9">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
+              <div className="flex justify-center">
+                <TabsList className="h-10 p-1 bg-secondary/50 backdrop-blur-sm rounded-full border border-border/50">
+                  <TabsTrigger
+                    value="activity"
+                    className="rounded-full px-6 text-xs font-medium data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all"
+                  >
+                    Activity
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="timeline"
+                    className="rounded-full px-6 text-xs font-medium data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all"
+                  >
+                    Timeline
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="insights"
+                    className="rounded-full px-6 text-xs font-medium data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all"
+                  >
+                    Insights
+                  </TabsTrigger>
+                </TabsList>
+              </div>
 
-              <TabsContent value="activity">
+              <TabsContent value="activity" className="space-y-6 focus-visible:outline-none">
                 {/* Current Topic Header */}
                 {currentTopic && (
                   <motion.div
-                    initial={{ opacity: 0, y: -10 }}
+                    initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="mb-6"
+                    className="flex items-start justify-between gap-4 px-2"
                   >
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <Badge variant="secondary" className="mb-2">
-                          {currentTopic.skillCluster.replace('-', ' ')}
-                        </Badge>
-                        <h2 className="text-2xl font-mono text-foreground mb-1">
-                          {currentTopic.title}
-                        </h2>
-                        <p className="text-muted-foreground">{currentTopic.description}</p>
-                      </div>
-                      {/* Regenerate button - Requirements: 4.4 */}
-                      {currentActivity && !showReflection && !isLoadingActivity && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={handleRegenerate}
-                          className="gap-2"
-                        >
-                          <RefreshCw className="w-4 h-4" />
-                          New Activity
-                        </Button>
-                      )}
+                    <div className="space-y-2">
+                      <Badge variant="secondary" className="rounded-full px-3 py-0.5 text-xs font-medium bg-primary/10 text-primary border-primary/20">
+                        {currentTopic.skillCluster.replace('-', ' ')}
+                      </Badge>
+                      <h2 className="text-3xl font-bold tracking-tight text-foreground">
+                        {currentTopic.title}
+                      </h2>
+                      <p className="text-muted-foreground text-lg leading-relaxed max-w-3xl">
+                        {currentTopic.description}
+                      </p>
                     </div>
+                    {/* Regenerate button - Requirements: 4.4 */}
+                    {currentActivity && !showReflection && !isLoadingActivity && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleRegenerate}
+                        className="rounded-full h-9 px-4 gap-2 bg-background/50 backdrop-blur-sm hover:bg-secondary/80 border-border/50 shadow-sm"
+                      >
+                        <RefreshCw className="w-3.5 h-3.5" />
+                        <span className="text-xs font-medium">New Activity</span>
+                      </Button>
+                    )}
                   </motion.div>
                 )}
 
@@ -367,14 +370,14 @@ export function LearningWorkspace({ learningPath: initialPath }: LearningWorkspa
                 </AnimatePresence>
               </TabsContent>
 
-              <TabsContent value="timeline">
+              <TabsContent value="timeline" className="focus-visible:outline-none">
                 <TimelineView
                   timeline={learningPath.timeline}
                   pathId={learningPath._id}
                 />
               </TabsContent>
 
-              <TabsContent value="insights">
+              <TabsContent value="insights" className="focus-visible:outline-none">
                 <InsightsDashboard
                   insights={insights}
                   learningPath={learningPath}
@@ -393,18 +396,19 @@ export function LearningWorkspace({ learningPath: initialPath }: LearningWorkspa
 function TopicCard({ topic, isActive }: { topic: LearningTopic; isActive: boolean }) {
   return (
     <div
-      className={`p-3 border transition-colors ${
-        isActive
-          ? 'border-primary bg-primary/5'
-          : 'border-border bg-card/50 hover:border-primary/30'
-      }`}
+      className={`group relative p-4 rounded-2xl transition-all duration-300 ${isActive
+          ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/25'
+          : 'bg-secondary/30 hover:bg-secondary/50 text-muted-foreground hover:text-foreground'
+        }`}
     >
       <div className="flex items-center justify-between mb-1">
-        <span className="text-sm font-mono text-foreground line-clamp-1">{topic.title}</span>
-        {isActive && <ChevronRight className="w-4 h-4 text-primary flex-shrink-0" />}
+        <span className={`text-sm font-semibold line-clamp-1 ${isActive ? 'text-primary-foreground' : 'text-foreground'}`}>
+          {topic.title}
+        </span>
+        {isActive && <ChevronRight className="w-4 h-4 text-primary-foreground/80" />}
       </div>
-      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-        <span className="capitalize">{topic.skillCluster.replace('-', ' ')}</span>
+      <div className={`flex items-center gap-2 text-xs ${isActive ? 'text-primary-foreground/80' : 'text-muted-foreground'}`}>
+        <span className="capitalize font-medium">{topic.skillCluster.replace('-', ' ')}</span>
         <span>•</span>
         <span>Lvl {topic.difficulty}</span>
       </div>
@@ -427,36 +431,37 @@ function ActivityCard({
   return (
     <motion.div
       key={activity.id}
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      className="border border-border bg-card/80 backdrop-blur-sm"
+      initial={{ opacity: 0, y: 20, scale: 0.98 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: -20, scale: 0.98 }}
+      transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
+      className="rounded-3xl border border-border/50 bg-background/60 backdrop-blur-xl shadow-xl overflow-hidden"
     >
-      <div className="p-6 border-b border-border">
+      <div className="p-8 border-b border-border/50">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-primary/10 flex items-center justify-center">
-              <ActivityIcon className="w-5 h-5 text-primary" />
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center shadow-inner">
+              <ActivityIcon className="w-6 h-6 text-primary" />
             </div>
             <div>
-              <h3 className="font-mono text-foreground">
+              <h3 className="text-lg font-bold text-foreground tracking-tight">
                 {activityTypeLabels[activity.type] || activity.type}
               </h3>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Badge variant="outline" className="text-xs">
+              <div className="flex items-center gap-2 mt-1">
+                <Badge variant="outline" className="rounded-full px-2.5 py-0.5 text-xs font-medium border-border/50 bg-secondary/30">
                   Difficulty {activity.difficulty}
                 </Badge>
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground font-medium bg-secondary/30 px-3 py-1.5 rounded-full border border-border/50">
             <Clock className="w-4 h-4" />
             <span>Take your time</span>
           </div>
         </div>
       </div>
 
-      <div className="p-6">
+      <div className="p-8">
         <ActivityContentView content={activity.content} onComplete={onComplete} language={language} />
       </div>
     </motion.div>
@@ -484,9 +489,13 @@ function ActivityContentView({
       return <ConceptExplanationView content={content} onComplete={onComplete} />;
     default:
       return (
-        <div className="text-center py-8 text-muted-foreground">
-          <p>Unknown activity type</p>
-          <Button onClick={() => onComplete('', false)} className="mt-4">
+        <div className="text-center py-12">
+          <div className="w-16 h-16 rounded-full bg-secondary/50 flex items-center justify-center mx-auto mb-4">
+            <HelpCircle className="w-8 h-8 text-muted-foreground" />
+          </div>
+          <h3 className="text-lg font-semibold text-foreground mb-2">Unknown Activity Type</h3>
+          <p className="text-muted-foreground mb-6">This activity type is not yet supported.</p>
+          <Button onClick={() => onComplete('', false)} className="rounded-full px-6">
             Continue
           </Button>
         </div>
@@ -498,31 +507,31 @@ function ActivityContentView({
 function ActivityLoadingSkeleton() {
   return (
     <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="border border-border bg-card/80 backdrop-blur-sm"
+      initial={{ opacity: 0, scale: 0.98 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.98 }}
+      className="rounded-3xl border border-border/50 bg-background/60 backdrop-blur-xl shadow-xl overflow-hidden"
     >
-      <div className="p-6 border-b border-border">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-secondary animate-pulse" />
+      <div className="p-8 border-b border-border/50">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-secondary/50 animate-pulse" />
           <div className="space-y-2">
-            <div className="h-5 w-32 bg-secondary animate-pulse" />
-            <div className="h-4 w-24 bg-secondary animate-pulse" />
+            <div className="h-6 w-48 bg-secondary/50 rounded-lg animate-pulse" />
+            <div className="h-4 w-24 bg-secondary/50 rounded-lg animate-pulse" />
           </div>
         </div>
       </div>
-      <div className="p-6 space-y-4">
-        <div className="h-6 w-full bg-secondary animate-pulse" />
-        <div className="h-4 w-3/4 bg-secondary animate-pulse" />
-        <div className="h-4 w-full bg-secondary animate-pulse" />
-        <div className="space-y-3 mt-6">
+      <div className="p-8 space-y-6">
+        <div className="h-8 w-3/4 bg-secondary/50 rounded-lg animate-pulse" />
+        <div className="h-4 w-full bg-secondary/50 rounded-lg animate-pulse" />
+        <div className="h-4 w-5/6 bg-secondary/50 rounded-lg animate-pulse" />
+        <div className="space-y-4 mt-8">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-12 w-full bg-secondary animate-pulse" />
+            <div key={i} className="h-16 w-full bg-secondary/30 rounded-xl animate-pulse" />
           ))}
         </div>
       </div>
-      <div className="p-6 border-t border-border flex justify-center">
+      <div className="p-8 border-t border-border/50 flex justify-center">
         <Loader2 className="w-6 h-6 animate-spin text-primary" />
       </div>
     </motion.div>
@@ -533,15 +542,17 @@ function ActivityLoadingSkeleton() {
 function ActivityError({ error, onRetry }: { error: string; onRetry: () => void }) {
   return (
     <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="border border-destructive/20 bg-destructive/5 p-8 text-center"
+      initial={{ opacity: 0, scale: 0.98 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.98 }}
+      className="rounded-3xl border border-destructive/20 bg-destructive/5 p-12 text-center"
     >
-      <XCircle className="w-12 h-12 text-destructive mx-auto mb-4" />
-      <h3 className="font-mono text-lg text-foreground mb-2">Failed to Load Activity</h3>
-      <p className="text-muted-foreground mb-6">{error}</p>
-      <Button onClick={onRetry}>
+      <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center mx-auto mb-6">
+        <XCircle className="w-8 h-8 text-destructive" />
+      </div>
+      <h3 className="text-xl font-bold text-foreground mb-2">Failed to Load Activity</h3>
+      <p className="text-muted-foreground mb-8 max-w-md mx-auto">{error}</p>
+      <Button onClick={onRetry} className="rounded-full px-8 shadow-lg shadow-primary/25">
         <Loader2 className="w-4 h-4 mr-2" />
         Try Again
       </Button>
@@ -564,7 +575,7 @@ function StreamingActivityCard({
   // Type guard for content with question property
   const hasQuestion = (c: unknown): c is { question?: string } =>
     typeof c === 'object' && c !== null && 'question' in c;
-  
+
   // Type guard for content with options property
   const hasOptions = (c: unknown): c is { options?: string[] } =>
     typeof c === 'object' && c !== null && 'options' in c;
@@ -583,48 +594,48 @@ function StreamingActivityCard({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      className="border border-border bg-card/80 backdrop-blur-sm"
+      initial={{ opacity: 0, y: 20, scale: 0.98 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: -20, scale: 0.98 }}
+      className="rounded-3xl border border-border/50 bg-background/60 backdrop-blur-xl shadow-xl overflow-hidden"
     >
-      <div className="p-6 border-b border-border">
+      <div className="p-8 border-b border-border/50">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-primary/10 flex items-center justify-center">
-              <ActivityIcon className="w-5 h-5 text-primary" />
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center shadow-inner">
+              <ActivityIcon className="w-6 h-6 text-primary" />
             </div>
             <div>
-              <h3 className="font-mono text-foreground">{activityLabel}</h3>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Badge variant="outline" className="text-xs">
+              <h3 className="text-lg font-bold text-foreground tracking-tight">{activityLabel}</h3>
+              <div className="flex items-center gap-2 mt-1">
+                <Badge variant="outline" className="rounded-full px-2.5 py-0.5 text-xs font-medium border-border/50 bg-secondary/30">
                   Generating...
                 </Badge>
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-2 text-sm text-primary">
+          <div className="flex items-center gap-2 text-sm text-primary font-medium bg-primary/5 px-3 py-1.5 rounded-full border border-primary/10">
             <Loader2 className="w-4 h-4 animate-spin" />
             <span>Streaming</span>
           </div>
         </div>
       </div>
 
-      <div className="p-6 space-y-4">
+      <div className="p-8 space-y-6">
         {/* Display question for MCQ */}
         {hasQuestion(content) && content.question && (
           <div className="space-y-2">
-            <p className="text-foreground font-medium">{content.question}</p>
+            <p className="text-xl font-medium text-foreground leading-relaxed">{content.question}</p>
           </div>
         )}
 
         {/* Display options for MCQ */}
         {hasOptions(content) && content.options && content.options.length > 0 && (
-          <div className="space-y-2 mt-4">
+          <div className="space-y-3 mt-6">
             {content.options.map((option, index) => (
               <div
                 key={index}
-                className="p-3 border border-border bg-secondary/20 text-muted-foreground"
+                className="p-4 rounded-xl border border-border/50 bg-secondary/20 text-muted-foreground"
               >
                 {option || <span className="animate-pulse">Loading option...</span>}
               </div>
@@ -635,21 +646,21 @@ function StreamingActivityCard({
         {/* Display problem description for coding challenge */}
         {hasProblemDescription(content) && content.problemDescription && (
           <div className="space-y-2">
-            <p className="text-foreground">{content.problemDescription}</p>
+            <p className="text-lg text-foreground leading-relaxed">{content.problemDescription}</p>
           </div>
         )}
 
         {/* Display content for concept explanation */}
         {hasContent(content) && content.content && (
           <div className="space-y-2">
-            <p className="text-foreground whitespace-pre-wrap">{content.content}</p>
+            <p className="text-lg text-foreground leading-relaxed whitespace-pre-wrap">{content.content}</p>
           </div>
         )}
 
         {/* Display buggy code for debugging task */}
         {hasBuggyCode(content) && content.buggyCode && (
           <div className="space-y-2">
-            <pre className="p-4 bg-secondary/30 border border-border overflow-x-auto text-sm font-mono">
+            <pre className="p-6 rounded-2xl bg-secondary/30 border border-border/50 overflow-x-auto text-sm font-mono">
               {content.buggyCode}
             </pre>
           </div>
@@ -660,15 +671,15 @@ function StreamingActivityCard({
           !hasProblemDescription(content) &&
           !hasContent(content) &&
           !hasBuggyCode(content) && (
-            <div className="space-y-4">
-              <div className="h-6 w-full bg-secondary animate-pulse" />
-              <div className="h-4 w-3/4 bg-secondary animate-pulse" />
-              <div className="h-4 w-full bg-secondary animate-pulse" />
+            <div className="space-y-6">
+              <div className="h-8 w-full bg-secondary/50 rounded-lg animate-pulse" />
+              <div className="h-4 w-3/4 bg-secondary/50 rounded-lg animate-pulse" />
+              <div className="h-4 w-full bg-secondary/50 rounded-lg animate-pulse" />
             </div>
           )}
       </div>
 
-      <div className="p-6 border-t border-border flex justify-center">
+      <div className="p-6 border-t border-border/50 flex justify-center bg-secondary/10">
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Loader2 className="w-4 h-4 animate-spin" />
           <span>Generating activity content...</span>
