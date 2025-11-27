@@ -238,7 +238,7 @@ export async function POST(
         let lastSentTime = 0;
         let pendingData: unknown = null;
 
-        const sendThrottled = (data: unknown, force = false) => {
+        const sendThrottled = async (data: unknown, force = false) => {
           const now = Date.now();
           pendingData = data;
 
@@ -248,24 +248,26 @@ export async function POST(
               data: pendingData,
               activityType,
             });
-            controller.enqueue(encoder.encode(`data: ${jsonData}\n\n`));
+            const sseMessage = `data: ${jsonData}\n\n`;
+            controller.enqueue(encoder.encode(sseMessage));
             // Buffer content for resumption (Requirements: 5.2)
-            appendLearningPathStreamContent(pathId, `data: ${jsonData}\n\n`);
+            await appendLearningPathStreamContent(pathId, sseMessage);
             lastSentTime = now;
             pendingData = null;
           }
         };
 
-        const flushPending = () => {
+        const flushPending = async () => {
           if (pendingData !== null && !clientDisconnected) {
             const jsonData = JSON.stringify({
               type: "content",
               data: pendingData,
               activityType,
             });
-            controller.enqueue(encoder.encode(`data: ${jsonData}\n\n`));
+            const sseMessage = `data: ${jsonData}\n\n`;
+            controller.enqueue(encoder.encode(sseMessage));
             // Buffer content for resumption
-            appendLearningPathStreamContent(pathId, `data: ${jsonData}\n\n`);
+            await appendLearningPathStreamContent(pathId, sseMessage);
             pendingData = null;
           }
         };
@@ -301,7 +303,7 @@ export async function POST(
                 loggerCtx.markFirstToken();
                 firstTokenMarked = true;
               }
-              sendThrottled(partialObject);
+              await sendThrottled(partialObject);
             }
           }
           
@@ -312,7 +314,7 @@ export async function POST(
             return;
           }
           
-          flushPending();
+          await flushPending();
 
           // Get the final object
           const activity = await result.object;

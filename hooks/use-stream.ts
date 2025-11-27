@@ -115,8 +115,13 @@ export function useModuleStream({
         return false;
       }
 
+      // Check if this is a resumed stream
+      const isResumed = response.headers.get("X-Stream-Resumed") === "true";
+      if (isResumed) {
+        setStatus("streaming");
+      }
+
       // There's an active stream - process it
-      setStatus("streaming");
       await processStream(response);
       return true;
     } catch {
@@ -445,7 +450,12 @@ export function useTopicRegenerate({
         return false;
       }
 
-      setStatus("streaming");
+      // Check if this is a resumed stream
+      const isResumed = response.headers.get("X-Stream-Resumed") === "true";
+      if (isResumed) {
+        setStatus("streaming");
+      }
+
       await processStream(response);
       return true;
     } catch {

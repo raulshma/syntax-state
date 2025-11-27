@@ -84,13 +84,12 @@ export function SidebarUi({ data }: SidebarUiProps) {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div
-                  className={`w-2 h-2 rounded-full ${
-                    data.usage.plan === "FREE"
+                  className={`w-2 h-2 rounded-full ${data.usage.plan === "FREE"
                       ? "bg-muted-foreground"
                       : data.usage.plan === "PRO"
-                      ? "bg-blue-500"
-                      : "bg-amber-500"
-                  }`}
+                        ? "bg-blue-500"
+                        : "bg-amber-500"
+                    }`}
                 />
                 <span className="text-xs font-medium text-foreground">
                   {data.usage.isByok ? "BYOK" : data.usage.plan} Plan

@@ -13,6 +13,8 @@ import {
 import {
   saveActiveStream,
   updateStreamStatus,
+  appendStreamContent,
+  clearStreamContent,
 } from "@/lib/services/stream-store";
 
 // Custom streaming headers
@@ -117,7 +119,8 @@ export async function POST(
     const streamId = generateId();
     const moduleKey = `topic_${topicId}`;
 
-    // Save active stream record before starting
+    // Clear any previous stream content and save new active stream record
+    await clearStreamContent(interviewId, moduleKey);
     await saveActiveStream({
       streamId,
       interviewId,
@@ -141,7 +144,7 @@ export async function POST(
         let lastSentTime = 0;
         let pendingData: unknown = null;
         
-        const sendThrottled = (data: unknown, force = false) => {
+        const sendThrottled = async (data: unknown, force = false) => {
           const now = Date.now();
           pendingData = data;
           
@@ -151,21 +154,27 @@ export async function POST(
               data: pendingData,
               topicId,
             });
-            controller.enqueue(encoder.encode(`data: ${jsonData}\n\n`));
+            const sseMessage = `data: ${jsonData}\n\n`;
+            controller.enqueue(encoder.encode(sseMessage));
+            // Store content for resumption
+            await appendStreamContent(interviewId, moduleKey, sseMessage);
             lastSentTime = now;
             pendingData = null;
           }
         };
         
         // Flush any pending data
-        const flushPending = () => {
+        const flushPending = async () => {
           if (pendingData !== null && !clientDisconnected) {
             const jsonData = JSON.stringify({
               type: "content",
               data: pendingData,
               topicId,
             });
-            controller.enqueue(encoder.encode(`data: ${jsonData}\n\n`));
+            const sseMessage = `data: ${jsonData}\n\n`;
+            controller.enqueue(encoder.encode(sseMessage));
+            // Store content for resumption
+            await appendStreamContent(interviewId, moduleKey, sseMessage);
             pendingData = null;
           }
         };
@@ -198,11 +207,11 @@ export async function POST(
                 loggerCtx.markFirstToken();
                 firstTokenMarked = true;
               }
-              sendThrottled(partialObject.content);
+              await sendThrottled(partialObject.content);
               responseText = partialObject.content;
             }
           }
-          flushPending();
+          await flushPending();
 
           const finalObject = await result.object;
 
@@ -233,7 +242,12 @@ export async function POST(
             metadata: loggerCtx.metadata,
           });
 
-          // If client disconnected, clean up and exit early
+          // Mark stream as completed (do this before checking disconnect so resumption works)
+          after(async () => {
+            await updateStreamStatus(interviewId, moduleKey, "completed");
+          });
+
+          // If client disconnected, close stream but generation is complete
           if (clientDisconnected) {
             controller.close();
             return;
@@ -242,14 +256,13 @@ export async function POST(
           // Send done event
           safeEnqueue(`data: ${JSON.stringify({ type: "done", topicId, style })}\n\n`);
           controller.close();
-
-          // Mark stream as completed
-          after(async () => {
-            await updateStreamStatus(interviewId, moduleKey, "completed");
-          });
         } catch (error) {
           // Ignore abort errors from client disconnect
           if (clientDisconnected || (error instanceof Error && error.name === "AbortError")) {
+            // Still mark as completed if we got this far
+            after(async () => {
+              await updateStreamStatus(interviewId, moduleKey, "completed");
+            });
             controller.close();
             return;
           }

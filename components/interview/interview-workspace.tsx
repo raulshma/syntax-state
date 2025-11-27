@@ -100,16 +100,15 @@ async function processSSEStream<T>(
   }
 }
 
-interface StreamStatusResponse {
-  status: "none" | "active" | "completed" | "error";
-  streamId?: string;
-  createdAt?: number;
+interface ResumeStreamResult {
+  hasActiveStream: boolean;
+  response?: Response;
 }
 
-async function checkStreamStatus(
+async function tryResumeStream(
   interviewId: string,
   module: string
-): Promise<StreamStatusResponse> {
+): Promise<ResumeStreamResult> {
   try {
     const response = await fetch(
       `/api/interview/${interviewId}/stream/${module}`,
@@ -117,10 +116,25 @@ async function checkStreamStatus(
         credentials: "include",
       }
     );
-    if (!response.ok) return { status: "none" };
-    return await response.json();
+    
+    // 204 means no active stream
+    if (response.status === 204) {
+      return { hasActiveStream: false };
+    }
+    
+    if (!response.ok) {
+      return { hasActiveStream: false };
+    }
+    
+    // Check if this is a resumed stream (SSE response)
+    const contentType = response.headers.get("content-type");
+    if (contentType?.includes("text/event-stream")) {
+      return { hasActiveStream: true, response };
+    }
+    
+    return { hasActiveStream: false };
   } catch {
-    return { status: "none" };
+    return { hasActiveStream: false };
   }
 }
 
@@ -188,49 +202,74 @@ export function InterviewWorkspace({
     if (resumeAttemptedRef.current) return;
     resumeAttemptedRef.current = true;
 
-    const checkAndPollModules = async () => {
-      const modules: ModuleType[] = [
+    const resumeModuleStream = async (module: ModuleKey) => {
+      const { hasActiveStream, response } = await tryResumeStream(interviewId, module);
+      
+      if (!hasActiveStream || !response) {
+        return false;
+      }
+
+      // We have an active stream to resume - process it
+      setModuleStatus((prev) => ({ ...prev, [module]: "streaming" }));
+
+      try {
+        await processSSEStream(
+          response,
+          (data: unknown) => {
+            switch (module) {
+              case "openingBrief":
+                setStreamingBrief(data as string);
+                break;
+              case "revisionTopics":
+                setStreamingTopics(data as RevisionTopic[]);
+                break;
+              case "mcqs":
+                setStreamingMcqs(data as MCQ[]);
+                break;
+              case "rapidFire":
+                setStreamingRapidFire(data as RapidFire[]);
+                break;
+            }
+          },
+          async () => {
+            setModuleStatus((prev) => ({ ...prev, [module]: "complete" }));
+            const result = await getInterview(interviewId);
+            if (result.success) setInterview(result.data);
+          },
+          () => {
+            setModuleStatus((prev) => ({ ...prev, [module]: "error" }));
+          }
+        );
+        return true;
+      } catch {
+        setModuleStatus((prev) => ({ ...prev, [module]: "error" }));
+        return false;
+      }
+    };
+
+    const checkAndResumeModules = async () => {
+      const modules: ModuleKey[] = [
         "openingBrief",
         "revisionTopics",
         "mcqs",
         "rapidFire",
       ];
 
+      // Try to resume each module that doesn't have content
       for (const module of modules) {
-        const streamStatus = await checkStreamStatus(interviewId, module);
-
-        if (streamStatus.status === "active") {
-          setModuleStatus((prev) => ({ ...prev, [module]: "loading" }));
-
-          const pollInterval = setInterval(async () => {
-            const status = await checkStreamStatus(interviewId, module);
-
-            if (status.status === "completed") {
-              clearInterval(pollInterval);
-              const result = await getInterview(interviewId);
-              if (result.success) {
-                setInterview(result.data);
-                setModuleStatus((prev) => ({ ...prev, [module]: "complete" }));
-              }
-            } else if (status.status === "error" || status.status === "none") {
-              clearInterval(pollInterval);
-              setModuleStatus((prev) => ({ ...prev, [module]: "error" }));
-            }
-          }, 2000);
-
-          setTimeout(() => clearInterval(pollInterval), 5 * 60 * 1000);
-        } else if (streamStatus.status === "completed") {
-          const result = await getInterview(interviewId);
-          if (result.success) {
-            setInterview(result.data);
-            setModuleStatus((prev) => ({ ...prev, [module]: "complete" }));
-          }
+        // Only try to resume if module appears incomplete
+        const hasContent = module === "openingBrief" 
+          ? !!initialInterview.modules.openingBrief
+          : initialInterview.modules[module].length > 0;
+        
+        if (!hasContent) {
+          await resumeModuleStream(module);
         }
       }
     };
 
-    checkAndPollModules();
-  }, [interviewId]);
+    checkAndResumeModules();
+  }, [interviewId, initialInterview]);
 
   // Auto-generate on first load if empty
   useEffect(() => {

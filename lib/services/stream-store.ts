@@ -40,12 +40,15 @@ export async function updateStreamStatus(
 ): Promise<void> {
   const redis = getRedisClient();
   const key = `${STREAM_PREFIX}${interviewId}:${module}`;
+  const contentKey = `${STREAM_CONTENT_PREFIX}${interviewId}:${module}`;
   const data = await redis.get(key);
   if (data) {
     const record = JSON.parse(data) as StreamRecord;
     record.status = status;
-    // Keep for a short time after completion so client can detect it finished
-    await redis.setex(key, 30, JSON.stringify(record));
+    // Keep for 2 minutes after completion so client can detect it finished and retrieve content
+    await redis.setex(key, 120, JSON.stringify(record));
+    // Also extend content TTL so it's available for resumption
+    await redis.expire(contentKey, 120);
   }
 }
 
