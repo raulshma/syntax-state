@@ -6,24 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
 import {
   ArrowLeft,
   BookOpen,
@@ -35,11 +22,15 @@ import {
   Check,
   Clock,
   Keyboard,
+  ChevronRight,
+  Sparkles,
 } from "lucide-react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { getTopic, type AnalogyStyle } from "@/lib/actions/topic";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { motion, AnimatePresence } from "framer-motion";
+import { cn } from "@/lib/utils";
 
 // Calculate estimated reading time (average 200 words per minute)
 function getReadingTime(content: string): string {
@@ -151,14 +142,14 @@ async function checkStreamStatus(
 
 const styleLabels: Record<AnalogyStyle, string> = {
   professional: "Professional",
-  construction: "House Construction",
-  simple: "ELI5 (Simple)",
+  construction: "Analogy",
+  simple: "Simple",
 };
 
 const styleDescriptions: Record<AnalogyStyle, string> = {
-  professional: "Technical explanation suitable for interviews",
-  construction: "Explained using house building analogies",
-  simple: "Explained like you're 5 years old",
+  professional: "Technical deep dive suitable for interviews",
+  construction: "Relatable analogies to explain complex concepts",
+  simple: "Simplified explanation for easy understanding",
 };
 
 export default function TopicDetailPage() {
@@ -179,8 +170,18 @@ export default function TopicDetailPage() {
   const [streamingContent, setStreamingContent] = useState<string>("");
   const [copied, setCopied] = useState(false);
   const [showShortcuts, setShowShortcuts] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
 
   const resumeAttemptedRef = useRef(false);
+
+  // Handle scroll for sticky header effect
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 50);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -195,7 +196,11 @@ export default function TopicDetailPage() {
 
       // Escape - go back
       if (e.key === "Escape") {
-        router.push(`/interview/${interviewId}`);
+        if (showShortcuts) {
+          setShowShortcuts(false);
+        } else {
+          router.push(`/interview/${interviewId}`);
+        }
         return;
       }
 
@@ -228,7 +233,7 @@ export default function TopicDetailPage() {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [interviewId, topicId, isRegenerating, router]);
+  }, [interviewId, topicId, isRegenerating, router, showShortcuts]);
 
   const handleCopyContent = useCallback(() => {
     if (topic) {
@@ -275,14 +280,14 @@ export default function TopicDetailPage() {
 
     const checkAndPoll = async () => {
       const streamStatus = await checkStreamStatus(interviewId, topicId);
-      
+
       if (streamStatus.status === "active") {
         // Found an active generation - show loading state and poll for completion
         setIsRegenerating(true);
-        
+
         const pollInterval = setInterval(async () => {
           const status = await checkStreamStatus(interviewId, topicId);
-          
+
           if (status.status === "completed") {
             clearInterval(pollInterval);
             const result = await getTopic(interviewId, topicId);
@@ -296,7 +301,7 @@ export default function TopicDetailPage() {
             setIsRegenerating(false);
           }
         }, 2000); // Poll every 2 seconds
-        
+
         // Safety timeout - stop polling after 5 minutes
         setTimeout(() => {
           clearInterval(pollInterval);
@@ -382,21 +387,26 @@ export default function TopicDetailPage() {
   );
 
   if (isLoading) {
-    // Use Next.js loading.tsx skeleton instead
-    return null;
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+      </div>
+    );
   }
 
   if (error || !topic) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <AlertCircle className="w-12 h-12 text-destructive mx-auto mb-4" />
-          <h1 className="text-xl font-mono text-foreground mb-2">Error</h1>
-          <p className="text-muted-foreground mb-4">
-            {error || "Topic not found"}
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <div className="text-center max-w-md">
+          <div className="w-16 h-16 bg-destructive/10 rounded-full flex items-center justify-center mx-auto mb-6">
+            <AlertCircle className="w-8 h-8 text-destructive" />
+          </div>
+          <h1 className="text-2xl font-semibold text-foreground mb-3">Unable to Load Topic</h1>
+          <p className="text-muted-foreground mb-8">
+            {error || "The topic you requested could not be found or there was an error loading it."}
           </p>
           <Link href={`/interview/${interviewId}`}>
-            <Button>Back to Interview</Button>
+            <Button size="lg" className="rounded-full px-8">Return to Interview</Button>
           </Link>
         </div>
       </div>
@@ -408,342 +418,304 @@ export default function TopicDetailPage() {
   const displayContent = isStreaming ? streamingContent : topic.content;
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Keyboard Shortcuts - Bottom Sheet on mobile, centered Card on desktop */}
-      {isMobile ? (
-        <Sheet open={showShortcuts} onOpenChange={setShowShortcuts}>
-          <SheetContent side="bottom" className="rounded-t-xl">
-            <SheetHeader>
-              <SheetTitle className="flex items-center gap-2">
-                <Keyboard className="w-4 h-4" />
-                Keyboard Shortcuts
-              </SheetTitle>
-            </SheetHeader>
-            <div className="space-y-3 text-sm px-4 pb-6">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Go back</span>
-                <kbd className="px-2 py-1 bg-muted text-xs font-mono rounded">Esc</kbd>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Open chat</span>
-                <kbd className="px-2 py-1 bg-muted text-xs font-mono rounded">C</kbd>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Professional style</span>
-                <kbd className="px-2 py-1 bg-muted text-xs font-mono rounded">1</kbd>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Construction style</span>
-                <kbd className="px-2 py-1 bg-muted text-xs font-mono rounded">2</kbd>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Simple style</span>
-                <kbd className="px-2 py-1 bg-muted text-xs font-mono rounded">3</kbd>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Toggle shortcuts</span>
-                <kbd className="px-2 py-1 bg-muted text-xs font-mono rounded">?</kbd>
-              </div>
-            </div>
-          </SheetContent>
-        </Sheet>
-      ) : (
-        showShortcuts && (
-          <div
-            className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center"
-            onClick={() => setShowShortcuts(false)}
-          >
-            <Card className="w-80" onClick={(e) => e.stopPropagation()}>
-              <CardContent className="p-6">
-                <h3 className="font-mono text-foreground mb-4 flex items-center gap-2">
-                  <Keyboard className="w-4 h-4" />
-                  Keyboard Shortcuts
-                </h3>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Go back</span>
-                    <kbd className="px-2 py-1 bg-muted text-xs font-mono rounded">Esc</kbd>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Open chat</span>
-                    <kbd className="px-2 py-1 bg-muted text-xs font-mono rounded">C</kbd>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Professional style</span>
-                    <kbd className="px-2 py-1 bg-muted text-xs font-mono rounded">1</kbd>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Construction style</span>
-                    <kbd className="px-2 py-1 bg-muted text-xs font-mono rounded">2</kbd>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Simple style</span>
-                    <kbd className="px-2 py-1 bg-muted text-xs font-mono rounded">3</kbd>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Toggle shortcuts</span>
-                    <kbd className="px-2 py-1 bg-muted text-xs font-mono rounded">?</kbd>
-                  </div>
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-full mt-4 min-h-[44px]"
-                  onClick={() => setShowShortcuts(false)}
-                >
-                  Close
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-        )
-      )}
+    <div className="min-h-screen bg-background selection:bg-primary/10 selection:text-primary">
+      {/* Navigation Bar */}
+      <motion.header
+        className={cn(
+          "fixed top-0 left-0 right-0 z-50 transition-all duration-300 border-b",
+          scrolled
+            ? "bg-background/80 backdrop-blur-xl border-border/50 shadow-sm"
+            : "bg-transparent border-transparent"
+        )}
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+        transition={{ duration: 0.5, ease: "circOut" }}
+      >
+        <div className="max-w-5xl mx-auto px-4 md:px-6 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Link href={`/interview/${interviewId}`}>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="rounded-full hover:bg-foreground/5 w-10 h-10"
+                    >
+                      <ArrowLeft className="w-5 h-5" />
+                    </Button>
+                  </Link>
+                </TooltipTrigger>
+                <TooltipContent>Back to Interview (Esc)</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
 
-      {/* Header */}
-      <header className="border-b border-border bg-background sticky top-0 z-40">
-        <div className="px-4 md:px-6 py-4">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            {/* Back button, title, and info */}
-            <div className="flex items-center gap-3 md:gap-4">
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Link href={`/interview/${interviewId}`}>
-                      <Button variant="ghost" size="icon" className="min-h-[44px] min-w-[44px]">
-                        <ArrowLeft className="w-4 h-4" />
-                      </Button>
-                    </Link>
-                  </TooltipTrigger>
-                  <TooltipContent>Back (Esc)</TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <h1 className="font-mono text-foreground text-sm md:text-base truncate">{topic.title}</h1>
-                  <span className="text-xs text-muted-foreground flex items-center gap-1 shrink-0">
-                    <Clock className="w-3 h-3" />
-                    {getReadingTime(topic.content)}
-                  </span>
-                </div>
-                {interview && (
-                  <p className="text-xs md:text-sm text-muted-foreground truncate">
-                    {interview.jobDetails.title} at{" "}
-                    {interview.jobDetails.company}
-                  </p>
-                )}
-              </div>
-            </div>
-            {/* Actions */}
-            <div className="flex items-center gap-2 md:gap-3">
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="min-h-[44px] min-w-[44px]"
-                      onClick={handleCopyContent}
-                      disabled={isRegenerating}
-                    >
-                      {copied ? (
-                        <Check className="w-4 h-4 text-green-500" />
-                      ) : (
-                        <Copy className="w-4 h-4" />
-                      )}
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>Copy content</TooltipContent>
-                </Tooltip>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="min-h-[44px] min-w-[44px]"
-                      onClick={() => setShowShortcuts(true)}
-                    >
-                      <Keyboard className="w-4 h-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>Keyboard shortcuts (?)</TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-              {/* Style selector - dropdown on desktop only */}
-              <div className="hidden md:block">
-                <Select
-                  value={selectedStyle}
-                  onValueChange={(v) => handleStyleChange(v as AnalogyStyle)}
-                  disabled={isRegenerating}
+            <AnimatePresence>
+              {scrolled && (
+                <motion.h1
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 10 }}
+                  className="font-semibold text-sm md:text-base truncate max-w-[200px] md:max-w-md"
                 >
-                  <SelectTrigger className="w-44 min-h-[44px]">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {(Object.keys(styleLabels) as AnalogyStyle[]).map((style) => (
-                      <SelectItem key={style} value={style}>
-                        <div className="flex flex-col items-start">
-                          <span>{styleLabels[style]}</span>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Link href={`/interview/${interviewId}/topic/${topicId}/chat`}>
-                      <Button variant="outline" className="min-h-[44px] min-w-[44px]">
-                        <MessageSquare className="w-4 h-4 md:mr-2" />
-                        <span className="hidden md:inline">Ask AI</span>
-                      </Button>
-                    </Link>
-                  </TooltipTrigger>
-                  <TooltipContent>Open AI chat (C)</TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            </div>
+                  {topic.title}
+                </motion.h1>
+              )}
+            </AnimatePresence>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="rounded-full hover:bg-foreground/5 w-10 h-10"
+                    onClick={handleCopyContent}
+                  >
+                    {copied ? (
+                      <Check className="w-4 h-4 text-green-500" />
+                    ) : (
+                      <Copy className="w-4 h-4" />
+                    )}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Copy Content</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="rounded-full hover:bg-foreground/5 w-10 h-10"
+                    onClick={() => setShowShortcuts(true)}
+                  >
+                    <Keyboard className="w-5 h-5" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Shortcuts (?)</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+
+            <Link href={`/interview/${interviewId}/topic/${topicId}/chat`}>
+              <Button
+                variant="default"
+                size="sm"
+                className="rounded-full px-4 h-9 bg-foreground text-background hover:bg-foreground/90 transition-colors shadow-lg shadow-foreground/5"
+              >
+                <MessageSquare className="w-4 h-4 mr-2" />
+                <span className="hidden sm:inline">Ask AI</span>
+                <span className="sm:hidden">Chat</span>
+              </Button>
+            </Link>
           </div>
         </div>
-      </header>
+      </motion.header>
 
-      {/* Content */}
-      <main className="max-w-4xl mx-auto p-4 md:p-6">
-        <div className="space-y-4 md:space-y-6">
-          {/* Mobile Style Selector - vertical button stack */}
-          <div className="md:hidden">
-            <div className="flex flex-col gap-2">
-              {(Object.keys(styleLabels) as AnalogyStyle[]).map((style) => (
-                <Button
-                  key={style}
-                  variant={selectedStyle === style ? "default" : "outline"}
-                  onClick={() => handleStyleChange(style)}
-                  disabled={isRegenerating}
-                  className="w-full min-h-[44px] justify-start"
-                >
-                  {isRegenerating && selectedStyle === style ? (
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  ) : null}
-                  {styleLabels[style]}
-                </Button>
-              ))}
+      <main className="pt-24 pb-20 px-4 md:px-6 max-w-5xl mx-auto">
+        {/* Hero Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+          className="mb-12 relative"
+        >
+          {/* Subtle background gradient */}
+          <div className="absolute -top-20 -left-20 w-96 h-96 bg-primary/5 rounded-full blur-3xl -z-10 opacity-50 pointer-events-none" />
+
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center gap-3 text-sm text-muted-foreground font-medium">
+              <span className="flex items-center gap-1.5 bg-secondary/50 px-3 py-1 rounded-full backdrop-blur-md border border-border/50">
+                <Clock className="w-3.5 h-3.5" />
+                {getReadingTime(topic.content)}
+              </span>
+              <span className="flex items-center gap-1.5 bg-secondary/50 px-3 py-1 rounded-full backdrop-blur-md border border-border/50 capitalize">
+                <Sparkles className="w-3.5 h-3.5 text-yellow-500/70" />
+                {topic.confidence} Confidence
+              </span>
             </div>
-          </div>
 
-          {/* Topic Info */}
-          <div className="flex items-center gap-2 md:gap-4 flex-wrap">
-            <Badge
-              variant="secondary"
-              className={`capitalize ${
-                topic.confidence === "low"
-                  ? "bg-red-500/10 text-red-500"
-                  : topic.confidence === "medium"
-                  ? "bg-yellow-500/10 text-yellow-500"
-                  : "bg-green-500/10 text-green-500"
-              }`}
-            >
-              {topic.confidence} confidence
-            </Badge>
-            <span className="text-xs md:text-sm text-muted-foreground">
-              {topic.reason}
-            </span>
-          </div>
+            <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-foreground leading-[1.1]">
+              {topic.title}
+            </h1>
 
-          {/* Main Content Card */}
-          <Card className="bg-card border-border">
-            <CardContent className="p-4 md:p-6">
-              <div className="flex items-center gap-2 mb-4 flex-wrap">
-                <BookOpen className="w-5 h-5 text-muted-foreground" />
-                <h2 className="font-mono text-base md:text-lg text-foreground">Deep Dive</h2>
+            {interview && (
+              <p className="text-lg text-muted-foreground max-w-2xl">
+                Interview preparation for <span className="text-foreground font-medium">{interview.jobDetails.title}</span> at <span className="text-foreground font-medium">{interview.jobDetails.company}</span>
+              </p>
+            )}
+          </div>
+        </motion.div>
+
+        {/* Style Selector */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" }}
+          className="mb-8 sticky top-20 z-40"
+        >
+          <div className="bg-secondary/80 backdrop-blur-xl border border-border/50 p-1.5 rounded-full inline-flex shadow-sm overflow-x-auto max-w-full no-scrollbar">
+            {(Object.keys(styleLabels) as AnalogyStyle[]).map((style) => (
+              <button
+                key={style}
+                onClick={() => handleStyleChange(style)}
+                disabled={isRegenerating}
+                className={cn(
+                  "px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 whitespace-nowrap relative",
+                  selectedStyle === style
+                    ? "text-background"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                {selectedStyle === style && (
+                  <motion.div
+                    layoutId="activeStyle"
+                    className="absolute inset-0 bg-foreground rounded-full shadow-md"
+                    transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                  />
+                )}
+                <span className="relative z-10 flex items-center gap-2">
+                  {isRegenerating && selectedStyle === style && (
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                  )}
+                  {styleLabels[style]}
+                </span>
+              </button>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* Main Content */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
+        >
+          <Card className="border-none shadow-xl shadow-black/5 bg-card/50 backdrop-blur-sm overflow-hidden ring-1 ring-border/50">
+            <CardContent className="p-6 md:p-10">
+              <div className="flex items-center justify-between mb-8 pb-6 border-b border-border/40">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-primary/10 rounded-xl">
+                    <BookOpen className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-semibold">Explanation</h2>
+                    <p className="text-xs text-muted-foreground">{styleDescriptions[selectedStyle]}</p>
+                  </div>
+                </div>
+
                 {isRegenerating && (
-                  <div className="flex items-center gap-2 ml-2">
-                    <Loader2 className="w-4 h-4 animate-spin text-primary" />
-                    <span className="text-xs md:text-sm text-muted-foreground">
-                      {streamingContent
-                        ? "Streaming response..."
-                        : "Generating..."}
-                    </span>
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground bg-secondary/50 px-3 py-1.5 rounded-full">
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                    {streamingContent ? "Streaming..." : "Thinking..."}
                   </div>
                 )}
               </div>
 
-              <div className="prose prose-invert max-w-none text-sm md:text-base">
+              <div className="prose prose-lg prose-neutral dark:prose-invert max-w-none">
                 {isRegenerating && !streamingContent ? (
-                  <div className="flex items-center gap-2 text-muted-foreground py-4">
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    <span className="text-sm">
-                      Preparing {styleLabels[selectedStyle].toLowerCase()}{" "}
-                      explanation...
-                    </span>
+                  <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
+                    <Loader2 className="w-8 h-8 animate-spin mb-4 opacity-50" />
+                    <p>Crafting your {styleLabels[selectedStyle].toLowerCase()} explanation...</p>
                   </div>
                 ) : (
                   <MarkdownRenderer
                     content={displayContent}
                     isStreaming={isStreaming}
+                    proseClassName="prose-lg"
                   />
                 )}
               </div>
-
-              {/* Analogy Style Info */}
-              <div className="border-t border-border pt-4 mt-4 md:mt-6">
-                <div className="flex items-center gap-2 mb-2 flex-wrap">
-                  <Lightbulb className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-xs text-muted-foreground uppercase tracking-wider">
-                    Explanation Style
-                  </span>
-                  <Badge variant="outline" className="text-xs">
-                    {styleLabels[selectedStyle]}
-                  </Badge>
-                </div>
-                <p className="text-xs md:text-sm text-muted-foreground">
-                  {styleDescriptions[selectedStyle]}
-                </p>
-
-                {/* Style Selector Buttons - hidden on mobile (shown at top instead) */}
-                <div className="hidden md:flex gap-2 mt-4">
-                  {(Object.keys(styleLabels) as AnalogyStyle[]).map((style) => (
-                    <Button
-                      key={style}
-                      variant={selectedStyle === style ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => handleStyleChange(style)}
-                      disabled={isRegenerating}
-                      className="flex-1 min-h-[44px]"
-                    >
-                      {isRegenerating && selectedStyle === style ? (
-                        <Loader2 className="w-3 h-3 mr-2 animate-spin" />
-                      ) : null}
-                      {styleLabels[style]}
-                    </Button>
-                  ))}
-                </div>
-              </div>
             </CardContent>
-          </Card>
 
-          {/* Quick Actions */}
-          <div className="flex flex-col sm:flex-row gap-3 md:gap-4">
-            <div className="flex-1">
-              <RegenerateMenu
-                onRegenerate={() => handleStyleChange(selectedStyle)}
-                onRegenerateWithInstructions={handleRegenerateWithInstructions}
-                disabled={isRegenerating}
-                label="Regenerate Explanation"
-                contextHint="topic explanation"
-              />
+            {/* Footer Actions */}
+            <div className="bg-secondary/30 border-t border-border/40 p-4 md:p-6 flex flex-col sm:flex-row gap-4">
+              <div className="flex-1">
+                <RegenerateMenu
+                  onRegenerate={() => handleStyleChange(selectedStyle)}
+                  onRegenerateWithInstructions={handleRegenerateWithInstructions}
+                  disabled={isRegenerating}
+                  label="Regenerate"
+                  contextHint="topic explanation"
+                />
+              </div>
+              <Link
+                href={`/interview/${interviewId}/topic/${topicId}/chat`}
+                className="flex-1"
+              >
+                <Button variant="outline" className="w-full h-11 rounded-xl border-border/60 hover:bg-secondary/80 hover:border-border transition-all">
+                  <MessageSquare className="w-4 h-4 mr-2" />
+                  Ask Follow-up Questions
+                  <ChevronRight className="w-4 h-4 ml-auto opacity-50" />
+                </Button>
+              </Link>
             </div>
-            <Link
-              href={`/interview/${interviewId}/topic/${topicId}/chat`}
-              className="flex-1"
-            >
-              <Button variant="outline" className="w-full min-h-[44px]">
-                <MessageSquare className="w-4 h-4 mr-2" />
-                Ask Follow-up Questions
-              </Button>
-            </Link>
-          </div>
-        </div>
+          </Card>
+        </motion.div>
       </main>
+
+      {/* Shortcuts Modal */}
+      <AnimatePresence>
+        {showShortcuts && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-background/60 backdrop-blur-sm z-50"
+              onClick={() => setShowShortcuts(false)}
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              transition={{ type: "spring", duration: 0.5 }}
+              className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm z-50 px-4"
+            >
+              <Card className="border-border/50 shadow-2xl bg-card/90 backdrop-blur-xl">
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="p-2 bg-secondary rounded-lg">
+                      <Keyboard className="w-5 h-5" />
+                    </div>
+                    <h3 className="font-semibold text-lg">Keyboard Shortcuts</h3>
+                  </div>
+
+                  <div className="space-y-1">
+                    {[
+                      { key: "Esc", label: "Go back" },
+                      { key: "C", label: "Open chat" },
+                      { key: "1", label: "Professional style" },
+                      { key: "2", label: "Analogy style" },
+                      { key: "3", label: "Simple style" },
+                      { key: "?", label: "Toggle shortcuts" },
+                    ].map((shortcut) => (
+                      <div key={shortcut.key} className="flex items-center justify-between py-2 px-2 rounded-lg hover:bg-secondary/50 transition-colors">
+                        <span className="text-sm text-muted-foreground">{shortcut.label}</span>
+                        <kbd className="px-2.5 py-1 bg-background border border-border rounded-md text-xs font-mono font-medium shadow-sm min-w-[24px] text-center">
+                          {shortcut.key}
+                        </kbd>
+                      </div>
+                    ))}
+                  </div>
+
+                  <Button
+                    variant="outline"
+                    className="w-full mt-6 rounded-xl"
+                    onClick={() => setShowShortcuts(false)}
+                  >
+                    Close
+                  </Button>
+                </CardContent>
+              </Card>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

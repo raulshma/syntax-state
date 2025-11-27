@@ -29,19 +29,7 @@ import { bundledThemes } from "shiki/themes";
 import getWasm from "shiki/wasm";
 import { cn } from "@/lib/utils";
 
-// -------Step 1: Create a markdown component-------
-
-// Markdown component with styling using react-markdown
-const MarkdownComponent: LLMOutputComponent = ({ blockMatch }) => {
-  const markdown = blockMatch.output;
-  return (
-    <div className="prose prose-sm dark:prose-invert max-w-none prose-p:my-2 prose-headings:my-3 prose-ul:my-2 prose-ol:my-2 prose-li:my-1 prose-pre:my-0 prose-code:before:content-none prose-code:after:content-none prose-code:bg-muted prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:text-sm">
-      <ReactMarkdown remarkPlugins={[remarkGfm]}>{markdown}</ReactMarkdown>
-    </div>
-  );
-};
-
-// -------Step 2: Create a code block component with Shiki-------
+// -------Step 1: Create a code block component with Shiki-------
 
 // Load highlighter once with optimized bundle using getHighlighterCore
 const highlighter = loadHighlighter(
@@ -81,19 +69,32 @@ const CodeBlock: LLMOutputComponent = ({ blockMatch }) => {
   );
 };
 
-// -------Step 3: Main MarkdownRenderer component-------
+// -------Step 2: Main MarkdownRenderer component-------
 
 interface MarkdownRendererProps {
   content: string;
   isStreaming?: boolean;
   className?: string;
+  proseClassName?: string;
 }
 
 export function MarkdownRenderer({
   content,
   isStreaming = false,
   className,
+  proseClassName,
 }: MarkdownRendererProps) {
+  // Markdown component with styling using react-markdown
+  // Defined inside to access proseClassName
+  const MarkdownComponent: LLMOutputComponent = ({ blockMatch }) => {
+    const markdown = blockMatch.output;
+    return (
+      <div className={cn("prose dark:prose-invert max-w-none prose-p:my-2 prose-headings:my-3 prose-ul:my-2 prose-ol:my-2 prose-li:my-1 prose-pre:my-0 prose-code:before:content-none prose-code:after:content-none prose-code:bg-muted prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:text-sm", proseClassName)}>
+        <ReactMarkdown remarkPlugins={[remarkGfm]}>{markdown}</ReactMarkdown>
+      </div>
+    );
+  };
+
   const { blockMatches } = useLLMOutput({
     llmOutput: content,
     fallbackBlock: {
@@ -128,15 +129,18 @@ export function MarkdownRenderer({
 export function StaticMarkdown({
   content,
   className,
+  proseClassName,
 }: {
   content: string;
   className?: string;
+  proseClassName?: string;
 }) {
   return (
     <MarkdownRenderer
       content={content}
       isStreaming={false}
       className={className}
+      proseClassName={proseClassName}
     />
   );
 }
