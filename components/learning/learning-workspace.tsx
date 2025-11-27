@@ -16,11 +16,13 @@ import {
   FileText,
   HelpCircle,
   RefreshCw,
+  Sparkles,
+  ChevronRight,
+  Zap,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   submitReflection,
   getLearningInsights,
@@ -40,8 +42,6 @@ import { ConceptExplanationView } from "./activity-views/concept-explanation";
 import { ReflectionForm } from "./reflection-form";
 import { TimelineView } from "./timeline-view";
 import { InsightsDashboard } from "./insights-dashboard";
-import { TopicCard } from "./topic-card";
-import { MobileLearningSidebar } from "./mobile-learning-sidebar";
 
 interface LearningWorkspaceProps {
   learningPath: LearningPath;
@@ -74,14 +74,12 @@ export function LearningWorkspace({
   const [userAnswer, setUserAnswer] = useState<string>("");
   const [startTime, setStartTime] = useState(Date.now());
   const [insights, setInsights] = useState<LearningInsights | null>(null);
-  const [activeTab, setActiveTab] = useState("activity");
+  const [activeView, setActiveView] = useState<"activity" | "timeline" | "insights">("activity");
 
   const currentTopic = learningPath.topics.find(
     (t) => t.id === learningPath.currentTopicId
   );
 
-  // Use the activity stream hook for streaming activity generation
-  // Requirements: 1.1, 1.2, 4.2, 5.2
   const {
     status: streamStatus,
     error: streamError,
@@ -92,7 +90,6 @@ export function LearningWorkspace({
   } = useActivityStream({
     learningPathId: learningPath._id,
     onComplete: () => {
-      // Reset start time when activity is ready
       setStartTime(Date.now());
     },
     onError: (error) => {
@@ -100,13 +97,11 @@ export function LearningWorkspace({
     },
   });
 
-  // Determine current activity - prefer streamed activity, fall back to persisted currentActivity
   const currentActivity = streamedActivity || learningPath.currentActivity;
   const isLoadingActivity =
     streamStatus === "loading" || streamStatus === "streaming";
   const activityError = streamError;
 
-  // Load initial activity via streaming if no currentActivity exists
   const loadActivity = useCallback(
     async (regenerate = false) => {
       setShowReflection(false);
@@ -116,7 +111,6 @@ export function LearningWorkspace({
     [startStream]
   );
 
-  // Load insights
   const loadInsights = useCallback(async () => {
     try {
       const result = await getLearningInsights(learningPath._id);
@@ -128,13 +122,10 @@ export function LearningWorkspace({
     }
   }, [learningPath._id]);
 
-  // Track if we've already attempted to load activity and insights
   const [hasAttemptedLoad, setHasAttemptedLoad] = useState(false);
   const [hasLoadedInsights, setHasLoadedInsights] = useState(false);
 
-  // Load activity on mount if no currentActivity exists
   useEffect(() => {
-    // Only start streaming if there's no existing activity, we're idle, and haven't attempted yet
     if (
       !learningPath.currentActivity &&
       streamStatus === "idle" &&
@@ -150,7 +141,6 @@ export function LearningWorkspace({
     loadActivity,
   ]);
 
-  // Load insights once on mount
   useEffect(() => {
     if (!hasLoadedInsights) {
       setHasLoadedInsights(true);
@@ -163,8 +153,6 @@ export function LearningWorkspace({
     setShowReflection(true);
   };
 
-  // Handle regenerate button click - force new activity generation
-  // Requirements: 4.4
   const handleRegenerate = useCallback(() => {
     loadActivity(true);
   }, [loadActivity]);
@@ -189,15 +177,13 @@ export function LearningWorkspace({
       );
 
       if (result.success) {
-        // Update local state with new timeline entry and clear currentActivity
         setLearningPath((prev) => ({
           ...prev,
           timeline: [...prev.timeline, result.data],
           overallElo: result.data.eloAfter,
-          currentActivity: null, // Clear the current activity after submission
+          currentActivity: null,
         }));
 
-        // Load next activity via streaming
         await loadActivity();
         await loadInsights();
       } else {
@@ -215,297 +201,327 @@ export function LearningWorkspace({
     : BookOpen;
 
   return (
-    <div className="min-h-screen bg-background text-foreground font-sans selection:bg-primary/20">
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/50 supports-[backdrop-filter]:bg-background/60">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-4">
-              <Link
-                href="/dashboard"
-                className="p-2 -ml-2 rounded-full hover:bg-secondary/80 transition-colors text-muted-foreground hover:text-foreground"
-              >
-                <ArrowLeft className="w-5 h-5" />
-              </Link>
-              <div className="flex flex-col">
-                <h1 className="text-lg font-semibold tracking-tight text-foreground">
-                  {learningPath.goal}
-                </h1>
-                <div className="flex items-center gap-2 text-xs text-muted-foreground font-medium">
-                  <span>ELO {Math.round(learningPath.overallElo)}</span>
-                  <span className="w-1 h-1 rounded-full bg-border" />
-                  <span>Lvl {learningPath.currentDifficulty}</span>
+    <div className="min-h-screen bg-gradient-to-b from-background via-background to-secondary/20">
+      {/* Apple-style floating header */}
+      <header className="fixed top-0 left-0 right-0 z-50">
+        <div className="mx-4 mt-4">
+          <div className="max-w-6xl mx-auto">
+            <div className="bg-background/70 backdrop-blur-2xl border border-border/40 rounded-2xl shadow-lg shadow-black/5">
+              <div className="px-6 py-4 flex items-center justify-between">
+                <div className="flex items-center gap-5">
+                  <Link
+                    href="/dashboard"
+                    className="group flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    <div className="p-2 rounded-xl bg-secondary/50 group-hover:bg-secondary transition-colors">
+                      <ArrowLeft className="w-4 h-4" />
+                    </div>
+                  </Link>
+                  <div className="h-6 w-px bg-border/50" />
+                  <div>
+                    <h1 className="text-base font-semibold text-foreground line-clamp-1">
+                      {learningPath.goal}
+                    </h1>
+                  </div>
                 </div>
-              </div>
-            </div>
 
-            <div className="flex items-center gap-4">
-              <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full bg-secondary/50 border border-border/50">
-                <span className="text-xs font-medium text-muted-foreground">
-                  Progress
-                </span>
-                <span className="text-xs font-bold text-foreground">
-                  {learningPath.timeline.length} activities
-                </span>
+                <div className="flex items-center gap-3">
+                  <div className="hidden sm:flex items-center gap-4 px-4 py-2 rounded-xl bg-secondary/30">
+                    <div className="flex items-center gap-2">
+                      <Zap className="w-4 h-4 text-amber-500" />
+                      <span className="text-sm font-medium">{Math.round(learningPath.overallElo)}</span>
+                    </div>
+                    <div className="h-4 w-px bg-border/50" />
+                    <div className="flex items-center gap-2">
+                      <Target className="w-4 h-4 text-primary" />
+                      <span className="text-sm font-medium">Lvl {learningPath.currentDifficulty}</span>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          {/* Sidebar */}
-          <aside className="hidden lg:block lg:col-span-3 space-y-8">
-            {/* Topics */}
-            <div className="space-y-4">
-              <div className="flex items-center gap-2 px-2">
-                <Target className="w-4 h-4 text-primary" />
-                <span className="text-sm font-semibold text-foreground">
-                  Topics
-                </span>
-              </div>
-              <div className="space-y-1">
-                {learningPath.topics.map((topic) => (
-                  <TopicCard
-                    key={topic.id}
-                    topic={topic}
-                    isActive={topic.id === learningPath.currentTopicId}
-                  />
-                ))}
-                {learningPath.topics.length === 0 && (
-                  <div className="px-4 py-8 text-center rounded-2xl bg-secondary/30 border border-border/50 border-dashed">
-                    <p className="text-sm text-muted-foreground">
-                      No topics yet
-                    </p>
-                  </div>
-                )}
-              </div>
+      {/* Main content with top padding for fixed header */}
+      <main className="pt-28 pb-12 px-4">
+        <div className="max-w-6xl mx-auto">
+          {/* Navigation Pills - Apple style segmented control */}
+          <div className="flex justify-center mb-10">
+            <div className="inline-flex p-1.5 rounded-2xl bg-secondary/40 backdrop-blur-sm border border-border/30">
+              {[
+                { id: "activity", label: "Learn", icon: Sparkles },
+                { id: "timeline", label: "History", icon: Clock },
+                { id: "insights", label: "Insights", icon: Brain },
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveView(tab.id as typeof activeView)}
+                  className={`relative flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 ${
+                    activeView === tab.id
+                      ? "text-foreground"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {activeView === tab.id && (
+                    <motion.div
+                      layoutId="activeTab"
+                      className="absolute inset-0 bg-background rounded-xl shadow-sm border border-border/50"
+                      transition={{ type: "spring", bounce: 0.15, duration: 0.5 }}
+                    />
+                  )}
+                  <tab.icon className="w-4 h-4 relative z-10" />
+                  <span className="relative z-10">{tab.label}</span>
+                </button>
+              ))}
             </div>
+          </div>
 
-            {/* Skill Scores */}
-            <div className="space-y-4">
-              <div className="flex items-center gap-2 px-2">
-                <Brain className="w-4 h-4 text-primary" />
-                <span className="text-sm font-semibold text-foreground">
-                  Skills
-                </span>
-              </div>
-              <div className="p-4 rounded-3xl bg-secondary/20 border border-border/50 space-y-4">
-                {Object.entries(learningPath.skillScores).map(
-                  ([cluster, score]) => (
-                    <div key={cluster} className="space-y-2">
-                      <div className="flex justify-between text-xs font-medium">
-                        <span className="text-muted-foreground capitalize">
-                          {cluster.replace("-", " ")}
-                        </span>
-                        <span className="text-foreground">
-                          {Math.round(score)}
-                        </span>
-                      </div>
-                      <Progress
-                        value={Math.min((score / 2000) * 100, 100)}
-                        className="h-2 rounded-full bg-secondary"
-                      />
-                    </div>
-                  )
-                )}
-                {Object.keys(learningPath.skillScores).length === 0 && (
-                  <p className="text-sm text-muted-foreground text-center py-2">
-                    Complete activities to see skills
-                  </p>
-                )}
-              </div>
-            </div>
-          </aside>
-
-          {/* Mobile Sidebar */}
-          <MobileLearningSidebar
-            topics={learningPath.topics}
-            currentTopicId={learningPath.currentTopicId ?? undefined}
-            skillScores={learningPath.skillScores}
-          />
-
-          {/* Main Content */}
-          <main className="lg:col-span-9">
-            <Tabs
-              value={activeTab}
-              onValueChange={setActiveTab}
-              className="space-y-8"
-            >
-              <div className="flex justify-center">
-                <TabsList className="h-10 p-1 bg-secondary/50 backdrop-blur-sm rounded-full border border-border/50">
-                  <TabsTrigger
-                    value="activity"
-                    className="rounded-full px-6 text-xs font-medium data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all"
-                  >
-                    Activity
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="timeline"
-                    className="rounded-full px-6 text-xs font-medium data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all"
-                  >
-                    Timeline
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="insights"
-                    className="rounded-full px-6 text-xs font-medium data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all"
-                  >
-                    Insights
-                  </TabsTrigger>
-                </TabsList>
-              </div>
-
-              <TabsContent
-                value="activity"
-                className="space-y-6 focus-visible:outline-none"
+          {/* Content Area */}
+          <AnimatePresence mode="wait">
+            {activeView === "activity" && (
+              <motion.div
+                key="activity"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.3 }}
               >
-                {/* Current Topic Header */}
-                {currentTopic && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="flex items-start justify-between gap-4 px-2"
-                  >
-                    <div className="space-y-2">
-                      <Badge
-                        variant="secondary"
-                        className="rounded-full px-3 py-0.5 text-xs font-medium bg-primary/10 text-primary border-primary/20"
-                      >
-                        {currentTopic.skillCluster.replace("-", " ")}
-                      </Badge>
-                      <h2 className="text-3xl font-bold tracking-tight text-foreground">
-                        {currentTopic.title}
-                      </h2>
-                      <p className="text-muted-foreground text-lg leading-relaxed max-w-3xl">
-                        {currentTopic.description}
-                      </p>
-                    </div>
-                    {/* Regenerate button - Requirements: 4.4 */}
-                    {currentActivity &&
-                      !showReflection &&
-                      !isLoadingActivity && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={handleRegenerate}
-                          className="rounded-full h-9 px-4 gap-2 bg-background/50 backdrop-blur-sm hover:bg-secondary/80 border-border/50 shadow-sm"
-                        >
-                          <RefreshCw className="w-3.5 h-3.5" />
-                          <span className="text-xs font-medium">
-                            New Activity
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                  {/* Sidebar - Topics & Skills */}
+                  <aside className="lg:col-span-1 space-y-6">
+                    {/* Current Topic Card */}
+                    {currentTopic && (
+                      <div className="p-6 rounded-3xl bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border border-primary/20">
+                        <div className="flex items-center gap-2 mb-3">
+                          <div className="p-2 rounded-xl bg-primary/10">
+                            <Target className="w-4 h-4 text-primary" />
+                          </div>
+                          <span className="text-xs font-medium text-primary uppercase tracking-wider">
+                            Current Topic
                           </span>
-                        </Button>
-                      )}
-                  </motion.div>
-                )}
+                        </div>
+                        <h3 className="text-lg font-semibold text-foreground mb-2">
+                          {currentTopic.title}
+                        </h3>
+                        <p className="text-sm text-muted-foreground line-clamp-2">
+                          {currentTopic.description}
+                        </p>
+                        <div className="mt-4 pt-4 border-t border-primary/10">
+                          <div className="flex items-center justify-between text-xs">
+                            <span className="text-muted-foreground capitalize">
+                              {currentTopic.skillCluster.replace("-", " ")}
+                            </span>
+                            <Badge variant="secondary" className="rounded-full text-xs">
+                              Lvl {currentTopic.difficulty}
+                            </Badge>
+                          </div>
+                        </div>
+                      </div>
+                    )}
 
-                {/* Activity Content */}
-                <AnimatePresence mode="wait">
-                  {streamStatus === "streaming" && streamingContent ? (
-                    <StreamingActivityCard
-                      content={streamingContent}
-                      activityType={activityType}
-                    />
-                  ) : isLoadingActivity ? (
-                    <ActivityLoadingSkeleton />
-                  ) : activityError ? (
-                    <ActivityError
-                      error={activityError}
-                      onRetry={() => loadActivity()}
-                    />
-                  ) : currentActivity && !showReflection ? (
-                    <ActivityCard
-                      activity={currentActivity}
-                      onComplete={handleActivityComplete}
-                      ActivityIcon={ActivityIcon}
-                      language={learningPath.programmingLanguage}
-                    />
-                  ) : showReflection && currentActivity ? (
-                    <ReflectionForm
-                      activity={currentActivity}
-                      onSubmit={handleReflectionSubmit}
-                      isSubmitting={isSubmittingReflection}
-                    />
-                  ) : null}
-                </AnimatePresence>
-              </TabsContent>
+                    {/* Topics List */}
+                    <div className="p-6 rounded-3xl bg-background/60 backdrop-blur-sm border border-border/40">
+                      <h4 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
+                        <BookOpen className="w-4 h-4 text-muted-foreground" />
+                        All Topics
+                      </h4>
+                      <div className="space-y-2">
+                        {learningPath.topics.map((topic) => (
+                          <div
+                            key={topic.id}
+                            className={`p-3 rounded-xl transition-all cursor-pointer ${
+                              topic.id === learningPath.currentTopicId
+                                ? "bg-primary/10 border border-primary/20"
+                                : "hover:bg-secondary/50"
+                            }`}
+                          >
+                            <div className="flex items-center justify-between">
+                              <span className={`text-sm font-medium line-clamp-1 ${
+                                topic.id === learningPath.currentTopicId
+                                  ? "text-primary"
+                                  : "text-foreground"
+                              }`}>
+                                {topic.title}
+                              </span>
+                              {topic.id === learningPath.currentTopicId && (
+                                <ChevronRight className="w-4 h-4 text-primary" />
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
 
-              <TabsContent
-                value="timeline"
-                className="focus-visible:outline-none"
+                    {/* Skills Progress */}
+                    {Object.keys(learningPath.skillScores).length > 0 && (
+                      <div className="p-6 rounded-3xl bg-background/60 backdrop-blur-sm border border-border/40">
+                        <h4 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
+                          <Brain className="w-4 h-4 text-muted-foreground" />
+                          Skills
+                        </h4>
+                        <div className="space-y-4">
+                          {Object.entries(learningPath.skillScores).map(
+                            ([cluster, score]) => (
+                              <div key={cluster} className="space-y-2">
+                                <div className="flex justify-between text-xs">
+                                  <span className="text-muted-foreground capitalize">
+                                    {cluster.replace("-", " ")}
+                                  </span>
+                                  <span className="font-medium text-foreground">
+                                    {Math.round(score)}
+                                  </span>
+                                </div>
+                                <div className="h-1.5 rounded-full bg-secondary overflow-hidden">
+                                  <motion.div
+                                    initial={{ width: 0 }}
+                                    animate={{ width: `${Math.min((score / 2000) * 100, 100)}%` }}
+                                    transition={{ duration: 1, ease: "easeOut" }}
+                                    className="h-full rounded-full bg-gradient-to-r from-primary to-primary/60"
+                                  />
+                                </div>
+                              </div>
+                            )
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </aside>
+
+                  {/* Main Activity Area */}
+                  <div className="lg:col-span-3">
+                    <AnimatePresence mode="wait">
+                      {streamStatus === "streaming" && streamingContent ? (
+                        <StreamingActivityCard
+                          content={streamingContent}
+                          activityType={activityType}
+                        />
+                      ) : isLoadingActivity ? (
+                        <ActivityLoadingSkeleton />
+                      ) : activityError ? (
+                        <ActivityError
+                          error={activityError}
+                          onRetry={() => loadActivity()}
+                        />
+                      ) : currentActivity && !showReflection ? (
+                        <ActivityCard
+                          activity={currentActivity}
+                          onComplete={handleActivityComplete}
+                          ActivityIcon={ActivityIcon}
+                          language={learningPath.programmingLanguage}
+                          onRegenerate={handleRegenerate}
+                        />
+                      ) : showReflection && currentActivity ? (
+                        <ReflectionForm
+                          activity={currentActivity}
+                          onSubmit={handleReflectionSubmit}
+                          isSubmitting={isSubmittingReflection}
+                        />
+                      ) : null}
+                    </AnimatePresence>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {activeView === "timeline" && (
+              <motion.div
+                key="timeline"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.3 }}
+                className="max-w-4xl mx-auto"
               >
                 <TimelineView
                   timeline={learningPath.timeline}
                   pathId={learningPath._id}
                 />
-              </TabsContent>
+              </motion.div>
+            )}
 
-              <TabsContent
-                value="insights"
-                className="focus-visible:outline-none"
+            {activeView === "insights" && (
+              <motion.div
+                key="insights"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.3 }}
               >
                 <InsightsDashboard
                   insights={insights}
                   learningPath={learningPath}
                 />
-              </TabsContent>
-            </Tabs>
-          </main>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
-      </div>
+      </main>
     </div>
   );
 }
 
-// Activity Card Component
+
+// Apple-style Activity Card Component
 function ActivityCard({
   activity,
   onComplete,
   ActivityIcon,
   language = "typescript",
+  onRegenerate,
 }: {
   activity: Activity;
   onComplete: (answer: string, isCorrect?: boolean) => void;
   ActivityIcon: typeof BookOpen;
   language?: string;
+  onRegenerate: () => void;
 }) {
   return (
     <motion.div
       key={activity.id}
-      initial={{ opacity: 0, y: 20, scale: 0.98 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: -20, scale: 0.98 }}
+      initial={{ opacity: 0, scale: 0.98, y: 20 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.98, y: -20 }}
       transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
-      className="rounded-3xl border border-border/50 bg-background/60 backdrop-blur-xl shadow-xl overflow-hidden"
+      className="rounded-3xl bg-background/80 backdrop-blur-xl border border-border/40 shadow-xl shadow-black/5 overflow-hidden"
     >
-      <div className="p-8 border-b border-border/50">
+      {/* Card Header */}
+      <div className="px-8 py-6 border-b border-border/30 bg-gradient-to-r from-secondary/30 to-transparent">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center shadow-inner">
-              <ActivityIcon className="w-6 h-6 text-primary" />
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center border border-primary/10">
+              <ActivityIcon className="w-7 h-7 text-primary" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-foreground tracking-tight">
+              <h3 className="text-xl font-semibold text-foreground">
                 {activityTypeLabels[activity.type] || activity.type}
               </h3>
-              <div className="flex items-center gap-2 mt-1">
-                <Badge
-                  variant="outline"
-                  className="rounded-full px-2.5 py-0.5 text-xs font-medium border-border/50 bg-secondary/30"
-                >
+              <div className="flex items-center gap-3 mt-1">
+                <span className="text-sm text-muted-foreground">
                   Difficulty {activity.difficulty}
-                </Badge>
+                </span>
+                <span className="w-1 h-1 rounded-full bg-border" />
+                <span className="text-sm text-muted-foreground flex items-center gap-1.5">
+                  <Clock className="w-3.5 h-3.5" />
+                  Take your time
+                </span>
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-2 text-sm text-muted-foreground font-medium bg-secondary/30 px-3 py-1.5 rounded-full border border-border/50">
-            <Clock className="w-4 h-4" />
-            <span>Take your time</span>
-          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onRegenerate}
+            className="rounded-xl h-10 px-4 gap-2 hover:bg-secondary/60 text-muted-foreground hover:text-foreground"
+          >
+            <RefreshCw className="w-4 h-4" />
+            <span className="hidden sm:inline text-sm">New Question</span>
+          </Button>
         </div>
       </div>
 
+      {/* Card Content */}
       <div className="p-8">
         <ActivityContentView
           content={activity.content}
@@ -517,7 +533,7 @@ function ActivityCard({
   );
 }
 
-// Activity Content View - renders the appropriate view based on activity type
+// Activity Content View
 function ActivityContentView({
   content,
   onComplete,
@@ -552,19 +568,19 @@ function ActivityContentView({
       );
     default:
       return (
-        <div className="text-center py-12">
-          <div className="w-16 h-16 rounded-full bg-secondary/50 flex items-center justify-center mx-auto mb-4">
-            <HelpCircle className="w-8 h-8 text-muted-foreground" />
+        <div className="text-center py-16">
+          <div className="w-20 h-20 rounded-3xl bg-secondary/50 flex items-center justify-center mx-auto mb-6">
+            <HelpCircle className="w-10 h-10 text-muted-foreground" />
           </div>
-          <h3 className="text-lg font-semibold text-foreground mb-2">
+          <h3 className="text-xl font-semibold text-foreground mb-2">
             Unknown Activity Type
           </h3>
-          <p className="text-muted-foreground mb-6">
+          <p className="text-muted-foreground mb-8">
             This activity type is not yet supported.
           </p>
           <Button
             onClick={() => onComplete("", false)}
-            className="rounded-full px-6"
+            className="rounded-xl px-8 h-12"
           >
             Continue
           </Button>
@@ -573,45 +589,50 @@ function ActivityContentView({
   }
 }
 
-// Loading Skeleton
+// Apple-style Loading Skeleton
 function ActivityLoadingSkeleton() {
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.98 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.98 }}
-      className="rounded-3xl border border-border/50 bg-background/60 backdrop-blur-xl shadow-xl overflow-hidden"
+      className="rounded-3xl bg-background/80 backdrop-blur-xl border border-border/40 shadow-xl shadow-black/5 overflow-hidden"
     >
-      <div className="p-8 border-b border-border/50">
+      <div className="px-8 py-6 border-b border-border/30">
         <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-secondary/50 animate-pulse" />
+          <div className="w-14 h-14 rounded-2xl bg-secondary/50 animate-pulse" />
           <div className="space-y-2">
-            <div className="h-6 w-48 bg-secondary/50 rounded-lg animate-pulse" />
-            <div className="h-4 w-24 bg-secondary/50 rounded-lg animate-pulse" />
+            <div className="h-6 w-48 bg-secondary/50 rounded-xl animate-pulse" />
+            <div className="h-4 w-32 bg-secondary/40 rounded-lg animate-pulse" />
           </div>
         </div>
       </div>
       <div className="p-8 space-y-6">
-        <div className="h-8 w-3/4 bg-secondary/50 rounded-lg animate-pulse" />
-        <div className="h-4 w-full bg-secondary/50 rounded-lg animate-pulse" />
-        <div className="h-4 w-5/6 bg-secondary/50 rounded-lg animate-pulse" />
-        <div className="space-y-4 mt-8">
+        <div className="space-y-3">
+          <div className="h-6 w-full bg-secondary/40 rounded-xl animate-pulse" />
+          <div className="h-6 w-4/5 bg-secondary/30 rounded-xl animate-pulse" />
+        </div>
+        <div className="space-y-4 pt-4">
           {[1, 2, 3, 4].map((i) => (
             <div
               key={i}
-              className="h-16 w-full bg-secondary/30 rounded-xl animate-pulse"
+              className="h-16 w-full bg-secondary/20 rounded-2xl animate-pulse"
+              style={{ animationDelay: `${i * 100}ms` }}
             />
           ))}
         </div>
       </div>
-      <div className="p-8 border-t border-border/50 flex justify-center">
-        <Loader2 className="w-6 h-6 animate-spin text-primary" />
+      <div className="px-8 py-6 border-t border-border/30 flex justify-center">
+        <div className="flex items-center gap-3 text-muted-foreground">
+          <Loader2 className="w-5 h-5 animate-spin" />
+          <span className="text-sm font-medium">Generating your activity...</span>
+        </div>
       </div>
     </motion.div>
   );
 }
 
-// Error State
+// Apple-style Error State
 function ActivityError({
   error,
   onRetry,
@@ -624,28 +645,30 @@ function ActivityError({
       initial={{ opacity: 0, scale: 0.98 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.98 }}
-      className="rounded-3xl border border-destructive/20 bg-destructive/5 p-12 text-center"
+      className="rounded-3xl bg-gradient-to-br from-destructive/5 to-transparent border border-destructive/20 p-12 text-center"
     >
-      <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center mx-auto mb-6">
-        <XCircle className="w-8 h-8 text-destructive" />
+      <div className="w-20 h-20 rounded-3xl bg-destructive/10 flex items-center justify-center mx-auto mb-6">
+        <XCircle className="w-10 h-10 text-destructive" />
       </div>
-      <h3 className="text-xl font-bold text-foreground mb-2">
-        Failed to Load Activity
+      <h3 className="text-2xl font-semibold text-foreground mb-3">
+        Something went wrong
       </h3>
-      <p className="text-muted-foreground mb-8 max-w-md mx-auto">{error}</p>
+      <p className="text-muted-foreground mb-8 max-w-md mx-auto leading-relaxed">
+        {error}
+      </p>
       <Button
         onClick={onRetry}
-        className="rounded-full px-8 shadow-lg shadow-primary/25"
+        size="lg"
+        className="rounded-xl px-8 h-12 shadow-lg"
       >
-        <Loader2 className="w-4 h-4 mr-2" />
+        <RefreshCw className="w-4 h-4 mr-2" />
         Try Again
       </Button>
     </motion.div>
   );
 }
 
-// Streaming Activity Card - displays content progressively during streaming
-// Requirements: 1.1, 1.2
+// Apple-style Streaming Activity Card
 function StreamingActivityCard({
   content,
   activityType,
@@ -660,134 +683,138 @@ function StreamingActivityCard({
     ? activityTypeLabels[activityType] || activityType
     : "Activity";
 
-  // Type guard for content with question property
   const hasQuestion = (c: unknown): c is { question?: string } =>
     typeof c === "object" && c !== null && "question" in c;
-
-  // Type guard for content with options property
   const hasOptions = (c: unknown): c is { options?: string[] } =>
     typeof c === "object" && c !== null && "options" in c;
-
-  // Type guard for content with problemDescription property
-  const hasProblemDescription = (
-    c: unknown
-  ): c is { problemDescription?: string } =>
+  const hasProblemDescription = (c: unknown): c is { problemDescription?: string } =>
     typeof c === "object" && c !== null && "problemDescription" in c;
-
-  // Type guard for content with content property (concept explanation)
   const hasContent = (c: unknown): c is { content?: string } =>
     typeof c === "object" && c !== null && "content" in c;
-
-  // Type guard for content with buggyCode property
   const hasBuggyCode = (c: unknown): c is { buggyCode?: string } =>
     typeof c === "object" && c !== null && "buggyCode" in c;
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20, scale: 0.98 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: -20, scale: 0.98 }}
-      className="rounded-3xl border border-border/50 bg-background/60 backdrop-blur-xl shadow-xl overflow-hidden"
+      initial={{ opacity: 0, scale: 0.98, y: 20 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.98, y: -20 }}
+      className="rounded-3xl bg-background/80 backdrop-blur-xl border border-border/40 shadow-xl shadow-black/5 overflow-hidden"
     >
-      <div className="p-8 border-b border-border/50">
+      <div className="px-8 py-6 border-b border-border/30 bg-gradient-to-r from-primary/5 to-transparent">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center shadow-inner">
-              <ActivityIcon className="w-6 h-6 text-primary" />
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center border border-primary/10 relative">
+              <ActivityIcon className="w-7 h-7 text-primary" />
+              <div className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-primary animate-pulse" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-foreground tracking-tight">
+              <h3 className="text-xl font-semibold text-foreground">
                 {activityLabel}
               </h3>
               <div className="flex items-center gap-2 mt-1">
-                <Badge
-                  variant="outline"
-                  className="rounded-full px-2.5 py-0.5 text-xs font-medium border-border/50 bg-secondary/30"
-                >
-                  Generating...
-                </Badge>
+                <div className="flex items-center gap-1.5 text-sm text-primary">
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>Generating...</span>
+                </div>
               </div>
             </div>
-          </div>
-          <div className="flex items-center gap-2 text-sm text-primary font-medium bg-primary/5 px-3 py-1.5 rounded-full border border-primary/10">
-            <Loader2 className="w-4 h-4 animate-spin" />
-            <span>Streaming</span>
           </div>
         </div>
       </div>
 
       <div className="p-8 space-y-6">
-        {/* Display question for MCQ */}
         {hasQuestion(content) && content.question && (
-          <div className="space-y-2">
-            <p className="text-xl font-medium text-foreground leading-relaxed">
-              {content.question}
-            </p>
-          </div>
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-xl text-foreground font-medium leading-relaxed"
+          >
+            {content.question}
+          </motion.p>
         )}
 
-        {/* Display options for MCQ */}
-        {hasOptions(content) &&
-          content.options &&
-          content.options.length > 0 && (
-            <div className="space-y-3 mt-6">
-              {content.options.map((option, index) => (
-                <div
-                  key={index}
-                  className="p-4 rounded-xl border border-border/50 bg-secondary/20 text-muted-foreground"
-                >
-                  {option || (
-                    <span className="animate-pulse">Loading option...</span>
-                  )}
+        {hasOptions(content) && content.options && content.options.length > 0 && (
+          <div className="space-y-3 mt-6">
+            {content.options.map((option, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: index * 0.1 }}
+                className="p-5 rounded-2xl border border-border/40 bg-secondary/20 text-muted-foreground"
+              >
+                <div className="flex items-center gap-4">
+                  <span className="w-8 h-8 rounded-xl bg-secondary/50 flex items-center justify-center text-sm font-medium">
+                    {String.fromCharCode(65 + index)}
+                  </span>
+                  <span>{option || <span className="animate-pulse">...</span>}</span>
                 </div>
-              ))}
-            </div>
-          )}
+              </motion.div>
+            ))}
+          </div>
+        )}
 
-        {/* Display problem description for coding challenge */}
         {hasProblemDescription(content) && content.problemDescription && (
-          <div className="space-y-2">
-            <p className="text-lg text-foreground leading-relaxed">
-              {content.problemDescription}
-            </p>
-          </div>
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-lg text-foreground leading-relaxed"
+          >
+            {content.problemDescription}
+          </motion.p>
         )}
 
-        {/* Display content for concept explanation */}
         {hasContent(content) && content.content && (
-          <div className="space-y-2">
-            <p className="text-lg text-foreground leading-relaxed whitespace-pre-wrap">
-              {content.content}
-            </p>
-          </div>
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-lg text-foreground leading-relaxed whitespace-pre-wrap"
+          >
+            {content.content}
+          </motion.p>
         )}
 
-        {/* Display buggy code for debugging task */}
         {hasBuggyCode(content) && content.buggyCode && (
-          <div className="space-y-2">
-            <pre className="p-6 rounded-2xl bg-secondary/30 border border-border/50 overflow-x-auto text-sm font-mono">
-              {content.buggyCode}
-            </pre>
-          </div>
+          <motion.pre
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="p-6 rounded-2xl bg-secondary/30 border border-border/40 overflow-x-auto text-sm font-mono"
+          >
+            {content.buggyCode}
+          </motion.pre>
         )}
 
-        {/* Show loading indicator if no content yet */}
         {!hasQuestion(content) &&
           !hasProblemDescription(content) &&
           !hasContent(content) &&
           !hasBuggyCode(content) && (
-            <div className="space-y-6">
-              <div className="h-8 w-full bg-secondary/50 rounded-lg animate-pulse" />
-              <div className="h-4 w-3/4 bg-secondary/50 rounded-lg animate-pulse" />
-              <div className="h-4 w-full bg-secondary/50 rounded-lg animate-pulse" />
+            <div className="space-y-4">
+              <div className="h-6 w-full bg-secondary/40 rounded-xl animate-pulse" />
+              <div className="h-6 w-3/4 bg-secondary/30 rounded-xl animate-pulse" />
             </div>
           )}
       </div>
 
-      <div className="p-6 border-t border-border/50 flex justify-center bg-secondary/10">
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Loader2 className="w-4 h-4 animate-spin" />
-          <span>Generating activity content...</span>
+      <div className="px-8 py-5 border-t border-border/30 bg-secondary/10">
+        <div className="flex items-center justify-center gap-2">
+          <div className="flex gap-1">
+            {[0, 1, 2].map((i) => (
+              <motion.div
+                key={i}
+                className="w-2 h-2 rounded-full bg-primary"
+                animate={{ opacity: [0.3, 1, 0.3] }}
+                transition={{
+                  duration: 1,
+                  repeat: Infinity,
+                  delay: i * 0.2,
+                }}
+              />
+            ))}
+          </div>
+          <span className="text-sm text-muted-foreground ml-2">
+            Creating your personalized activity
+          </span>
         </div>
       </div>
     </motion.div>

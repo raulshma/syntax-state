@@ -12,9 +12,10 @@ import {
   XCircle,
   Brain,
   Gauge,
+  Zap,
+  Activity,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
 import {
   RadarChart,
   PolarGrid,
@@ -64,19 +65,18 @@ const activityTypeLabels: Record<string, string> = {
 export function InsightsDashboard({ insights, learningPath }: InsightsDashboardProps) {
   if (!insights) {
     return (
-      <div className="text-center py-20">
-        <div className="w-20 h-20 bg-secondary/30 rounded-full flex items-center justify-center mx-auto mb-6">
-          <BarChart3 className="w-10 h-10 text-muted-foreground" />
+      <div className="text-center py-24">
+        <div className="w-24 h-24 rounded-3xl bg-secondary/30 flex items-center justify-center mx-auto mb-8">
+          <BarChart3 className="w-12 h-12 text-muted-foreground" />
         </div>
-        <h3 className="text-xl font-bold text-foreground mb-2">Loading Insights...</h3>
-        <p className="text-muted-foreground max-w-sm mx-auto">
+        <h3 className="text-2xl font-semibold text-foreground mb-3">Loading Insights...</h3>
+        <p className="text-muted-foreground max-w-sm mx-auto leading-relaxed">
           Complete more activities to see detailed insights.
         </p>
       </div>
     );
   }
 
-  // Prepare radar chart data
   const radarData = insights.skillRadar.map((item) => ({
     skill: skillClusterLabels[item.cluster] || item.cluster,
     score: item.score,
@@ -84,7 +84,6 @@ export function InsightsDashboard({ insights, learningPath }: InsightsDashboardP
     fullMark: item.maxScore,
   }));
 
-  // Prepare ELO trend data
   const trendData = insights.eloTrend.map((item) => ({
     date: new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
     elo: Math.round(item.elo),
@@ -92,54 +91,58 @@ export function InsightsDashboard({ insights, learningPath }: InsightsDashboardP
 
   return (
     <div className="space-y-8">
-      {/* Header Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      {/* Stats Grid */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
-          icon={Brain}
+          icon={Zap}
           label="Overall ELO"
           value={Math.round(learningPath.overallElo).toString()}
           trend={learningPath.overallElo >= 1000 ? 'up' : 'down'}
+          color="amber"
         />
         <StatCard
           icon={Gauge}
           label="Confidence"
           value={`${insights.confidenceScore}%`}
           trend={insights.confidenceScore >= 50 ? 'up' : 'down'}
+          color="blue"
+        />
+        <StatCard
+          icon={Activity}
+          label="Activities"
+          value={learningPath.timeline.length.toString()}
+          color="green"
         />
         <StatCard
           icon={Target}
-          label="Activities"
-          value={learningPath.timeline.length.toString()}
-        />
-        <StatCard
-          icon={BarChart3}
           label="Difficulty"
           value={`${learningPath.currentDifficulty}/10`}
+          color="purple"
         />
       </div>
 
-      {/* Main Content Grid */}
+      {/* Charts Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Skill Radar */}
         {radarData.length > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="rounded-3xl border border-border/50 bg-background/60 backdrop-blur-xl shadow-lg p-8"
+            className="rounded-3xl bg-background/80 backdrop-blur-xl border border-border/40 shadow-sm p-8"
           >
-            <h3 className="text-lg font-bold text-foreground mb-6 flex items-center gap-3">
-              <div className="p-2 bg-primary/10 rounded-xl">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-2.5 rounded-xl bg-primary/10">
                 <Target className="w-5 h-5 text-primary" />
               </div>
-              Skill Radar
-            </h3>
-            <div className="h-[300px] w-full">
+              <h3 className="text-lg font-semibold text-foreground">Skill Radar</h3>
+            </div>
+            <div className="h-[280px] w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <RadarChart data={radarData}>
                   <PolarGrid stroke="hsl(var(--border))" strokeDasharray="3 3" />
                   <PolarAngleAxis
                     dataKey="skill"
-                    tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12, fontWeight: 500 }}
+                    tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11, fontWeight: 500 }}
                   />
                   <PolarRadiusAxis
                     angle={30}
@@ -151,9 +154,9 @@ export function InsightsDashboard({ insights, learningPath }: InsightsDashboardP
                     name="Score"
                     dataKey="score"
                     stroke="hsl(var(--primary))"
-                    strokeWidth={3}
+                    strokeWidth={2}
                     fill="hsl(var(--primary))"
-                    fillOpacity={0.2}
+                    fillOpacity={0.15}
                   />
                 </RadarChart>
               </ResponsiveContainer>
@@ -167,28 +170,28 @@ export function InsightsDashboard({ insights, learningPath }: InsightsDashboardP
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="rounded-3xl border border-border/50 bg-background/60 backdrop-blur-xl shadow-lg p-8"
+            className="rounded-3xl bg-background/80 backdrop-blur-xl border border-border/40 shadow-sm p-8"
           >
-            <h3 className="text-lg font-bold text-foreground mb-6 flex items-center gap-3">
-              <div className="p-2 bg-primary/10 rounded-xl">
-                <TrendingUp className="w-5 h-5 text-primary" />
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-2.5 rounded-xl bg-green-500/10">
+                <TrendingUp className="w-5 h-5 text-green-600" />
               </div>
-              ELO Trend
-            </h3>
-            <div className="h-[300px] w-full">
+              <h3 className="text-lg font-semibold text-foreground">ELO Progress</h3>
+            </div>
+            <div className="h-[280px] w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={trendData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
                   <XAxis
                     dataKey="date"
-                    tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
+                    tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }}
                     axisLine={false}
                     tickLine={false}
                     dy={10}
                   />
                   <YAxis
                     domain={['dataMin - 50', 'dataMax + 50']}
-                    tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
+                    tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }}
                     axisLine={false}
                     tickLine={false}
                     dx={-10}
@@ -197,8 +200,9 @@ export function InsightsDashboard({ insights, learningPath }: InsightsDashboardP
                     contentStyle={{
                       backgroundColor: 'hsl(var(--background))',
                       border: '1px solid hsl(var(--border))',
-                      borderRadius: '12px',
-                      boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+                      borderRadius: '16px',
+                      boxShadow: '0 4px 20px -4px rgb(0 0 0 / 0.1)',
+                      padding: '12px 16px',
                     }}
                     itemStyle={{ color: 'hsl(var(--foreground))' }}
                   />
@@ -206,9 +210,9 @@ export function InsightsDashboard({ insights, learningPath }: InsightsDashboardP
                     type="monotone"
                     dataKey="elo"
                     stroke="hsl(var(--primary))"
-                    strokeWidth={3}
+                    strokeWidth={2.5}
                     dot={{ fill: 'hsl(var(--background))', stroke: 'hsl(var(--primary))', strokeWidth: 2, r: 4 }}
-                    activeDot={{ r: 6, strokeWidth: 0 }}
+                    activeDot={{ r: 6, strokeWidth: 0, fill: 'hsl(var(--primary))' }}
                   />
                 </LineChart>
               </ResponsiveContainer>
@@ -219,57 +223,61 @@ export function InsightsDashboard({ insights, learningPath }: InsightsDashboardP
 
       {/* Strengths & Weaknesses */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Strengths */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="rounded-3xl border border-green-500/20 bg-green-500/5 p-8"
+          className="rounded-3xl bg-gradient-to-br from-green-500/10 to-green-500/5 border border-green-500/20 p-8"
         >
-          <h3 className="text-lg font-bold text-foreground mb-6 flex items-center gap-3">
-            <div className="p-2 bg-green-500/10 rounded-xl">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-2.5 rounded-xl bg-green-500/20">
               <CheckCircle2 className="w-5 h-5 text-green-600" />
             </div>
-            Strengths
-          </h3>
+            <h3 className="text-lg font-semibold text-foreground">Strengths</h3>
+          </div>
           {insights.strengths.length > 0 ? (
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-wrap gap-2">
               {insights.strengths.map((cluster) => (
-                <Badge key={cluster} variant="outline" className="rounded-full px-4 py-1.5 text-sm font-medium border-green-500/30 bg-green-500/10 text-green-700 dark:text-green-400">
+                <Badge
+                  key={cluster}
+                  className="rounded-xl px-4 py-2 text-sm font-medium bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/20 hover:bg-green-500/20"
+                >
                   {skillClusterLabels[cluster] || cluster}
                 </Badge>
               ))}
             </div>
           ) : (
-            <p className="text-sm text-muted-foreground italic">
+            <p className="text-sm text-muted-foreground">
               Complete more activities to identify your strengths.
             </p>
           )}
         </motion.div>
 
-        {/* Weaknesses */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.25 }}
-          className="rounded-3xl border border-destructive/20 bg-destructive/5 p-8"
+          className="rounded-3xl bg-gradient-to-br from-destructive/10 to-destructive/5 border border-destructive/20 p-8"
         >
-          <h3 className="text-lg font-bold text-foreground mb-6 flex items-center gap-3">
-            <div className="p-2 bg-destructive/10 rounded-xl">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-2.5 rounded-xl bg-destructive/20">
               <XCircle className="w-5 h-5 text-destructive" />
             </div>
-            Areas to Improve
-          </h3>
+            <h3 className="text-lg font-semibold text-foreground">Areas to Improve</h3>
+          </div>
           {insights.weaknesses.length > 0 ? (
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-wrap gap-2">
               {insights.weaknesses.map((cluster) => (
-                <Badge key={cluster} variant="outline" className="rounded-full px-4 py-1.5 text-sm font-medium border-destructive/30 bg-destructive/10 text-destructive">
+                <Badge
+                  key={cluster}
+                  className="rounded-xl px-4 py-2 text-sm font-medium bg-destructive/10 text-destructive border-destructive/20 hover:bg-destructive/20"
+                >
                   {skillClusterLabels[cluster] || cluster}
                 </Badge>
               ))}
             </div>
           ) : (
-            <p className="text-sm text-muted-foreground italic">
+            <p className="text-sm text-muted-foreground">
               No weak areas identified yet. Keep learning!
             </p>
           )}
@@ -282,28 +290,28 @@ export function InsightsDashboard({ insights, learningPath }: InsightsDashboardP
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="rounded-3xl border border-amber-500/20 bg-amber-500/5 p-8"
+          className="rounded-3xl bg-gradient-to-br from-amber-500/10 to-amber-500/5 border border-amber-500/20 p-8"
         >
-          <h3 className="text-lg font-bold text-foreground mb-6 flex items-center gap-3">
-            <div className="p-2 bg-amber-500/10 rounded-xl">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-2.5 rounded-xl bg-amber-500/20">
               <AlertTriangle className="w-5 h-5 text-amber-600" />
             </div>
-            Stuck Areas
-          </h3>
+            <h3 className="text-lg font-semibold text-foreground">Needs Attention</h3>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {insights.stuckAreas.map((area) => (
               <div
                 key={area.topicId}
-                className="flex items-center justify-between p-4 rounded-2xl border border-amber-500/20 bg-amber-500/10"
+                className="flex items-center justify-between p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20"
               >
                 <div>
-                  <span className="font-semibold text-foreground block mb-1">{area.topicTitle}</span>
-                  <p className="text-xs font-medium text-amber-600/80">
+                  <span className="font-medium text-foreground">{area.topicTitle}</span>
+                  <p className="text-xs text-amber-600 mt-1">
                     {area.failureCount} consecutive failures
                   </p>
                 </div>
-                <Badge variant="outline" className="rounded-full border-amber-500/30 text-amber-600 bg-amber-500/10">
-                  Needs Review
+                <Badge className="rounded-xl bg-amber-500/20 text-amber-600 border-amber-500/30">
+                  Review
                 </Badge>
               </div>
             ))}
@@ -311,90 +319,117 @@ export function InsightsDashboard({ insights, learningPath }: InsightsDashboardP
         </motion.div>
       )}
 
-      {/* Performance by Activity Type */}
+      {/* Performance by Type */}
       {Object.keys(insights.performanceByType).length > 0 && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.35 }}
-          className="rounded-3xl border border-border/50 bg-background/60 backdrop-blur-xl shadow-lg p-8"
+          className="rounded-3xl bg-background/80 backdrop-blur-xl border border-border/40 shadow-sm p-8"
         >
-          <h3 className="text-lg font-bold text-foreground mb-6 flex items-center gap-3">
-            <div className="p-2 bg-primary/10 rounded-xl">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-2.5 rounded-xl bg-primary/10">
               <BarChart3 className="w-5 h-5 text-primary" />
             </div>
-            Performance by Activity Type
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+            <h3 className="text-lg font-semibold text-foreground">Performance by Type</h3>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {Object.entries(insights.performanceByType).map(([type, data]) => (
-              <div key={type} className="space-y-2">
-                <div className="flex justify-between text-sm font-medium">
-                  <span className="text-muted-foreground">
+              <div key={type} className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium text-foreground">
                     {activityTypeLabels[type] || type}
                   </span>
-                  <span className="text-foreground">
-                    {Math.round(data.successRate * 100)}% <span className="text-muted-foreground text-xs font-normal">({data.attempts} attempts)</span>
+                  <span className="text-sm text-muted-foreground">
+                    {Math.round(data.successRate * 100)}%
+                    <span className="text-xs ml-1">({data.attempts})</span>
                   </span>
                 </div>
-                <Progress
-                  value={data.successRate * 100}
-                  className="h-2.5 rounded-full bg-secondary"
-                />
+                <div className="h-2 rounded-full bg-secondary overflow-hidden">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${data.successRate * 100}%` }}
+                    transition={{ duration: 1, ease: 'easeOut' }}
+                    className={`h-full rounded-full ${
+                      data.successRate >= 0.7
+                        ? 'bg-green-500'
+                        : data.successRate >= 0.4
+                        ? 'bg-amber-500'
+                        : 'bg-destructive'
+                    }`}
+                  />
+                </div>
               </div>
             ))}
           </div>
         </motion.div>
       )}
 
-      {/* Suggested Improvements */}
+      {/* Suggestions */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.4 }}
-        className="rounded-3xl border border-primary/20 bg-primary/5 p-8"
+        className="rounded-3xl bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 p-8"
       >
-        <h3 className="text-lg font-bold text-foreground mb-6 flex items-center gap-3">
-          <div className="p-2 bg-primary/10 rounded-xl">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="p-2.5 rounded-xl bg-primary/20">
             <Lightbulb className="w-5 h-5 text-primary" />
           </div>
-          Suggested Improvements
-        </h3>
-        <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <h3 className="text-lg font-semibold text-foreground">Recommendations</h3>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {insights.suggestedImprovements.map((suggestion, index) => (
-            <li key={index} className="flex items-start gap-4 p-4 rounded-2xl bg-background/50 border border-primary/10">
-              <span className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-sm font-bold text-primary flex-shrink-0 shadow-sm">
+            <div
+              key={index}
+              className="flex items-start gap-4 p-4 rounded-2xl bg-background/50 border border-primary/10"
+            >
+              <span className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center text-sm font-semibold text-primary flex-shrink-0">
                 {index + 1}
               </span>
-              <span className="text-sm text-foreground/80 leading-relaxed font-medium pt-1">{suggestion}</span>
-            </li>
+              <p className="text-sm text-foreground/80 leading-relaxed pt-1">{suggestion}</p>
+            </div>
           ))}
-        </ul>
+        </div>
       </motion.div>
     </div>
   );
 }
 
-// Stat Card Component
 function StatCard({
   icon: Icon,
   label,
   value,
   trend,
+  color = 'primary',
 }: {
   icon: typeof Brain;
   label: string;
   value: string;
   trend?: 'up' | 'down';
+  color?: 'primary' | 'amber' | 'blue' | 'green' | 'purple';
 }) {
+  const colorClasses = {
+    primary: 'bg-primary/10 text-primary',
+    amber: 'bg-amber-500/10 text-amber-600',
+    blue: 'bg-blue-500/10 text-blue-600',
+    green: 'bg-green-500/10 text-green-600',
+    purple: 'bg-purple-500/10 text-purple-600',
+  };
+
   return (
-    <div className="rounded-3xl border border-border/50 bg-background/60 backdrop-blur-xl shadow-sm p-6 flex flex-col items-center justify-center text-center hover:shadow-md transition-shadow">
-      <div className="w-12 h-12 rounded-2xl bg-secondary/50 flex items-center justify-center mb-3">
-        <Icon className="w-6 h-6 text-muted-foreground" />
+    <motion.div
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      className="rounded-3xl bg-background/80 backdrop-blur-xl border border-border/40 shadow-sm p-6 hover:shadow-md transition-shadow"
+    >
+      <div className={`w-12 h-12 rounded-2xl ${colorClasses[color]} flex items-center justify-center mb-4`}>
+        <Icon className="w-6 h-6" />
       </div>
-      <div className="flex items-center gap-2 mb-1">
+      <div className="flex items-center gap-2">
         <p className="text-3xl font-bold text-foreground tracking-tight">{value}</p>
         {trend && (
-          <div className={`p-1 rounded-full ${trend === 'up' ? 'bg-green-500/10' : 'bg-destructive/10'}`}>
+          <div className={`p-1.5 rounded-lg ${trend === 'up' ? 'bg-green-500/10' : 'bg-destructive/10'}`}>
             {trend === 'up' ? (
               <TrendingUp className="w-4 h-4 text-green-600" />
             ) : (
@@ -403,7 +438,7 @@ function StatCard({
           </div>
         )}
       </div>
-      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{label}</p>
-    </div>
+      <p className="text-sm text-muted-foreground mt-1">{label}</p>
+    </motion.div>
   );
 }

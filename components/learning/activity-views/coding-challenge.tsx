@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { Code, ChevronRight, Copy, Check } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Code, ChevronRight, Copy, Check, FileInput, FileOutput } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { CodeEditor } from '@/components/ui/code-editor';
@@ -66,83 +67,127 @@ export function CodingChallengeView({
   return (
     <div className="space-y-8">
       {/* Problem Description */}
-      <div className="prose prose-lg dark:prose-invert max-w-none">
-        <p className="text-xl text-foreground font-medium leading-relaxed">{content.problemDescription}</p>
-      </div>
+      <p className="text-2xl font-medium text-foreground leading-relaxed tracking-tight">
+        {content.problemDescription}
+      </p>
 
       {/* Input/Output Format */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="p-6 rounded-2xl border border-border/50 bg-secondary/20">
-          <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">Input Format</h4>
-          <p className="text-base text-foreground leading-relaxed">{content.inputFormat}</p>
-        </div>
-        <div className="p-6 rounded-2xl border border-border/50 bg-secondary/20">
-          <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">Output Format</h4>
-          <p className="text-base text-foreground leading-relaxed">{content.outputFormat}</p>
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="p-6 rounded-2xl border border-border/40 bg-gradient-to-br from-secondary/30 to-transparent"
+        >
+          <div className="flex items-center gap-2 mb-3">
+            <div className="p-2 rounded-xl bg-blue-500/10">
+              <FileInput className="w-4 h-4 text-blue-600" />
+            </div>
+            <h4 className="text-sm font-semibold text-foreground">Input Format</h4>
+          </div>
+          <p className="text-sm text-muted-foreground leading-relaxed">{content.inputFormat}</p>
+        </motion.div>
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="p-6 rounded-2xl border border-border/40 bg-gradient-to-br from-secondary/30 to-transparent"
+        >
+          <div className="flex items-center gap-2 mb-3">
+            <div className="p-2 rounded-xl bg-green-500/10">
+              <FileOutput className="w-4 h-4 text-green-600" />
+            </div>
+            <h4 className="text-sm font-semibold text-foreground">Output Format</h4>
+          </div>
+          <p className="text-sm text-muted-foreground leading-relaxed">{content.outputFormat}</p>
+        </motion.div>
       </div>
 
       {/* Sample Input/Output */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="group relative rounded-2xl border border-border/50 bg-background/50 overflow-hidden">
-          <div className="flex items-center justify-between px-4 py-3 border-b border-border/50 bg-secondary/30">
-            <h4 className="text-xs font-mono font-medium text-muted-foreground">Sample Input</h4>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+          className="group rounded-2xl border border-border/40 bg-background/50 overflow-hidden"
+        >
+          <div className="flex items-center justify-between px-5 py-3 border-b border-border/30 bg-secondary/20">
+            <h4 className="text-xs font-medium text-muted-foreground">Sample Input</h4>
             <Button
               variant="ghost"
               size="icon"
               onClick={() => handleCopy(content.sampleInput)}
-              className="h-6 w-6 rounded-md hover:bg-background/80"
+              className="h-7 w-7 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
             >
-              {copied ? <Check className="w-3 h-3 text-green-500" /> : <Copy className="w-3 h-3" />}
+              {copied ? <Check className="w-3.5 h-3.5 text-green-500" /> : <Copy className="w-3.5 h-3.5" />}
             </Button>
           </div>
-          <pre className="p-4 text-sm font-mono text-foreground overflow-x-auto">
+          <pre className="p-5 text-sm font-mono text-foreground overflow-x-auto">
             {content.sampleInput}
           </pre>
-        </div>
-        <div className="rounded-2xl border border-border/50 bg-background/50 overflow-hidden">
-          <div className="px-4 py-3 border-b border-border/50 bg-secondary/30">
-            <h4 className="text-xs font-mono font-medium text-muted-foreground">Sample Output</h4>
+        </motion.div>
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="rounded-2xl border border-border/40 bg-background/50 overflow-hidden"
+        >
+          <div className="px-5 py-3 border-b border-border/30 bg-secondary/20">
+            <h4 className="text-xs font-medium text-muted-foreground">Expected Output</h4>
           </div>
-          <pre className="p-4 text-sm font-mono text-foreground overflow-x-auto">
+          <pre className="p-5 text-sm font-mono text-foreground overflow-x-auto">
             {content.sampleOutput}
           </pre>
-        </div>
+        </motion.div>
       </div>
 
       {/* Evaluation Criteria */}
-      <div className="p-6 rounded-2xl border border-border/50 bg-secondary/10">
-        <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">Evaluation Criteria</h4>
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.25 }}
+        className="p-6 rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/5 to-transparent"
+      >
+        <h4 className="text-sm font-semibold text-foreground mb-4">Evaluation Criteria</h4>
         <div className="flex flex-wrap gap-2">
           {content.evaluationCriteria.map((criteria, index) => (
-            <Badge key={index} variant="secondary" className="rounded-lg px-3 py-1.5 text-sm font-medium bg-secondary/50 text-foreground border-border/50">
+            <Badge
+              key={index}
+              className="rounded-xl px-4 py-2 text-sm font-medium bg-primary/10 text-primary border-primary/20"
+            >
               {criteria}
             </Badge>
           ))}
         </div>
-      </div>
+      </motion.div>
 
       {/* Code Editor */}
-      <div className="space-y-4">
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+        className="space-y-4"
+      >
         <div className="flex items-center justify-between">
-          <h4 className="text-sm font-semibold text-muted-foreground flex items-center gap-2">
-            <Code className="w-4 h-4" />
-            Your Solution
-          </h4>
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-xl bg-secondary/50">
+              <Code className="w-4 h-4 text-muted-foreground" />
+            </div>
+            <h4 className="text-sm font-semibold text-foreground">Your Solution</h4>
+          </div>
           <Select value={language} onValueChange={setLanguage}>
-            <SelectTrigger className="w-[160px] h-9 rounded-full text-xs font-medium bg-secondary/30 border-border/50">
+            <SelectTrigger className="w-[150px] h-10 rounded-xl text-sm font-medium bg-secondary/30 border-border/40">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="rounded-xl">
               {SUPPORTED_LANGUAGES.map((lang) => (
-                <SelectItem key={lang.value} value={lang.value} className="text-xs font-medium">
+                <SelectItem key={lang.value} value={lang.value} className="text-sm">
                   {lang.label}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
-        <div className="rounded-2xl border border-border/50 overflow-hidden shadow-sm">
+        <div className="rounded-2xl border border-border/40 overflow-hidden shadow-sm">
           <CodeEditor
             value={code}
             onChange={setCode}
@@ -150,13 +195,17 @@ export function CodingChallengeView({
             height="400px"
           />
         </div>
-      </div>
+      </motion.div>
 
       {/* Actions */}
       <div className="flex justify-end pt-4">
-        <Button onClick={handleSubmit} size="lg" className="rounded-full px-8 text-base shadow-lg shadow-primary/25">
+        <Button
+          onClick={handleSubmit}
+          size="lg"
+          className="rounded-xl px-8 h-12 text-base font-medium gap-2 shadow-lg shadow-primary/20"
+        >
           Submit Solution
-          <ChevronRight className="w-5 h-5 ml-2" />
+          <ChevronRight className="w-5 h-5" />
         </Button>
       </div>
     </div>
