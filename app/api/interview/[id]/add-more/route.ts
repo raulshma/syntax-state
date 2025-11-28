@@ -128,6 +128,9 @@ export async function POST(
 
     // Build generation context with existing content for duplicate prevention
     const existingContent = getExistingContentIds(interview, module);
+    
+    // Use interview's stored custom instructions if available, otherwise use request body instructions
+    const customInstructions = interview.customInstructions || instructions;
 
     const ctx: GenerationContext = {
       resumeText: interview.resumeContext,
@@ -135,7 +138,10 @@ export async function POST(
       jobTitle: interview.jobDetails.title,
       company: interview.jobDetails.company,
       existingContent,
-      customInstructions: instructions,
+      customInstructions,
+      planContext: {
+        plan: user.plan,
+      },
     };
 
     // Create logger context with metadata

@@ -16,6 +16,7 @@ import {
   appendStreamContent,
   clearStreamContent,
 } from "@/lib/services/stream-store";
+import type { RevisionTopic } from "@/lib/db/schemas/interview";
 
 // Custom streaming headers
 const STREAM_HEADERS = {
@@ -28,7 +29,8 @@ const STREAM_HEADERS = {
 // Throttle interval in ms - only send updates this often
 const STREAM_THROTTLE_MS = 100;
 
-type AnalogyStyle = "professional" | "construction" | "simple";
+// Infer style type from schema
+type AnalogyStyle = RevisionTopic["style"];
 
 /**
  * POST /api/interview/[id]/topic/[topicId]/regenerate
@@ -104,12 +106,18 @@ export async function POST(
     const byokTierConfig = await getByokTierConfig();
 
     // Build generation context
+    // Use interview's stored custom instructions if available, otherwise use request body instructions
+    const customInstructions = interview.customInstructions || instructions;
+    
     const ctx: GenerationContext = {
       resumeText: interview.resumeContext,
       jobDescription: interview.jobDetails.description,
       jobTitle: interview.jobDetails.title,
       company: interview.jobDetails.company,
-      customInstructions: instructions,
+      customInstructions,
+      planContext: {
+        plan: user.plan,
+      },
     };
 
     // Create logger context with metadata
@@ -224,6 +232,14 @@ export async function POST(
             topicId,
             finalObject.content,
             style
+          );
+
+          // Also cache the content for this style so switching back is instant
+          await interviewRepository.updateTopicStyleCache(
+            interviewId,
+            topicId,
+            style,
+            finalObject.content
           );
 
           // Log the request with full metadata

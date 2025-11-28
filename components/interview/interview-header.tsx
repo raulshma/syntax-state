@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -10,8 +11,18 @@ import {
   Download,
   Sparkles,
   Building2,
+  Loader2,
 } from "lucide-react";
 import Link from "next/link";
+import { canAccess } from "@/lib/utils/feature-gate";
+import type { UserPlan } from "@/lib/db/schemas/user";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { toast } from "sonner";
 
 interface InterviewHeaderProps {
   role: string;
@@ -19,6 +30,8 @@ interface InterviewHeaderProps {
   date: string;
   progress: number;
   isGenerating?: boolean;
+  userPlan?: UserPlan;
+  interviewId?: string;
 }
 
 export function InterviewHeader({
@@ -27,7 +40,44 @@ export function InterviewHeader({
   date,
   progress,
   isGenerating,
+  userPlan = "FREE",
+  interviewId,
 }: InterviewHeaderProps) {
+  const [isExporting, setIsExporting] = useState(false);
+  const pdfAccess = canAccess("pdf_export", userPlan);
+
+  const handlePdfExport = async () => {
+    if (!interviewId) return;
+
+    setIsExporting(true);
+    try {
+      const response = await fetch(`/api/interview/${interviewId}/export/pdf`, {
+        method: "POST",
+        credentials: "include",
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        toast.error(error.error || "Failed to export PDF");
+        return;
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${role}-${company}-interview-prep.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error("PDF export error:", error);
+      toast.error("Failed to export PDF");
+    } finally {
+      setIsExporting(false);
+    }
+  };
   return (
     <header className="border-b border-border/50 bg-background/80 backdrop-blur-xl sticky top-0 z-40 supports-[backdrop-filter]:bg-background/60">
       <div className="px-4 md:px-8 py-4">
@@ -94,13 +144,44 @@ export function InterviewHeader({
                 >
                   <Share2 className="w-5 h-5 text-muted-foreground" />
                 </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="hover:bg-secondary rounded-full h-10 w-10"
-                >
-                  <Download className="w-5 h-5 text-muted-foreground" />
-                </Button>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      {pdfAccess.allowed ? (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="hover:bg-secondary rounded-full h-10 w-10"
+                          onClick={handlePdfExport}
+                          disabled={isExporting}
+                        >
+                          {isExporting ? (
+                            <Loader2 className="w-5 h-5 text-muted-foreground animate-spin" />
+                          ) : (
+                            <Download className="w-5 h-5 text-muted-foreground" />
+                          )}
+                        </Button>
+                      ) : (
+                        <Link href="/settings/upgrade">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="hover:bg-secondary rounded-full h-10 w-10"
+                          >
+                            <Download className="w-5 h-5 text-muted-foreground" />
+                          </Button>
+                        </Link>
+                      )}
+                    </TooltipTrigger>
+                    {!pdfAccess.allowed && (
+                      <TooltipContent>
+                        <p className="text-xs">
+                          PDF export requires {pdfAccess.requiredPlan} plan
+                        </p>
+                      </TooltipContent>
+                    )}
+                  </Tooltip>
+                </TooltipProvider>
               </div>
             </div>
           </div>

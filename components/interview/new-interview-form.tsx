@@ -25,15 +25,17 @@ import {
   Info,
   ArrowRight,
   Settings2,
+  Lock,
 } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { createInterview, createInterviewFromPrompt } from '@/lib/actions/interview';
 import { MODULE_LABELS, type ModuleType } from '@/lib/db/schemas/interview';
 import { useSharedHeader } from '@/components/dashboard/shared-header-context';
+import type { UserPlan } from '@/lib/db/schemas/user';
 
 interface UsageData {
   interviews: { count: number; limit: number };
-  plan: string;
+  plan: UserPlan;
   isByok: boolean;
 }
 
@@ -89,6 +91,8 @@ export function NewInterviewForm({ usageData }: NewInterviewFormProps) {
   const [showManualResume, setShowManualResume] = useState(false);
   const [showSectionSettings, setShowSectionSettings] = useState(false);
   const [excludedModules, setExcludedModules] = useState<Set<ModuleType>>(new Set());
+  const [customInstructions, setCustomInstructions] = useState('');
+  const isMaxPlan = usageData.plan === 'MAX';
 
   const allModules: ModuleType[] = ['openingBrief', 'revisionTopics', 'mcqs', 'rapidFire'];
 
@@ -202,6 +206,7 @@ export function NewInterviewForm({ usageData }: NewInterviewFormProps) {
         resumeFile: resumeFile ?? undefined,
         resumeText: showManualResume ? resumeText.trim() : undefined,
         excludedModules: Array.from(excludedModules),
+        customInstructions: isMaxPlan && customInstructions.trim() ? customInstructions.trim() : undefined,
       });
       if (result.success) {
         router.push(`/interview/${result.data._id}`);
@@ -522,6 +527,32 @@ export function NewInterviewForm({ usageData }: NewInterviewFormProps) {
                         </div>
                       )}
                     </div>
+
+                    {/* Custom Instructions (MAX plan only) */}
+                    {isMaxPlan && (
+                      <div className="space-y-2">
+                        <Label htmlFor="customInstructions" className="text-sm font-medium text-foreground ml-1 flex items-center gap-2">
+                          Custom Instructions
+                          <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">MAX</span>
+                        </Label>
+                        <div className="relative">
+                          <Textarea
+                            id="customInstructions"
+                            value={customInstructions}
+                            onChange={(e) => setCustomInstructions(e.target.value.slice(0, 2000))}
+                            placeholder="Add any specific instructions for AI generation (e.g., 'Focus on system design patterns', 'Emphasize behavioral questions')..."
+                            className="w-full font-mono text-sm min-h-[100px] bg-secondary/30 border-border/50 rounded-2xl p-4 focus:border-primary/30 focus:ring-0 resize-none"
+                            disabled={isLoading || isAtLimit}
+                          />
+                          <div className="absolute bottom-4 right-4 text-[10px] text-muted-foreground bg-background/80 backdrop-blur-sm px-2 py-1 rounded-full border border-border/50">
+                            {customInstructions.length}/2000
+                          </div>
+                        </div>
+                        <p className="text-xs text-muted-foreground ml-1">
+                          These instructions will be applied to all generated content for this interview.
+                        </p>
+                      </div>
+                    )}
 
                     {/* Job Description */}
                     <div className="space-y-2">

@@ -36,6 +36,11 @@ export interface AIEngineConfig {
   searchEnabled: boolean;
 }
 
+// Plan Context for model tier selection
+export interface PlanContext {
+  plan: 'FREE' | 'PRO' | 'MAX';
+}
+
 // Generation Context
 export interface GenerationContext {
   resumeText: string;
@@ -44,6 +49,7 @@ export interface GenerationContext {
   company: string;
   existingContent?: string[];
   customInstructions?: string;
+  planContext?: PlanContext;
 }
 
 // Error for unconfigured tiers
@@ -267,11 +273,23 @@ export interface BYOKTierConfig {
 }
 
 /**
- * Get effective config for a task, considering BYOK overrides
+ * Get the model tier based on user plan
+ * FREE users get standard tier, PRO/MAX users get advanced tier
+ */
+function getPlanBasedTier(plan?: 'FREE' | 'PRO' | 'MAX'): ModelTier {
+  if (!plan || plan === 'FREE') {
+    return 'medium'; // Standard tier for FREE users
+  }
+  return 'high'; // Advanced tier for PRO/MAX users
+}
+
+/**
+ * Get effective config for a task, considering plan and BYOK overrides
  */
 async function getEffectiveConfig(
   task: AITask,
-  byokConfig?: BYOKTierConfig
+  byokConfig?: BYOKTierConfig,
+  planContext?: PlanContext
 ): Promise<{
   model: string;
   fallbackModel: string | null;
@@ -279,7 +297,12 @@ async function getEffectiveConfig(
   maxTokens: number;
   tier: ModelTier;
 }> {
-  const tier = TASK_TIER_MAPPING[task] || "high";
+  // Determine tier: use plan-based tier if provided, otherwise use task-based tier
+  let tier = TASK_TIER_MAPPING[task] || "high";
+  
+  if (planContext?.plan) {
+    tier = getPlanBasedTier(planContext.plan);
+  }
 
   // Check if BYOK user has configured this tier
   if (byokConfig?.[tier]?.model) {
@@ -307,6 +330,7 @@ export function formatModelId(tier: ModelTier, model: string): string {
 /**
  * Generate Opening Brief with streaming
  * Uses HIGH tier model - complex reasoning and comprehensive analysis
+ * Requirements: 5.1, 5.2, 5.4
  */
 export async function generateOpeningBrief(
   ctx: GenerationContext,
@@ -316,7 +340,8 @@ export async function generateOpeningBrief(
 ) {
   const tierConfig = await getEffectiveConfig(
     "generate_opening_brief",
-    byokTierConfig
+    byokTierConfig,
+    ctx.planContext
   );
   const openrouter = getOpenRouterClient(apiKey);
   const modelToUse = config.model || tierConfig.model;
@@ -385,6 +410,7 @@ Format your response as a structured brief with clear markdown sections and bull
 /**
  * Generate Revision Topics with streaming
  * Uses HIGH tier model - requires deep technical knowledge and explanation
+ * Requirements: 5.1, 5.2, 5.4
  */
 export async function generateTopics(
   ctx: GenerationContext,
@@ -395,7 +421,8 @@ export async function generateTopics(
 ) {
   const tierConfig = await getEffectiveConfig(
     "generate_topics",
-    byokTierConfig
+    byokTierConfig,
+    ctx.planContext
   );
   const openrouter = getOpenRouterClient(apiKey);
   const modelToUse = config.model || tierConfig.model;
@@ -489,6 +516,7 @@ Focus on topics that:
 /**
  * Generate MCQs with streaming and duplicate prevention
  * Uses MEDIUM tier model - structured output with moderate complexity
+ * Requirements: 5.1, 5.2, 5.4
  */
 export async function generateMCQs(
   ctx: GenerationContext,
@@ -497,7 +525,7 @@ export async function generateMCQs(
   apiKey?: string,
   byokTierConfig?: BYOKTierConfig
 ) {
-  const tierConfig = await getEffectiveConfig("generate_mcqs", byokTierConfig);
+  const tierConfig = await getEffectiveConfig("generate_mcqs", byokTierConfig, ctx.planContext);
   const openrouter = getOpenRouterClient(apiKey);
   const modelToUse = config.model || tierConfig.model;
 
@@ -567,6 +595,7 @@ Focus on:
 /**
  * Generate Rapid Fire Questions with streaming
  * Uses MEDIUM tier model - structured Q&A generation
+ * Requirements: 5.1, 5.2, 5.4
  */
 export async function generateRapidFire(
   ctx: GenerationContext,
@@ -577,7 +606,8 @@ export async function generateRapidFire(
 ) {
   const tierConfig = await getEffectiveConfig(
     "generate_rapid_fire",
-    byokTierConfig
+    byokTierConfig,
+    ctx.planContext
   );
   const openrouter = getOpenRouterClient(apiKey);
   const modelToUse = config.model || tierConfig.model;
@@ -644,16 +674,19 @@ These questions should:
 /**
  * Parse a user prompt to extract interview details
  * Uses LOW tier model - simple extraction and parsing task
+ * Requirements: 5.1, 5.2, 5.4
  */
 export async function parseInterviewPrompt(
   prompt: string,
   config: Partial<AIEngineConfig> = {},
   apiKey?: string,
-  byokTierConfig?: BYOKTierConfig
+  byokTierConfig?: BYOKTierConfig,
+  planContext?: PlanContext
 ) {
   const tierConfig = await getEffectiveConfig(
     "parse_interview_prompt",
-    byokTierConfig
+    byokTierConfig,
+    planContext
   );
   const openrouter = getOpenRouterClient(apiKey);
   const modelToUse = config.model || tierConfig.model;
@@ -695,6 +728,7 @@ Extract:
 /**
  * Regenerate topic with different analogy style
  * Uses HIGH tier model - creative rewriting with style adaptation
+ * Requirements: 5.1, 5.2, 5.4
  */
 export async function regenerateTopicAnalogy(
   topic: RevisionTopic,
@@ -706,7 +740,8 @@ export async function regenerateTopicAnalogy(
 ) {
   const tierConfig = await getEffectiveConfig(
     "regenerate_topic_analogy",
-    byokTierConfig
+    byokTierConfig,
+    _ctx.planContext
   );
   const openrouter = getOpenRouterClient(apiKey);
   const modelToUse = config.model || tierConfig.model;

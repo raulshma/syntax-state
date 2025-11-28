@@ -15,6 +15,7 @@ export interface UserRepository {
   resetIterations(clerkId: string): Promise<User | null>;
   resetInterviews(clerkId: string): Promise<User | null>;
   updatePreferences(clerkId: string, preferences: Partial<UserPreferences>): Promise<User | null>;
+  handlePlanChange(clerkId: string, newPlan: UserPlan, previousPlan: UserPlan): Promise<void>;
 }
 
 function getDefaultResetDate(): Date {
@@ -128,6 +129,10 @@ export const userRepository: UserRepository = {
     const collection = await getUsersCollection();
     const now = new Date();
 
+    // Get the current user to check previous plan
+    const currentUser = await collection.findOne({ clerkId });
+    const previousPlan = currentUser?.plan as UserPlan | undefined;
+
     const result = await collection.findOneAndUpdate(
       { clerkId },
       {
@@ -144,6 +149,11 @@ export const userRepository: UserRepository = {
       },
       { returnDocument: 'after' }
     );
+
+    // Handle plan-specific cleanup (e.g., clear BYOK on downgrade from MAX)
+    if (previousPlan && previousPlan !== plan) {
+      await userRepository.handlePlanChange(clerkId, plan, previousPlan);
+    }
 
     return result as User | null;
   },
@@ -256,5 +266,29 @@ export const userRepository: UserRepository = {
     );
 
     return result as User | null;
+  },
+
+  async handlePlanChange(clerkId: string, newPlan: UserPlan, previousPlan: UserPlan) {
+    // If downgrading from MAX, clear BYOK configuration
+    if (previousPlan === 'MAX' && newPlan !== 'MAX') {
+      try {
+        const { clerkClient } = await import('@clerk/nextjs/server');
+        const client = await clerkClient();
+        
+        const clerkUser = await client.users.getUser(clerkId);
+        const existingMetadata = clerkUser.privateMetadata || {};
+
+        // Clear BYOK tier configuration when downgrading from MAX
+        await client.users.updateUserMetadata(clerkId, {
+          privateMetadata: {
+            ...existingMetadata,
+            byokTierConfig: null,
+          },
+        });
+      } catch (error) {
+        console.error('handlePlanChange: Failed to clear BYOK config on downgrade:', error);
+        // Don't throw - plan change should succeed even if BYOK cleanup fails
+      }
+    }
   },
 };

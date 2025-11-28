@@ -97,12 +97,18 @@ export async function POST(
     const byokTierConfig = await getByokTierConfig();
 
     // Build generation context
+    // Use interview's stored custom instructions if available, otherwise use request body instructions
+    const customInstructions = interview.customInstructions || instructions;
+    
     const ctx: GenerationContext = {
       resumeText: interview.resumeContext,
       jobDescription: interview.jobDetails.description,
       jobTitle: interview.jobDetails.title,
       company: interview.jobDetails.company,
-      customInstructions: instructions,
+      customInstructions,
+      planContext: {
+        plan: user.plan,
+      },
     };
 
     // Create logger context with metadata

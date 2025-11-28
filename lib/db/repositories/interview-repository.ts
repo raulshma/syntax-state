@@ -10,6 +10,7 @@ import {
   RevisionTopic,
   RapidFire,
   TopicStatus,
+  TopicStyleCache,
 } from '../schemas/interview';
 
 /**
@@ -66,6 +67,9 @@ export interface InterviewRepository {
   appendToModule(id: string, module: 'rapidFire', items: RapidFire[]): Promise<void>;
   updateTopicStyle(id: string, topicId: string, content: string, style: RevisionTopic['style']): Promise<void>;
   updateTopicStatus(id: string, topicId: string, status: TopicStatus): Promise<void>;
+  updateTopicStyleCache(id: string, topicId: string, style: RevisionTopic['style'], content: string): Promise<void>;
+  getTopicStyleCache(id: string, topicId: string): Promise<TopicStyleCache | null>;
+  updateCustomInstructions(id: string, instructions: string | undefined): Promise<void>;
   setPublic(id: string, isPublic: boolean): Promise<void>;
   delete(id: string): Promise<void>;
 }
@@ -222,6 +226,63 @@ export const interviewRepository: InterviewRepository = {
         },
       }
     );
+  },
+
+  async updateTopicStyleCache(id: string, topicId: string, style: RevisionTopic['style'], content: string) {
+    const collection = await getInterviewsCollection();
+    const now = new Date();
+    
+    await collection.updateOne(
+      { _id: id, 'modules.revisionTopics.id': topicId },
+      {
+        $set: {
+          [`modules.revisionTopics.$.styleCache.${style}`]: content,
+          updatedAt: now,
+        },
+      }
+    );
+  },
+
+  async getTopicStyleCache(id: string, topicId: string): Promise<TopicStyleCache | null> {
+    const collection = await getInterviewsCollection();
+    
+    const result = await collection.findOne(
+      { _id: id, 'modules.revisionTopics.id': topicId },
+      { projection: { 'modules.revisionTopics.$.styleCache': 1 } }
+    ) as any;
+
+    if (!result || !result.modules?.revisionTopics?.[0]?.styleCache) {
+      return null;
+    }
+
+    return result.modules.revisionTopics[0].styleCache as TopicStyleCache;
+  },
+
+  async updateCustomInstructions(id: string, instructions: string | undefined) {
+    const collection = await getInterviewsCollection();
+    const now = new Date();
+    
+    if (instructions === undefined) {
+      // Remove custom instructions
+      await collection.updateOne(
+        { _id: id },
+        {
+          $unset: { customInstructions: '' },
+          $set: { updatedAt: now },
+        }
+      );
+    } else {
+      // Set custom instructions
+      await collection.updateOne(
+        { _id: id },
+        {
+          $set: {
+            customInstructions: instructions,
+            updatedAt: now,
+          },
+        }
+      );
+    }
   },
 
   async setPublic(id: string, isPublic: boolean) {

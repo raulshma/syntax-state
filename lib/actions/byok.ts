@@ -9,6 +9,8 @@ import { getAuthUserId, getAuthUser, hasByokApiKey } from '@/lib/auth/get-user';
 import { createAPIError, type APIError } from '@/lib/schemas/error';
 import { getAILogsCollection } from '@/lib/db/collections';
 import type { BYOKUserConfig, BYOKUsageStats } from '@/lib/db/schemas/byok';
+import { canAccess } from '@/lib/utils/feature-gate';
+import { userRepository } from '@/lib/db/repositories/user-repository';
 
 export type ActionResult<T> = 
   | { success: true; data: T }
@@ -16,12 +18,27 @@ export type ActionResult<T> =
 
 /**
  * Get user's BYOK tier configuration from Clerk metadata
+ * Requires MAX plan
  */
 export async function getBYOKTierConfig(): Promise<ActionResult<BYOKUserConfig | null>> {
   try {
     const user = await getAuthUser();
     if (!user) {
       return { success: false, error: createAPIError('AUTH_ERROR', 'Not authenticated') };
+    }
+
+    // Check if user has MAX plan
+    const dbUser = await userRepository.findByClerkId(user.clerkId);
+    if (!dbUser) {
+      return { success: false, error: createAPIError('AUTH_ERROR', 'User not found') };
+    }
+
+    const planAccess = canAccess('byok', dbUser.plan);
+    if (!planAccess.allowed) {
+      return { 
+        success: false, 
+        error: createAPIError('PLAN_REQUIRED', planAccess.upgradeMessage || 'BYOK requires MAX plan') 
+      };
     }
 
     // Check if user has BYOK key
@@ -44,10 +61,25 @@ export async function getBYOKTierConfig(): Promise<ActionResult<BYOKUserConfig |
 
 /**
  * Save user's BYOK tier configuration to Clerk metadata
+ * Requires MAX plan
  */
 export async function saveBYOKTierConfig(config: BYOKUserConfig): Promise<ActionResult<{ saved: boolean }>> {
   try {
     const clerkId = await getAuthUserId();
+    
+    // Check if user has MAX plan
+    const user = await userRepository.findByClerkId(clerkId);
+    if (!user) {
+      return { success: false, error: createAPIError('AUTH_ERROR', 'User not found') };
+    }
+
+    const planAccess = canAccess('byok', user.plan);
+    if (!planAccess.allowed) {
+      return { 
+        success: false, 
+        error: createAPIError('PLAN_REQUIRED', planAccess.upgradeMessage || 'BYOK requires MAX plan') 
+      };
+    }
     
     // Verify user has BYOK key
     const hasByok = await hasByokApiKey();
@@ -107,10 +139,25 @@ export async function clearBYOKTierConfig(): Promise<ActionResult<{ cleared: boo
 /**
  * Get BYOK usage statistics for the current user
  * Only returns stats for requests made with user's BYOK key (byokUsed: true)
+ * Requires MAX plan
  */
 export async function getBYOKUsageStats(days: number = 30): Promise<ActionResult<BYOKUsageStats>> {
   try {
     const clerkId = await getAuthUserId();
+    
+    // Check if user has MAX plan
+    const user = await userRepository.findByClerkId(clerkId);
+    if (!user) {
+      return { success: false, error: createAPIError('AUTH_ERROR', 'User not found') };
+    }
+
+    const planAccess = canAccess('byok', user.plan);
+    if (!planAccess.allowed) {
+      return { 
+        success: false, 
+        error: createAPIError('PLAN_REQUIRED', planAccess.upgradeMessage || 'BYOK requires MAX plan') 
+      };
+    }
     
     // Verify user has BYOK key
     const hasByok = await hasByokApiKey();
@@ -255,9 +302,26 @@ export async function getBYOKUsageStats(days: number = 30): Promise<ActionResult
 /**
  * Get system tier configuration (admin-configured models)
  * This allows BYOK users to copy the admin's model selection
+ * Requires MAX plan
  */
 export async function getSystemTierConfig(): Promise<ActionResult<BYOKUserConfig | null>> {
   try {
+    const clerkId = await getAuthUserId();
+    
+    // Check if user has MAX plan
+    const user = await userRepository.findByClerkId(clerkId);
+    if (!user) {
+      return { success: false, error: createAPIError('AUTH_ERROR', 'User not found') };
+    }
+
+    const planAccess = canAccess('byok', user.plan);
+    if (!planAccess.allowed) {
+      return { 
+        success: false, 
+        error: createAPIError('PLAN_REQUIRED', planAccess.upgradeMessage || 'BYOK requires MAX plan') 
+      };
+    }
+
     // Verify user is authenticated and has BYOK
     const hasByok = await hasByokApiKey();
     if (!hasByok) {

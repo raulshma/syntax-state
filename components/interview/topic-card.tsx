@@ -5,8 +5,10 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { ChevronDown, ChevronUp, MessageSquare, Zap, BookOpen, CheckCircle, Circle } from "lucide-react"
+import { ChevronDown, ChevronUp, MessageSquare, Zap, BookOpen, CheckCircle, Circle, Lock } from "lucide-react"
 import Link from "next/link"
+import { getAnalogyStyles, type AnalogyStyle } from "@/lib/utils/feature-gate"
+import type { UserPlan } from "@/lib/db/schemas/user"
 
 interface TopicCardProps {
   id: string
@@ -16,12 +18,14 @@ interface TopicCardProps {
   difficulty: "beginner" | "intermediate" | "advanced"
   subtopics: { name: string; completed: boolean }[]
   timeEstimate: string
+  userPlan?: UserPlan
 }
 
-export function TopicCard({ id, title, description, status, difficulty, subtopics, timeEstimate }: TopicCardProps) {
+export function TopicCard({ id, title, description, status, difficulty, subtopics, timeEstimate, userPlan = "FREE" }: TopicCardProps) {
   const [expanded, setExpanded] = useState(false)
-  const [analogyLevel, setAnalogyLevel] = useState("intermediate")
+  const [analogyLevel, setAnalogyLevel] = useState<AnalogyStyle>("professional")
   const completedCount = subtopics.filter((s) => s.completed).length
+  const availableStyles = getAnalogyStyles(userPlan)
 
   return (
     <Card className="bg-card border-border">
@@ -64,16 +68,37 @@ export function TopicCard({ id, title, description, status, difficulty, subtopic
         {/* Analogy Level Selector */}
         <div className="flex items-center gap-3 mb-4">
           <span className="text-xs text-muted-foreground">Analogy Level:</span>
-          <Select value={analogyLevel} onValueChange={setAnalogyLevel}>
+          <Select value={analogyLevel} onValueChange={(value) => setAnalogyLevel(value as AnalogyStyle)}>
             <SelectTrigger className="w-32 h-8 text-xs">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="beginner">ELI5</SelectItem>
-              <SelectItem value="intermediate">Standard</SelectItem>
-              <SelectItem value="advanced">Expert</SelectItem>
+              <SelectItem value="professional">Professional</SelectItem>
+              {availableStyles.includes("construction") ? (
+                <SelectItem value="construction">Construction</SelectItem>
+              ) : (
+                <div className="flex items-center gap-2 px-2 py-1.5 text-xs text-muted-foreground cursor-not-allowed opacity-50">
+                  <Lock className="w-3 h-3" />
+                  <span>Construction (PRO+)</span>
+                </div>
+              )}
+              {availableStyles.includes("simple") ? (
+                <SelectItem value="simple">Simple</SelectItem>
+              ) : (
+                <div className="flex items-center gap-2 px-2 py-1.5 text-xs text-muted-foreground cursor-not-allowed opacity-50">
+                  <Lock className="w-3 h-3" />
+                  <span>Simple (PRO+)</span>
+                </div>
+              )}
             </SelectContent>
           </Select>
+          {userPlan === "FREE" && (
+            <Link href="/settings/upgrade">
+              <Button variant="ghost" size="sm" className="h-6 px-2 text-xs text-primary hover:bg-primary/10">
+                Upgrade
+              </Button>
+            </Link>
+          )}
         </div>
 
         {/* Action buttons */}

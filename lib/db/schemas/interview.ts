@@ -11,6 +11,12 @@ export const MCQSchema = z.object({
 
 export const TopicStatusSchema = z.enum(['not_started', 'in_progress', 'completed']);
 
+export const TopicStyleCacheSchema = z.object({
+  professional: z.string().optional(),
+  construction: z.string().optional(),
+  simple: z.string().optional(),
+});
+
 export const RevisionTopicSchema = z.object({
   id: z.string(),
   title: z.string(),
@@ -19,9 +25,11 @@ export const RevisionTopicSchema = z.object({
   reason: z.string(),
   confidence: z.enum(['low', 'medium', 'high']),
   status: TopicStatusSchema.default('not_started'),
+  styleCache: TopicStyleCacheSchema.optional(),
 });
 
 export type TopicStatus = z.infer<typeof TopicStatusSchema>;
+export type TopicStyleCache = z.infer<typeof TopicStyleCacheSchema>;
 
 export const RapidFireSchema = z.object({
   id: z.string(),
@@ -69,6 +77,7 @@ export const InterviewSchema = z.object({
   resumeContext: z.string(),
   modules: InterviewModulesSchema,
   excludedModules: z.array(ModuleTypeSchema).default([]),
+  customInstructions: z.string().max(2000).optional(),
   createdAt: z.date(),
   updatedAt: z.date(),
 });

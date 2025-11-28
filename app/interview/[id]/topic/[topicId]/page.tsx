@@ -366,6 +366,18 @@ export default function TopicDetailPage() {
       if (isRegenerating) return;
 
       setSelectedStyle(newStyle);
+
+      // If no custom instructions, check styleCache on topic for instant switching
+      if (!instructions && topic?.styleCache?.[newStyle]) {
+        // Found cached content - use it instantly without regenerating
+        setTopic((prev) =>
+          prev
+            ? { ...prev, content: prev.styleCache![newStyle]!, style: newStyle }
+            : prev
+        );
+        return;
+      }
+
       setIsRegenerating(true);
       setStreamingContent("");
 

@@ -8,6 +8,7 @@ import { DataManagementSection } from '@/app/settings/components/data-management
 import { BYOKTierConfigSection } from '@/app/settings/components/byok-tier-config';
 import { BYOKUsageStatsSection } from '@/app/settings/components/byok-usage-stats';
 import { CustomThemeSection } from '@/app/settings/components/custom-theme-section';
+import { PlanFeaturesSection } from '@/app/settings/components/plan-features-section';
 
 export default async function SettingsPage() {
   // Single optimized call fetches all settings data
@@ -25,6 +26,7 @@ export default async function SettingsPage() {
         {/* Left column */}
         <div className="space-y-6 min-w-0">
           <ProfileSection profile={profile} />
+          <PlanFeaturesSection plan={profile.plan} />
           <ApiKeysSection hasByokKey={profile.hasByokKey} plan={profile.plan} />
           <BYOKTierConfigSection hasByokKey={profile.hasByokKey} />
         </div>

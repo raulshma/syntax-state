@@ -20,12 +20,16 @@ import {
 } from "lucide-react";
 import { saveByokApiKey, removeByokApiKey } from "@/lib/actions/user";
 
+import { canAccess } from "@/lib/utils/feature-gate";
+import type { UserPlan } from "@/lib/db/schemas/user";
+
 interface ApiKeysSectionProps {
   hasByokKey: boolean;
-  plan: string;
+  plan: UserPlan;
 }
 
 export function ApiKeysSection({ hasByokKey, plan }: ApiKeysSectionProps) {
+  const byokAccess = canAccess("byok", plan);
   const router = useRouter();
   const [showApiKey, setShowApiKey] = useState(false);
   const [apiKey, setApiKey] = useState("");
@@ -76,6 +80,61 @@ export function ApiKeysSection({ hasByokKey, plan }: ApiKeysSectionProps) {
       setIsLoading(false);
     }
   };
+
+  if (!byokAccess.allowed) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4 }}
+        className="bg-card/50 backdrop-blur-xl border border-white/10 p-6 md:p-8 rounded-3xl hover:border-primary/20 transition-all duration-300 shadow-sm"
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center border border-primary/10">
+              <Key className="w-6 h-6 text-primary" />
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-foreground">API Keys</h2>
+              <p className="text-sm text-muted-foreground">Bring Your Own Key</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="space-y-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-5 rounded-2xl bg-gradient-to-r from-primary/10 to-transparent border border-primary/20">
+            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+              <Infinity className="w-5 h-5 text-primary" />
+            </div>
+            <div>
+              <p className="text-sm font-bold text-foreground">Unlimited Usage</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Use your own OpenRouter key for unlimited iterations
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-col items-start gap-4 p-5 rounded-2xl bg-yellow-500/5 border border-yellow-500/20">
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="w-5 h-5 text-yellow-500 mt-0.5 shrink-0" />
+              <div>
+                <p className="text-sm font-bold text-foreground">MAX Plan Required</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  BYOK is only available on the MAX plan. Upgrade to unlock unlimited API usage with your own key.
+                </p>
+              </div>
+            </div>
+            <Button
+              asChild
+              className="w-full h-11 rounded-full font-medium shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
+            >
+              <a href="/settings/upgrade">Upgrade to MAX</a>
+            </Button>
+          </div>
+        </div>
+      </motion.div>
+    );
+  }
 
   return (
     <motion.div

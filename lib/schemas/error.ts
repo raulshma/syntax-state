@@ -11,6 +11,7 @@ export const ErrorCodeSchema = z.enum([
   'DATABASE_ERROR',
   'NOT_FOUND',
   'PARSE_ERROR',
+  'PLAN_REQUIRED',
 ]);
 
 /**

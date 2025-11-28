@@ -24,8 +24,10 @@ import {
   createLoggerContext,
   extractTokenUsage,
 } from "@/lib/services/ai-logger";
+import { pdfExportService, type PDFExportOptions } from "@/lib/services/pdf-export";
 import { CreateInterviewInputSchema } from "@/lib/schemas/input";
 import { createAPIError, type APIError } from "@/lib/schemas/error";
+import { canAccess } from "@/lib/utils/feature-gate";
 
 import type { Interview } from "@/lib/db/schemas/interview";
 import { DEFAULT_AI_CONCURRENCY_LIMIT } from "../constants";
@@ -47,6 +49,7 @@ export interface CreateInterviewActionInput {
   resumeFile?: File;
   resumeText?: string;
   excludedModules?: string[];
+  customInstructions?: string;
 }
 
 /**
@@ -129,7 +132,8 @@ export async function createInterviewFromPrompt(
       input.prompt.trim(),
       {},
       apiKey ?? undefined,
-      byokTierConfig ?? undefined
+      byokTierConfig ?? undefined,
+      { plan: user.plan }
     );
     const parsedDetails = result.object;
 
@@ -304,6 +308,7 @@ export async function createInterview(
         rapidFire: [],
       },
       excludedModules,
+      customInstructions: input.customInstructions,
     });
 
     // Increment interview count (unless BYOK)
@@ -471,5 +476,205 @@ export async function getAIConcurrencyLimit(): Promise<number> {
     return doc ? (doc.value as number) : DEFAULT_CONCURRENCY;
   } catch {
     return DEFAULT_CONCURRENCY;
+  }
+}
+
+/**
+ * Save custom instructions for an interview
+ * Requirements: 4.1, 4.3, 4.5
+ * 
+ * @param interviewId - The ID of the interview
+ * @param instructions - The custom instructions (max 2000 characters)
+ * @returns ActionResult indicating success or error
+ */
+export async function saveCustomInstructions(
+  interviewId: string,
+  instructions: string
+): Promise<ActionResult<void>> {
+  try {
+    // Get authenticated user
+    const clerkId = await getAuthUserId();
+
+    // Parallel fetch: user and interview
+    const [user, interview] = await Promise.all([
+      userRepository.findByClerkId(clerkId),
+      interviewRepository.findById(interviewId),
+    ]);
+
+    if (!user) {
+      return {
+        success: false,
+        error: createAPIError("AUTH_ERROR", "User not found"),
+      };
+    }
+
+    if (!interview) {
+      return {
+        success: false,
+        error: createAPIError("NOT_FOUND", "Interview not found"),
+      };
+    }
+
+    // Verify ownership
+    if (interview.userId !== user._id) {
+      return {
+        success: false,
+        error: createAPIError(
+          "AUTH_ERROR",
+          "Not authorized to modify this interview"
+        ),
+      };
+    }
+
+    // Check plan access for custom prompts
+    // Requirements: 4.1
+    const customPromptsAccess = canAccess("custom_prompts", user.plan);
+    if (!customPromptsAccess.allowed) {
+      return {
+        success: false,
+        error: createAPIError(
+          "PLAN_REQUIRED",
+          customPromptsAccess.upgradeMessage || "Custom instructions require a MAX plan",
+          customPromptsAccess.requiredPlan ? { requiredPlan: customPromptsAccess.requiredPlan } : undefined
+        ),
+      };
+    }
+
+    // Validate character limit
+    // Requirements: 4.3
+    if (instructions.length > 2000) {
+      return {
+        success: false,
+        error: createAPIError(
+          "VALIDATION_ERROR",
+          "Custom instructions must not exceed 2000 characters",
+          { maxLength: "2000", currentLength: String(instructions.length) }
+        ),
+      };
+    }
+
+    // Validate that instructions are not empty or whitespace-only
+    if (instructions.trim().length === 0) {
+      return {
+        success: false,
+        error: createAPIError(
+          "VALIDATION_ERROR",
+          "Custom instructions cannot be empty"
+        ),
+      };
+    }
+
+    // Save custom instructions
+    // Requirements: 4.5
+    await interviewRepository.updateCustomInstructions(interviewId, instructions);
+
+    return { success: true, data: undefined };
+  } catch (error) {
+    console.error("saveCustomInstructions error:", error);
+    return {
+      success: false,
+      error: createAPIError(
+        "DATABASE_ERROR",
+        "Failed to save custom instructions. Please try again."
+      ),
+    };
+  }
+}
+
+/**
+ * Export an interview as a PDF file
+ * Requirements: 2.1, 2.2
+ * 
+ * @param interviewId - The ID of the interview to export
+ * @param options - PDF export options
+ * @returns ActionResult with PDF buffer and filename
+ */
+export async function exportInterviewPDF(
+  interviewId: string,
+  options?: PDFExportOptions
+): Promise<ActionResult<{ buffer: Buffer; filename: string }>> {
+  try {
+    // Get authenticated user
+    const clerkId = await getAuthUserId();
+
+    // Parallel fetch: user and interview
+    const [user, interview] = await Promise.all([
+      userRepository.findByClerkId(clerkId),
+      interviewRepository.findById(interviewId),
+    ]);
+
+    if (!user) {
+      return {
+        success: false,
+        error: createAPIError("AUTH_ERROR", "User not found"),
+      };
+    }
+
+    if (!interview) {
+      return {
+        success: false,
+        error: createAPIError("NOT_FOUND", "Interview not found"),
+      };
+    }
+
+    // Verify ownership
+    if (interview.userId !== user._id) {
+      return {
+        success: false,
+        error: createAPIError(
+          "AUTH_ERROR",
+          "Not authorized to export this interview"
+        ),
+      };
+    }
+
+    // Check plan access for PDF export
+    // Requirements: 2.1, 2.2
+    const pdfAccess = canAccess("pdf_export", user.plan);
+    if (!pdfAccess.allowed) {
+      return {
+        success: false,
+        error: createAPIError(
+          "PLAN_REQUIRED",
+          pdfAccess.upgradeMessage || "PDF export requires a PRO or MAX plan",
+          pdfAccess.requiredPlan ? { requiredPlan: pdfAccess.requiredPlan } : undefined
+        ),
+      };
+    }
+
+    // Check if interview has content to export
+    const hasContent =
+      interview.modules.openingBrief ||
+      interview.modules.revisionTopics.length > 0 ||
+      interview.modules.mcqs.length > 0 ||
+      interview.modules.rapidFire.length > 0;
+
+    if (!hasContent) {
+      return {
+        success: false,
+        error: createAPIError(
+          "VALIDATION_ERROR",
+          "Interview has no content to export. Please generate content first."
+        ),
+      };
+    }
+
+    // Generate PDF
+    const buffer = await pdfExportService.generatePDF(interview, options);
+    const filename = pdfExportService.getFilename(interview);
+
+    return {
+      success: true,
+      data: { buffer, filename },
+    };
+  } catch (error) {
+    console.error("exportInterviewPDF error:", error);
+    return {
+      success: false,
+      error: createAPIError(
+        "AI_ERROR",
+        "Failed to generate PDF. Please try again."
+      ),
+    };
   }
 }

@@ -38,6 +38,7 @@ import type {
   RapidFire,
   ModuleType,
 } from "@/lib/db/schemas/interview";
+import type { UserPlan } from "@/lib/db/schemas/user";
 import Link from "next/link";
 import { FeedbackSection } from "@/components/interview/feedback-section";
 
@@ -143,10 +144,12 @@ async function tryResumeStream(
 
 interface InterviewWorkspaceProps {
   interview: Interview;
+  userPlan?: UserPlan;
 }
 
 export function InterviewWorkspace({
   interview: initialInterview,
+  userPlan = "FREE",
 }: InterviewWorkspaceProps) {
   const interviewId = initialInterview._id;
   const [interview, setInterview] = useState<Interview>(initialInterview);
@@ -544,6 +547,8 @@ export function InterviewWorkspace({
           })}
           progress={getProgress()}
           isGenerating={isGenerating}
+          userPlan={userPlan}
+          interviewId={interviewId}
         />
 
         <div className="flex items-start">
