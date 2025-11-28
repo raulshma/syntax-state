@@ -4,6 +4,7 @@ export interface PlanFeature {
   name: string;
   included: boolean;
   tooltip?: string;
+  upcoming?: boolean;
 }
 
 export interface PlanLimits {
@@ -33,6 +34,7 @@ export interface ComparisonFeature {
   free: string | boolean;
   pro: string | boolean;
   max: string | boolean;
+  upcoming?: boolean;
 }
 
 export const FREE_INTERVIEW_LIMIT = 3;
@@ -95,15 +97,16 @@ export const PRICING_TIERS: PricingTier[] = [
       { name: 'All analogy levels', included: true },
       { name: 'PDF export', included: true },
       { name: 'Custom theme', included: true },
+      { name: 'Analytics & Insights', included: true, tooltip: 'Track your preparation progress with visualizations' },
       { name: 'Priority generation', included: true },
       { name: 'BYOK option', included: false },
     ],
     previewFeatures: [
       `${PRO_INTERVIEW_LIMIT} interviews/month`,
       `${PRO_ITERATION_LIMIT} iterations/month`,
+      'Analytics & Insights',
       'Advanced analogies',
       'Export to PDF',
-      'Priority support',
     ],
     cta: 'Subscribe to Pro',
     plan: 'PRO',
@@ -124,19 +127,19 @@ export const PRICING_TIERS: PricingTier[] = [
       { name: `${MAX_INTERVIEW_LIMIT} interviews/month`, included: true },
       { name: `${MAX_ITERATION_LIMIT} iterations/month`, included: true },
       { name: 'Everything in Pro', included: true },
-      { name: 'Analytics & Insights', included: true, tooltip: 'Track your preparation progress with visualizations' },
       { name: 'BYOK option', included: true, tooltip: 'Bring Your Own Key - use your own OpenRouter API key' },
-      { name: 'API access', included: true },
-      { name: 'Team collaboration', included: true },
+      { name: 'Analytics & Insights', included: true, upcoming: false },
       { name: 'Custom system prompts', included: true },
       { name: 'Priority support', included: true },
+      { name: 'API access', included: true, upcoming: true },
+      { name: 'Team collaboration', included: true, upcoming: true },
     ],
     previewFeatures: [
       `${MAX_INTERVIEW_LIMIT} interviews/month`,
       `${MAX_ITERATION_LIMIT} iterations/month`,
-      'Analytics & Insights',
       'BYOK option',
       'API access',
+      'Priority support',
     ],
     cta: 'Subscribe to Max',
     plan: 'MAX',
@@ -150,9 +153,10 @@ export const COMPARISON_FEATURES: ComparisonFeature[] = [
   { name: 'Web Search', free: false, pro: true, max: true },
   { name: 'PDF Export', free: false, pro: true, max: true },
   { name: 'Custom Theme', free: false, pro: true, max: true },
-  { name: 'Analytics & Insights', free: false, pro: false, max: true },
+  { name: 'Analytics & Insights', free: false, pro: true, max: true },
   { name: 'BYOK Support', free: false, pro: false, max: true },
-  { name: 'API Access', free: false, pro: false, max: true },
+  { name: 'API Access', free: false, pro: false, max: true, upcoming: true },
+  { name: 'Team Collaboration', free: false, pro: false, max: true, upcoming: true },
   { name: 'Priority Support', free: false, pro: false, max: true },
 ];
 

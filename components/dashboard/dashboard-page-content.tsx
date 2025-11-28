@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, Suspense } from "react";
 import { Button } from "@/components/ui/button";
 import { Plus, Briefcase, Sparkles } from "lucide-react";
 import { useSharedHeader } from "./shared-header-context";
@@ -9,6 +9,7 @@ import { ViewTransitionLink } from "@/components/transitions/view-transition-lin
 import { DashboardHero } from "./dashboard-hero";
 import { StatsBentoGrid } from "./stats-bento-grid";
 import { LearningPathCard } from "./learning-path-card";
+import { CheckoutSuccessDialog } from "./checkout-success-dialog";
 import type { DashboardInterviewData } from "@/lib/actions/dashboard";
 import type { LearningPath } from "@/lib/db/schemas/learning-path";
 import { motion } from "framer-motion";
@@ -21,12 +22,14 @@ interface DashboardPageContentProps {
     completed: number;
   };
   learningPath: LearningPath | null;
+  plan?: string;
 }
 
 export function DashboardPageContent({
   interviews,
   stats,
   learningPath,
+  plan = 'FREE',
 }: DashboardPageContentProps) {
   const { setHeader } = useSharedHeader();
 
@@ -49,6 +52,11 @@ export function DashboardPageContent({
 
   return (
     <div className="w-full space-y-12 pb-20">
+      {/* Checkout Success Dialog */}
+      <Suspense fallback={null}>
+        <CheckoutSuccessDialog plan={plan} />
+      </Suspense>
+
       {/* Learning Path Section */}
       <section>
         <div className="flex items-center justify-between mb-6 px-1">

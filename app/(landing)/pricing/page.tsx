@@ -186,7 +186,7 @@ function ApplePricingCard({ tier, index }: { tier: PricingTier; index: number })
 
         {/* Features */}
         <ul className="space-y-4 flex-1">
-          {tier.features.slice(0, 6).map((feature, i) => (
+          {tier.features.map((feature, i) => (
             <motion.li 
               key={feature.name} 
               className="flex items-start gap-3"
@@ -203,6 +203,11 @@ function ApplePricingCard({ tier, index }: { tier: PricingTier; index: number })
               </div>
               <span className={`text-sm ${feature.included ? 'text-foreground' : 'text-muted-foreground line-through'}`}>
                 {feature.name}
+                {feature.upcoming && (
+                  <span className="ml-2 text-xs px-1.5 py-0.5 bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300 rounded-full">
+                    Upcoming
+                  </span>
+                )}
               </span>
             </motion.li>
           ))}
@@ -350,8 +355,13 @@ export default function PublicPricingPage() {
                   viewport={{ once: true }}
                   transition={{ delay: index * 0.03 }}
                 >
-                  <div className="p-4 md:p-6 flex items-center">
+                  <div className="p-4 md:p-6 flex items-center gap-2">
                     <span className="text-sm text-foreground">{feature.name}</span>
+                    {feature.upcoming && (
+                      <span className="text-xs px-1.5 py-0.5 bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300 rounded-full whitespace-nowrap">
+                        Upcoming
+                      </span>
+                    )}
                   </div>
                   {(['free', 'pro', 'max'] as const).map((plan) => {
                     const value = feature[plan];

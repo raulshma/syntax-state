@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 
 export default function AnalyticsLoading() {
   return (
-    <div className="p-6 md:p-8">
+    <>
       <div className="mb-8">
         <Skeleton className="h-9 w-32 mb-2" />
         <Skeleton className="h-5 w-64" />
@@ -56,6 +56,6 @@ export default function AnalyticsLoading() {
           ))}
         </div>
       </div>
-    </div>
+    </>
   );
 }

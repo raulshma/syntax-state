@@ -36,7 +36,7 @@ export const FEATURE_ACCESS_MAP: Record<PlanFeature, UserPlan[]> = {
   custom_prompts: ['MAX'],
   advanced_ai: ['PRO', 'MAX'],
   custom_theme: ['PRO', 'MAX'],
-  analytics: ['MAX'],
+  analytics: ['PRO', 'MAX'],
 };
 
 /**

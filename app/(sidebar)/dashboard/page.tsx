@@ -24,7 +24,7 @@ async function DashboardDataLoader() {
     getActiveLearningPath(),
   ]);
 
-  const { interviews, stats } = dashboardData;
+  const { interviews, stats, sidebar } = dashboardData;
   const learningPath = learningPathResult.success
     ? learningPathResult.data
     : null;
@@ -34,6 +34,7 @@ async function DashboardDataLoader() {
       interviews={interviews}
       stats={stats}
       learningPath={learningPath}
+      plan={sidebar.usage.plan}
     />
   );
 }

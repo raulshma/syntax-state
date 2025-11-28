@@ -52,13 +52,13 @@ export interface UserAnalyticsDashboardData {
 }
 
 /**
- * Check if user has MAX plan
+ * Check if user has PRO or MAX plan
  */
-async function requireMaxPlan(): Promise<{ userId: string } | null> {
+async function requireProPlan(): Promise<{ userId: string } | null> {
   const clerkId = await getAuthUserId();
   const user = await userRepository.findByClerkId(clerkId);
   
-  if (!user || user.plan !== "MAX") {
+  if (!user || user.plan === "FREE") {
     return null;
   }
   
@@ -69,7 +69,7 @@ async function requireMaxPlan(): Promise<{ userId: string } | null> {
  * Get user analytics stats
  */
 export async function getUserAnalyticsStats(): Promise<UserAnalyticsStats | null> {
-  const auth = await requireMaxPlan();
+  const auth = await requireProPlan();
   if (!auth) return null;
 
   const interviewsCollection = await getInterviewsCollection();
@@ -126,7 +126,7 @@ export async function getUserAnalyticsStats(): Promise<UserAnalyticsStats | null
  * Get user interview trends over the last 30 days
  */
 export async function getUserInterviewTrends(days: number = 30): Promise<UserInterviewTrend[] | null> {
-  const auth = await requireMaxPlan();
+  const auth = await requireProPlan();
   if (!auth) return null;
 
   const interviewsCollection = await getInterviewsCollection();
@@ -165,7 +165,7 @@ export async function getUserInterviewTrends(days: number = 30): Promise<UserInt
  * Get topic progress distribution
  */
 export async function getUserTopicProgress(): Promise<UserTopicProgress[] | null> {
-  const auth = await requireMaxPlan();
+  const auth = await requireProPlan();
   if (!auth) return null;
 
   const interviewsCollection = await getInterviewsCollection();
@@ -201,7 +201,7 @@ export async function getUserTopicProgress(): Promise<UserTopicProgress[] | null
  * Get top companies user is preparing for
  */
 export async function getUserTopCompanies(limit: number = 5): Promise<UserCompanyData[] | null> {
-  const auth = await requireMaxPlan();
+  const auth = await requireProPlan();
   if (!auth) return null;
 
   const interviewsCollection = await getInterviewsCollection();
@@ -227,7 +227,7 @@ export async function getUserTopCompanies(limit: number = 5): Promise<UserCompan
  * Get top skills from opening briefs
  */
 export async function getUserTopSkills(limit: number = 8): Promise<UserSkillData[] | null> {
-  const auth = await requireMaxPlan();
+  const auth = await requireProPlan();
   if (!auth) return null;
 
   const interviewsCollection = await getInterviewsCollection();
@@ -254,7 +254,7 @@ export async function getUserTopSkills(limit: number = 8): Promise<UserSkillData
  * Get confidence distribution from revision topics
  */
 export async function getUserConfidenceDistribution(): Promise<UserConfidenceData[] | null> {
-  const auth = await requireMaxPlan();
+  const auth = await requireProPlan();
   if (!auth) return null;
 
   const interviewsCollection = await getInterviewsCollection();
@@ -287,7 +287,7 @@ export async function getUserConfidenceDistribution(): Promise<UserConfidenceDat
  * Get all user analytics data in a single call
  */
 export async function getUserAnalyticsDashboardData(): Promise<UserAnalyticsDashboardData | null> {
-  const auth = await requireMaxPlan();
+  const auth = await requireProPlan();
   if (!auth) return null;
 
   const [stats, interviewTrends, topicProgress, topCompanies, topSkills, confidenceDistribution] =

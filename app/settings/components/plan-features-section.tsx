@@ -64,7 +64,7 @@ const FEATURE_INFO: Record<PlanFeature, { label: string; description: string; ic
     label: 'Analytics & Insights',
     description: 'Track your preparation progress with visualizations',
     icon: <BarChart3 className="w-5 h-5" />,
-    minPlan: 'MAX',
+    minPlan: 'PRO',
   },
 };
 
