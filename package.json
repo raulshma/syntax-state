@@ -47,6 +47,7 @@
     "@radix-ui/react-toggle-group": "1.1.1",
     "@radix-ui/react-tooltip": "1.1.6",
     "@tailwindcss/typography": "^0.5.19",
+    "@tanstack/react-virtual": "^3.13.12",
     "@types/pdfkit": "^0.17.3",
     "@types/react-virtualized": "^9.22.3",
     "@vercel/analytics": "latest",

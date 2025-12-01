@@ -155,6 +155,14 @@ export function AIChatPageContent({
     if (isMobile) setRightSidebarOpen(false);
   }, [isMobile]);
 
+  const handleConversationUpdate = useCallback((id: string, title: string) => {
+    setConversations((prev) =>
+      prev.map((c) =>
+        c._id === id ? { ...c, title, lastMessageAt: new Date() } : c
+      )
+    );
+  }, []);
+
   return (
     <div className="flex h-screen overflow-hidden bg-zinc-50/50 dark:bg-zinc-950/50">
       {/* Mobile overlay */}
@@ -241,13 +249,7 @@ export function AIChatPageContent({
             onPromptUsed={() => setPendingPrompt(null)}
             onNewConversation={handleNewConversation}
             onConversationCreated={handleConversationCreated}
-            onConversationUpdate={(id, title) => {
-              setConversations((prev) =>
-                prev.map((c) =>
-                  c._id === id ? { ...c, title, lastMessageAt: new Date() } : c
-                )
-              );
-            }}
+            onConversationUpdate={handleConversationUpdate}
             userPlan={userPlan}
           />
 

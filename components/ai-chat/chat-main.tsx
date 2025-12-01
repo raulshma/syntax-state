@@ -4,18 +4,17 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import {
   Loader2,
-  Plus,
   Bot,
   User,
   Wrench,
   CheckCircle2,
   AlertCircle,
   ChevronRight,
-  Sparkles,
   Square,
   ArrowUp,
   Image as ImageIcon,
   X,
+  MessageSquarePlus,
 } from "lucide-react";
 import { ThinkingIndicator } from "./thinking-indicator";
 import { ModelSelector } from "./model-selector";
@@ -480,29 +479,32 @@ export function AIChatMain({
       // Find the first user message and check if there's an assistant response
       const firstUserMessage = messages.find((m) => m.role === "user");
       const hasAssistantResponse = messages.some((m) => m.role === "assistant" && getMessageTextContent(m));
-      
+
       if (firstUserMessage && hasAssistantResponse) {
         titleGeneratedRef.current = true;
         const messageContent = getMessageTextContent(firstUserMessage);
         if (messageContent) {
-          // Immediately show a truncated title while AI generates the real one
-          const tempTitle =
-            messageContent.slice(0, 40) +
-            (messageContent.length > 40 ? "..." : "");
-          onConversationUpdate?.(conversationId, tempTitle);
+          // Defer to avoid state updates during render
+          queueMicrotask(() => {
+            // Immediately show a truncated title while AI generates the real one
+            const tempTitle =
+              messageContent.slice(0, 40) +
+              (messageContent.length > 40 ? "..." : "");
+            onConversationUpdate?.(conversationId, tempTitle);
 
-          // Generate AI title in background using low-tier model
-          generateConversationTitle(conversationId, messageContent).then(
-            (result) => {
-              if (result.success && result.data) {
-                onConversationUpdate?.(conversationId, result.data);
+            // Generate AI title in background using low-tier model
+            generateConversationTitle(conversationId, messageContent).then(
+              (result) => {
+                if (result.success && result.data) {
+                  onConversationUpdate?.(conversationId, result.data);
+                }
               }
-            }
-          );
+            );
+          });
         }
       }
     }
-  }, [conversationId, messages, isLoading, onConversationUpdate]);
+  }, [conversationId, messages.length, isLoading, onConversationUpdate, messages]);
 
   // Reset title generation flag when conversation changes
   useEffect(() => {
@@ -601,43 +603,14 @@ export function AIChatMain({
 
   return (
     <div className="flex flex-col h-full bg-transparent">
-      {/* Header */}
-      <div className="flex items-center justify-between px-6 py-4 border-b border-border/40 bg-background/50 backdrop-blur-md sticky top-0 z-10">
-        <div className="flex items-center gap-3 pl-8 md:pl-0">
-          <div className="p-2 rounded-xl bg-primary/10">
-            <Sparkles className="h-5 w-5 text-primary" />
-          </div>
-          <div>
-            <h1 className="text-lg font-semibold">AI Chat</h1>
-            <p className="text-xs text-muted-foreground">
-              Your intelligent interview assistant
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2 pr-8 md:pr-0">
-          {messages.length > 0 && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                reset();
-                onNewConversation?.();
-              }}
-              className="text-muted-foreground hover:text-foreground"
-            >
-              <Plus className="h-4 w-4 mr-1.5" />
-              New Chat
-            </Button>
-          )}
-        </div>
-      </div>
+
 
       {/* Messages */}
       <div
         ref={scrollContainerRef}
         className="flex-1 overflow-y-auto scroll-smooth"
       >
-        <div className="max-w-3xl mx-auto px-4 py-8">
+        <div className="max-w-5xl mx-auto px-4 py-8">
           {messages.length === 0 ? (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -678,7 +651,7 @@ export function AIChatMain({
               {messages.map((message) => {
                 // Check if this is a persisted error message
                 const errorContent = isErrorMessage(message) ? getErrorContent(message) : null;
-                
+
                 // Render persisted error messages
                 if (errorContent) {
                   return (
@@ -703,7 +676,7 @@ export function AIChatMain({
                     </motion.div>
                   );
                 }
-                
+
                 // Render regular messages
                 return (
                   <motion.div
@@ -942,6 +915,18 @@ export function AIChatMain({
 
             {/* Row 2: Tools (Model Selector + Image) */}
             <div className="flex items-center gap-1 mt-2 pt-2 border-t border-border/40">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => {
+                  reset();
+                  onNewConversation?.();
+                }}
+                className="h-8 w-8 rounded-full text-muted-foreground hover:text-foreground"
+                title="New Chat"
+              >
+                <MessageSquarePlus className="h-4 w-4" />
+              </Button>
               {isMaxPlan && (
                 <ModelSelector
                   selectedModelId={selectedModelId}

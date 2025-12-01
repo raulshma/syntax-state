@@ -84,7 +84,10 @@ function getOrCreateTransport(): DefaultChatTransport<UIMessage> {
         if (newConversationId && isNewConversation && contextRefs.onConversationCreated) {
           // Update the context ref so subsequent messages use this conversation
           contextRefs.conversationId = newConversationId;
-          contextRefs.onConversationCreated(newConversationId);
+          // Defer callback to avoid triggering state updates during fetch
+          queueMicrotask(() => {
+            contextRefs.onConversationCreated?.(newConversationId);
+          });
         }
 
         // Capture model ID from response
@@ -141,13 +144,6 @@ export function useAIAssistant(
   // Get transport (created once at module level)
   const transport = getOrCreateTransport();
 
-  // Track pending metadata updates to batch them
-  const pendingMetadataUpdateRef = useRef<{
-    messageId: string;
-    metadata: MessageMetadata;
-  } | null>(null);
-  const metadataUpdateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
   const {
     messages,
     status,
@@ -181,24 +177,13 @@ export function useAIAssistant(
           // Store in ref immediately (no re-render)
           messageMetadataRef.current.set(messageId, metadata);
           
-          // Batch the state update to avoid infinite loops
-          pendingMetadataUpdateRef.current = { messageId, metadata };
-          
-          // Clear any existing timeout
-          if (metadataUpdateTimeoutRef.current) {
-            clearTimeout(metadataUpdateTimeoutRef.current);
-          }
-          
-          // Defer state updates to next tick to avoid update loops
-          metadataUpdateTimeoutRef.current = setTimeout(() => {
-            if (pendingMetadataUpdateRef.current) {
-              const { messageId: id, metadata: meta } = pendingMetadataUpdateRef.current;
-              setLastModelId(contextRefs.lastModelId);
-              setMetadataVersion((v) => v + 1);
-              onMessageMetadata?.(id, meta);
-              pendingMetadataUpdateRef.current = null;
-            }
-          }, 0);
+          // Use queueMicrotask to defer state updates completely outside React's update cycle
+          // This prevents "Maximum update depth exceeded" errors
+          queueMicrotask(() => {
+            setLastModelId(contextRefs.lastModelId);
+            setMetadataVersion((v) => v + 1);
+            onMessageMetadata?.(messageId, metadata);
+          });
         }
       }
     },
@@ -329,25 +314,12 @@ export function useAIAssistant(
     [chatSendMessage]
   );
 
-  // Cleanup timeout on unmount
-  useEffect(() => {
-    return () => {
-      if (metadataUpdateTimeoutRef.current) {
-        clearTimeout(metadataUpdateTimeoutRef.current);
-      }
-    };
-  }, []);
-
   // Reset the conversation
   const reset = useCallback(() => {
     setMessages([]);
     setActiveTools([]);
     activeToolsRef.current = [];
     messageMetadataRef.current = new Map();
-    pendingMetadataUpdateRef.current = null;
-    if (metadataUpdateTimeoutRef.current) {
-      clearTimeout(metadataUpdateTimeoutRef.current);
-    }
     setMetadataVersion((v) => v + 1);
   }, [setMessages]);
 
