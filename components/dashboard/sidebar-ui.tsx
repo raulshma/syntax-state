@@ -30,7 +30,7 @@ export function SidebarUi({ data }: SidebarUiProps) {
       {/* Toggle Button */}
       <button
         onClick={toggleSidebar}
-        className="absolute -right-3 top-9 z-50 p-1 bg-background border border-border rounded-full shadow-sm hover:bg-accent transition-colors"
+        className="absolute -right-3 top-9 z-50 p-1 bg-background border border-border rounded-full shadow-sm hover:bg-accent transition-colors cursor-pointer"
       >
         {isCollapsed ? (
           <ChevronRight className="w-4 h-4 text-muted-foreground" />
@@ -85,10 +85,10 @@ export function SidebarUi({ data }: SidebarUiProps) {
               <div className="flex items-center gap-2">
                 <div
                   className={`w-2 h-2 rounded-full ${data.usage.plan === "FREE"
-                      ? "bg-muted-foreground"
-                      : data.usage.plan === "PRO"
-                        ? "bg-blue-500"
-                        : "bg-amber-500"
+                    ? "bg-muted-foreground"
+                    : data.usage.plan === "PRO"
+                      ? "bg-blue-500"
+                      : "bg-amber-500"
                     }`}
                 />
                 <span className="text-xs font-medium text-foreground">
