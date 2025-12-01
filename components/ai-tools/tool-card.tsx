@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   TrendingUp,
   MessageSquare,
-  Github,
+  GitBranch,
   Network,
   Target,
   BookOpen,
@@ -21,7 +21,6 @@ import { cn } from '@/lib/utils';
 import type { AIToolName } from '@/lib/services/ai-tools';
 
 interface AIToolCardProps {
-  toolName: AIToolName;
   title: string;
   description: string;
   icon: LucideIcon;
@@ -39,7 +38,6 @@ const cardVariants = {
 };
 
 export function AIToolCard({
-  toolName,
   title,
   description,
   icon: Icon,
@@ -135,7 +133,7 @@ const tools: Array<{
     name: 'analyzeGitHubRepo',
     title: 'GitHub Analysis',
     description: 'Analyze repositories to understand architecture, technologies, and generate interview questions.',
-    icon: Github,
+    icon: GitBranch,
     color: 'bg-slate-500',
     minPlan: 'PRO',
   },
@@ -179,7 +177,6 @@ export function AIToolsGrid({ userPlan, onToolSelect }: AIToolsGridProps) {
             transition={{ delay: index * 0.1 }}
           >
             <AIToolCard
-              toolName={tool.name}
               title={tool.title}
               description={tool.description}
               icon={tool.icon}
