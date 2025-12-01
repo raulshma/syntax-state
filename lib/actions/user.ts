@@ -20,11 +20,50 @@ export type ActionResult<T> =
   | { success: false; error: APIError };
 
 /**
- * Cached DB user lookup - shared across all user actions within a request
- * This eliminates duplicate findByClerkId calls
+ * Helper to get default reset date (first of next month)
+ */
+function getDefaultResetDate(): Date {
+  const now = new Date();
+  const resetDate = new Date(now);
+  resetDate.setMonth(resetDate.getMonth() + 1);
+  resetDate.setDate(1);
+  resetDate.setHours(0, 0, 0, 0);
+  return resetDate;
+}
+
+/**
+ * Cached DB user lookup with auto-creation - shared across all user actions within a request
+ * This eliminates duplicate findByClerkId calls and ensures user exists in DB
+ * If user doesn't exist (e.g., webhook failed), creates them with default FREE plan
  */
 const getCachedDbUser = cache(async (clerkId: string) => {
-  return userRepository.findByClerkId(clerkId);
+  let user = await userRepository.findByClerkId(clerkId);
+
+  // If user doesn't exist in DB, create them (fallback for webhook failures)
+  if (!user) {
+    user = await userRepository.create({
+      clerkId,
+      plan: "FREE",
+      iterations: {
+        count: 0,
+        limit: 20,
+        resetDate: getDefaultResetDate(),
+      },
+      preferences: {
+        theme: "dark",
+        defaultAnalogy: "professional",
+      },
+    });
+
+    // Audit log the auto-creation
+    const { logSystemAction } = await import("@/lib/services/audit-log");
+    await logSystemAction("userAutoCreated", clerkId, {
+      reason: "User not found in DB on login (webhook may have failed)",
+      plan: "FREE",
+    });
+  }
+
+  return user;
 });
 
 /**
@@ -258,18 +297,6 @@ export async function getIterationStatus(): Promise<
       error: createAPIError("DATABASE_ERROR", "Failed to get iteration status"),
     };
   }
-}
-
-/**
- * Helper to get default reset date (first of next month)
- */
-function getDefaultResetDate(): Date {
-  const now = new Date();
-  const resetDate = new Date(now);
-  resetDate.setMonth(resetDate.getMonth() + 1);
-  resetDate.setDate(1);
-  resetDate.setHours(0, 0, 0, 0);
-  return resetDate;
 }
 
 /**

@@ -96,6 +96,35 @@ export async function logAdminAction(
  * @param options - Query options
  * @returns Array of audit log entries
  */
+/**
+ * Log a system action for audit purposes (no admin involved)
+ * Used for automated actions like user auto-creation on login
+ *
+ * @param action - The action being performed
+ * @param targetUserId - Clerk ID or MongoDB ID of the target user
+ * @param details - Additional context about the action (optional)
+ */
+export async function logSystemAction(
+  action: string,
+  targetUserId: string,
+  details?: Record<string, unknown>
+): Promise<void> {
+  try {
+    const collection = await getAuditLogsCollection();
+
+    await collection.insertOne({
+      action,
+      adminUserId: "SYSTEM",
+      targetUserId,
+      details,
+      createdAt: new Date(),
+    });
+  } catch (error) {
+    // Log but don't throw - audit logging should not break system actions
+    console.error("Failed to log system action:", error);
+  }
+}
+
 export async function queryAuditLogs(options: {
   adminUserId?: string;
   targetUserId?: string;
