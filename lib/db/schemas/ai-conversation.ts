@@ -1,13 +1,30 @@
 import { z } from "zod";
 
 /**
+ * AI Request Metadata Schema
+ * Stores performance and usage metrics for AI responses
+ */
+export const AIRequestMetadataSchema = z.object({
+  model: z.string(), // Model ID used for this message
+  modelName: z.string().optional(), // Human-readable model name
+  tokensIn: z.number().optional(), // Input/prompt tokens
+  tokensOut: z.number().optional(), // Output/completion tokens
+  totalTokens: z.number().optional(), // Total tokens used
+  latencyMs: z.number().optional(), // Total response time in ms
+  ttft: z.number().optional(), // Time to first token in ms
+  throughput: z.number().optional(), // Tokens per second
+});
+
+/**
  * AI Chat Message Schema
  * Stores individual messages in an AI conversation
  */
 export const AIMessageSchema = z.object({
   id: z.string(),
-  role: z.enum(["user", "assistant"]),
+  role: z.enum(["user", "assistant", "error"]),
   content: z.string(),
+  // Reasoning/thinking content from the model
+  reasoning: z.string().optional(),
   // Tool calls made during this message
   toolCalls: z
     .array(
@@ -28,6 +45,15 @@ export const AIMessageSchema = z.object({
     .optional(),
   // Image references (stored in separate collection)
   imageIds: z.array(z.string()).optional(),
+  // Error details for error messages
+  errorDetails: z
+    .object({
+      code: z.string().optional(),
+      isRetryable: z.boolean().optional(),
+    })
+    .optional(),
+  // AI request metadata (for assistant messages)
+  metadata: AIRequestMetadataSchema.optional(),
   createdAt: z.date(),
 });
 
@@ -63,6 +89,7 @@ export const CreateAIConversationSchema = AIConversationSchema.omit({
   lastMessageAt: true,
 });
 
+export type AIRequestMetadata = z.infer<typeof AIRequestMetadataSchema>;
 export type AIMessage = z.infer<typeof AIMessageSchema>;
 export type AIConversation = z.infer<typeof AIConversationSchema>;
 export type CreateAIConversation = z.infer<typeof CreateAIConversationSchema>;

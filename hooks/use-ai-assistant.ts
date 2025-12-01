@@ -13,6 +13,17 @@ export type AssistantToolStatus = {
   timestamp: string;
 };
 
+export type MessageMetadata = {
+  model: string;
+  modelName?: string;
+  tokensIn?: number;
+  tokensOut?: number;
+  totalTokens?: number;
+  latencyMs?: number;
+  ttft?: number;
+  throughput?: number;
+};
+
 export interface UseAIAssistantOptions {
   interviewId?: string;
   learningPathId?: string;
@@ -21,6 +32,7 @@ export interface UseAIAssistantOptions {
   onToolStatus?: (status: AssistantToolStatus) => void;
   onError?: (error: Error) => void;
   onConversationCreated?: (id: string) => void;
+  onMessageMetadata?: (messageId: string, metadata: MessageMetadata) => void;
 }
 
 export interface UseAIAssistantReturn {
@@ -30,6 +42,8 @@ export interface UseAIAssistantReturn {
   isLoading: boolean;
   error: Error | undefined;
   activeTools: AssistantToolStatus[];
+  messageMetadata: Map<string, MessageMetadata>;
+  lastModelId: string | undefined;
   sendMessage: (content: string, files?: File[]) => Promise<void>;
   stop: () => void;
   reload: () => void;
@@ -43,6 +57,8 @@ const contextRefs = {
   conversationId: undefined as string | undefined,
   selectedModelId: undefined as string | null | undefined,
   onConversationCreated: undefined as ((id: string) => void) | undefined,
+  onMessageMetadata: undefined as ((messageId: string, metadata: MessageMetadata) => void) | undefined,
+  lastModelId: undefined as string | undefined,
 };
 
 // Create transport singleton
@@ -71,6 +87,12 @@ function getOrCreateTransport(): DefaultChatTransport<UIMessage> {
           contextRefs.onConversationCreated(newConversationId);
         }
 
+        // Capture model ID from response
+        const modelId = response.headers.get("X-Model-Id");
+        if (modelId) {
+          contextRefs.lastModelId = modelId;
+        }
+
         return response;
       },
     });
@@ -93,10 +115,18 @@ export function useAIAssistant(
     onToolStatus,
     onError,
     onConversationCreated,
+    onMessageMetadata,
   } = options;
   const [activeTools, setActiveTools] = useState<AssistantToolStatus[]>([]);
   const [input, setInput] = useState("");
+  const [lastModelId, setLastModelId] = useState<string | undefined>(undefined);
   const activeToolsRef = useRef<AssistantToolStatus[]>([]);
+  const messageMetadataRef = useRef<Map<string, MessageMetadata>>(new Map());
+  // Use a counter to force re-renders when metadata changes
+  const [metadataVersion, setMetadataVersion] = useState(0);
+
+  // Track previous conversationId to detect changes
+  const prevConversationIdRef = useRef<string | undefined>(undefined);
 
   // Update module-level refs via effect
   useEffect(() => {
@@ -105,10 +135,18 @@ export function useAIAssistant(
     contextRefs.conversationId = conversationId;
     contextRefs.selectedModelId = selectedModelId;
     contextRefs.onConversationCreated = onConversationCreated;
-  }, [interviewId, learningPathId, conversationId, selectedModelId, onConversationCreated]);
+    contextRefs.onMessageMetadata = onMessageMetadata;
+  }, [interviewId, learningPathId, conversationId, selectedModelId, onConversationCreated, onMessageMetadata]);
 
   // Get transport (created once at module level)
   const transport = getOrCreateTransport();
+
+  // Track pending metadata updates to batch them
+  const pendingMetadataUpdateRef = useRef<{
+    messageId: string;
+    metadata: MessageMetadata;
+  } | null>(null);
+  const metadataUpdateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const {
     messages,
@@ -124,12 +162,135 @@ export function useAIAssistant(
       console.error("AI Assistant error:", err);
       onError?.(err);
     },
-    onFinish: () => {
+    onFinish: (result) => {
       // Clear active tools after completion
       setActiveTools([]);
       activeToolsRef.current = [];
+      
+      // Update last model ID from context refs
+      if (contextRefs.lastModelId && result.message) {
+        const messageId = result.message.id;
+        
+        // Only process if we haven't already
+        if (!messageMetadataRef.current.has(messageId)) {
+          // Create metadata for this message
+          const metadata: MessageMetadata = {
+            model: contextRefs.lastModelId,
+          };
+          
+          // Store in ref immediately (no re-render)
+          messageMetadataRef.current.set(messageId, metadata);
+          
+          // Batch the state update to avoid infinite loops
+          pendingMetadataUpdateRef.current = { messageId, metadata };
+          
+          // Clear any existing timeout
+          if (metadataUpdateTimeoutRef.current) {
+            clearTimeout(metadataUpdateTimeoutRef.current);
+          }
+          
+          // Defer state updates to next tick to avoid update loops
+          metadataUpdateTimeoutRef.current = setTimeout(() => {
+            if (pendingMetadataUpdateRef.current) {
+              const { messageId: id, metadata: meta } = pendingMetadataUpdateRef.current;
+              setLastModelId(contextRefs.lastModelId);
+              setMetadataVersion((v) => v + 1);
+              onMessageMetadata?.(id, meta);
+              pendingMetadataUpdateRef.current = null;
+            }
+          }, 0);
+        }
+      }
     },
   });
+
+  // Load messages when conversationId changes
+  useEffect(() => {
+    // Skip if conversationId hasn't changed
+    if (prevConversationIdRef.current === conversationId) {
+      return;
+    }
+    prevConversationIdRef.current = conversationId;
+
+    // Clear messages when switching to new chat (no conversationId)
+    if (!conversationId) {
+      setMessages([]);
+      return;
+    }
+
+    // Load existing conversation messages
+    const loadConversation = async () => {
+      try {
+        const { getConversation } = await import(
+          "@/lib/actions/ai-chat-actions"
+        );
+        const result = await getConversation(conversationId);
+
+        if (result.success && result.data.messages.length > 0) {
+          // Convert AIMessage[] to UIMessage[] format
+          // Include text parts and error messages (using data-error part type)
+          const metadataMap = new Map<string, MessageMetadata>();
+          
+          const uiMessages = result.data.messages.map((msg) => {
+            // Handle error messages - convert to assistant role with data-error part
+            if (msg.role === "error") {
+              return {
+                id: msg.id,
+                role: "assistant" as const,
+                content: msg.content,
+                parts: [
+                  {
+                    type: "data-error" as const,
+                    data: {
+                      error: msg.content,
+                      errorDetails: msg.errorDetails,
+                    },
+                  },
+                ],
+                createdAt: msg.createdAt,
+              };
+            }
+            // Regular user/assistant messages
+            // Build parts array with reasoning (if present) and text
+            const parts: Array<{ type: "text"; text: string } | { type: "reasoning"; text: string }> = [];
+            if (msg.reasoning) {
+              parts.push({ type: "reasoning" as const, text: msg.reasoning });
+            }
+            parts.push({ type: "text" as const, text: msg.content });
+            
+            // Extract metadata for assistant messages
+            if (msg.role === "assistant" && msg.metadata) {
+              metadataMap.set(msg.id, msg.metadata as MessageMetadata);
+            }
+            
+            // At this point, role is either "user" or "assistant" (error handled above)
+            const role = msg.role === "user" ? "user" as const : "assistant" as const;
+            
+            return {
+              id: msg.id,
+              role,
+              content: msg.content,
+              parts,
+              createdAt: msg.createdAt,
+            };
+          });
+          
+          setMessages(uiMessages);
+          messageMetadataRef.current = metadataMap;
+          setMetadataVersion((v) => v + 1);
+        } else {
+          setMessages([]);
+          messageMetadataRef.current = new Map();
+          setMetadataVersion((v) => v + 1);
+        }
+      } catch (err) {
+        console.error("Failed to load conversation:", err);
+        setMessages([]);
+      }
+    };
+
+    loadConversation();
+  }, [conversationId, setMessages]);
 
   // Convert File to base64 data URL
   const fileToDataUrl = async (file: File): Promise<string> => {
@@ -168,16 +329,35 @@ export function useAIAssistant(
     [chatSendMessage]
   );
 
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (metadataUpdateTimeoutRef.current) {
+        clearTimeout(metadataUpdateTimeoutRef.current);
+      }
+    };
+  }, []);
+
   // Reset the conversation
   const reset = useCallback(() => {
     setMessages([]);
     setActiveTools([]);
     activeToolsRef.current = [];
+    messageMetadataRef.current = new Map();
+    pendingMetadataUpdateRef.current = null;
+    if (metadataUpdateTimeoutRef.current) {
+      clearTimeout(metadataUpdateTimeoutRef.current);
+    }
+    setMetadataVersion((v) => v + 1);
   }, [setMessages]);
 
   // Derive isLoading from status for backwards compatibility
   const isLoading = status === "streaming" || status === "submitted";
 
+  // metadataVersion is used to trigger re-renders when metadata changes
+  // We access it here to ensure the component re-renders
+  void metadataVersion;
+  
   return {
     messages,
     input,
@@ -185,6 +365,8 @@ export function useAIAssistant(
     isLoading,
     error,
     activeTools,
+    messageMetadata: messageMetadataRef.current,
+    lastModelId,
     sendMessage,
     stop,
     reload: regenerate,

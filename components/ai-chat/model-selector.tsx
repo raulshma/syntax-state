@@ -20,6 +20,9 @@ import {
   Image as ImageIcon,
   Check,
   Loader2,
+  BrainCircuit,
+  Wrench,
+  Globe,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { OpenRouterModel, GroupedModels } from "@/app/api/models/route";
@@ -133,7 +136,9 @@ export function ModelSelector({
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
               <p className="font-medium text-sm truncate">{model.name}</p>
-              {isSelected && <Check className="w-3.5 h-3.5 text-primary shrink-0" />}
+              {isSelected && (
+                <Check className="w-3.5 h-3.5 text-primary shrink-0" />
+              )}
             </div>
             <p className="text-xs text-muted-foreground font-mono truncate mt-0.5">
               {model.id}
@@ -141,18 +146,58 @@ export function ModelSelector({
           </div>
         </div>
         <div className="flex flex-wrap gap-1.5 mt-2">
-          <Badge variant="secondary" className="text-[10px] h-5 px-1.5 font-normal">
+          <Badge
+            variant="secondary"
+            className="text-[10px] h-5 px-1.5 font-normal"
+          >
             <Layers className="w-3 h-3 mr-1 opacity-70" />
             {(model.context_length / 1000).toFixed(0)}K
           </Badge>
-          <Badge variant="secondary" className="text-[10px] h-5 px-1.5 font-normal">
+          <Badge
+            variant="secondary"
+            className="text-[10px] h-5 px-1.5 font-normal"
+          >
             <DollarSign className="w-3 h-3 mr-1 opacity-70" />
             {formatPrice(model.pricing.prompt)}
           </Badge>
           {supportsImages && (
-            <Badge variant="secondary" className="text-[10px] h-5 px-1.5 font-normal bg-blue-500/10 text-blue-600">
+            <Badge
+              variant="secondary"
+              className="text-[10px] h-5 px-1.5 font-normal bg-blue-500/10 text-blue-600"
+            >
               <ImageIcon className="w-3 h-3 mr-1" />
               Vision
+            </Badge>
+          )}
+          {model.supported_parameters?.some(
+            (p) => p === "reasoning" || p === "include_reasoning"
+          ) && (
+            <Badge
+              variant="secondary"
+              className="text-[10px] h-5 px-1.5 font-normal bg-purple-500/10 text-purple-600"
+            >
+              <BrainCircuit className="w-3 h-3 mr-1" />
+              Reasoning
+            </Badge>
+          )}
+          {model.supported_parameters?.some(
+            (p) => p === "tools" || p === "tool_choice"
+          ) && (
+            <Badge
+              variant="secondary"
+              className="text-[10px] h-5 px-1.5 font-normal bg-orange-500/10 text-orange-600"
+            >
+              <Wrench className="w-3 h-3 mr-1" />
+              Tools
+            </Badge>
+          )}
+          {model.supported_parameters?.includes("web_search_options") && (
+            <Badge
+              variant="secondary"
+              className="text-[10px] h-5 px-1.5 font-normal bg-green-500/10 text-green-600"
+            >
+              <Globe className="w-3 h-3 mr-1" />
+              Web
             </Badge>
           )}
         </div>
@@ -162,7 +207,12 @@ export function ModelSelector({
 
   if (loading) {
     return (
-      <Button variant="outline" size="sm" disabled className="h-8 gap-2 rounded-full">
+      <Button
+        variant="outline"
+        size="sm"
+        disabled
+        className="h-8 gap-2 rounded-full"
+      >
         <Loader2 className="h-3.5 w-3.5 animate-spin" />
         <span className="text-xs">Loading models...</span>
       </Button>
@@ -188,7 +238,10 @@ export function ModelSelector({
           <ChevronDown className="h-3 w-3 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[340px] p-0 rounded-2xl" align="start">
+      <PopoverContent
+        className="w-[95vw] md:w-[600px] p-0 rounded-2xl"
+        align="start"
+      >
         <div className="p-3 border-b border-border/50">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -203,17 +256,23 @@ export function ModelSelector({
         <Tabs defaultValue="paid" className="w-full">
           <div className="px-3 pt-2">
             <TabsList className="w-full h-8 bg-muted/30 rounded-lg p-0.5">
-              <TabsTrigger value="paid" className="flex-1 h-7 text-xs rounded-md">
+              <TabsTrigger
+                value="paid"
+                className="flex-1 h-7 text-xs rounded-md"
+              >
                 Paid ({models?.paid.length || 0})
               </TabsTrigger>
-              <TabsTrigger value="free" className="flex-1 h-7 text-xs rounded-md">
+              <TabsTrigger
+                value="free"
+                className="flex-1 h-7 text-xs rounded-md"
+              >
                 Free ({models?.free.length || 0})
               </TabsTrigger>
             </TabsList>
           </div>
           <TabsContent value="paid" className="mt-0">
-            <ScrollArea className="h-[280px]">
-              <div className="p-2 space-y-1">
+            <ScrollArea className="h-[350px]">
+              <div className="p-2 grid grid-cols-1 md:grid-cols-2 gap-2">
                 {filterModels(models?.paid || []).map((model) => (
                   <ModelCard key={model.id} model={model} />
                 ))}
@@ -221,8 +280,8 @@ export function ModelSelector({
             </ScrollArea>
           </TabsContent>
           <TabsContent value="free" className="mt-0">
-            <ScrollArea className="h-[280px]">
-              <div className="p-2 space-y-1">
+            <ScrollArea className="h-[350px]">
+              <div className="p-2 grid grid-cols-1 md:grid-cols-2 gap-2">
                 {filterModels(models?.free || []).map((model) => (
                   <ModelCard key={model.id} model={model} />
                 ))}

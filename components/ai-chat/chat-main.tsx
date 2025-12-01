@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { ThinkingIndicator } from "./thinking-indicator";
 import { ModelSelector } from "./model-selector";
+import { MessageMetadataDisplay } from "./message-metadata";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
@@ -28,6 +29,7 @@ import {
   useAIAssistant,
   ASSISTANT_SUGGESTIONS,
   type SuggestionCategory,
+  type MessageMetadata,
 } from "@/hooks/use-ai-assistant";
 import { generateConversationTitle } from "@/lib/actions/ai-chat-actions";
 import { cn } from "@/lib/utils";
@@ -78,6 +80,27 @@ function getFileParts(message: UIMessage) {
     (part): part is { type: "file"; mediaType: string; url: string; filename?: string } =>
       part.type === "file"
   );
+}
+
+/**
+ * Check if a message is a persisted error message
+ * Error messages are stored with data-error part type
+ */
+function isErrorMessage(message: UIMessage): boolean {
+  return message.parts.some((part) => part.type === "data-error");
+}
+
+/**
+ * Get error content from a persisted error message
+ */
+function getErrorContent(message: UIMessage): { error: string; errorDetails?: { code?: string; isRetryable?: boolean } } | null {
+  for (const part of message.parts) {
+    if (part.type === "data-error") {
+      const data = part.data as { error?: string; errorDetails?: { code?: string; isRetryable?: boolean } };
+      return { error: data.error || "An error occurred", errorDetails: data.errorDetails };
+    }
+  }
+  return null;
 }
 
 /**
@@ -255,8 +278,8 @@ function ToolInvocation({
             isComplete
               ? "bg-green-500/20 text-green-600"
               : isError
-              ? "bg-red-500/20 text-red-600"
-              : "bg-primary/20 text-primary"
+                ? "bg-red-500/20 text-red-600"
+                : "bg-primary/20 text-primary"
           )}
         >
           {isComplete ? (
@@ -354,7 +377,9 @@ export function AIChatMain({
     input,
     setInput,
     isLoading,
+    error,
     activeTools,
+    messageMetadata,
     sendMessage,
     stop,
     reset,
@@ -444,16 +469,19 @@ export function AIChatMain({
     }
   }, [initialPrompt]);
 
-  // Generate AI-powered title from first user message
+  // Generate AI-powered title after first assistant response is received
   useEffect(() => {
     if (
       conversationId &&
-      messages.length >= 1 &&
-      !titleGeneratedRef.current
+      messages.length >= 2 &&
+      !titleGeneratedRef.current &&
+      !isLoading
     ) {
-      // Find the first user message
+      // Find the first user message and check if there's an assistant response
       const firstUserMessage = messages.find((m) => m.role === "user");
-      if (firstUserMessage) {
+      const hasAssistantResponse = messages.some((m) => m.role === "assistant" && getMessageTextContent(m));
+      
+      if (firstUserMessage && hasAssistantResponse) {
         titleGeneratedRef.current = true;
         const messageContent = getMessageTextContent(firstUserMessage);
         if (messageContent) {
@@ -474,7 +502,7 @@ export function AIChatMain({
         }
       }
     }
-  }, [conversationId, messages, onConversationUpdate]);
+  }, [conversationId, messages, isLoading, onConversationUpdate]);
 
   // Reset title generation flag when conversation changes
   useEffect(() => {
@@ -486,8 +514,8 @@ export function AIChatMain({
   const suggestionCategory: SuggestionCategory = learningPathId
     ? "learning"
     : interviewId
-    ? "interview"
-    : "general";
+      ? "interview"
+      : "general";
 
   const suggestions = ASSISTANT_SUGGESTIONS[suggestionCategory];
 
@@ -547,14 +575,14 @@ export function AIChatMain({
     }
 
     setInput("");
-    
+
     // Convert files to FileList-like structure for the hook
     const filesToSend = attachedFiles.length > 0 ? attachedFiles : undefined;
-    
+
     // Clear attached files after sending
     setAttachedFiles([]);
     setFilePreviews([]);
-    
+
     await sendMessage(content, filesToSend);
   };
 
@@ -647,101 +675,142 @@ export function AIChatMain({
             </motion.div>
           ) : (
             <div className="space-y-8">
-              {messages.map((message) => (
-                <motion.div
-                  key={message.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className={cn(
-                    "flex gap-4",
-                    message.role === "user" && "flex-row-reverse"
-                  )}
-                >
-                  <div
+              {messages.map((message) => {
+                // Check if this is a persisted error message
+                const errorContent = isErrorMessage(message) ? getErrorContent(message) : null;
+                
+                // Render persisted error messages
+                if (errorContent) {
+                  return (
+                    <motion.div
+                      key={message.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="flex gap-4"
+                    >
+                      <div className="shrink-0 h-10 w-10 rounded-full flex items-center justify-center bg-destructive/10 border border-destructive/20">
+                        <AlertCircle className="h-5 w-5 text-destructive" />
+                      </div>
+                      <div className="flex-1 max-w-[85%]">
+                        <div className="inline-block rounded-[20px] rounded-tl-none px-5 py-3.5 text-sm bg-destructive/10 border border-destructive/20">
+                          <p className="text-destructive font-medium mb-1">Something went wrong</p>
+                          <p className="text-destructive/80 text-xs">{errorContent.error}</p>
+                          {errorContent.errorDetails?.isRetryable && (
+                            <p className="text-destructive/60 text-xs mt-2">You can try sending your message again.</p>
+                          )}
+                        </div>
+                      </div>
+                    </motion.div>
+                  );
+                }
+                
+                // Render regular messages
+                return (
+                  <motion.div
+                    key={message.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
                     className={cn(
-                      "shrink-0 h-10 w-10 rounded-full flex items-center justify-center shadow-sm",
-                      message.role === "user"
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted border border-border/50"
+                      "flex gap-4",
+                      message.role === "user" && "flex-row-reverse"
                     )}
                   >
-                    {message.role === "user" ? (
-                      <User className="h-5 w-5" />
-                    ) : (
-                      <Bot className="h-5 w-5" />
-                    )}
-                  </div>
-                  <div
-                    className={cn(
-                      "flex-1 space-y-3 max-w-[85%]",
-                      message.role === "user" && "text-right"
-                    )}
-                  >
-                    {/* Reasoning/Thinking indicator for assistant */}
-                    {message.role === "assistant" &&
-                      getMessageReasoning(message) && (
-                        <ThinkingIndicator
-                          reasoning={getMessageReasoning(message)}
-                          isStreaming={
-                            isLoading &&
-                            message.id === messages[messages.length - 1]?.id &&
-                            !getMessageTextContent(message)
-                          }
-                        />
+                    <div
+                      className={cn(
+                        "shrink-0 h-10 w-10 rounded-full flex items-center justify-center shadow-sm",
+                        message.role === "user"
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-muted border border-border/50"
                       )}
-                    {/* Image attachments for user messages */}
-                    {message.role === "user" && getFileParts(message).length > 0 && (
-                      <div className={cn(
-                        "flex flex-wrap gap-2",
-                        message.role === "user" && "justify-end"
-                      )}>
-                        {getFileParts(message).map((part, index) => (
-                          part.mediaType?.startsWith("image/") && (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img
-                              key={index}
-                              src={part.url}
-                              alt={part.filename || `Image ${index + 1}`}
-                              className="max-w-[200px] max-h-[200px] rounded-xl border border-border/50 object-cover"
-                            />
-                          )
-                        ))}
-                      </div>
-                    )}
-                    {/* Text content */}
-                    {getMessageTextContent(message) && (
-                      <div
-                        className={cn(
-                          "inline-block rounded-[20px] px-5 py-3.5 text-sm shadow-sm",
-                          message.role === "user"
-                            ? "bg-primary text-primary-foreground rounded-tr-none"
-                            : "bg-muted/50 border border-border/50 rounded-tl-none"
-                        )}
-                      >
-                        {message.role === "assistant" ? (
-                          <MarkdownRenderer
-                            content={getMessageTextContent(message)}
-                            className="prose-sm"
+                    >
+                      {message.role === "user" ? (
+                        <User className="h-5 w-5" />
+                      ) : (
+                        <Bot className="h-5 w-5" />
+                      )}
+                    </div>
+                    <div
+                      className={cn(
+                        "flex-1 space-y-3 max-w-[85%]",
+                        message.role === "user" && "text-right"
+                      )}
+                    >
+                      {/* Reasoning/Thinking indicator for assistant */}
+                      {message.role === "assistant" &&
+                        getMessageReasoning(message) && (
+                          <ThinkingIndicator
+                            reasoning={getMessageReasoning(message)}
+                            isStreaming={
+                              isLoading &&
+                              message.id === messages[messages.length - 1]?.id &&
+                              !getMessageTextContent(message)
+                            }
                           />
-                        ) : (
-                          <p className="whitespace-pre-wrap text-left">
-                            {getMessageTextContent(message)}
-                          </p>
                         )}
-                      </div>
-                    )}
-                    {/* Tool invocations */}
-                    {message.role === "assistant" &&
-                      getToolParts(message).length > 0 && (
-                        <div className="space-y-2 text-left">
-                          {getToolParts(message).map((part) => (
-                            <ToolInvocation key={part.toolCallId} part={part} />
+                      {/* Image attachments for user messages */}
+                      {message.role === "user" && getFileParts(message).length > 0 && (
+                        <div className={cn(
+                          "flex flex-wrap gap-2",
+                          message.role === "user" && "justify-end"
+                        )}>
+                          {getFileParts(message).map((part, index) => (
+                            part.mediaType?.startsWith("image/") && (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img
+                                key={index}
+                                src={part.url}
+                                alt={part.filename || `Image ${index + 1}`}
+                                className="max-w-[200px] max-h-[200px] rounded-xl border border-border/50 object-cover"
+                              />
+                            )
                           ))}
                         </div>
                       )}
-                  </div>
-                </motion.div>
-              ))}
+                      {/* Text content */}
+                      {getMessageTextContent(message) && (
+                        <div
+                          className={cn(
+                            "inline-block rounded-[20px] px-5 py-3.5 text-sm shadow-sm",
+                            message.role === "user"
+                              ? "bg-primary text-primary-foreground rounded-tr-none"
+                              : "bg-muted/50 border border-border/50 rounded-tl-none"
+                          )}
+                        >
+                          {message.role === "assistant" ? (
+                            <MarkdownRenderer
+                              content={getMessageTextContent(message)}
+                              className="prose-sm"
+                            />
+                          ) : (
+                            <p className="whitespace-pre-wrap text-left">
+                              {getMessageTextContent(message)}
+                            </p>
+                          )}
+                        </div>
+                      )}
+                      {/* Tool invocations */}
+                      {message.role === "assistant" &&
+                        getToolParts(message).length > 0 && (
+                          <div className="space-y-2 text-left">
+                            {getToolParts(message).map((part) => (
+                              <ToolInvocation key={part.toolCallId} part={part} />
+                            ))}
+                          </div>
+                        )}
+                      {/* Message metadata for assistant messages */}
+                      {message.role === "assistant" && (
+                        // Use metadata from message (streaming) or from Map (loaded from DB)
+                        (message.metadata || messageMetadata.get(message.id)) && (
+                          <MessageMetadataDisplay
+                            metadata={(message.metadata as MessageMetadata) || messageMetadata.get(message.id)!}
+                            className="mt-2"
+                          />
+                        )
+                      )}
+                    </div>
+                  </motion.div>
+                );
+              })}
 
               {/* Active tools indicator */}
               {activeTools.length > 0 && (
@@ -770,6 +839,21 @@ export function AIChatMain({
                   <div className="flex items-center gap-2 text-muted-foreground text-sm py-3 px-1">
                     <Loader2 className="h-4 w-4 animate-spin" />
                     <span>Thinking...</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Error display */}
+              {error && !isLoading && (
+                <div className="flex gap-4">
+                  <div className="shrink-0 h-10 w-10 rounded-full flex items-center justify-center bg-destructive/10 border border-destructive/20">
+                    <AlertCircle className="h-5 w-5 text-destructive" />
+                  </div>
+                  <div className="flex-1 max-w-[85%]">
+                    <div className="inline-block rounded-[20px] rounded-tl-none px-5 py-3.5 text-sm bg-destructive/10 border border-destructive/20">
+                      <p className="text-destructive font-medium mb-1">Something went wrong</p>
+                      <p className="text-destructive/80 text-xs">{error.message}</p>
+                    </div>
                   </div>
                 </div>
               )}
@@ -815,9 +899,49 @@ export function AIChatMain({
             </div>
           )}
 
-          <div className="relative flex items-end gap-2 bg-muted/30 rounded-3xl border border-border/50 focus-within:border-primary/50 focus-within:ring-4 focus-within:ring-primary/10 transition-all duration-300 p-2 shadow-sm">
-            {/* Model selector and image button */}
-            <div className="flex items-center gap-1 pb-1.5 pl-1.5">
+          <div className="relative bg-muted/30 rounded-3xl border border-border/50 focus-within:border-primary/50 focus-within:ring-4 focus-within:ring-primary/10 transition-all duration-300 p-3 shadow-sm">
+            {/* Row 1: Input and Send Button */}
+            <div className="flex items-end gap-2">
+              <Textarea
+                ref={inputRef}
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder={isMaxPlan && !selectedModelId ? "Select a model first..." : "Ask me anything about interviews..."}
+                className="min-h-[60px] max-h-[200px] border-0 bg-transparent focus-visible:ring-0 resize-none text-sm px-1 py-1 shadow-none"
+                rows={1}
+                disabled={isLoading || (isMaxPlan && !selectedModelId)}
+              />
+              <div className="flex items-center pb-1">
+                {isLoading ? (
+                  <Button
+                    size="icon"
+                    variant="secondary"
+                    onClick={stop}
+                    className="h-8 w-8 rounded-full bg-background shadow-sm hover:bg-destructive/10 hover:text-destructive transition-colors"
+                  >
+                    <Square className="h-3.5 w-3.5 fill-current" />
+                  </Button>
+                ) : (
+                  <Button
+                    size="icon"
+                    onClick={handleSend}
+                    disabled={!input.trim() || (isMaxPlan && !selectedModelId)}
+                    className={cn(
+                      "h-8 w-8 rounded-full transition-all duration-300 shadow-sm",
+                      input.trim() && (!isMaxPlan || selectedModelId)
+                        ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                        : "bg-muted text-muted-foreground hover:bg-muted/80"
+                    )}
+                  >
+                    <ArrowUp className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
+            </div>
+
+            {/* Row 2: Tools (Model Selector + Image) */}
+            <div className="flex items-center gap-1 mt-2 pt-2 border-t border-border/40">
               {isMaxPlan && (
                 <ModelSelector
                   selectedModelId={selectedModelId}
@@ -847,43 +971,6 @@ export function AIChatMain({
                     <ImageIcon className="h-4 w-4" />
                   </Button>
                 </>
-              )}
-            </div>
-
-            <Textarea
-              ref={inputRef}
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder={isMaxPlan && !selectedModelId ? "Select a model first..." : "Ask me anything about interviews..."}
-              className="min-h-12 max-h-[200px] border-0 bg-transparent focus-visible:ring-0 resize-none text-sm px-3 py-3"
-              rows={1}
-              disabled={isLoading || (isMaxPlan && !selectedModelId)}
-            />
-            <div className="flex items-center gap-1 pb-1.5 pr-1.5">
-              {isLoading ? (
-                <Button
-                  size="icon"
-                  variant="secondary"
-                  onClick={stop}
-                  className="h-8 w-8 rounded-full bg-background shadow-sm hover:bg-destructive/10 hover:text-destructive transition-colors"
-                >
-                  <Square className="h-3.5 w-3.5 fill-current" />
-                </Button>
-              ) : (
-                <Button
-                  size="icon"
-                  onClick={handleSend}
-                  disabled={!input.trim() || (isMaxPlan && !selectedModelId)}
-                  className={cn(
-                    "h-8 w-8 rounded-full transition-all duration-300 shadow-sm",
-                    input.trim() && (!isMaxPlan || selectedModelId)
-                      ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                      : "bg-muted text-muted-foreground hover:bg-muted/80"
-                  )}
-                >
-                  <ArrowUp className="h-4 w-4" />
-                </Button>
               )}
             </div>
           </div>

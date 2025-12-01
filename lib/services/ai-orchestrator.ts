@@ -221,16 +221,17 @@ function createOrchestratorTools(
   if (ctx.plan !== "FREE") {
     tools.analyzeTechTrends = tool({
       description:
-        "Analyze technology trends, job market demand, and career prospects for specific technologies. IMPORTANT: You can analyze at most 5 technologies at a time. If the user asks about more, pick the top 5 most relevant ones.",
+        "Analyze technology trends, job market demand, and career prospects for specific technologies. IMPORTANT: You MUST provide a 'technologies' array with 1-5 technology names. Example: { \"technologies\": [\"React\", \"TypeScript\"] }",
       inputSchema: z.object({
         technologies: z
           .array(z.string())
           .min(1)
           .max(5)
-          .describe("Technologies to analyze (maximum 5). Pick the most relevant ones if user mentions more."),
+          .describe("REQUIRED: Array of technology names to analyze (1-5 items). Example: [\"React\", \"Node.js\"]"),
         focusArea: z
           .enum(["job-market", "skills", "salary", "growth", "all"])
           .optional()
+          .default("all")
           .describe("Specific area to focus on"),
       }),
       execute: async ({ technologies, focusArea = "all" }) => {
@@ -623,6 +624,7 @@ export async function runOrchestrator(
   const systemPrompt = buildSystemPrompt(ctx);
 
   // Run streamText with multi-step tool calling
+  // Disable retries for rate limit errors (429) - let the client handle them
   const result = streamText({
     model: openrouter(modelToUse),
     system: systemPrompt,
@@ -631,11 +633,13 @@ export async function runOrchestrator(
     stopWhen: stepCountIs(maxSteps),
     temperature: config.temperature,
     maxOutputTokens: config.maxTokens,
+    maxRetries: 0, // Don't retry - rate limits should be shown to user immediately
   });
 
   return {
     stream: result,
     toolStatuses,
+    modelId: modelToUse,
   };
 }
 

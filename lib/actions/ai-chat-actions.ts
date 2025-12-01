@@ -6,9 +6,22 @@ import { generateText } from "ai";
 import { getAuthUserId } from "@/lib/auth/get-user";
 import { aiConversationRepository } from "@/lib/db/repositories/ai-conversation-repository";
 import { aiLogRepository } from "@/lib/db/repositories/ai-log-repository";
+import { userRepository } from "@/lib/db/repositories/user-repository";
 import { getSettingsCollection } from "@/lib/db/collections";
 import { SETTINGS_KEYS, type TierModelConfig } from "@/lib/db/schemas/settings";
 import type { AIMessage, AIConversation } from "@/lib/db/schemas/ai-conversation";
+
+/**
+ * Helper to get the MongoDB user ID from Clerk ID
+ */
+async function getMongoUserId(): Promise<string> {
+  const clerkId = await getAuthUserId();
+  const user = await userRepository.findByClerkId(clerkId);
+  if (!user) {
+    throw new Error("User not found");
+  }
+  return user._id;
+}
 
 export type ActionResult<T = void> =
   | { success: true; data: T }
@@ -47,7 +60,7 @@ export async function createConversation(
   context?: AIConversation["context"]
 ): Promise<ActionResult<AIConversation>> {
   try {
-    const userId = await getAuthUserId();
+    const userId = await getMongoUserId();
     const conversation = await aiConversationRepository.create(
       userId,
       title || "New Chat",
@@ -68,7 +81,7 @@ export async function getConversation(
   id: string
 ): Promise<ActionResult<AIConversation>> {
   try {
-    const userId = await getAuthUserId();
+    const userId = await getMongoUserId();
     const conversation = await aiConversationRepository.findById(id);
 
     if (!conversation) {
@@ -94,7 +107,7 @@ export async function getConversations(options?: {
   includeArchived?: boolean;
 }): Promise<ActionResult<AIConversation[]>> {
   try {
-    const userId = await getAuthUserId();
+    const userId = await getMongoUserId();
     const conversations = await aiConversationRepository.findByUser(
       userId,
       options
@@ -114,7 +127,7 @@ export async function updateConversationTitle(
   title: string
 ): Promise<ActionResult> {
   try {
-    const userId = await getAuthUserId();
+    const userId = await getMongoUserId();
     const conversation = await aiConversationRepository.findById(id);
 
     if (!conversation || conversation.userId !== userId) {
@@ -140,7 +153,7 @@ export async function generateConversationTitle(
   const startTime = Date.now();
   
   try {
-    const userId = await getAuthUserId();
+    const userId = await getMongoUserId();
     const conversation = await aiConversationRepository.findById(conversationId);
 
     if (!conversation || conversation.userId !== userId) {
@@ -219,7 +232,7 @@ export async function addMessageToConversation(
   message: AIMessage
 ): Promise<ActionResult<{ shouldGenerateTitle: boolean; firstMessage?: string }>> {
   try {
-    const userId = await getAuthUserId();
+    const userId = await getMongoUserId();
     const conversation = await aiConversationRepository.findById(conversationId);
 
     if (!conversation || conversation.userId !== userId) {
@@ -252,7 +265,7 @@ export async function addMessageToConversation(
  */
 export async function togglePinConversation(id: string): Promise<ActionResult> {
   try {
-    const userId = await getAuthUserId();
+    const userId = await getMongoUserId();
     const conversation = await aiConversationRepository.findById(id);
 
     if (!conversation || conversation.userId !== userId) {
@@ -273,7 +286,7 @@ export async function togglePinConversation(id: string): Promise<ActionResult> {
  */
 export async function archiveConversation(id: string): Promise<ActionResult> {
   try {
-    const userId = await getAuthUserId();
+    const userId = await getMongoUserId();
     const conversation = await aiConversationRepository.findById(id);
 
     if (!conversation || conversation.userId !== userId) {
@@ -294,7 +307,7 @@ export async function archiveConversation(id: string): Promise<ActionResult> {
  */
 export async function restoreConversation(id: string): Promise<ActionResult> {
   try {
-    const userId = await getAuthUserId();
+    const userId = await getMongoUserId();
     const conversation = await aiConversationRepository.findById(id);
 
     if (!conversation || conversation.userId !== userId) {
@@ -315,7 +328,7 @@ export async function restoreConversation(id: string): Promise<ActionResult> {
  */
 export async function getArchivedConversations(): Promise<ActionResult<AIConversation[]>> {
   try {
-    const userId = await getAuthUserId();
+    const userId = await getMongoUserId();
     const conversations = await aiConversationRepository.findArchivedByUser(userId);
     return { success: true, data: conversations };
   } catch (error) {
@@ -329,7 +342,7 @@ export async function getArchivedConversations(): Promise<ActionResult<AIConvers
  */
 export async function deleteConversation(id: string): Promise<ActionResult> {
   try {
-    const userId = await getAuthUserId();
+    const userId = await getMongoUserId();
     const conversation = await aiConversationRepository.findById(id);
 
     if (!conversation || conversation.userId !== userId) {

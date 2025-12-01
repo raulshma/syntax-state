@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Brain, ChevronDown, ChevronUp, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -18,11 +18,35 @@ export function ThinkingIndicator({
   className,
 }: ThinkingIndicatorProps) {
   const [isExpanded, setIsExpanded] = useState(isStreaming);
+  const prevIsStreamingRef = useRef(isStreaming);
 
-  // Auto-collapse when streaming stops
-  if (!isStreaming && isExpanded && reasoning.length > 0) {
-    // Keep expanded while streaming, collapse after a delay when done
-  }
+  // Handle auto-expand when streaming starts and auto-collapse when it stops
+  useEffect(() => {
+    const wasStreaming = prevIsStreamingRef.current;
+    let expandTimer: NodeJS.Timeout | undefined;
+    let collapseTimer: NodeJS.Timeout | undefined;
+
+    // Streaming just started - expand (use microtask to avoid sync setState warning)
+    if (isStreaming && !wasStreaming) {
+      expandTimer = setTimeout(() => {
+        setIsExpanded(true);
+      }, 0);
+    }
+
+    // Streaming just stopped - collapse after a short delay
+    if (!isStreaming && wasStreaming && reasoning.length > 0) {
+      collapseTimer = setTimeout(() => {
+        setIsExpanded(false);
+      }, 500);
+    }
+
+    prevIsStreamingRef.current = isStreaming;
+
+    return () => {
+      if (expandTimer) clearTimeout(expandTimer);
+      if (collapseTimer) clearTimeout(collapseTimer);
+    };
+  }, [isStreaming, reasoning.length]);
 
   if (!reasoning) return null;
 

@@ -138,8 +138,8 @@ export function ChatHistorySidebar({
       </div>
 
       {/* Conversations List */}
-      <ScrollArea className="flex-1 px-3">
-        <div className="space-y-4 pb-4">
+      <ScrollArea className="flex-1">
+        <div className="space-y-4 pb-4 pl-3 pr-5">
           {/* Pinned */}
           {pinnedConversations.length > 0 && (
             <div className="space-y-1">

@@ -57,6 +57,7 @@ export const AIMetadataSchema = z.object({
   userAgent: z.string().optional(),
   ipAddress: z.string().optional(),
   byokUsed: z.boolean().optional(),
+  throughput: z.number().optional(), // Tokens per second
 });
 
 export const AILogSchema = z.object({

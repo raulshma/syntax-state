@@ -18,17 +18,17 @@ async function AIChatLoader() {
     redirect("/login");
   }
 
-  const [user, conversations] = await Promise.all([
-    userRepository.findByClerkId(clerkId),
-    aiConversationRepository.findByUser(clerkId, {
-      limit: 50,
-      includeArchived: false,
-    }),
-  ]);
+  const user = await userRepository.findByClerkId(clerkId);
 
   if (!user) {
     redirect("/onboarding");
   }
+
+  // Use user._id (MongoDB ObjectId) to query conversations, not clerkId
+  const conversations = await aiConversationRepository.findByUser(user._id, {
+    limit: 50,
+    includeArchived: false,
+  });
 
   return (
     <AIChatPageContent

@@ -22,7 +22,7 @@ import {
   PRO_CHAT_MESSAGE_LIMIT,
   MAX_CHAT_MESSAGE_LIMIT,
 } from "@/lib/pricing-data";
-import type { AIMessage } from "@/lib/db/schemas/ai-conversation";
+import type { AIMessage, AIRequestMetadata } from "@/lib/db/schemas/ai-conversation";
 
 /**
  * POST /api/ai-assistant
@@ -198,7 +198,7 @@ export async function POST(request: NextRequest) {
     const toolStatuses: ToolStatus[] = [];
 
     // Run the orchestrator and get the stream result
-    const { stream: orchestratorStream } = await runOrchestrator(
+    const { stream: orchestratorStream, modelId } = await runOrchestrator(
       messages,
       ctx,
       {
@@ -221,11 +221,52 @@ export async function POST(request: NextRequest) {
 
     // Track assistant response for persistence
     let assistantResponseText = "";
+    let assistantReasoningText = "";
     let assistantMessageId = "";
+    let streamError: { message: string; code?: string; isRetryable?: boolean } | null = null;
+    
+    // Track metadata for the response
+    const requestStartTime = Date.now();
+    let firstTokenTime: number | null = null;
+    let outputTokenCount = 0;
+    let finalMetadata: AIRequestMetadata | null = null;
 
     // Use toUIMessageStreamResponse directly for proper client compatibility
     const response = orchestratorStream.toUIMessageStreamResponse({
       originalMessages: messages,
+      messageMetadata: ({ part }) => {
+        // Send metadata when streaming starts
+        if (part.type === "start") {
+          firstTokenTime = Date.now();
+          return {
+            model: modelId,
+            ttft: firstTokenTime - requestStartTime,
+          };
+        }
+        
+        // Send full metadata when streaming completes
+        if (part.type === "finish") {
+          const latencyMs = Date.now() - requestStartTime;
+          const ttft = firstTokenTime ? firstTokenTime - requestStartTime : undefined;
+          const tokensIn = part.totalUsage?.inputTokens;
+          const tokensOut = part.totalUsage?.outputTokens;
+          const totalTokens = part.totalUsage?.totalTokens ?? (tokensIn && tokensOut ? tokensIn + tokensOut : undefined);
+          const throughput = latencyMs > 0 && tokensOut ? Math.round((tokensOut / latencyMs) * 1000) : undefined;
+          
+          // Store for persistence
+          finalMetadata = {
+            model: modelId,
+            tokensIn,
+            tokensOut,
+            totalTokens,
+            latencyMs,
+            ttft,
+            throughput,
+          };
+          
+          return finalMetadata;
+        }
+      },
       onFinish: async (result) => {
         // Extract assistant response from the result
         if (result.messages && result.messages.length > 0) {
@@ -237,15 +278,42 @@ export async function POST(request: NextRequest) {
               ?.filter((p): p is { type: "text"; text: string } => p.type === "text")
               .map((p) => p.text)
               .join("") || "";
+            // Extract reasoning content from parts
+            assistantReasoningText = lastMsg.parts
+              ?.filter((p): p is { type: "reasoning"; text: string } => p.type === "reasoning")
+              .map((p) => p.text)
+              .join("") || "";
           }
         }
 
-        // Persist assistant message to conversation
-        if (activeConversationId && assistantResponseText) {
+        // Use the metadata captured during streaming, or calculate fallback
+        const latencyMs = finalMetadata?.latencyMs ?? (Date.now() - requestStartTime);
+        const ttft = finalMetadata?.ttft ?? (firstTokenTime ? firstTokenTime - requestStartTime : undefined);
+        
+        // Use actual token counts from provider if available, otherwise estimate
+        const tokensIn = finalMetadata?.tokensIn ?? estimatedInputTokens;
+        outputTokenCount = finalMetadata?.tokensOut ?? Math.ceil(assistantResponseText.length / 4);
+        const totalTokens = finalMetadata?.totalTokens ?? (tokensIn + outputTokenCount);
+        const throughput = finalMetadata?.throughput ?? (latencyMs > 0 ? Math.round((outputTokenCount / latencyMs) * 1000) : undefined);
+        
+        // Build metadata object
+        const messageMetadata: AIRequestMetadata = {
+          model: modelId,
+          tokensIn,
+          tokensOut: outputTokenCount,
+          totalTokens,
+          latencyMs,
+          ttft,
+          throughput,
+        };
+
+        // Persist assistant message to conversation (only if we have content and no error)
+        if (activeConversationId && assistantResponseText && !streamError) {
           const assistantMessage: AIMessage = {
             id: assistantMessageId || `assistant_${Date.now()}`,
             role: "assistant",
             content: assistantResponseText,
+            reasoning: assistantReasoningText || undefined,
             toolCalls: toolStatuses.length > 0 ? toolStatuses.map((t, idx) => ({
               id: `${t.toolName}_${idx}`,
               name: t.toolName,
@@ -254,9 +322,25 @@ export async function POST(request: NextRequest) {
               state: t.status === "complete" ? "output-available" as const : 
                      t.status === "error" ? "output-error" as const : "input-available" as const,
             })) : undefined,
+            metadata: messageMetadata,
             createdAt: new Date(),
           };
           await aiConversationRepository.addMessage(activeConversationId, assistantMessage);
+        }
+
+        // Persist error message if one occurred
+        if (activeConversationId && streamError) {
+          const errorMessage: AIMessage = {
+            id: `error_${Date.now()}`,
+            role: "error",
+            content: streamError.message,
+            errorDetails: {
+              code: streamError.code,
+              isRetryable: streamError.isRetryable,
+            },
+            createdAt: new Date(),
+          };
+          await aiConversationRepository.addMessage(activeConversationId, errorMessage);
         }
 
         // Log the AI request after completion
@@ -264,41 +348,63 @@ export async function POST(request: NextRequest) {
           interviewId: interviewId || learningPathId || "ai-assistant",
           userId: user._id,
           action: "AI_ASSISTANT_CHAT",
-          status: "success",
-          model: "orchestrator",
+          status: streamError ? "error" : "success",
+          model: modelId,
           prompt: getLastUserMessage(messages),
-          response: assistantResponseText || "streaming-complete",
+          response: streamError ? streamError.message : (assistantResponseText || "streaming-complete"),
           toolsUsed: toolStatuses.map((t) => t.toolName),
           searchQueries: loggerCtx.searchQueries,
           searchResults: loggerCtx.searchResults,
-          tokenUsage: { input: estimatedInputTokens, output: 0 },
-          latencyMs: loggerCtx.getLatencyMs(),
-          timeToFirstToken: loggerCtx.getTimeToFirstToken(),
+          tokenUsage: { input: estimatedInputTokens, output: outputTokenCount },
+          latencyMs,
+          timeToFirstToken: ttft,
           metadata: {
             ...loggerCtx.metadata,
+            ...(streamError && { errorCode: streamError.code }),
+            throughput,
           },
         });
       },
       onError: (error: unknown) => {
         console.error("AI stream error:", error);
-        return error instanceof Error ? error.message : "Stream error occurred";
+        
+        // Check for rate limit errors (429)
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        const errorString = JSON.stringify(error);
+        
+        if (errorString.includes("429") || errorMessage.includes("rate-limit") || errorMessage.includes("rate limit")) {
+          streamError = {
+            message: "Rate limit exceeded. The AI model is temporarily unavailable. Please try again in a few moments or select a different model.",
+            code: "RATE_LIMIT",
+            isRetryable: true,
+          };
+          return streamError.message;
+        }
+        
+        streamError = {
+          message: error instanceof Error ? error.message : "Stream error occurred",
+          code: "STREAM_ERROR",
+          isRetryable: true,
+        };
+        return streamError.message;
       },
     });
 
-    // Add conversation ID and new conversation flag to response headers
+    // Add conversation ID, model info, and new conversation flag to response headers
+    const headers = new Headers(response.headers);
     if (activeConversationId) {
-      const headers = new Headers(response.headers);
       headers.set("X-Conversation-Id", activeConversationId);
       if (isNewConversation) {
         headers.set("X-New-Conversation", "true");
       }
-      return new Response(response.body, {
-        status: response.status,
-        headers,
-      });
     }
+    // Always include model ID so client knows which model was used
+    headers.set("X-Model-Id", modelId);
 
-    return response;
+    return new Response(response.body, {
+      status: response.status,
+      headers,
+    });
   } catch (error) {
     console.error("AI assistant error:", error);
     return new Response(

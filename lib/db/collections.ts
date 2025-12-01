@@ -155,8 +155,9 @@ export interface AIConversationDocument extends Document {
   title: string;
   messages: Array<{
     id: string;
-    role: 'user' | 'assistant';
+    role: 'user' | 'assistant' | 'error';
     content: string;
+    reasoning?: string;
     toolCalls?: Array<{
       id: string;
       name: string;
@@ -166,6 +167,20 @@ export interface AIConversationDocument extends Document {
       errorText?: string;
     }>;
     imageIds?: string[]; // References to images in chat_images collection
+    errorDetails?: {
+      code?: string;
+      isRetryable?: boolean;
+    };
+    metadata?: {
+      model: string;
+      modelName?: string;
+      tokensIn?: number;
+      tokensOut?: number;
+      totalTokens?: number;
+      latencyMs?: number;
+      ttft?: number;
+      throughput?: number;
+    };
     createdAt: Date;
   }>;
   context?: {
