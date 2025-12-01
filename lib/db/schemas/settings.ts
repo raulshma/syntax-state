@@ -22,6 +22,18 @@ export const SETTINGS_KEYS = {
   MODEL_TIER_HIGH: "model_tier_high",
   MODEL_TIER_MEDIUM: "model_tier_medium",
   MODEL_TIER_LOW: "model_tier_low",
+
+  // Crawl4ai service settings
+  CRAWL4AI_URL: "crawl4ai.url",
+  CRAWL4AI_ENABLED: "crawl4ai.enabled",
+  CRAWL4AI_TIMEOUT: "crawl4ai.timeout",
+  CRAWL4AI_TOKEN: "crawl4ai.token",
+  CRAWL_QUOTA_FREE: "crawl.quota.free",
+  CRAWL_QUOTA_PRO: "crawl.quota.pro",
+  CRAWL_QUOTA_MAX: "crawl.quota.max",
+  CRAWL_MAX_URLS_FREE: "crawl.maxUrls.free",
+  CRAWL_MAX_URLS_PRO: "crawl.maxUrls.pro",
+  CRAWL_MAX_URLS_MAX: "crawl.maxUrls.max",
 } as const;
 
 export type SettingsKey = (typeof SETTINGS_KEYS)[keyof typeof SETTINGS_KEYS];

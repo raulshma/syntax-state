@@ -217,6 +217,145 @@ function createOrchestratorTools(
     });
   }
 
+  // Web crawl tool (available for all paid plans)
+  if (ctx.plan !== "FREE") {
+    tools.crawlWeb = tool({
+      description:
+        "Crawl and extract full content from web pages. Use this when you need the complete article/page content, not just search snippets. Returns markdown, metadata, links, and images.",
+      inputSchema: z.object({
+        url: z.string().url().describe("The URL to crawl and extract content from"),
+        extractionType: z
+          .enum(["full", "markdown-only", "metadata-only"])
+          .optional()
+          .default("full")
+          .describe("Type of content to extract"),
+        includeImages: z
+          .boolean()
+          .optional()
+          .default(false)
+          .describe("Whether to include image information"),
+      }),
+      execute: async ({ url, extractionType = "full", includeImages = false }) => {
+        // Import crawl services
+        const { crawlService } = await import("./crawl-service");
+        const { checkQuota, consumeQuota, logCrawlOperation } = await import("./crawl-quota");
+
+        onToolStatus({
+          toolName: "crawlWeb",
+          status: "calling",
+          input: { url, extractionType, includeImages },
+          timestamp: new Date(),
+        });
+
+        try {
+          // Check quota before crawling
+          const quotaCheck = await checkQuota(ctx.userId, ctx.plan, 1);
+
+          if (!quotaCheck.allowed) {
+            onToolStatus({
+              toolName: "crawlWeb",
+              status: "error",
+              input: { url },
+              output: { error: quotaCheck.message },
+              timestamp: new Date(),
+            });
+
+            return {
+              success: false,
+              error: quotaCheck.message,
+              quotaInfo: {
+                remaining: quotaCheck.remaining,
+                limit: quotaCheck.limit,
+              },
+            };
+          }
+
+          // Perform the crawl
+          const result = await crawlService.crawlUrl(url, {
+            priority: ctx.plan === "MAX" ? 8 : 5,
+            include_raw_html: extractionType === "full",
+            timeout: 30000,
+          });
+
+          // Consume quota
+          await consumeQuota(ctx.userId, ctx.plan, 1);
+
+          // Log the operation
+          await logCrawlOperation({
+            userId: ctx.userId,
+            requestId: `crawl-${Date.now()}`,
+            urls: [url],
+            plan: ctx.plan,
+            status: result.success ? "success" : "error",
+            resultCount: result.success ? 1 : 0,
+            totalCrawlTime: result.crawl_time_ms,
+            metadata: {
+              toolName: "crawlWeb",
+              context: "ai-orchestrator",
+            },
+          });
+
+          onToolStatus({
+            toolName: "crawlWeb",
+            status: result.success ? "complete" : "error",
+            input: { url, extractionType },
+            output: {
+              success: result.success,
+              contentLength: result.markdown?.length || 0,
+            },
+            timestamp: new Date(),
+          });
+
+          // Return based on extraction type
+          if (extractionType === "markdown-only") {
+            return {
+              success: result.success,
+              url: result.url,
+              markdown: result.markdown,
+              error: result.error,
+            };
+          }
+
+          if (extractionType === "metadata-only") {
+            return {
+              success: result.success,
+              url: result.url,
+              metadata: result.metadata,
+              error: result.error,
+            };
+          }
+
+          // Full extraction
+          return {
+            success: result.success,
+            url: result.url,
+            markdown: result.markdown,
+            metadata: result.metadata,
+            links: result.links,
+            media: includeImages ? result.media : undefined,
+            crawlTimeMs: result.crawl_time_ms,
+            error: result.error,
+          };
+        } catch (error) {
+          const errorMessage = error instanceof Error ? error.message : "Unknown error";
+
+          onToolStatus({
+            toolName: "crawlWeb",
+            status: "error",
+            input: { url },
+            output: { error: errorMessage },
+            timestamp: new Date(),
+          });
+
+          return {
+            success: false,
+            error: `Failed to crawl URL: ${errorMessage}`,
+          };
+        }
+      },
+    });
+  }
+
   // Tech trends analysis tool
   if (ctx.plan !== "FREE") {
     tools.analyzeTechTrends = tool({

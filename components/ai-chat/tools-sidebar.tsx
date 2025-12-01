@@ -12,6 +12,7 @@ import {
   ArrowRight,
   Zap,
   ChevronRight,
+  Globe,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -37,6 +38,15 @@ const tools: Tool[] = [
     color: "text-cyan-500",
     gradient: "from-cyan-500/20 to-blue-600/20",
     prompt: "Analyze the current tech trends for ",
+  },
+  {
+    id: "web-crawler",
+    name: "Web Crawler",
+    description: "Extract full content from web pages and articles",
+    icon: Globe,
+    color: "text-orange-500",
+    gradient: "from-orange-500/20 to-amber-600/20",
+    prompt: "Crawl this URL and extract the full content: ",
   },
   {
     id: "mock-interview",
