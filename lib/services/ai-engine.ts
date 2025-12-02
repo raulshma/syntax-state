@@ -528,6 +528,23 @@ Format your response as a structured brief with clear markdown sections and bull
 }
 
 /**
+ * Infer seniority level from job title
+ */
+function inferSeniorityLevel(jobTitle: string): 'junior' | 'mid' | 'senior' | 'staff' {
+  const title = jobTitle.toLowerCase();
+  if (title.includes('staff') || title.includes('principal') || title.includes('distinguished') || title.includes('architect')) {
+    return 'staff';
+  }
+  if (title.includes('senior') || title.includes('sr.') || title.includes('lead') || title.includes('iii')) {
+    return 'senior';
+  }
+  if (title.includes('junior') || title.includes('jr.') || title.includes('entry') || title.includes('associate') || title.includes('i') && !title.includes('ii')) {
+    return 'junior';
+  }
+  return 'mid';
+}
+
+/**
  * Generate Revision Topics with streaming
  * Uses HIGH tier model - requires deep technical knowledge and explanation
  * Requirements: 5.1, 5.2, 5.4
@@ -548,75 +565,128 @@ export async function generateTopics(
   const modelToUse = config.model || tierConfig.model;
 
   const existingTopicsNote = ctx.existingContent?.length
-    ? `\n\nExisting topics to avoid duplicating:\n${ctx.existingContent.join(
-        "\n"
-      )}`
+    ? `\n\nExisting topics to avoid duplicating:\n${ctx.existingContent.join("\n")}`
     : "";
 
-  const prompt = `Generate ${count} comprehensive revision topics for interview preparation. Each topic should be EXTENSIVE and interview-ready.
+  const seniorityLevel = inferSeniorityLevel(ctx.jobTitle);
+  
+  const seniorityGuidance = {
+    junior: `Target depth: Foundational concepts with clear explanations. Focus on core fundamentals, basic patterns, and common gotchas. Assume 0-2 years experience. Interviewers will test understanding of basics and ability to learn.`,
+    mid: `Target depth: Solid understanding with practical application. Cover standard patterns, trade-offs, and real implementation details. Assume 2-5 years experience. Interviewers will test problem-solving and hands-on knowledge.`,
+    senior: `Target depth: Deep expertise with system-level thinking. Include architectural decisions, scalability concerns, and leadership aspects. Assume 5-8 years experience. Interviewers will test design skills and technical leadership.`,
+    staff: `Target depth: Expert-level with strategic thinking. Cover cross-system architecture, organizational impact, and mentorship angles. Assume 8+ years experience. Interviewers will test vision, influence, and complex problem decomposition.`
+  };
 
-Job Title: ${ctx.jobTitle}
-Company: ${ctx.company}
+  const prompt = `You are a strategic interview preparation expert. Generate ${count} HIGH-IMPACT revision topics that will maximize the candidate's interview success.
 
-Job Description:
+## CONTEXT
+
+**Position:** ${ctx.jobTitle}
+**Company:** ${ctx.company}
+**Seniority Level:** ${seniorityLevel.toUpperCase()}
+
+**Job Requirements:**
 ${ctx.jobDescription}
 
-Candidate's Resume:
+**Candidate Background:**
 ${ctx.resumeText}
 ${existingTopicsNote}
 
-For each topic, provide DETAILED content structured as follows:
+## STRATEGIC TOPIC SELECTION
 
-1. A unique ID (use format: topic_<random_string>)
-2. A clear, specific title
+First, analyze the gap between job requirements and candidate experience. Prioritize topics that:
 
-3. **Content** (use markdown formatting, aim for 800-1200 words per topic):
+1. **Critical Gaps** (40% of topics): Skills explicitly required in the job description that are MISSING or WEAK in the candidate's resume. These are high-risk areas.
 
-   ## Quick Overview
-   A 3-4 sentence summary explaining what this topic is, why it matters, and how it's typically used in industry.
+2. **Likely Interview Focus** (35% of topics): Core competencies for this role that interviewers almost always ask about, regardless of resume.
 
-   ## Core Concepts
-   - Explain the fundamental principles (5-7 key concepts)
-   - Define important terminology
-   - Describe how components interact
+3. **Differentiators** (25% of topics): Advanced topics that could set the candidate apart, based on the company/role level.
 
-   ## How It Works
-   - Step-by-step explanation of the mechanism/process
-   - Include diagrams descriptions where helpful (e.g., "Imagine a flow: Client → Load Balancer → Server Pool")
-   - Explain the underlying architecture or algorithm
+## DIFFICULTY CALIBRATION
 
-   ## Practical Implementation
-   \`\`\`language
-   // Comprehensive code example with detailed comments
-   // Show real-world usage patterns
-   // Include error handling and edge cases
-   \`\`\`
+${seniorityGuidance[seniorityLevel]}
 
-   ## Common Interview Questions
-   - List 3-5 questions interviewers commonly ask about this topic
-   - Provide brief answer frameworks for each
+## OUTPUT STRUCTURE
 
-   ## Best Practices & Pitfalls
-   - What are the industry best practices?
-   - Common mistakes to avoid
-   - Performance considerations
-   - Trade-offs to discuss
+For each topic, provide:
 
-   ## Real-World Applications
-   - How is this used at scale in production systems?
-   - Examples from well-known companies or systems
+### 1. Identification
+- **id**: Unique identifier (format: topic_<random_8chars>)
+- **title**: Clear, specific topic name
+- **difficulty**: "${seniorityLevel}" (calibrated to role)
+- **confidence**: How likely this will come up (low/medium/high)
+- **estimatedMinutes**: Realistic study time (15-120 minutes based on complexity)
+- **prerequisites**: Array of topic titles this builds upon (use titles from other topics in this set, or common foundational concepts)
+- **skillGaps**: Array of specific gaps from the candidate's resume this topic addresses
 
-4. **Reason**: A detailed explanation (2-3 sentences) of why this topic is critical for THIS specific interview, referencing the job description
+### 2. Reason (2-3 sentences)
+Explain WHY this topic is critical for THIS specific interview. Reference specific job requirements and identify what's missing from the candidate's background.
 
-5. **Confidence Level**: (low, medium, high) - how likely this topic will come up, with brief justification
+### 3. Content (markdown, 800-1200 words calibrated to ${seniorityLevel} level)
 
-Focus on topics that:
-- Bridge gaps between the candidate's experience and job requirements
-- Are commonly asked in technical interviews for this role level
-- Demonstrate both theoretical understanding and practical application
-- Cover a mix of fundamentals and advanced concepts${
+Structure the content to mirror how interviewers actually probe knowledge:
+
+## What It Is & Why It Matters
+- Concise definition (1-2 sentences an interviewer expects you to nail)
+- Why companies care about this (business impact)
+- Where this fits in the bigger picture
+
+## Core Concepts to Articulate
+Present 4-6 key concepts as "things you must be able to explain clearly":
+- Each concept with a one-liner definition
+- The relationship between concepts
+- Common misconceptions interviewers test for
+
+## How to Explain It (Interview-Ready)
+- The "elevator pitch" explanation (30 seconds)
+- The "deep dive" explanation (2-3 minutes)
+- Diagram or mental model to draw on whiteboard
+
+## Practical Code/Implementation
+\`\`\`language
+// Production-quality example that shows:
+// - Real-world usage pattern
+// - Error handling
+// - Edge cases interviewers ask about
+// - Comments explaining WHY, not just WHAT
+\`\`\`
+
+## Interview Question Patterns
+Present 3-5 questions in order of increasing difficulty:
+1. **Screening question**: "What is X?" - Expected answer framework
+2. **Understanding question**: "How does X work?" - Key points to hit
+3. **Application question**: "When would you use X vs Y?" - Decision framework
+4. **Deep dive question**: "What are the trade-offs of X?" - Nuanced answer
+5. **${seniorityLevel === 'staff' ? 'Architecture' : seniorityLevel === 'senior' ? 'Design' : 'Problem-solving'} question**: Scenario-based question with approach
+
+## Common Follow-Up Questions
+List 3-4 follow-up questions interviewers typically ask after initial answers, with brief answer hints.
+
+## Red Flags to Avoid
+- What NOT to say (common wrong answers)
+- Misconceptions that signal inexperience
+- Over-engineering vs under-engineering signals
+
+## Real-World Context
+- How ${ctx.company || 'top companies'} likely uses this
+- Scale considerations relevant to the role
+- Recent developments or trends to mention
+
+### 4. Follow-Up Questions Array
+Provide 4-6 specific follow-up questions interviewers commonly ask, separate from the content (for flashcard/quiz features):
+- Mix of "why", "how", "what if", and "compare" questions
+- Ordered from basic to advanced
+
+## TOPIC ORDERING
+
+Order topics by preparation priority:
+1. High-confidence critical gaps first
+2. Core competencies second  
+3. Differentiators last
+
+This helps candidates focus limited prep time effectively.${
     ctx.customInstructions
-      ? `\n\nAdditional Instructions from user:\n${ctx.customInstructions}`
+      ? `\n\n## ADDITIONAL USER INSTRUCTIONS\n${ctx.customInstructions}`
       : ""
   }`;
 
@@ -650,52 +720,101 @@ export async function generateMCQs(
   const modelToUse = config.model || tierConfig.model;
 
   const existingQuestionsNote = ctx.existingContent?.length
-    ? `\n\nExisting question IDs to avoid duplicating (generate completely different questions):\n${ctx.existingContent.join(
-        "\n"
-      )}`
+    ? `\n\nExisting question IDs to avoid duplicating (generate completely different questions):\n${ctx.existingContent.join("\n")}`
     : "";
 
-  const prompt = `Generate ${count} challenging multiple choice questions for interview preparation. These should test DEEP understanding, not surface-level knowledge.
+  const seniorityLevel = inferSeniorityLevel(ctx.jobTitle);
 
-Job Title: ${ctx.jobTitle}
-Company: ${ctx.company}
+  const seniorityMCQGuidance = {
+    junior: `Focus on fundamentals and common gotchas. Test understanding of basic concepts, syntax, and standard patterns. Questions should be answerable by someone with 0-2 years experience who has studied well.`,
+    mid: `Balance fundamentals with practical application. Include questions about trade-offs, debugging scenarios, and real-world implementation choices. Target 2-5 years experience level.`,
+    senior: `Emphasize architectural decisions, system design trade-offs, and leadership scenarios. Include questions about scalability, performance optimization, and mentoring situations. Target 5-8 years experience.`,
+    staff: `Focus on cross-system architecture, organizational impact, and strategic technical decisions. Include questions about tech strategy, team scaling, and complex system interactions. Target 8+ years experience.`,
+  };
 
-Job Description:
+  const prompt = `You are creating a technical interview assessment. Generate ${count} multiple choice questions that mirror what real interviewers ask at ${ctx.company || "top tech companies"}.
+
+## CONTEXT
+
+**Position:** ${ctx.jobTitle}
+**Company:** ${ctx.company}
+**Seniority Level:** ${seniorityLevel.toUpperCase()}
+
+**Job Requirements:**
 ${ctx.jobDescription}
 
-Candidate's Resume:
+**Candidate Background:**
 ${ctx.resumeText}
 ${existingQuestionsNote}
 
-Generate a diverse mix of question types:
-- 3-4 conceptual questions (testing understanding of WHY things work)
-- 2-3 scenario-based questions (given a situation, what's the best approach?)
-- 2-3 code analysis questions (what does this code do, what's wrong with it?)
-- 1-2 best practices questions (what's the recommended approach?)
+## DIFFICULTY CALIBRATION
 
-For each MCQ, provide:
-1. A unique ID (use format: mcq_<random_string>)
-2. A clear, specific question that tests real interview-level knowledge
-   - Questions should be challenging enough for a technical interview
-   - Include code snippets where relevant
-   - Reference real-world scenarios when possible
-3. Exactly 4 options:
-   - One correct answer
-   - Three plausible distractors that represent common misconceptions or partial understanding
-   - All options should be similar in length and detail
-4. The correct answer (must match one of the options exactly)
-5. A COMPREHENSIVE explanation (3-5 sentences) that:
-   - Explains why the correct answer is right
-   - Explains why each wrong answer is incorrect
-   - Provides additional context or tips for the interview
-6. Source as "ai" (or "search" if you used web search to verify)
+${seniorityMCQGuidance[seniorityLevel]}
 
-Focus on:
-- Topics that are commonly asked in technical interviews for this role
-- Questions that differentiate between candidates who truly understand vs. those who memorized
-- Practical knowledge that demonstrates job readiness${
+## STRATEGIC QUESTION SELECTION
+
+Analyze the gap between job requirements and candidate experience. Create questions that:
+
+1. **Test Critical Gaps** (40%): Skills required by the job but weak/missing in resume
+2. **Verify Core Competencies** (40%): Must-have skills for this role level
+3. **Probe Advanced Knowledge** (20%): Differentiator topics for strong candidates
+
+## QUESTION TYPE MIX (calibrated for ${seniorityLevel} level)
+
+${seniorityLevel === "junior" || seniorityLevel === "mid" ? `
+- 3-4 **Conceptual Questions**: "What is X?" / "Which statement about X is true?"
+- 2-3 **Code Analysis**: "What does this code output?" / "What's wrong with this code?"
+- 2-3 **Scenario-Based**: "Given situation X, what's the best approach?"
+- 1-2 **Best Practices**: "What's the recommended way to handle X?"
+` : `
+- 2-3 **Architecture/Design**: "Which approach best handles X at scale?"
+- 2-3 **Trade-off Analysis**: "What's the primary trade-off of choosing X over Y?"
+- 2-3 **Debugging/Troubleshooting**: "Production system shows X symptoms, what's the likely cause?"
+- 2-3 **Leadership/Process**: "How would you approach X situation with your team?"
+`}
+
+## OUTPUT FORMAT
+
+For each MCQ:
+
+1. **id**: Unique identifier (format: mcq_<random_8chars>)
+
+2. **question**: Clear, specific question that:
+   - Tests real interview-level knowledge for ${seniorityLevel} candidates
+   - Includes code snippets where relevant (properly formatted)
+   - References realistic scenarios
+   - Is unambiguous - only one answer should be clearly correct
+
+3. **options**: Exactly 4 options where:
+   - One is definitively correct
+   - Three are plausible distractors representing:
+     - Common misconceptions
+     - Partially correct understanding
+     - Related but incorrect concepts
+   - All options are similar in length and specificity
+   - Options are shuffled (correct answer not always in same position)
+
+4. **answer**: Must EXACTLY match one of the options (copy-paste, not paraphrased)
+
+5. **explanation**: Comprehensive explanation (4-6 sentences) that:
+   - States why the correct answer is right with technical reasoning
+   - Explains why EACH wrong option is incorrect (mention each by name/content)
+   - Provides interview tip: "In an interview, also mention..."
+   - References real-world implications where relevant
+
+6. **source**: "ai"
+
+## QUALITY CHECKLIST
+
+Before finalizing each question, verify:
+- [ ] Question is appropriate for ${seniorityLevel} level
+- [ ] Only ONE answer is correct
+- [ ] Distractors are plausible (not obviously wrong)
+- [ ] Explanation addresses all 4 options
+- [ ] Code snippets (if any) are syntactically correct
+- [ ] Question tests job-relevant knowledge${
     ctx.customInstructions
-      ? `\n\nAdditional Instructions from user:\n${ctx.customInstructions}`
+      ? `\n\n## ADDITIONAL USER INSTRUCTIONS\n${ctx.customInstructions}`
       : ""
   }`;
 
@@ -733,48 +852,99 @@ export async function generateRapidFire(
   const modelToUse = config.model || tierConfig.model;
 
   const existingQuestionsNote = ctx.existingContent?.length
-    ? `\n\nExisting questions to avoid duplicating:\n${ctx.existingContent.join(
-        "\n"
-      )}`
+    ? `\n\nExisting questions to avoid duplicating:\n${ctx.existingContent.join("\n")}`
     : "";
 
-  const prompt = `Generate ${count} rapid-fire interview questions with concise but complete answers. These are the quick knowledge-check questions that interviewers use to assess baseline competency.
+  const seniorityLevel = inferSeniorityLevel(ctx.jobTitle);
 
-Job Title: ${ctx.jobTitle}
-Company: ${ctx.company}
+  const seniorityRapidFireGuidance = {
+    junior: `Focus on definitions, basic concepts, and fundamental "what is" questions. Answers should be straightforward explanations a bootcamp grad could give after studying.`,
+    mid: `Mix definitions with "how" and "why" questions. Include practical scenarios and comparison questions. Answers should show working knowledge.`,
+    senior: `Emphasize trade-offs, architectural decisions, and "when would you" questions. Answers should demonstrate experience and nuanced understanding.`,
+    staff: `Focus on strategic decisions, cross-cutting concerns, and organizational impact. Answers should reflect broad experience and leadership perspective.`,
+  };
 
-Job Description:
+  const prompt = `Generate ${count} rapid-fire interview questions that interviewers use to quickly assess a candidate's baseline knowledge. These are the "warm-up" questions before diving deeper.
+
+## CONTEXT
+
+**Position:** ${ctx.jobTitle}
+**Company:** ${ctx.company}
+**Seniority Level:** ${seniorityLevel.toUpperCase()}
+
+**Job Requirements:**
 ${ctx.jobDescription}
 
-Candidate's Resume:
+**Candidate Background:**
 ${ctx.resumeText}
 ${existingQuestionsNote}
 
-Generate a comprehensive mix of rapid-fire questions covering:
-- Core language/framework concepts (5-6 questions)
-- Data structures & algorithms basics (3-4 questions)
-- System design fundamentals (3-4 questions)
-- Best practices & patterns (3-4 questions)
-- Tools & technologies from the job description (3-4 questions)
-- Debugging & troubleshooting (2-3 questions)
+## DIFFICULTY CALIBRATION
 
-For each question, provide:
-1. A unique ID (use format: rf_<random_string>)
-2. A clear, direct question that tests fundamental knowledge
-   - These should be questions an interviewer might ask to quickly gauge competency
-   - Mix of "What is...", "How does...", "When would you...", "What's the difference between..."
-3. A concise but COMPLETE answer (2-4 sentences):
-   - The answer should be what a strong candidate would say
-   - Include the key points that an interviewer is looking for
-   - Be specific, not vague
+${seniorityRapidFireGuidance[seniorityLevel]}
 
-These questions should:
-- Cover the breadth of knowledge expected for this role
-- Be answerable in 30-60 seconds by a prepared candidate
-- Test practical, job-relevant knowledge
-- Progress from fundamental to slightly more advanced${
+## QUESTION CATEGORIES
+
+Generate a strategic mix based on job requirements:
+
+**From Job Description (50% - ${Math.round(count * 0.5)} questions):**
+- Technologies explicitly mentioned in the job posting
+- Frameworks and tools required for the role
+- Domain-specific concepts
+
+**Core Competencies (30% - ${Math.round(count * 0.3)} questions):**
+- Language fundamentals for the primary tech stack
+- Data structures & algorithms basics
+- Design patterns and best practices
+
+**Gap-Filling (20% - ${Math.round(count * 0.2)} questions):**
+- Topics in job description but weak/missing in candidate's resume
+- Common interview topics for this role level
+
+## QUESTION TYPES (vary these)
+
+- "What is X?" - Definition questions
+- "What's the difference between X and Y?" - Comparison questions
+- "When would you use X over Y?" - Decision questions
+- "How does X work?" - Mechanism questions
+- "Why is X important?" - Reasoning questions
+- "What happens when X?" - Behavior questions
+
+## OUTPUT FORMAT
+
+For each question:
+
+1. **id**: Unique identifier (format: rf_<random_8chars>)
+
+2. **question**: Clear, direct question that:
+   - Can be answered in 30-60 seconds
+   - Has a definitive "correct" answer (not opinion-based)
+   - Tests knowledge an interviewer expects at ${seniorityLevel} level
+   - Is specific, not vague (e.g., "What is the time complexity of HashMap.get()?" not "Tell me about HashMaps")
+
+3. **answer**: The ideal response (2-4 sentences) that:
+   - Hits the key points interviewers listen for
+   - Is specific and technical (not hand-wavy)
+   - Could be spoken naturally in conversation
+   - Includes one "bonus point" detail that impresses interviewers
+
+## ORDERING
+
+Order questions strategically:
+1. Start with fundamentals (warm-up)
+2. Progress to job-specific technologies
+3. End with more nuanced/advanced questions
+
+This mirrors how real interviewers structure rapid-fire rounds.
+
+## QUALITY GUIDELINES
+
+- Questions should be answerable without context (self-contained)
+- Avoid questions that require lengthy code explanations
+- Each answer should be memorizable for interview prep
+- Focus on practical knowledge over trivia${
     ctx.customInstructions
-      ? `\n\nAdditional Instructions from user:\n${ctx.customInstructions}`
+      ? `\n\n## ADDITIONAL USER INSTRUCTIONS\n${ctx.customInstructions}`
       : ""
   }`;
 
@@ -866,32 +1036,78 @@ export async function regenerateTopicAnalogy(
   const openrouter = getOpenRouterClient(apiKey);
   const modelToUse = config.model || tierConfig.model;
 
+  const seniorityLevel = topic.difficulty || inferSeniorityLevel(_ctx.jobTitle);
+
   const styleDescriptions = {
-    professional:
-      "Use professional, technical language appropriate for a senior developer or architect. Include industry terminology and best practices.",
-    construction:
-      "Explain using house construction analogies - compare software concepts to building a house. Make technical concepts relatable through building metaphors.",
-    simple:
-      "Explain as if to a 5-year-old - use simple words, everyday examples, and avoid jargon. Use fun analogies kids would understand.",
+    professional: `Use professional, technical language appropriate for a ${seniorityLevel}-level developer. Include industry terminology, architectural considerations, and best practices. Write as if explaining to a peer in a technical discussion.`,
+    construction: `Explain using house construction analogies - compare software concepts to building a house. Make technical concepts relatable through building metaphors (foundation = core architecture, plumbing = data flow, electrical = event systems, etc.). Keep the interview-readiness but make it memorable.`,
+    simple: `Explain as if to someone completely new to programming - use simple words, everyday examples, and avoid jargon. Use fun analogies anyone would understand. Still cover the key points an interviewer expects, but in accessible language.`,
   };
 
-  const prompt = `Regenerate the explanation for this interview topic using a different style.
+  const prompt = `Regenerate the explanation for this interview preparation topic using a different communication style while maintaining interview-readiness.
 
-Topic: ${topic.title}
-Reason for importance: ${topic.reason}
+## TOPIC DETAILS
+- **Title**: ${topic.title}
+- **Why It Matters**: ${topic.reason}
+- **Target Level**: ${seniorityLevel}
+- **Confidence**: ${topic.confidence} likelihood of being asked
+${topic.skillGaps?.length ? `- **Addresses Gaps**: ${topic.skillGaps.join(", ")}` : ""}
+${topic.prerequisites?.length ? `- **Prerequisites**: ${topic.prerequisites.join(", ")}` : ""}
 
-New Style: ${style}
-Style Guidelines: ${styleDescriptions[style]}
+## STYLE REQUIREMENTS
+**Target Style**: ${style.toUpperCase()}
+${styleDescriptions[style]}
 
-Structure your content with markdown formatting:
-- **Quick Overview**: A 2-3 sentence summary of what this topic is about (in the requested style)
-- **Detailed Explanation**: In-depth explanation covering key concepts, how it works, and why it matters (in the requested style)
-- **Code Example** (if applicable): Practical code snippet demonstrating the concept with comments
+## CONTENT STRUCTURE
 
-Keep the same topic ID, title, and reason. Only change the content to match the new style.
-The explanation should be comprehensive but match the requested style throughout.${
+Rewrite the content (800-1200 words) maintaining this interview-focused structure but in the ${style} style:
+
+## What It Is & Why It Matters
+- Concise definition in ${style} style
+- Business/practical impact
+- Big picture context
+
+## Core Concepts to Articulate
+Present 4-6 key concepts using ${style === "construction" ? "building analogies" : style === "simple" ? "everyday examples" : "technical precision"}:
+- Each concept clearly explained
+- How concepts relate to each other
+- Common misconceptions
+
+## How to Explain It (Interview-Ready)
+- 30-second explanation (${style} style)
+- 2-3 minute deep dive (${style} style)
+- Mental model or analogy to use
+
+## Practical Code/Implementation
+\`\`\`language
+// Code example with ${style === "simple" ? "very detailed beginner-friendly" : style === "construction" ? "building-analogy" : "professional"} comments
+// Show the concept in action
+\`\`\`
+
+## Interview Question Patterns
+Reframe these questions and answers in ${style} style:
+1. Basic "What is X?" with answer framework
+2. "How does X work?" with key points
+3. "When would you use X?" with decision criteria
+4. Trade-offs question with nuanced answer
+
+## Common Follow-Up Questions
+3-4 follow-ups interviewers ask, with ${style}-style answer hints
+
+## Red Flags to Avoid
+What NOT to say (in ${style} terms)
+
+## PRESERVE THESE FIELDS
+- Keep the same id: ${topic.id}
+- Keep the same title: ${topic.title}
+- Keep the same reason
+- Keep the same confidence level: ${topic.confidence}
+- Keep difficulty: ${seniorityLevel}
+- Keep estimatedMinutes: ${topic.estimatedMinutes || 30}
+- Keep prerequisites and skillGaps if present
+- Update followUpQuestions to match the new style${
     _ctx.customInstructions
-      ? `\n\nAdditional Instructions from user:\n${_ctx.customInstructions}`
+      ? `\n\n## ADDITIONAL USER INSTRUCTIONS\n${_ctx.customInstructions}`
       : ""
   }`;
 

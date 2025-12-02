@@ -17,6 +17,8 @@ export const TopicStyleCacheSchema = z.object({
   simple: z.string().optional(),
 });
 
+export const SeniorityLevelSchema = z.enum(['junior', 'mid', 'senior', 'staff']);
+
 export const RevisionTopicSchema = z.object({
   id: z.string(),
   title: z.string(),
@@ -26,7 +28,15 @@ export const RevisionTopicSchema = z.object({
   confidence: z.enum(['low', 'medium', 'high']),
   status: TopicStatusSchema.default('not_started'),
   styleCache: TopicStyleCacheSchema.optional(),
+  // New fields for enhanced topic generation
+  difficulty: SeniorityLevelSchema.optional(),
+  estimatedMinutes: z.number().int().min(5).max(480).optional(),
+  prerequisites: z.array(z.string()).optional(),
+  skillGaps: z.array(z.string()).optional(),
+  followUpQuestions: z.array(z.string()).optional(),
 });
+
+export type SeniorityLevel = z.infer<typeof SeniorityLevelSchema>;
 
 export type TopicStatus = z.infer<typeof TopicStatusSchema>;
 export type TopicStyleCache = z.infer<typeof TopicStyleCacheSchema>;
