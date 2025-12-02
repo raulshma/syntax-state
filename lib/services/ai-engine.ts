@@ -356,6 +356,12 @@ const RapidFireArraySchema = z.object({
 function getSystemPrompt(): string {
   return `You are an expert interview preparation assistant with deep knowledge across software engineering, system design, algorithms, and industry best practices. Your role is to help candidates prepare for technical interviews by generating comprehensive, in-depth, and highly relevant content based on their resume and the job description.
 
+CRITICAL RULES:
+- ALWAYS write actual, complete content - NEVER use placeholders like "[content here]", "[800 words]", or "[Follow-Up Questions Array]"
+- Every piece of content must be fully written out with real information
+- Code examples must be real, working code - not pseudo-code or placeholders
+- Generate complete responses for every field requested
+
 Guidelines:
 - Be extremely thorough and detailed in all content you generate
 - Provide extensive explanations with real-world examples and practical applications
@@ -363,10 +369,9 @@ Guidelines:
 - Use the candidate's experience to personalize content and identify skill gaps
 - Focus on practical, actionable preparation material that mirrors real interview scenarios
 - When generating MCQs, ensure all options are plausible and test deep understanding
-- For revision topics, provide comprehensive explanations with code examples, diagrams descriptions, and multiple perspectives
+- For revision topics, provide comprehensive explanations with code examples, diagram descriptions, and multiple perspectives
 - Include industry best practices, performance considerations, and trade-offs
 - Reference common interview patterns and what top companies typically ask
-- Use web search when you need current information about technologies or frameworks
 - Always aim for interview-ready depth that would satisfy a senior interviewer`;
 }
 
@@ -421,7 +426,7 @@ async function getEffectiveConfig(
 }> {
   // Determine tier: use plan-based tier if provided, otherwise use task-based tier
   let tier = TASK_TIER_MAPPING[task] || "high";
-  
+
   if (planContext?.plan) {
     tier = getPlanBasedTier(planContext.plan);
   }
@@ -510,11 +515,10 @@ Generate an EXTENSIVE opening brief that includes:
    - Provide an experience match percentage (0-100) with justification
    - Break down the match by category (technical skills, experience level, domain knowledge)
 
-Format your response as a structured brief with clear markdown sections and bullet points for readability.${
-    ctx.customInstructions
+Format your response as a structured brief with clear markdown sections and bullet points for readability.${ctx.customInstructions
       ? `\n\nAdditional Instructions from user:\n${ctx.customInstructions}`
       : ""
-  }`;
+    }`;
 
   const stream = streamObject({
     model: openrouter(modelToUse),
@@ -571,7 +575,7 @@ export async function generateTopics(
     : "";
 
   const seniorityLevel = inferSeniorityLevel(ctx.jobTitle);
-  
+
   const seniorityGuidance = {
     junior: `Target depth: Foundational concepts with clear explanations. Focus on core fundamentals, basic patterns, and common gotchas. Assume 0-2 years experience. Interviewers will test understanding of basics and ability to learn.`,
     mid: `Target depth: Solid understanding with practical application. Cover standard patterns, trade-offs, and real implementation details. Assume 2-5 years experience. Interviewers will test problem-solving and hands-on knowledge.`,
@@ -579,13 +583,9 @@ export async function generateTopics(
     staff: `Target depth: Expert-level with strategic thinking. Cover cross-system architecture, organizational impact, and mentorship angles. Assume 8+ years experience. Interviewers will test vision, influence, and complex problem decomposition.`
   };
 
-  const prompt = `You are a strategic interview preparation expert. Generate ${count} HIGH-IMPACT revision topics that will maximize the candidate's interview success.
+  const prompt = `Generate ${count} interview preparation topics for a ${ctx.jobTitle} position at ${ctx.company}.
 
-## CONTEXT
-
-**Position:** ${ctx.jobTitle}
-**Company:** ${ctx.company}
-**Seniority Level:** ${seniorityLevel.toUpperCase()}
+## CANDIDATE CONTEXT
 
 **Job Requirements:**
 ${ctx.jobDescription}
@@ -594,119 +594,89 @@ ${ctx.jobDescription}
 ${ctx.resumeText}
 ${existingTopicsNote}
 
-## STRATEGIC TOPIC SELECTION
+## TOPIC SELECTION STRATEGY
 
-First, analyze the gap between job requirements and candidate experience. Prioritize topics that:
+Analyze gaps between job requirements and candidate experience. Select topics that:
+- Address skills required by the job but missing/weak in the resume (prioritize these)
+- Cover core competencies interviewers always ask about for this role
+- Include differentiators that could set the candidate apart
 
-1. **Critical Gaps** (40% of topics): Skills explicitly required in the job description that are MISSING or WEAK in the candidate's resume. These are high-risk areas.
-
-2. **Likely Interview Focus** (35% of topics): Core competencies for this role that interviewers almost always ask about, regardless of resume.
-
-3. **Differentiators** (25% of topics): Advanced topics that could set the candidate apart, based on the company/role level.
-
-## DIFFICULTY CALIBRATION
+## CALIBRATION: ${seniorityLevel.toUpperCase()} LEVEL
 
 ${seniorityGuidance[seniorityLevel]}
 
-## OUTPUT STRUCTURE
+## REQUIRED OUTPUT FOR EACH TOPIC
 
-For each topic, provide:
+Generate exactly ${count} topics. For EACH topic, you MUST provide ALL of the following fields:
 
-### 1. Identification
-- **id**: Unique identifier (format: topic_<random_8chars>)
-- **title**: Clear, specific topic name
-- **difficulty**: "${seniorityLevel}" (calibrated to role)
-- **confidence**: How likely this will come up (low/medium/high)
-- **estimatedMinutes**: Realistic study time (15-120 minutes based on complexity)
-- **prerequisites**: Array of topic titles this builds upon (use titles from other topics in this set, or common foundational concepts)
-- **skillGaps**: Array of specific gaps from the candidate's resume this topic addresses
+1. **id**: Unique identifier (format: "topic_" + 8 random alphanumeric chars, e.g., "topic_a7f3b2c9")
+2. **title**: Specific, actionable topic name (e.g., "Database Indexing Strategies" not just "Databases")
+3. **confidence**: "low", "medium", or "high" (how likely this topic will be asked)
+4. **reason**: 1-2 sentences explaining WHY this topic matters for THIS specific interview
+5. **content**: Complete markdown content following the structure below (400-600 words)
+6. **difficulty**: "${seniorityLevel}" (must be one of: junior, mid, senior, staff)
+7. **estimatedMinutes**: Realistic study time in minutes (15-60 minutes recommended)
+8. **prerequisites**: Array of 2-4 prerequisite concepts (e.g., ["JavaScript basics", "Async programming"])
+9. **skillGaps**: Array of 1-3 skills from the job description this topic addresses (be specific)
+10. **followUpQuestions**: Array of 3-5 likely follow-up questions an interviewer would ask
 
-### 2. Reason (2-3 sentences)
-Explain WHY this topic is critical for THIS specific interview. Reference specific job requirements and identify what's missing from the candidate's background.
+## CONTENT STRUCTURE (400-600 words per topic)
 
-### 3. Content (markdown, 800-1200 words calibrated to ${seniorityLevel} level)
+For the "content" field, write well-formatted markdown with proper spacing between sections:
 
-Structure the content to mirror how interviewers actually probe knowledge:
+### What It Is & Why It Matters
 
-## What It Is & Why It Matters
-- Concise definition (1-2 sentences an interviewer expects you to nail)
-- Why companies care about this (business impact)
-- Where this fits in the bigger picture
+A 2-3 sentence summary explaining what this topic is and why interviewers ask about it.
 
-## Core Concepts to Articulate
-Present 4-6 key concepts as "things you must be able to explain clearly":
-- Each concept with a one-liner definition
-- The relationship between concepts
-- Common misconceptions interviewers test for
+### Core Concepts
 
-## How to Explain It (Interview-Ready)
-- The "elevator pitch" explanation (30 seconds)
-- The "deep dive" explanation (2-3 minutes)
-- Diagram or mental model to draw on whiteboard
+- **Concept 1**: Brief explanation
+- **Concept 2**: Brief explanation  
+- **Concept 3**: Brief explanation
 
-## Practical Code/Implementation
+### How to Explain in an Interview
+
+**30-Second Pitch**: A concise explanation you could give verbally.
+
+**Key Points to Cover**:
+1. First key point
+2. Second key point
+3. Third key point
+
+### Code Example
+
 \`\`\`language
-// Production-quality example that shows:
-// - Real-world usage pattern
-// - Error handling
-// - Edge cases interviewers ask about
-// - Comments explaining WHY, not just WHAT
+// Real, working code example with comments
 \`\`\`
 
-## Interview Question Patterns
-Present 3-5 questions in order of increasing difficulty:
-1. **Screening question**: "What is X?" - Expected answer framework
-2. **Understanding question**: "How does X work?" - Key points to hit
-3. **Application question**: "When would you use X vs Y?" - Decision framework
-4. **Deep dive question**: "What are the trade-offs of X?" - Nuanced answer
-5. **${seniorityLevel === 'staff' ? 'Architecture' : seniorityLevel === 'senior' ? 'Design' : 'Problem-solving'} question**: Scenario-based question with approach
+### Common Interview Questions
 
-## Common Follow-Up Questions
-List 3-4 follow-up questions interviewers typically ask after initial answers, with brief answer hints.
+**Q: Example question?**
+A: Concise answer framework.
 
-## Red Flags to Avoid
-- What NOT to say (common wrong answers)
-- Misconceptions that signal inexperience
-- Over-engineering vs under-engineering signals
+**Q: Follow-up question?**
+A: Concise answer framework.
 
-## Real-World Context
-- How ${ctx.company || 'top companies'} likely uses this
-- Scale considerations relevant to the role
-- Recent developments or trends to mention
+## GENERATION RULES
 
-### 4. Follow-Up Questions Array
-Provide 4-6 specific follow-up questions interviewers commonly ask, separate from the content (for flashcard/quiz features):
-- Mix of "why", "how", "what if", and "compare" questions
-- Ordered from basic to advanced
+1. **Proper Markdown**: Include blank lines between headings and content. Each section should be clearly separated.
 
-## TOPIC ORDERING
+2. **Word Count**: 400-600 words per topic ensures completion without cutoff.
 
-Order topics by preparation priority:
-1. High-confidence critical gaps first
-2. Core competencies second  
-3. Differentiators last
+3. **Real Content Only**: No placeholders like "[Write here]" - provide actual technical explanations and working code.
 
-This helps candidates focus limited prep time effectively.
+4. **Complete All Topics**: Generate ALL ${count} topics with all 10 fields populated.
 
-## CRITICAL REQUIREMENTS
-
-**YOU MUST GENERATE EXACTLY ${count} COMPLETE TOPICS.** Each topic MUST have:
-- A unique id (format: topic_<random_8chars>)
-- A clear title (not empty)
-- Comprehensive content (800-1200 words minimum per topic)
-- A reason explaining why this topic matters
-- A confidence level (low/medium/high)
-
-DO NOT stop early. DO NOT generate empty or placeholder content. Complete ALL ${count} topics with full, detailed content before finishing.${
-    ctx.customInstructions
+5. **Field Requirements**:
+   - "id": starts with "topic_" + 8 random chars
+   - "difficulty": "${seniorityLevel}"
+   - "estimatedMinutes": 15-60
+   - "prerequisites": array of 2-4 items
+   - "skillGaps": array of 1-3 items
+   - "followUpQuestions": array of 3-5 questions${ctx.customInstructions
       ? `\n\n## ADDITIONAL USER INSTRUCTIONS\n${ctx.customInstructions}`
       : ""
-  }`;
-
-  // Calculate appropriate max tokens based on topic count
-  // Each topic needs ~2000 tokens for comprehensive content (800-1200 words)
-  // Cap at 16384 to stay within most model limits while allowing enough for 8 topics
-  const minTokensNeeded = Math.min(count * 2000, 16384);
+    }`;
 
   const stream = streamObject({
     model: openrouter(modelToUse),
@@ -714,7 +684,6 @@ DO NOT stop early. DO NOT generate empty or placeholder content. Complete ALL ${
     system: getSystemPrompt(),
     prompt,
     temperature: config.temperature ?? tierConfig.temperature,
-    maxOutputTokens: minTokensNeeded,
   });
 
   return Object.assign(stream, {
@@ -831,11 +800,10 @@ Before finalizing each question, verify:
 - [ ] Distractors are plausible (not obviously wrong)
 - [ ] Explanation addresses all 4 options
 - [ ] Code snippets (if any) are syntactically correct
-- [ ] Question tests job-relevant knowledge${
-    ctx.customInstructions
+- [ ] Question tests job-relevant knowledge${ctx.customInstructions
       ? `\n\n## ADDITIONAL USER INSTRUCTIONS\n${ctx.customInstructions}`
       : ""
-  }`;
+    }`;
 
   const stream = streamObject({
     model: openrouter(modelToUse),
@@ -961,11 +929,10 @@ This mirrors how real interviewers structure rapid-fire rounds.
 - Questions should be answerable without context (self-contained)
 - Avoid questions that require lengthy code explanations
 - Each answer should be memorizable for interview prep
-- Focus on practical knowledge over trivia${
-    ctx.customInstructions
+- Focus on practical knowledge over trivia${ctx.customInstructions
       ? `\n\n## ADDITIONAL USER INSTRUCTIONS\n${ctx.customInstructions}`
       : ""
-  }`;
+    }`;
 
   const stream = streamObject({
     model: openrouter(modelToUse),
@@ -1124,11 +1091,10 @@ What NOT to say (in ${style} terms)
 - Keep difficulty: ${seniorityLevel}
 - Keep estimatedMinutes: ${topic.estimatedMinutes || 30}
 - Keep prerequisites and skillGaps if present
-- Update followUpQuestions to match the new style${
-    _ctx.customInstructions
+- Update followUpQuestions to match the new style${_ctx.customInstructions
       ? `\n\n## ADDITIONAL USER INSTRUCTIONS\n${_ctx.customInstructions}`
       : ""
-  }`;
+    }`;
 
   const stream = streamObject({
     model: openrouter(modelToUse),

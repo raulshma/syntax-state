@@ -77,10 +77,26 @@ services:
       retries: 3
       start_period: 40s
 
+  # Redis Insights - Redis GUI
+  redis-insights:
+    image: redislabs/redisinsight:latest
+    ports:
+      - "5540:5540"
+    volumes:
+      - redis_insights_data:/data
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - myinterviewprep-network
+    restart: unless-stopped
+
 volumes:
   mongodb_data:
     driver: local
   redis_data:
+    driver: local
+  redis_insights_data:
     driver: local
 
 networks:
