@@ -26,6 +26,7 @@ import {
   Bar,
   BarChart,
   Legend,
+  Sector,
 } from "recharts";
 import {
   Activity,
@@ -148,6 +149,47 @@ function StatCard({
   );
 }
 
+const CustomActiveDot = (props: any) => {
+  const { cx, cy, stroke, payload, dataKey } = props;
+  const fill = payload?.fill || props.fill;
+  
+  return (
+    <g>
+      <circle cx={cx} cy={cy} r={8} fill={fill} fillOpacity={0.2} className="animate-ping origin-center" style={{ transformBox: 'fill-box', transformOrigin: 'center' }} />
+      <circle cx={cx} cy={cy} r={4} fill={fill} stroke={stroke} strokeWidth={2} className="drop-shadow-[0_0_8px_rgba(139,92,246,0.5)] transition-all duration-300 ease-in-out" />
+    </g>
+  );
+};
+
+const renderActiveShape = (props: any) => {
+  const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill } = props;
+
+  return (
+    <g>
+      <Sector
+        cx={cx}
+        cy={cy}
+        innerRadius={innerRadius}
+        outerRadius={outerRadius + 8}
+        startAngle={startAngle}
+        endAngle={endAngle}
+        fill={fill}
+        className="filter drop-shadow-md transition-all duration-300"
+      />
+      <Sector
+        cx={cx}
+        cy={cy}
+        startAngle={startAngle}
+        endAngle={endAngle}
+        innerRadius={innerRadius - 4}
+        outerRadius={innerRadius}
+        fill={fill}
+        fillOpacity={0.3}
+      />
+    </g>
+  );
+};
+
 function RecentLogsTable({ logs }: { logs: AILogEntry[] }) {
   return (
     <Card className="border-0 shadow-sm bg-card/50 backdrop-blur-xl rounded-3xl overflow-hidden">
@@ -257,6 +299,7 @@ export function AIUsageDashboard({ data: initialData }: AIUsageDashboardProps) {
   const [isPending, startTransition] = useTransition();
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const [activePieIndex, setActivePieIndex] = useState<number | undefined>(undefined);
 
   const handleTimeRangeChange = (range: TimeRangeOption) => {
     if (range === "custom") {
@@ -501,23 +544,23 @@ export function AIUsageDashboard({ data: initialData }: AIUsageDashboardProps) {
                     tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
                     allowDecimals={false}
                   />
-                  <ChartTooltip
-                    content={<ChartTooltipContent indicator="line" />}
-                    cursor={{
-                      stroke: "var(--muted-foreground)",
-                      strokeWidth: 1,
-                      strokeDasharray: "4 4",
-                      opacity: 0.5,
-                    }}
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="requests"
-                    stroke="var(--color-requests)"
-                    fill="url(#colorRequests)"
-                    strokeWidth={2}
-                    activeDot={{ r: 4, strokeWidth: 0 }}
-                  />
+                    <ChartTooltip
+                      content={<ChartTooltipContent indicator="line" className="backdrop-blur-xl bg-background/80 border-border/50 shadow-xl" />}
+                      cursor={{
+                        stroke: "#8b5cf6",
+                        strokeWidth: 1,
+                        strokeDasharray: "4 4",
+                        opacity: 0.5,
+                      }}
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="requests"
+                      stroke="var(--color-requests)"
+                      fill="url(#colorRequests)"
+                      strokeWidth={2}
+                      activeDot={<CustomActiveDot />}
+                    />
                 </AreaChart>
               </ChartContainer>
             </CardContent>
@@ -556,11 +599,16 @@ export function AIUsageDashboard({ data: initialData }: AIUsageDashboardProps) {
                     paddingAngle={2}
                     cornerRadius={4}
                     stroke="none"
+                    activeIndex={activePieIndex}
+                    activeShape={renderActiveShape}
+                    onMouseEnter={(_, index) => setActivePieIndex(index)}
+                    onMouseLeave={() => setActivePieIndex(undefined)}
                   >
-                    {statusBreakdown.map((entry) => (
+                    {statusBreakdown.map((entry, index) => (
                       <Cell
                         key={entry.status}
                         fill={STATUS_COLORS[entry.status] || "#94a3b8"}
+                        className="stroke-background hover:opacity-80 transition-opacity"
                       />
                     ))}
                   </Pie>
@@ -696,9 +744,9 @@ export function AIUsageDashboard({ data: initialData }: AIUsageDashboardProps) {
                     allowDecimals={false}
                   />
                   <ChartTooltip
-                    content={<ChartTooltipContent indicator="line" />}
+                    content={<ChartTooltipContent indicator="line" className="backdrop-blur-xl bg-background/80 border-border/50 shadow-xl" />}
                     cursor={{
-                      stroke: "var(--muted-foreground)",
+                      stroke: "var(--primary)",
                       strokeWidth: 1,
                       strokeDasharray: "4 4",
                       opacity: 0.5,
@@ -714,7 +762,7 @@ export function AIUsageDashboard({ data: initialData }: AIUsageDashboardProps) {
                     stroke="var(--color-inputTokens)"
                     strokeWidth={2}
                     dot={false}
-                    activeDot={{ r: 4, strokeWidth: 0 }}
+                    activeDot={<CustomActiveDot />}
                     name="Input"
                   />
                   <Line
@@ -723,7 +771,7 @@ export function AIUsageDashboard({ data: initialData }: AIUsageDashboardProps) {
                     stroke="var(--color-outputTokens)"
                     strokeWidth={2}
                     dot={false}
-                    activeDot={{ r: 4, strokeWidth: 0 }}
+                    activeDot={<CustomActiveDot />}
                     name="Output"
                   />
                 </LineChart>
@@ -785,7 +833,7 @@ export function AIUsageDashboard({ data: initialData }: AIUsageDashboardProps) {
                     content={({ active, payload }) => {
                       if (!active || !payload?.length) return null;
                       return (
-                        <div className="rounded-lg border bg-background p-2 shadow-sm">
+                        <div className="rounded-lg border bg-background/80 backdrop-blur-xl p-2 shadow-sm">
                           <div className="flex flex-col gap-1">
                             <span className="text-xs text-muted-foreground">
                               {payload[0].payload.hourLabel}
@@ -800,8 +848,9 @@ export function AIUsageDashboard({ data: initialData }: AIUsageDashboardProps) {
                   />
                   <Bar
                     dataKey="requestCount"
-                    fill="#8b5cf6"
+                    fill="var(--color-requestCount)"
                     radius={[4, 4, 0, 0]}
+                    className="hover:opacity-80 transition-opacity"
                   />
                 </BarChart>
               </ChartContainer>

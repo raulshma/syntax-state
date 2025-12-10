@@ -342,7 +342,13 @@ export async function getSystemTierConfig(): Promise<ActionResult<BYOKUserConfig
     const config: BYOKUserConfig = {};
 
     // Type for tier config value from settings
-    type TierValue = { primaryModel?: string; fallbackModel?: string; temperature?: number; maxTokens?: number };
+    type TierValue = { 
+      primaryModel?: string; 
+      fallbackModel?: string; 
+      temperature?: number; 
+      maxTokens?: number;
+      provider?: 'openrouter' | 'google';
+    };
 
     const highValue = highDoc?.value as TierValue | undefined;
     const mediumValue = mediumDoc?.value as TierValue | undefined;
@@ -351,6 +357,7 @@ export async function getSystemTierConfig(): Promise<ActionResult<BYOKUserConfig
     if (highValue?.primaryModel) {
       config.high = {
         model: highValue.primaryModel,
+        provider: highValue.provider || 'openrouter',
         fallback: highValue.fallbackModel || undefined,
         temperature: highValue.temperature ?? 0.7,
         maxTokens: highValue.maxTokens ?? 4096,
@@ -360,6 +367,7 @@ export async function getSystemTierConfig(): Promise<ActionResult<BYOKUserConfig
     if (mediumValue?.primaryModel) {
       config.medium = {
         model: mediumValue.primaryModel,
+        provider: mediumValue.provider || 'openrouter',
         fallback: mediumValue.fallbackModel || undefined,
         temperature: mediumValue.temperature ?? 0.7,
         maxTokens: mediumValue.maxTokens ?? 4096,
@@ -369,6 +377,7 @@ export async function getSystemTierConfig(): Promise<ActionResult<BYOKUserConfig
     if (lowValue?.primaryModel) {
       config.low = {
         model: lowValue.primaryModel,
+        provider: lowValue.provider || 'openrouter',
         fallback: lowValue.fallbackModel || undefined,
         temperature: lowValue.temperature ?? 0.7,
         maxTokens: lowValue.maxTokens ?? 4096,

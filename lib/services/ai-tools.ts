@@ -1336,7 +1336,7 @@ Focus on high-quality, up-to-date resources for ${level} level learners.`;
 
   try {
     const result = await generateObject({
-      model: openrouter(tierConfig.model),
+      model: provider.getModel(tierConfig.model),
       schema: LearningResourcesResponseSchema,
       prompt,
       temperature: tierConfig.temperature,

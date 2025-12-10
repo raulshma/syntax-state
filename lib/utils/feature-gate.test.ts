@@ -16,7 +16,8 @@ import {
   ANALOGY_ACCESS_MAP,
   PLAN_MODEL_TIER_MAP,
 } from './feature-gate';
-import type { UserPlan, PlanFeature, AnalogyStyle } from './feature-gate';
+import type { PlanFeature, AnalogyStyle } from './feature-gate';
+import type { UserPlan } from '@/lib/db/schemas/user';
 
 // Generators for property-based testing
 const userPlanArb = fc.constantFrom<UserPlan>('FREE', 'PRO', 'MAX');
