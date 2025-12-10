@@ -27,7 +27,9 @@ import {
   PieChart,
   Pie,
   Cell,
+  Sector,
 } from "recharts";
+import { useState } from "react";
 import {
   TrendingUp,
   TrendingDown,
@@ -167,6 +169,8 @@ export function AnalyticsDashboard({
   topCompanies,
   modelUsage,
 }: AnalyticsDashboardProps) {
+  const [activePieIndex, setActivePieIndex] = useState<number | undefined>(undefined);
+  
   // Calculate trends
   const interviewTrend = calculateTrend(usageTrends.map((d) => d.interviews));
   const aiRequestTrend = calculateTrend(usageTrends.map((d) => d.aiRequests));
@@ -340,7 +344,11 @@ export function AnalyticsDashboard({
                   tickMargin={12}
                   tick={{ fontSize: 12, fill: "var(--muted-foreground)" }}
                 />
-                <ChartTooltip content={<ChartTooltipContent />} />
+                <ChartTooltip 
+                  content={<ChartTooltipContent />}
+                  animationDuration={200}
+                  animationEasing="ease-out"
+                />
                 <ChartLegend content={<ChartLegendContent />} />
                 <Area
                   type="monotone"
@@ -349,6 +357,10 @@ export function AnalyticsDashboard({
                   stroke="var(--color-interviews)"
                   fill="url(#colorInterviews)"
                   strokeWidth={2}
+                  animationBegin={0}
+                  animationDuration={1000}
+                  animationEasing="ease-out"
+                  style={{ filter: 'drop-shadow(0 2px 6px rgba(139, 92, 246, 0.3))' }}
                 />
                 <Area
                   type="monotone"
@@ -357,6 +369,10 @@ export function AnalyticsDashboard({
                   stroke="var(--color-aiRequests)"
                   fill="url(#colorAiRequests)"
                   strokeWidth={2}
+                  animationBegin={100}
+                  animationDuration={1000}
+                  animationEasing="ease-out"
+                  style={{ filter: 'drop-shadow(0 2px 6px rgba(249, 115, 22, 0.3))' }}
                 />
                 <Area
                   type="monotone"
@@ -365,6 +381,10 @@ export function AnalyticsDashboard({
                   stroke="var(--color-users)"
                   fill="url(#colorUsers)"
                   strokeWidth={2}
+                  animationBegin={200}
+                  animationDuration={1000}
+                  animationEasing="ease-out"
+                  style={{ filter: 'drop-shadow(0 2px 6px rgba(34, 197, 94, 0.3))' }}
                 />
                 <Area
                   type="monotone"
@@ -373,6 +393,10 @@ export function AnalyticsDashboard({
                   stroke="var(--color-tokens)"
                   fill="url(#colorTokens)"
                   strokeWidth={2}
+                  animationBegin={300}
+                  animationDuration={1000}
+                  animationEasing="ease-out"
+                  style={{ filter: 'drop-shadow(0 2px 6px rgba(6, 182, 212, 0.3))' }}
                 />
               </AreaChart>
             </ChartContainer>
@@ -418,8 +442,11 @@ export function AnalyticsDashboard({
                     </div>
                     <div className="w-full h-2 bg-secondary/50 rounded-full overflow-hidden">
                       <div
-                        className="h-full bg-primary/80 rounded-full transition-all duration-500 group-hover:bg-primary"
-                        style={{ width: `${topic.percentage}%` }}
+                        className="h-full bg-primary/80 rounded-full transition-all duration-500 group-hover:bg-primary group-hover:scale-y-125 group-hover:shadow-lg origin-left"
+                        style={{ 
+                          width: `${topic.percentage}%`,
+                          boxShadow: '0 0 12px rgba(139, 92, 246, 0.4)'
+                        }}
                       />
                     </div>
                   </div>
@@ -469,8 +496,11 @@ export function AnalyticsDashboard({
                     </div>
                     <div className="w-full h-2 bg-secondary/50 rounded-full overflow-hidden">
                       <div
-                        className="h-full bg-blue-500/80 rounded-full transition-all duration-500 group-hover:bg-blue-500"
-                        style={{ width: `${company.percentage}%` }}
+                        className="h-full bg-blue-500/80 rounded-full transition-all duration-500 group-hover:bg-blue-500 group-hover:scale-y-125 group-hover:shadow-lg origin-left"
+                        style={{ 
+                          width: `${company.percentage}%`,
+                          boxShadow: '0 0 12px rgba(59, 130, 246, 0.4)'
+                        }}
                       />
                     </div>
                   </div>
@@ -520,6 +550,30 @@ export function AnalyticsDashboard({
                         outerRadius={80}
                         paddingAngle={4}
                         cornerRadius={4}
+                        activeIndex={activePieIndex}
+                        activeShape={(props: any) => {
+                          const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill } = props;
+                          return (
+                            <Sector
+                              cx={cx}
+                              cy={cy}
+                              innerRadius={innerRadius}
+                              outerRadius={outerRadius + 8}
+                              startAngle={startAngle}
+                              endAngle={endAngle}
+                              fill={fill}
+                              style={{
+                                filter: 'drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3))',
+                                transition: 'all 0.3s ease',
+                              }}
+                            />
+                          );
+                        }}
+                        onMouseEnter={(_, index) => setActivePieIndex(index)}
+                        onMouseLeave={() => setActivePieIndex(undefined)}
+                        animationBegin={0}
+                        animationDuration={800}
+                        animationEasing="ease-out"
                       >
                         {planDistribution.map((entry) => (
                           <Cell
@@ -528,47 +582,62 @@ export function AnalyticsDashboard({
                               PLAN_COLORS[entry.plan] || "hsl(var(--muted))"
                             }
                             strokeWidth={0}
+                            style={{ cursor: 'pointer' }}
                           />
                         ))}
                       </Pie>
                     </PieChart>
                   </ResponsiveContainer>
                   <div className="absolute inset-0 flex items-center justify-center flex-col pointer-events-none">
-                    <span className="text-2xl font-bold">
-                      {planDistribution.reduce(
-                        (acc, curr) => acc + curr.count,
-                        0
-                      )}
+                    <span className="text-2xl font-bold transition-all duration-300">
+                      {activePieIndex !== undefined 
+                        ? planDistribution[activePieIndex].count
+                        : planDistribution.reduce((acc, curr) => acc + curr.count, 0)
+                      }
                     </span>
                     <span className="text-xs text-muted-foreground">
-                      Total Users
+                      {activePieIndex !== undefined 
+                        ? planDistribution[activePieIndex].plan
+                        : 'Total Users'
+                      }
                     </span>
                   </div>
                 </div>
                 <div className="space-y-4 flex-1 w-full">
-                  {planDistribution.map((plan) => (
-                    <div
-                      key={plan.plan}
-                      className="flex items-center justify-between p-3 rounded-xl bg-secondary/30"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div
-                          className="w-3 h-3 rounded-full shadow-sm"
-                          style={{
-                            backgroundColor:
-                              PLAN_COLORS[plan.plan] || "hsl(var(--muted))",
-                          }}
-                        />
-                        <span className="font-medium text-sm">{plan.plan}</span>
+                  {planDistribution.map((plan, index) => {
+                    const isActive = activePieIndex === index;
+                    return (
+                      <div
+                        key={plan.plan}
+                        className={`flex items-center justify-between p-3 rounded-xl transition-all duration-300 cursor-pointer ${
+                          isActive 
+                            ? 'bg-secondary/60 scale-105 shadow-lg' 
+                            : 'bg-secondary/30 hover:bg-secondary/50'
+                        }`}
+                        onMouseEnter={() => setActivePieIndex(index)}
+                        onMouseLeave={() => setActivePieIndex(undefined)}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div
+                            className={`w-3 h-3 rounded-full shadow-sm transition-all duration-300 ${
+                              isActive ? 'scale-125 ring-2 ring-white/20' : ''
+                            }`}
+                            style={{
+                              backgroundColor:
+                                PLAN_COLORS[plan.plan] || "hsl(var(--muted))",
+                            }}
+                          />
+                          <span className="font-medium text-sm">{plan.plan}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-bold">{plan.count}</span>
+                          <span className="text-xs text-muted-foreground">
+                            ({plan.percentage}%)
+                          </span>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-bold">{plan.count}</span>
-                        <span className="text-xs text-muted-foreground">
-                          ({plan.percentage}%)
-                        </span>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             ) : (
@@ -612,10 +681,14 @@ export function AnalyticsDashboard({
                           {model.count} ({model.percentage}%)
                         </span>
                       </div>
-                      <div className="w-full h-2.5 bg-secondary/50 rounded-full overflow-hidden">
+                      <div className="w-full h-2.5 bg-secondary/50 rounded-full overflow-hidden group">
                         <div
-                          className="h-full bg-linear-to-r from-violet-500 to-fuchsia-500 rounded-full transition-all duration-500"
-                          style={{ width: `${barWidth}%` }}
+                          className="h-full rounded-full transition-all duration-500 group-hover:scale-y-125 group-hover:shadow-lg origin-left"
+                          style={{ 
+                            width: `${barWidth}%`,
+                            background: 'linear-gradient(to right, #8b5cf6, #d946ef)',
+                            boxShadow: '0 0 12px rgba(139, 92, 246, 0.4)'
+                          }}
                         />
                       </div>
                     </div>
@@ -692,7 +765,9 @@ export function AnalyticsDashboard({
                 />
                 <ChartTooltip
                   content={<ChartTooltipContent />}
-                  cursor={{ fill: "hsl(var(--muted))", opacity: 0.1 }}
+                  cursor={{ fill: "hsl(var(--muted))", opacity: 0.15 }}
+                  animationDuration={200}
+                  animationEasing="ease-out"
                 />
                 <ChartLegend content={<ChartLegendContent />} />
                 <Bar
@@ -701,6 +776,10 @@ export function AnalyticsDashboard({
                   fill="var(--color-inputTokens)"
                   radius={[0, 0, 4, 4]}
                   maxBarSize={50}
+                  animationBegin={0}
+                  animationDuration={800}
+                  animationEasing="ease-out"
+                  style={{ filter: 'drop-shadow(0 2px 6px rgba(34, 211, 238, 0.3))' }}
                 />
                 <Bar
                   dataKey="outputTokens"
@@ -708,6 +787,10 @@ export function AnalyticsDashboard({
                   fill="var(--color-outputTokens)"
                   radius={[4, 4, 0, 0]}
                   maxBarSize={50}
+                  animationBegin={100}
+                  animationDuration={800}
+                  animationEasing="ease-out"
+                  style={{ filter: 'drop-shadow(0 2px 6px rgba(244, 114, 182, 0.3))' }}
                 />
               </BarChart>
             </ChartContainer>

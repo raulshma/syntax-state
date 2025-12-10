@@ -111,6 +111,12 @@ export interface AIUsageDashboardData {
   recentLogs: AILogEntry[];
 }
 
+export interface DateRangeFilter {
+  startDate?: Date;
+  endDate?: Date;
+  days?: number;
+}
+
 /**
  * Check if user has MAX plan
  */
@@ -128,14 +134,70 @@ async function requireMaxPlan(): Promise<{ userId: string } | null> {
 /**
  * Get AI usage stats for the user
  */
-export async function getAIUsageStats(): Promise<AIUsageStats | null> {
+export async function getAIUsageStats(filter?: DateRangeFilter): Promise<AIUsageStats | null> {
   const auth = await requireMaxPlan();
   if (!auth) return null;
 
-  const stats = await aiLogRepository.getAggregatedStats(auth.userId);
-
+  const collection = await getAILogsCollection();
+  
+  // Calculate date range
+  let startDate: Date | undefined;
+  let endDate: Date | undefined;
+  
+  if (filter?.startDate && filter?.endDate) {
+    startDate = filter.startDate;
+    endDate = filter.endDate;
+  } else if (filter?.days) {
+    const now = new Date();
+    startDate = new Date(now.getTime() - filter.days * 24 * 60 * 60 * 1000);
+    startDate.setUTCHours(0, 0, 0, 0);
+    endDate = now;
+  }
+  
+  const matchStage: Record<string, unknown> = { userId: auth.userId };
+  if (startDate && endDate) {
+    matchStage.timestamp = { $gte: startDate, $lte: endDate };
+  }
+  
+  const pipeline = [
+    { $match: matchStage },
+    {
+      $group: {
+        _id: null,
+        totalRequests: { $sum: 1 },
+        totalInputTokens: { $sum: { $ifNull: ['$tokenUsage.input', 0] } },
+        totalOutputTokens: { $sum: { $ifNull: ['$tokenUsage.output', 0] } },
+        avgLatencyMs: { $avg: { $ifNull: ['$latencyMs', 0] } },
+        totalCost: { $sum: { $ifNull: ['$estimatedCost', 0] } },
+        errorCount: {
+          $sum: { $cond: [{ $eq: ['$status', 'error'] }, 1, 0] }
+        },
+      },
+    },
+  ];
+  
+  const results = await collection.aggregate(pipeline).toArray();
+  
+  if (results.length === 0) {
+    return {
+      totalRequests: 0,
+      totalInputTokens: 0,
+      totalOutputTokens: 0,
+      avgLatencyMs: 0,
+      totalCost: 0,
+      errorCount: 0,
+      successRate: 100,
+    };
+  }
+  
+  const stats = results[0];
   return {
-    ...stats,
+    totalRequests: stats.totalRequests || 0,
+    totalInputTokens: stats.totalInputTokens || 0,
+    totalOutputTokens: stats.totalOutputTokens || 0,
+    avgLatencyMs: Math.round(stats.avgLatencyMs || 0),
+    totalCost: Math.round((stats.totalCost || 0) * 1000000) / 1000000,
+    errorCount: stats.errorCount || 0,
     successRate: stats.totalRequests > 0
       ? Math.round(((stats.totalRequests - stats.errorCount) / stats.totalRequests) * 100)
       : 100,
@@ -190,14 +252,33 @@ export async function getAIUsageTrends(days: number = 30): Promise<AIUsageTrend[
 /**
  * Get breakdown by action type
  */
-export async function getAIActionBreakdown(): Promise<AIActionBreakdown[] | null> {
+export async function getAIActionBreakdown(filter?: DateRangeFilter): Promise<AIActionBreakdown[] | null> {
   const auth = await requireMaxPlan();
   if (!auth) return null;
 
   const collection = await getAILogsCollection();
+  
+  // Calculate date range
+  let startDate: Date | undefined;
+  let endDate: Date | undefined;
+  
+  if (filter?.startDate && filter?.endDate) {
+    startDate = filter.startDate;
+    endDate = filter.endDate;
+  } else if (filter?.days) {
+    const now = new Date();
+    startDate = new Date(now.getTime() - filter.days * 24 * 60 * 60 * 1000);
+    startDate.setUTCHours(0, 0, 0, 0);
+    endDate = now;
+  }
+  
+  const matchStage: Record<string, unknown> = { userId: auth.userId };
+  if (startDate && endDate) {
+    matchStage.timestamp = { $gte: startDate, $lte: endDate };
+  }
 
   const pipeline = [
-    { $match: { userId: auth.userId } },
+    { $match: matchStage },
     {
       $group: {
         _id: "$action",
@@ -242,14 +323,33 @@ export async function getAIActionBreakdown(): Promise<AIActionBreakdown[] | null
 /**
  * Get model usage breakdown
  */
-export async function getAIModelUsage(): Promise<AIModelUsage[] | null> {
+export async function getAIModelUsage(filter?: DateRangeFilter): Promise<AIModelUsage[] | null> {
   const auth = await requireMaxPlan();
   if (!auth) return null;
 
   const collection = await getAILogsCollection();
+  
+  // Calculate date range
+  let startDate: Date | undefined;
+  let endDate: Date | undefined;
+  
+  if (filter?.startDate && filter?.endDate) {
+    startDate = filter.startDate;
+    endDate = filter.endDate;
+  } else if (filter?.days) {
+    const now = new Date();
+    startDate = new Date(now.getTime() - filter.days * 24 * 60 * 60 * 1000);
+    startDate.setUTCHours(0, 0, 0, 0);
+    endDate = now;
+  }
+  
+  const matchStage: Record<string, unknown> = { userId: auth.userId };
+  if (startDate && endDate) {
+    matchStage.timestamp = { $gte: startDate, $lte: endDate };
+  }
 
   const pipeline = [
-    { $match: { userId: auth.userId } },
+    { $match: matchStage },
     {
       $group: {
         _id: "$model",
@@ -286,14 +386,33 @@ export async function getAIModelUsage(): Promise<AIModelUsage[] | null> {
 /**
  * Get status breakdown
  */
-export async function getAIStatusBreakdown(): Promise<AIStatusBreakdown[] | null> {
+export async function getAIStatusBreakdown(filter?: DateRangeFilter): Promise<AIStatusBreakdown[] | null> {
   const auth = await requireMaxPlan();
   if (!auth) return null;
 
   const collection = await getAILogsCollection();
+  
+  // Calculate date range
+  let startDate: Date | undefined;
+  let endDate: Date | undefined;
+  
+  if (filter?.startDate && filter?.endDate) {
+    startDate = filter.startDate;
+    endDate = filter.endDate;
+  } else if (filter?.days) {
+    const now = new Date();
+    startDate = new Date(now.getTime() - filter.days * 24 * 60 * 60 * 1000);
+    startDate.setUTCHours(0, 0, 0, 0);
+    endDate = now;
+  }
+  
+  const matchStage: Record<string, unknown> = { userId: auth.userId };
+  if (startDate && endDate) {
+    matchStage.timestamp = { $gte: startDate, $lte: endDate };
+  }
 
   const pipeline = [
-    { $match: { userId: auth.userId } },
+    { $match: matchStage },
     { $group: { _id: "$status", count: { $sum: 1 } } },
     { $sort: { count: -1 as const } },
   ];
@@ -319,11 +438,30 @@ export async function getAIStatusBreakdown(): Promise<AIStatusBreakdown[] | null
 /**
  * Get recent AI logs
  */
-export async function getRecentAILogs(limit: number = 20): Promise<AILogEntry[] | null> {
+export async function getRecentAILogs(limit: number = 20, filter?: DateRangeFilter): Promise<AILogEntry[] | null> {
   const auth = await requireMaxPlan();
   if (!auth) return null;
 
-  const logs = await aiLogRepository.findByUserId(auth.userId, { limit });
+  // Calculate date range
+  let startDate: Date | undefined;
+  let endDate: Date | undefined;
+  
+  if (filter?.startDate && filter?.endDate) {
+    startDate = filter.startDate;
+    endDate = filter.endDate;
+  } else if (filter?.days) {
+    const now = new Date();
+    startDate = new Date(now.getTime() - filter.days * 24 * 60 * 60 * 1000);
+    startDate.setUTCHours(0, 0, 0, 0);
+    endDate = now;
+  }
+
+  const logs = await aiLogRepository.query({
+    userId: auth.userId,
+    startDate,
+    endDate,
+    limit,
+  });
 
   return logs.map((log) => ({
     _id: log._id,
@@ -383,14 +521,33 @@ export async function getAITokenTrends(days: number = 30): Promise<AITokenTrend[
 /**
  * Get hourly usage patterns
  */
-export async function getAIHourlyPatterns(): Promise<AIHourlyPattern[] | null> {
+export async function getAIHourlyPatterns(filter?: DateRangeFilter): Promise<AIHourlyPattern[] | null> {
   const auth = await requireMaxPlan();
   if (!auth) return null;
 
   const collection = await getAILogsCollection();
+  
+  // Calculate date range
+  let startDate: Date | undefined;
+  let endDate: Date | undefined;
+  
+  if (filter?.startDate && filter?.endDate) {
+    startDate = filter.startDate;
+    endDate = filter.endDate;
+  } else if (filter?.days) {
+    const now = new Date();
+    startDate = new Date(now.getTime() - filter.days * 24 * 60 * 60 * 1000);
+    startDate.setUTCHours(0, 0, 0, 0);
+    endDate = now;
+  }
+  
+  const matchStage: Record<string, unknown> = { userId: auth.userId };
+  if (startDate && endDate) {
+    matchStage.timestamp = { $gte: startDate, $lte: endDate };
+  }
 
   const pipeline = [
-    { $match: { userId: auth.userId } },
+    { $match: matchStage },
     {
       $group: {
         _id: { $hour: "$timestamp" },
@@ -421,14 +578,33 @@ export async function getAIHourlyPatterns(): Promise<AIHourlyPattern[] | null> {
 /**
  * Get latency distribution
  */
-export async function getAILatencyDistribution(): Promise<AILatencyBucket[] | null> {
+export async function getAILatencyDistribution(filter?: DateRangeFilter): Promise<AILatencyBucket[] | null> {
   const auth = await requireMaxPlan();
   if (!auth) return null;
 
   const collection = await getAILogsCollection();
+  
+  // Calculate date range
+  let startDate: Date | undefined;
+  let endDate: Date | undefined;
+  
+  if (filter?.startDate && filter?.endDate) {
+    startDate = filter.startDate;
+    endDate = filter.endDate;
+  } else if (filter?.days) {
+    const now = new Date();
+    startDate = new Date(now.getTime() - filter.days * 24 * 60 * 60 * 1000);
+    startDate.setUTCHours(0, 0, 0, 0);
+    endDate = now;
+  }
+  
+  const matchStage: Record<string, unknown> = { userId: auth.userId };
+  if (startDate && endDate) {
+    matchStage.timestamp = { $gte: startDate, $lte: endDate };
+  }
 
   const pipeline = [
-    { $match: { userId: auth.userId } },
+    { $match: matchStage },
     {
       $bucket: {
         groupBy: "$latencyMs",
@@ -547,9 +723,12 @@ export async function getAIComparisonMetrics(days: number = 30): Promise<AICompa
 /**
  * Get all AI usage data in a single call
  */
-export async function getAIUsageDashboardData(days: number = 30): Promise<AIUsageDashboardData | null> {
+export async function getAIUsageDashboardData(filter?: DateRangeFilter): Promise<AIUsageDashboardData | null> {
   const auth = await requireMaxPlan();
   if (!auth) return null;
+
+  // Default to 30 days if no filter specified
+  const effectiveFilter = filter ?? { days: 30 };
 
   const [
     stats,
@@ -563,16 +742,16 @@ export async function getAIUsageDashboardData(days: number = 30): Promise<AIUsag
     comparisonMetrics,
     recentLogs
   ] = await Promise.all([
-    getAIUsageStats(),
-    getAIUsageTrends(days),
-    getAITokenTrends(days),
-    getAIActionBreakdown(),
-    getAIModelUsage(),
-    getAIStatusBreakdown(),
-    getAIHourlyPatterns(),
-    getAILatencyDistribution(),
-    getAIComparisonMetrics(days),
-    getRecentAILogs(20),
+    getAIUsageStats(effectiveFilter),
+    getAIUsageTrends(effectiveFilter.days ?? 30),
+    getAITokenTrends(effectiveFilter.days ?? 30),
+    getAIActionBreakdown(effectiveFilter),
+    getAIModelUsage(effectiveFilter),
+    getAIStatusBreakdown(effectiveFilter),
+    getAIHourlyPatterns(effectiveFilter),
+    getAILatencyDistribution(effectiveFilter),
+    getAIComparisonMetrics(effectiveFilter.days ?? 30),
+    getRecentAILogs(20, effectiveFilter),
   ]);
 
   return {
@@ -600,3 +779,4 @@ export async function getAIUsageDashboardData(days: number = 30): Promise<AIUsag
     recentLogs: recentLogs ?? [],
   };
 }
+

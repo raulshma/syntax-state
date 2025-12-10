@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import {
   ChartContainer,
@@ -17,6 +18,7 @@ import {
   PieChart,
   Pie,
   Cell,
+  Sector,
 } from 'recharts';
 import {
   Activity,
@@ -138,10 +140,11 @@ function ProgressList<T extends { count: number; percentage: number }>({
                   </div>
                   <div className="w-full h-2.5 bg-secondary/30 rounded-full overflow-hidden">
                     <div
-                      className="h-full rounded-full transition-all duration-1000 ease-out group-hover:brightness-110"
+                      className="h-full rounded-full transition-all duration-1000 ease-out group-hover:brightness-110 group-hover:scale-y-125 group-hover:shadow-lg origin-left"
                       style={{
                         width: `${item.percentage}%`,
                         backgroundColor: colorMap?.[label] || '#8b5cf6',
+                        boxShadow: `0 0 12px ${colorMap?.[label] || '#8b5cf6'}40`,
                       }}
                     />
                   </div>
@@ -177,7 +180,29 @@ function DonutChart<T extends { count: number; percentage: number }>({
   labelKey: keyof T;
   colorMap: Record<string, string>;
 }) {
+  const [activeIndex, setActiveIndex] = React.useState<number | undefined>(undefined);
   const total = data.reduce((acc, curr) => acc + curr.count, 0);
+
+  const renderActiveShape = (props: any) => {
+    const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill } = props;
+    return (
+      <g>
+        <Sector
+          cx={cx}
+          cy={cy}
+          innerRadius={innerRadius}
+          outerRadius={outerRadius + 8}
+          startAngle={startAngle}
+          endAngle={endAngle}
+          fill={fill}
+          style={{
+            filter: 'drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3))',
+            transition: 'all 0.3s ease',
+          }}
+        />
+      </g>
+    );
+  };
 
   return (
     <Card className="border-0 shadow-xl shadow-black/5 dark:shadow-black/20 bg-card/50 backdrop-blur-xl rounded-[2.5rem] overflow-hidden">
@@ -207,29 +232,53 @@ function DonutChart<T extends { count: number; percentage: number }>({
                     paddingAngle={4}
                     cornerRadius={6}
                     stroke="none"
+                    activeIndex={activeIndex}
+                    activeShape={renderActiveShape}
+                    onMouseEnter={(_, index) => setActiveIndex(index)}
+                    onMouseLeave={() => setActiveIndex(undefined)}
+                    animationBegin={0}
+                    animationDuration={800}
+                    animationEasing="ease-out"
                   >
                     {data.map((entry) => (
                       <Cell
                         key={String(entry[labelKey])}
                         fill={colorMap[entry[labelKey] as string] || '#94a3b8'}
+                        style={{ cursor: 'pointer' }}
                       />
                     ))}
                   </Pie>
                 </PieChart>
               </ResponsiveContainer>
               <div className="absolute inset-0 flex items-center justify-center flex-col pointer-events-none">
-                <span className="text-4xl font-bold tracking-tighter">{total}</span>
-                <span className="text-sm font-medium text-muted-foreground uppercase tracking-wide">Total</span>
+                <span className="text-4xl font-bold tracking-tighter transition-all duration-300">
+                  {activeIndex !== undefined ? data[activeIndex].count : total}
+                </span>
+                <span className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+                  {activeIndex !== undefined ? String(data[activeIndex][labelKey]) : 'Total'}
+                </span>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3 w-full">
-              {data.map((item) => {
+              {data.map((item, index) => {
                 const label = item[labelKey] as string;
+                const isActive = activeIndex === index;
                 return (
-                  <div key={label} className="flex items-center justify-between p-3 rounded-2xl bg-secondary/30 hover:bg-secondary/50 transition-colors">
+                  <div 
+                    key={label} 
+                    className={`flex items-center justify-between p-3 rounded-2xl transition-all duration-300 cursor-pointer ${
+                      isActive 
+                        ? 'bg-secondary/70 scale-105 shadow-lg' 
+                        : 'bg-secondary/30 hover:bg-secondary/50'
+                    }`}
+                    onMouseEnter={() => setActiveIndex(index)}
+                    onMouseLeave={() => setActiveIndex(undefined)}
+                  >
                     <div className="flex items-center gap-3">
                       <div
-                        className="w-2.5 h-2.5 rounded-full shadow-sm ring-2 ring-white/10"
+                        className={`w-2.5 h-2.5 rounded-full shadow-sm ring-2 ring-white/10 transition-all duration-300 ${
+                          isActive ? 'scale-125 ring-4' : ''
+                        }`}
                         style={{ backgroundColor: colorMap[label] || '#94a3b8' }}
                       />
                       <span className="font-medium text-sm text-foreground/90">{label}</span>
@@ -353,7 +402,14 @@ export function UserAnalyticsDashboard({ data }: UserAnalyticsDashboardProps) {
                   />
                   <ChartTooltip
                     content={<ChartTooltipContent />}
-                    cursor={{ stroke: 'var(--muted-foreground)', strokeWidth: 1, strokeDasharray: '4 4' }}
+                    cursor={{ 
+                      stroke: 'var(--color-interviews)', 
+                      strokeWidth: 2, 
+                      strokeDasharray: '4 4',
+                      opacity: 0.3
+                    }}
+                    animationDuration={200}
+                    animationEasing="ease-out"
                   />
                   <Area
                     type="monotone"
@@ -361,6 +417,12 @@ export function UserAnalyticsDashboard({ data }: UserAnalyticsDashboardProps) {
                     stroke="var(--color-interviews)"
                     fill="url(#colorInterviewsUser)"
                     strokeWidth={3}
+                    animationBegin={0}
+                    animationDuration={1000}
+                    animationEasing="ease-out"
+                    style={{
+                      filter: 'drop-shadow(0 2px 8px rgba(139, 92, 246, 0.3))',
+                    }}
                   />
                 </AreaChart>
               </ChartContainer>

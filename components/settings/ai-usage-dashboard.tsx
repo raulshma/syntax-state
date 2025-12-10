@@ -39,12 +39,23 @@ import {
   Sparkles,
   Timer,
   BarChart3,
+  CalendarIcon,
+  Loader2,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
-import type { AIUsageDashboardData, AILogEntry } from "@/lib/actions/ai-usage";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import type { AIUsageDashboardData, AILogEntry, DateRangeFilter } from "@/lib/actions/ai-usage";
+import { getAIUsageDashboardData } from "@/lib/actions/ai-usage";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
+import { useState, useTransition } from "react";
+import type { DateRange } from "react-day-picker";
 import {
   formatDate,
   formatNumber,
@@ -59,6 +70,9 @@ import {
 interface AIUsageDashboardProps {
   data: AIUsageDashboardData;
 }
+
+type TimeRangeOption = 1 | 7 | 30 | 90 | "custom";
+
 
 
 function StatCard({
@@ -238,8 +252,51 @@ function RecentLogsTable({ logs }: { logs: AILogEntry[] }) {
 }
 
 export function AIUsageDashboard({ data: initialData }: AIUsageDashboardProps) {
-  const [timeRange, setTimeRange] = useState<7 | 30 | 90>(30);
-  const data = initialData; // For now, use initial data (future: implement client-side filtering)
+  const [timeRange, setTimeRange] = useState<TimeRangeOption>(30);
+  const [data, setData] = useState<AIUsageDashboardData>(initialData);
+  const [isPending, startTransition] = useTransition();
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+
+  const handleTimeRangeChange = (range: TimeRangeOption) => {
+    if (range === "custom") {
+      setTimeRange("custom");
+      setIsCalendarOpen(true);
+      return;
+    }
+
+    setTimeRange(range);
+    startTransition(async () => {
+      const newData = await getAIUsageDashboardData({ days: range });
+      if (newData) {
+        setData(newData);
+      }
+    });
+  };
+
+  const handleCustomRangeSelect = (range: DateRange | undefined) => {
+    setDateRange(range);
+    if (range?.from && range?.to) {
+      setIsCalendarOpen(false);
+      startTransition(async () => {
+        const newData = await getAIUsageDashboardData({
+          startDate: range.from,
+          endDate: range.to,
+        });
+        if (newData) {
+          setData(newData);
+        }
+      });
+    }
+  };
+
+  const formatCustomRangeLabel = () => {
+    if (!dateRange?.from) return "Custom";
+    if (!dateRange.to) {
+      return dateRange.from.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    }
+    return `${dateRange.from.toLocaleDateString("en-US", { month: "short", day: "numeric" })} - ${dateRange.to.toLocaleDateString("en-US", { month: "short", day: "numeric" })}`;
+  };
 
   const {
     stats,
@@ -278,21 +335,57 @@ export function AIUsageDashboard({ data: initialData }: AIUsageDashboardProps) {
         transition={{ duration: 0.3 }}
         className="flex items-center gap-2 p-1 bg-secondary/30 rounded-2xl w-fit"
       >
-        {([7, 30, 90] as const).map((days) => (
+        {isPending && (
+          <div className="px-2">
+            <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+          </div>
+        )}
+        {([1, 7, 30, 90] as const).map((days) => (
           <button
             key={days}
-            onClick={() => setTimeRange(days)}
+            onClick={() => handleTimeRangeChange(days)}
+            disabled={isPending}
             className={cn(
-              "px-6 py-2 rounded-xl text-sm font-medium transition-all duration-200",
+              "px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200",
               timeRange === days
                 ? "bg-background shadow-sm text-foreground"
-                : "text-muted-foreground hover:text-foreground"
+                : "text-muted-foreground hover:text-foreground",
+              isPending && "opacity-50 cursor-not-allowed"
             )}
           >
             {days}d
           </button>
         ))}
+        <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
+          <PopoverTrigger asChild>
+            <button
+              onClick={() => handleTimeRangeChange("custom")}
+              disabled={isPending}
+              className={cn(
+                "px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 flex items-center gap-2",
+                timeRange === "custom"
+                  ? "bg-background shadow-sm text-foreground"
+                  : "text-muted-foreground hover:text-foreground",
+                isPending && "opacity-50 cursor-not-allowed"
+              )}
+            >
+              <CalendarIcon className="w-4 h-4" />
+              {timeRange === "custom" ? formatCustomRangeLabel() : "Custom"}
+            </button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <Calendar
+              mode="range"
+              defaultMonth={dateRange?.from}
+              selected={dateRange}
+              onSelect={handleCustomRangeSelect}
+              numberOfMonths={2}
+              disabled={(date) => date > new Date() || date < new Date("2024-01-01")}
+            />
+          </PopoverContent>
+        </Popover>
       </motion.div>
+
       {/* Bento Grid Layout */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Main Stats - Top Row */}
