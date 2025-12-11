@@ -62,6 +62,10 @@ interface ResponseColumnProps {
   response: ModelResponse;
   /** Callback for retrying a failed model request */
   onRetry?: (modelId: string, provider: AIProviderType) => void;
+  /** Signal to scroll to bottom */
+  scrollToBottom?: boolean;
+  /** Callback when scroll is complete */
+  onScrollComplete?: () => void;
 }
 
 /**
@@ -69,11 +73,19 @@ interface ResponseColumnProps {
  * Requirements: 5.3 - Render each response in separate panel with model identification
  * Requirements: 5.4 - Display error for failed model while showing successful responses
  */
-const ResponseColumn = memo(function ResponseColumn({ response, onRetry }: ResponseColumnProps) {
+const ResponseColumn = memo(function ResponseColumn({ response, onRetry, scrollToBottom, onScrollComplete }: ResponseColumnProps) {
   const [copied, setCopied] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
   const shouldAutoScrollRef = useRef(true);
   const prevContentLengthRef = useRef(0);
+
+  // Scroll to bottom when triggered externally (e.g., loading existing conversation)
+  useEffect(() => {
+    if (scrollToBottom && contentRef.current) {
+      contentRef.current.scrollTop = contentRef.current.scrollHeight;
+      onScrollComplete?.();
+    }
+  }, [scrollToBottom, onScrollComplete]);
 
   // Auto-scroll when content changes during streaming
   useEffect(() => {
@@ -272,6 +284,10 @@ interface MultiModelResponseProps {
   isLoading: boolean;
   /** Callback for retrying a failed model request */
   onRetry?: (modelId: string, provider: AIProviderType) => void;
+  /** Signal to scroll all response columns to bottom */
+  scrollToBottom?: boolean;
+  /** Callback when scroll is complete */
+  onScrollComplete?: () => void;
 }
 
 /**
@@ -283,6 +299,8 @@ export const MultiModelResponse = memo(function MultiModelResponse({
   responses, 
   isLoading,
   onRetry,
+  scrollToBottom,
+  onScrollComplete,
 }: MultiModelResponseProps) {
   // Memoize array conversion to prevent unnecessary re-renders
   const responsesArray = useMemo(() => Array.from(responses.values()), [responses]);
@@ -328,6 +346,8 @@ export const MultiModelResponse = memo(function MultiModelResponse({
           key={`${response.provider}:${response.modelId}`}
           response={response}
           onRetry={onRetry}
+          scrollToBottom={scrollToBottom}
+          onScrollComplete={onScrollComplete}
         />
       ))}
     </div>

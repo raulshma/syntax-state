@@ -39,6 +39,7 @@ export const MultiModelChatMain = memo(function MultiModelChatMain({
   const [lastUserMessage, setLastUserMessage] = useState("");
   const [internalConversationId, setInternalConversationId] = useState<string | undefined>();
   const [showScrollToBottom, setShowScrollToBottom] = useState(false);
+  const [shouldScrollToBottom, setShouldScrollToBottom] = useState(false);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -231,6 +232,9 @@ export const MultiModelChatMain = memo(function MultiModelChatMain({
 
           if (restoredResponses.size > 0) {
             setResponses(restoredResponses);
+            
+            // Trigger auto-scroll in response columns after conversation is loaded
+            setShouldScrollToBottom(true);
           }
         }
       } catch (error) {
@@ -428,6 +432,8 @@ export const MultiModelChatMain = memo(function MultiModelChatMain({
                 responses={responses} 
                 isLoading={isLoading}
                 onRetry={handleRetry}
+                scrollToBottom={shouldScrollToBottom}
+                onScrollComplete={() => setShouldScrollToBottom(false)}
               />
             </div>
             <div ref={messagesEndRef} />
