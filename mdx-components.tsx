@@ -12,6 +12,14 @@ import {
   Comparison,
 } from '@/components/learn/mdx-components';
 
+import { HttpConversation } from '@/components/learn/interactive/http/HttpConversation';
+import { HttpRequestBuilder } from '@/components/learn/interactive/http/HttpRequestBuilder';
+import { PacketInspector } from '@/components/learn/interactive/http/PacketInspector';
+
+import { AddressBarDeconstruction } from '@/components/learn/interactive/domain/AddressBarDeconstruction';
+import { DnsResolutionFlow } from '@/components/learn/interactive/domain/DnsResolutionFlow';
+import { DnsRecordExplorer } from '@/components/learn/interactive/domain/DnsRecordExplorer';
+
 /**
  * MDX Components Configuration
  * This file provides custom components for MDX content rendering.
@@ -30,6 +38,16 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
     ProgressCheckpoint,
     KeyConcept,
     Comparison,
+
+    // HTTP Lesson Components
+    HttpConversation,
+    HttpRequestBuilder,
+    PacketInspector,
+
+    // Domain Lesson Components
+    AddressBarDeconstruction,
+    DnsResolutionFlow,
+    DnsRecordExplorer,
 
     // Enhanced HTML elements with proper styling
     h1: ({ children, ...props }) => (

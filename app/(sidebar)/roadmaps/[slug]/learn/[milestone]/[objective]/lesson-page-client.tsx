@@ -23,6 +23,8 @@ import type { ExperienceLevel } from '@/lib/db/schemas/lesson-progress';
 import { RefreshCw } from 'lucide-react'; // Import Icon
 import { ProgressCheckpoint } from '@/components/learn/mdx-components/progress-checkpoint';
 
+import type { UserGamification } from '@/lib/db/schemas/user';
+
 interface LessonPageClientProps {
   lessonId: string;
   lessonTitle: string;
@@ -35,6 +37,7 @@ interface LessonPageClientProps {
   initialCompletedSections?: string[];
   initialTimeSpent?: number;
   isLessonCompleted?: boolean;
+  initialGamification?: UserGamification | null;
 }
 
 // Inner component that uses the progress context
@@ -50,11 +53,13 @@ function LessonContent({
   initialCompletedSections = [],
   initialTimeSpent = 0,
   isLessonCompleted = false,
+  initialGamification = null,
 }: LessonPageClientProps) {
   const [level, setLevel] = useState<ExperienceLevel>(initialLevel);
   const [mdxSource, setMdxSource] = useState<MDXRemoteSerializeResult>(initialMdxSource);
   const [isLoading, setIsLoading] = useState(false);
-  const [earnedXp, setEarnedXp] = useState(0);
+  const [gamification, setGamification] = useState<UserGamification | null>(initialGamification);
+  const [hasClaimedReward, setHasClaimedReward] = useState(isLessonCompleted);
   
   // Get progress from context
   const { 
@@ -67,10 +72,9 @@ function LessonContent({
     resetProgress,
   } = useProgress();
 
-  // Calculate XP based on completed sections
-  const totalXp = useMemo(() => {
-    return completedSectionIds.length * 10 + earnedXp;
-  }, [completedSectionIds.length, earnedXp]);
+  // Use actual user XP from gamification data
+  const totalXp = gamification?.totalXp ?? 0;
+  const currentStreak = gamification?.currentStreak ?? 0;
 
   // Get base MDX components and enhance with progress tracking
   const baseMdxComponents = useMDXComponents({});
@@ -122,7 +126,13 @@ function LessonContent({
       
       setMdxSource(serialized);
       setLevel(newLevel);
-      resetProgress(); // Reset progress for new level
+      resetProgress(); // Reset local progress for new level
+      
+      // Check if this level was already completed
+      const isLevelCompleted = gamification?.completedLessons?.some(
+        l => l.lessonId === lessonId && l.experienceLevel === newLevel
+      ) ?? false;
+      setHasClaimedReward(isLevelCompleted);
       
       // Update URL without page refresh
       window.history.replaceState(
@@ -135,21 +145,17 @@ function LessonContent({
     } finally {
       setIsLoading(false);
     }
-  }, [level, lessonId, roadmapSlug, milestoneId, isLoading, resetProgress]);
+  }, [level, lessonId, roadmapSlug, milestoneId, isLoading, resetProgress, gamification]);
 
   // Handle lesson completion
   const handleClaimRewards = useCallback(async () => {
-    if (!progress) return;
+    if (!progress || hasClaimedReward) return;
 
     const levelXp = level === 'beginner' ? 50 : level === 'intermediate' ? 100 : 200;
     
     // Calculate total XP (sections + completion bonus)
     // Sections are worth 10 XP each as per gamification logic
     const sectionsXp = completedSectionIds.length * 10;
-    
-    // Only award level bonus if not already completed (or maybe we allow re-claiming? likely not)
-    // For now, let's assume if they can click claim, they get it.
-    // Ideally we disable the button if already claimed.
     const totalEarnedXp = sectionsXp + levelXp;
     
     const timeSpent = getTotalTimeSpent(progress);
@@ -164,7 +170,11 @@ function LessonContent({
       );
 
       if (result.success) {
-        setEarnedXp(prev => prev + levelXp);
+        // Update gamification state with the returned data
+        if (result.data) {
+          setGamification(result.data);
+        }
+        setHasClaimedReward(true);
         toast.success(`You earned ${totalEarnedXp} XP!`);
       } else {
         toast.error('Failed to save progress');
@@ -173,7 +183,7 @@ function LessonContent({
       console.error('Failed to claim rewards:', error);
       toast.error('Something went wrong');
     }
-  }, [level, lessonId, completedSectionIds, progress]);
+  }, [level, lessonId, completedSectionIds, progress, hasClaimedReward]);
 
   // Handle lesson reset
   const handleResetLesson = useCallback(async () => {
@@ -182,7 +192,11 @@ function LessonContent({
       
       if (result.success) {
         resetProgress();
-        setEarnedXp(0);
+        // Update gamification state with the returned data
+        if (result.data) {
+          setGamification(result.data);
+        }
+        setHasClaimedReward(false);
         toast.success('Lesson progress reset and XP removed');
       } else {
         toast.error('Failed to reset lesson');
@@ -220,7 +234,7 @@ function LessonContent({
           </div>
 
           {/* XP Display */}
-          <XPDisplay totalXp={totalXp} currentStreak={0} compact />
+          <XPDisplay totalXp={totalXp} currentStreak={currentStreak} compact />
         </div>
       </div>
 
@@ -283,21 +297,25 @@ function LessonContent({
               </div>
               <div className="flex-1">
                 <h3 className="text-lg font-semibold text-foreground">
-                  Lesson Complete! 🎉
+                  {hasClaimedReward ? 'Lesson Completed!' : 'Lesson Complete! 🎉'}
                 </h3>
                 <p className="text-sm text-muted-foreground">
-                  You completed all {sections.length} sections at the {level} level
-                  {progress && ` in ${formatTimeSpent(getTotalTimeSpent(progress))}`}.
+                  {hasClaimedReward 
+                    ? `You've already completed this lesson at the ${level} level.`
+                    : `You completed all ${sections.length} sections at the ${level} level${progress ? ` in ${formatTimeSpent(getTotalTimeSpent(progress))}` : ''}.`
+                  }
                 </p>
               </div>
               <div className="flex gap-2">
-                 <Button onClick={handleResetLesson} variant="outline" size="sm" className="text-muted-foreground hover:text-destructive">
+                <Button onClick={handleResetLesson} variant="outline" size="sm" className="text-muted-foreground hover:text-destructive">
                   <RefreshCw className="w-4 h-4 mr-2" />
                   Reset
                 </Button>
-                <Button onClick={handleClaimRewards}>
-                  Claim Rewards
-                </Button>
+                {!hasClaimedReward && (
+                  <Button onClick={handleClaimRewards}>
+                    Claim Rewards
+                  </Button>
+                )}
               </div>
             </div>
           </motion.div>
@@ -331,6 +349,20 @@ export function LessonPageClient(props: LessonPageClientProps) {
     console.log('Lesson completed!');
   }, []);
 
+  // Check if the initial level was already completed
+  const isInitialLevelCompleted = props.initialGamification?.completedLessons?.some(
+    l => l.lessonId === props.lessonId && l.experienceLevel === props.initialLevel
+  ) ?? false;
+
+  // Get completed sections for the initial level from gamification data
+  const completedLessonData = props.initialGamification?.completedLessons?.find(
+    l => l.lessonId === props.lessonId && l.experienceLevel === props.initialLevel
+  );
+  
+  const initialCompletedSections = completedLessonData?.sectionsCompleted?.map(s => s.sectionId) 
+    ?? props.initialCompletedSections 
+    ?? [];
+
   return (
     <ProgressProvider
       lessonId={props.lessonId}
@@ -340,9 +372,9 @@ export function LessonPageClient(props: LessonPageClientProps) {
       onLessonComplete={handleLessonComplete}
       persistToStorage={true}
       initialState={{
-        completedSections: props.initialCompletedSections ?? [],
-        timeSpent: props.initialTimeSpent ?? 0,
-        isCompleted: props.isLessonCompleted ?? false
+        completedSections: initialCompletedSections,
+        timeSpent: completedLessonData?.timeSpentSeconds ?? props.initialTimeSpent ?? 0,
+        isCompleted: isInitialLevelCompleted
       }}
     >
       <LessonContent {...props} />

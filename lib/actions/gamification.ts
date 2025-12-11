@@ -6,9 +6,11 @@ import { completeLesson, resetLesson, findByUserId } from '@/lib/db/repositories
 import { revalidatePath } from 'next/cache';
 import { createAPIError } from '@/lib/schemas/error';
 import { ActionResult } from './learning-path';
+import type { UserGamification } from '@/lib/db/schemas/user';
 
 /**
  * Complete a lesson and award XP
+ * Returns the updated gamification profile
  */
 export async function completeLessonAction(
   lessonId: string,
@@ -16,7 +18,7 @@ export async function completeLessonAction(
   xpEarned: number,
   sections: string[],
   timeSpentSeconds: number
-): Promise<ActionResult<void>> {
+): Promise<ActionResult<UserGamification | null>> {
   try {
     const clerkId = await getAuthUserId();
     const user = await userRepository.findByClerkId(clerkId);
@@ -27,8 +29,11 @@ export async function completeLessonAction(
     
     await completeLesson(user._id, lessonId, level, xpEarned, sections, timeSpentSeconds);
     
+    // Fetch and return the updated gamification profile
+    const updatedProfile = await findByUserId(user._id);
+    
     revalidatePath('/roadmaps');
-    return { success: true, data: undefined };
+    return { success: true, data: updatedProfile };
   } catch (error) {
     console.error('completeLessonAction error:', error);
     return { success: false, error: createAPIError('DATABASE_ERROR', 'Failed to complete lesson') };
@@ -37,10 +42,11 @@ export async function completeLessonAction(
 
 /**
  * Reset a lesson and remove associated XP
+ * Returns the updated gamification profile
  */
 export async function resetLessonAction(
   lessonId: string
-): Promise<ActionResult<void>> {
+): Promise<ActionResult<UserGamification | null>> {
   try {
     const clerkId = await getAuthUserId();
     const user = await userRepository.findByClerkId(clerkId);
@@ -51,8 +57,11 @@ export async function resetLessonAction(
     
     await resetLesson(user._id, lessonId);
     
+    // Fetch and return the updated gamification profile
+    const updatedProfile = await findByUserId(user._id);
+    
     revalidatePath('/roadmaps');
-    return { success: true, data: undefined };
+    return { success: true, data: updatedProfile };
   } catch (error) {
     console.error('resetLessonAction error:', error);
     return { success: false, error: createAPIError('DATABASE_ERROR', 'Failed to reset lesson') };

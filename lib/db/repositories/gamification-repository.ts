@@ -68,6 +68,16 @@ export async function completeLesson(
     completedLessons: [],
   };
   
+  // Check if lesson is already completed at this level
+  const isAlreadyCompleted = currentGamification.completedLessons.some(
+    (l: { lessonId: string; experienceLevel: string }) => 
+      l.lessonId === lessonId && l.experienceLevel === level
+  );
+
+  if (isAlreadyCompleted) {
+    return;
+  }
+  
   // Create lesson completion record
   const completionRecord = {
     lessonId,
@@ -97,19 +107,6 @@ export async function completeLesson(
         'gamification.lastActivityDate': now,
         updatedAt: now,
       },
-      // Remove any existing completion for this lesson/level to avoid duplicates
-      $pull: { 'gamification.completedLessons': { lessonId, experienceLevel: level } } as any,
-    }
-  );
-  
-  // Push the new completion separate from $pull to avoid conflict in same update if mongo version issues, 
-  // but $pull and $push in same update on same array is tricky. 
-  // Safer to do separately or use $set for the whole array if we fetched it, but race conditions.
-  // Standard Mongo: specific operations order ($pull then $push) is not guaranteed in single Op.
-  
-  await collection.updateOne(
-    { _id: userId },
-    {
       $push: { 'gamification.completedLessons': completionRecord } as any,
     }
   );

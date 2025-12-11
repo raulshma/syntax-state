@@ -112,6 +112,7 @@ export default async function LearnObjectivePage({
         initialCompletedSections={initialCompletedSections}
         initialTimeSpent={initialTimeSpent}
         isLessonCompleted={isLessonCompleted}
+        initialGamification={userGamification}
       />
     </div>
   );
