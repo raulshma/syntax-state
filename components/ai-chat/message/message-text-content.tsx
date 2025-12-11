@@ -48,7 +48,7 @@ export const MessageTextContent = memo(function MessageTextContent({
         "text-sm shadow-sm",
         // Use inline-block for user messages (short text), block for assistant (may have code blocks)
         isUser ? "inline-block" : "block max-w-full overflow-hidden",
-        isCompact ? "rounded-lg px-3 py-2" : "rounded-[20px] px-5 py-3.5",
+        isCompact ? "rounded-lg px-3 py-2" : "rounded-2xl px-5 py-3.5",
         isUser
           ? cn(
               "bg-primary text-primary-foreground",

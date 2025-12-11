@@ -115,7 +115,7 @@ export const MessageBubble = memo(function MessageBubble({
           <div
             className={cn(
               "inline-block rounded-tl-none text-sm bg-destructive/10 border border-destructive/20",
-              isCompact ? "rounded-lg px-3 py-2" : "rounded-[20px] px-5 py-3.5"
+              isCompact ? "rounded-lg px-3 py-2" : "rounded-2xl px-5 py-3.5"
             )}
           >
             <p className="text-destructive font-medium mb-1">Something went wrong</p>

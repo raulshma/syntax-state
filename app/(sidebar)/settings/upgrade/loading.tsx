@@ -7,7 +7,7 @@ export default function UpgradeLoading() {
                 {Array.from({ length: 3 }).map((_, i) => (
                     <div
                         key={i}
-                        className="relative p-8 rounded-[2.5rem] overflow-hidden flex flex-col h-[600px] border border-white/10 bg-card/30"
+                        className="relative p-8 rounded-4xl overflow-hidden flex flex-col h-[600px] border border-white/10 bg-card/30"
                     >
                         <div className="mb-6 space-y-4">
                             <div className="flex items-center justify-between">
@@ -39,7 +39,7 @@ export default function UpgradeLoading() {
             </div>
 
             {/* Comparison Table Skeleton */}
-            <div className="mt-16 p-8 rounded-[2.5rem] bg-card/30 border border-white/5">
+            <div className="mt-16 p-8 rounded-4xl bg-card/30 border border-white/5">
                 <div className="flex justify-center mb-8">
                     <Skeleton className="h-8 w-48 rounded-lg" />
                 </div>

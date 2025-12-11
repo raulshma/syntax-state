@@ -78,7 +78,7 @@ function StatCard({
   colorClass: string;
 }) {
   return (
-    <Card className="group relative border-0 shadow-lg shadow-black/5 dark:shadow-black/20 bg-card/50  rounded-[2rem] overflow-hidden hover:scale-[1.02] transition-all duration-300">
+    <Card className="group relative border-0 shadow-lg shadow-black/5 dark:shadow-black/20 bg-card/50  rounded-3xl overflow-hidden hover:scale-[1.02] transition-all duration-300">
       <CardContent className="p-6 md:p-8 flex flex-col justify-between h-full relative z-10">
         <div className="flex items-center justify-between mb-6">
           <span className="text-sm font-medium text-muted-foreground/80 uppercase tracking-wider">{title}</span>
@@ -109,7 +109,7 @@ function ProgressList<T extends { count: number; percentage: number }>({
   colorMap?: Record<string, string>;
 }) {
   return (
-    <Card className="border-0 shadow-xl shadow-black/5 dark:shadow-black/20 bg-card/50  rounded-[2.5rem] overflow-hidden">
+    <Card className="border-0 shadow-xl shadow-black/5 dark:shadow-black/20 bg-card/50  rounded-4xl overflow-hidden">
       <CardHeader className="p-8 pb-4">
         <div className="flex items-center gap-3 mb-2">
           <div className="p-2.5 rounded-xl bg-primary/5 text-primary">
@@ -204,7 +204,7 @@ function DonutChart<T extends { count: number; percentage: number }>({
   };
 
   return (
-    <Card className="border-0 shadow-xl shadow-black/5 dark:shadow-black/20 bg-card/50  rounded-[2.5rem] overflow-hidden">
+    <Card className="border-0 shadow-xl shadow-black/5 dark:shadow-black/20 bg-card/50  rounded-4xl overflow-hidden">
       <CardHeader className="p-8 pb-4">
         <div className="flex items-center gap-3 mb-2">
           <div className="p-2.5 rounded-xl bg-primary/5 text-primary">
@@ -363,7 +363,7 @@ export function UserAnalyticsDashboard({ data }: UserAnalyticsDashboardProps) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.1 }}
       >
-        <Card className="border-0 shadow-xl shadow-black/5 dark:shadow-black/20 bg-card/50  rounded-[2.5rem] overflow-hidden">
+        <Card className="border-0 shadow-xl shadow-black/5 dark:shadow-black/20 bg-card/50  rounded-4xl overflow-hidden">
           <CardHeader className="p-8 pb-4">
             <div className="flex items-center gap-3 mb-2">
               <div className="p-2.5 rounded-xl bg-violet-500/10 text-violet-500">

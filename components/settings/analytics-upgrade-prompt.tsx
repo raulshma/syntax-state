@@ -27,7 +27,7 @@ export function AnalyticsUpgradePrompt() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <Card className="border-0 shadow-2xl shadow-black/10 dark:shadow-black/30 bg-card/50  rounded-[2.5rem] overflow-hidden relative">
+        <Card className="border-0 shadow-2xl shadow-black/10 dark:shadow-black/30 bg-card/50  rounded-4xl overflow-hidden relative">
           <div className="absolute inset-0 bg-amber-500/5" />
           <CardContent className="p-12 flex flex-col items-center text-center relative z-10">
             <div className="w-20 h-20 rounded-full bg-amber-500/10 flex items-center justify-center mb-8 ring-1 ring-amber-500/20">

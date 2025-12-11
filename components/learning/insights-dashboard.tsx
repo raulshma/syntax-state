@@ -200,7 +200,7 @@ export function InsightsDashboard({ insights, learningPath }: InsightsDashboardP
                     contentStyle={{
                       backgroundColor: 'hsl(var(--background))',
                       border: '1px solid hsl(var(--border))',
-                      borderRadius: '16px',
+                      borderRadius: 'var(--radius-2xl)',
                       boxShadow: '0 4px 20px -4px rgb(0 0 0 / 0.1)',
                       padding: '12px 16px',
                     }}

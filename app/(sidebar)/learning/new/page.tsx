@@ -282,7 +282,7 @@ export default function NewLearningPathPage() {
                       key={level.id}
                       onClick={() => updateField("level", level.id)}
                       className={cn(
-                        "group relative p-6 md:p-8 rounded-[2rem] text-left transition-all duration-300 border-2 overflow-hidden",
+                        "group relative p-6 md:p-8 rounded-3xl text-left transition-all duration-300 border-2 overflow-hidden",
                         formData.level === level.id
                           ? "border-primary bg-primary/5 shadow-xl shadow-primary/10 scale-[1.02]"
                           : "border-transparent bg-secondary/30 hover:bg-secondary/50 hover:scale-[1.02]"
@@ -319,7 +319,7 @@ export default function NewLearningPathPage() {
                       key={goal.id}
                       onClick={() => updateField("goal", goal.id)}
                       className={cn(
-                        "group relative p-6 md:p-8 rounded-[2rem] text-left transition-all duration-300 border-2 flex items-center gap-4 md:gap-6",
+                        "group relative p-6 md:p-8 rounded-3xl text-left transition-all duration-300 border-2 flex items-center gap-4 md:gap-6",
                         formData.goal === goal.id
                           ? "border-primary bg-primary/5 shadow-xl shadow-primary/10 scale-[1.02]"
                           : "border-transparent bg-secondary/30 hover:bg-secondary/50 hover:scale-[1.02]"
@@ -358,7 +358,7 @@ export default function NewLearningPathPage() {
                         updateField("focusAreas", e.target.value)
                       }
                       placeholder="Tell us specifically what you want to master..."
-                      className="min-h-[180px] md:min-h-[240px] bg-secondary/30 border-transparent focus:border-primary/20 rounded-[2rem] p-6 md:p-8 text-lg md:text-xl resize-none shadow-xs focus:ring-0 focus:bg-background transition-all placeholder:text-muted-foreground/50"
+                      className="min-h-[180px] md:min-h-[240px] bg-secondary/30 border-transparent focus:border-primary/20 rounded-3xl p-6 md:p-8 text-lg md:text-xl resize-none shadow-xs focus:ring-0 focus:bg-background transition-all placeholder:text-muted-foreground/50"
                     />
                   </div>
                   <div className="flex items-center justify-center gap-2 text-muted-foreground">
@@ -373,7 +373,7 @@ export default function NewLearningPathPage() {
               {/* Step 5: Review */}
               {currentStep === 4 && (
                 <div className="max-w-2xl mx-auto">
-                  <div className="bg-secondary/30  rounded-[2.5rem] p-8 md:p-10 space-y-8 border border-white/5">
+                  <div className="bg-secondary/30  rounded-4xl p-8 md:p-10 space-y-8 border border-white/5">
                     <div className="space-y-6">
                       <div className="flex items-start justify-between border-b border-border/50 pb-6">
                         <div>

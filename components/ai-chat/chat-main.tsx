@@ -555,7 +555,7 @@ export const AIChatMain = memo(function AIChatMain({
                     <AlertCircle className="h-5 w-5 text-destructive" />
                   </div>
                   <div className="flex-1 max-w-[85%]">
-                    <div className="inline-block rounded-[20px] rounded-tl-none px-5 py-3.5 text-sm bg-destructive/10 border border-destructive/20">
+                    <div className="inline-block rounded-2xl rounded-tl-none px-5 py-3.5 text-sm bg-destructive/10 border border-destructive/20">
                       <p className="text-destructive font-medium mb-1">
                         Something went wrong
                       </p>

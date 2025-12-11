@@ -401,7 +401,7 @@ export function UpgradePageContent({ profile }: UpgradePageContentProps) {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
-              className={`relative rounded-[2.5rem] overflow-hidden flex flex-col h-full ${isMax
+              className={`relative rounded-4xl overflow-hidden flex flex-col h-full ${isMax
                   ? "p-[4px] bg-purple-500/50 shadow-2xl shadow-primary/20"
                   : isPro
                     ? "p-8 border border-primary/50 bg-card/50  shadow-xl shadow-primary/10"
@@ -414,7 +414,7 @@ export function UpgradePageContent({ profile }: UpgradePageContentProps) {
 
               {/* Inner container for Max plan to create the border effect */}
               <div
-                className={`relative z-10 flex flex-col h-full ${isMax ? "bg-card/90  rounded-[2.4rem] p-8" : ""}`}
+                className={`relative z-10 flex flex-col h-full ${isMax ? "bg-card/90  rounded-4xl p-8" : ""}`}
               >
                 {/* Background Icon */}
                 <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
@@ -606,7 +606,7 @@ export function UpgradePageContent({ profile }: UpgradePageContentProps) {
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.3 }}
-        className="mt-16 p-8 rounded-[2.5rem] bg-card/30  border border-white/5"
+        className="mt-16 p-8 rounded-4xl bg-card/30  border border-white/5"
       >
         <h3 className="text-xl font-bold text-center mb-8">
           Feature Comparison

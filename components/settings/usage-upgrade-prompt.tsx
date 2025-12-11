@@ -27,7 +27,7 @@ export function UsageUpgradePrompt() {
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5 }}
       >
-        <Card className="border-0 shadow-2xl shadow-black/10 dark:shadow-black/30 bg-zinc-900 text-white rounded-[2.5rem] overflow-hidden relative">
+        <Card className="border-0 shadow-2xl shadow-black/10 dark:shadow-black/30 bg-zinc-900 text-white rounded-4xl overflow-hidden relative">
           {/* Background Effects */}
           <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-amber-500/20 blur-[120px] rounded-full pointer-events-none" />
           <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-violet-500/10 blur-[100px] rounded-full pointer-events-none" />

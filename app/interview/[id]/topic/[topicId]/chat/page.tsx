@@ -522,8 +522,8 @@ export default function ChatPage() {
                       <div
                         className={`relative px-4 py-3 ${
                           isUser
-                            ? "bg-foreground text-background rounded-[20px] rounded-br-md"
-                            : "bg-muted/60 text-foreground rounded-[20px] rounded-bl-md border border-border/30"
+                            ? "bg-foreground text-background rounded-2xl rounded-br-md"
+                            : "bg-muted/60 text-foreground rounded-2xl rounded-bl-md border border-border/30"
                         }`}
                       >
                         {showTyping ? (
