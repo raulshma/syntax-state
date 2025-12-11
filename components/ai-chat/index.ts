@@ -6,6 +6,9 @@ export { AIChatPageContent } from "./ai-chat-page-content";
 export { ArchivedConversationsModal } from "./archived-conversations-modal";
 export { VirtualizedMessageList } from "./virtualized-message-list";
 
+// Multi-model components
+export { MultiModelChatMain, MultiModelSelector, MultiModelResponse } from "./multi-model";
+
 // Reusable sub-components
 export { MessageBubble } from "./message/message-bubble";
 export { ToolInvocation } from "./message/tool-invocation";

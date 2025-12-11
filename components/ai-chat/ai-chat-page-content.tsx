@@ -2,10 +2,11 @@
 
 import { useState, useCallback, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, PanelLeftClose, PanelRightClose } from "lucide-react";
+import { Menu, PanelLeftClose, PanelRightClose, Layers, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ChatHistorySidebar } from "./chat-history-sidebar";
 import { AIChatMain } from "./chat-main";
+import { MultiModelChatMain } from "./multi-model";
 import { ToolsSidebar } from "./tools-sidebar";
 import { ArchivedConversationsModal } from "./archived-conversations-modal";
 import {
@@ -20,6 +21,8 @@ import { useMediaQuery } from "@/hooks/use-mobile";
 import { useSidebar } from "@/components/dashboard/sidebar-context";
 import { useSharedHeader } from "@/components/dashboard/shared-header-context";
 
+type ChatMode = "single" | "multi";
+
 interface AIChatPageContentProps {
   initialConversations: AIConversation[];
   userPlan: UserPlan;
@@ -30,6 +33,13 @@ export function AIChatPageContent({
   userPlan,
 }: AIChatPageContentProps) {
   const [conversations, setConversations] = useState(initialConversations);
+  const [chatMode, setChatMode] = useState<ChatMode>(() => {
+    if (typeof window !== "undefined") {
+      const savedMode = localStorage.getItem("ai-chat-mode");
+      if (savedMode === "multi" && userPlan === "MAX") return "multi";
+    }
+    return "single";
+  });
   const [activeConversationId, setActiveConversationId] = useState<string | undefined>(() => {
     // Check URL params first
     if (typeof window !== "undefined") {
@@ -236,6 +246,11 @@ export function AIChatPageContent({
     }
   }, []);
 
+  const handleChatModeChange = useCallback((mode: ChatMode) => {
+    setChatMode(mode);
+    localStorage.setItem("ai-chat-mode", mode);
+  }, []);
+
   const handleToolSelect = useCallback((prompt: string) => {
     setPendingPrompt(prompt);
     // If no active conversation, the chat will use this prompt
@@ -315,7 +330,9 @@ export function AIChatPageContent({
                 <Menu className="h-5 w-5" />
               )}
             </Button>
-            <span className="font-semibold">AI Chat</span>
+            <span className="font-semibold">
+              {chatMode === "multi" ? "Multi-Model Chat" : "AI Chat"}
+            </span>
             <Button
               variant="ghost"
               size="icon"
@@ -331,16 +348,48 @@ export function AIChatPageContent({
         )}
 
         <div className="h-full rounded-3xl border border-border/40 bg-background/60 backdrop-blur-xl shadow-sm overflow-hidden flex flex-col relative">
-          <AIChatMain
-            conversationId={activeConversationId}
-            initialPrompt={pendingPrompt}
-            shouldEditLastMessage={shouldEditLastMessage}
-            onPromptUsed={() => setPendingPrompt(null)}
-            onNewConversation={handleNewConversation}
-            onConversationCreated={handleConversationCreated}
-            onConversationUpdate={handleConversationUpdate}
-            userPlan={userPlan}
-          />
+          {/* Chat Mode Toggle (MAX plan only) */}
+          {userPlan === "MAX" && !isMobile && (
+            <div className="absolute top-4 left-1/2 -translate-x-1/2 z-30">
+              <div className="flex items-center gap-1 p-1 rounded-full bg-muted/80 backdrop-blur-sm border border-border/50">
+                <Button
+                  variant={chatMode === "single" ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => handleChatModeChange("single")}
+                  className="h-7 rounded-full px-3 text-xs gap-1.5"
+                >
+                  <MessageSquare className="h-3.5 w-3.5" />
+                  Single
+                </Button>
+                <Button
+                  variant={chatMode === "multi" ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => handleChatModeChange("multi")}
+                  className="h-7 rounded-full px-3 text-xs gap-1.5"
+                >
+                  <Layers className="h-3.5 w-3.5" />
+                  Compare
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {chatMode === "multi" && userPlan === "MAX" ? (
+            <MultiModelChatMain
+              onSwitchToSingle={() => handleChatModeChange("single")}
+            />
+          ) : (
+            <AIChatMain
+              conversationId={activeConversationId}
+              initialPrompt={pendingPrompt}
+              shouldEditLastMessage={shouldEditLastMessage}
+              onPromptUsed={() => setPendingPrompt(null)}
+              onNewConversation={handleNewConversation}
+              onConversationCreated={handleConversationCreated}
+              onConversationUpdate={handleConversationUpdate}
+              userPlan={userPlan}
+            />
+          )}
 
           {/* Collapsed Left Sidebar Toggle (Desktop only) */}
           {!isMobile && !leftSidebarOpen && (
@@ -358,7 +407,7 @@ export function AIChatPageContent({
           )}
 
           {/* Collapsed Right Sidebar Toggle (Desktop only) */}
-          {!isMobile && !rightSidebarOpen && (
+          {!isMobile && !rightSidebarOpen && chatMode === "single" && (
             <div className="absolute right-4 top-4 z-30">
               <Button
                 variant="secondary"
