@@ -15,6 +15,7 @@ export type PlanFeature =
   | 'custom_prompts'
   | 'advanced_ai'
   | 'custom_theme'
+  | 'custom_theme_builder'
   | 'analytics'
   | 'web_search_crawl'
   | 'ai_tools'
@@ -39,6 +40,7 @@ export const FEATURE_ACCESS_MAP: Record<PlanFeature, UserPlan[]> = {
   custom_prompts: ['MAX'],
   advanced_ai: ['PRO', 'MAX'],
   custom_theme: ['PRO', 'MAX'],
+  custom_theme_builder: ['MAX'], // Visual theme builder only for MAX
   analytics: ['PRO', 'MAX'],
   web_search_crawl: ['PRO', 'MAX'],
   ai_tools: ['PRO', 'MAX'],

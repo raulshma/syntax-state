@@ -1,7 +1,7 @@
 "use client";
 
 import { useClerk } from "@clerk/nextjs";
-import { LogOut, Sun, Moon, Monitor } from "lucide-react";
+import { LogOut, Sun, Moon, Monitor, Zap } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
@@ -118,6 +118,26 @@ export function SidebarUser({
                 <Moon className="mr-2 h-4 w-4 text-indigo-500" />
                 Dark
                 {theme === "dark" && (
+                  <span className="ml-auto text-blue-500">✓</span>
+                )}
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => setTheme("dark-dim")}
+                className="rounded-lg px-3 py-2 text-sm font-medium cursor-pointer hover:bg-black/5 dark:hover:bg-white/10"
+              >
+                <Moon className="mr-2 h-4 w-4 text-violet-500" />
+                Dim
+                {theme === "dark-dim" && (
+                  <span className="ml-auto text-blue-500">✓</span>
+                )}
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => setTheme("cyberpunk")}
+                className="rounded-lg px-3 py-2 text-sm font-medium cursor-pointer hover:bg-black/5 dark:hover:bg-white/10"
+              >
+                <Zap className="mr-2 h-4 w-4 text-fuchsia-500" />
+                Cyberpunk
+                {theme === "cyberpunk" && (
                   <span className="ml-auto text-blue-500">✓</span>
                 )}
               </DropdownMenuItem>

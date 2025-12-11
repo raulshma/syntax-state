@@ -2,15 +2,17 @@
 
 import * as React from "react";
 import { useState } from "react";
-import { Palette, Trash2, Check, ExternalLink, Lock } from "lucide-react";
+import { Palette, Trash2, Check, ExternalLink, Lock, Sparkles, Wand2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { motion } from "framer-motion";
 import { useCustomTheme } from "@/hooks/use-custom-theme";
 import { useToast } from "@/hooks/use-toast";
 import { canAccess } from "@/lib/utils/feature-gate";
 import type { UserPlan } from "@/lib/db/schemas/user";
 import Link from "next/link";
+import { ThemeBuilder } from "./theme-builder";
 
 interface CustomThemeSectionProps {
   plan: UserPlan;
@@ -135,69 +137,139 @@ export function CustomThemeSection({ plan }: CustomThemeSectionProps) {
     );
   }
 
+  const hasBuilderAccess = canAccess("custom_theme_builder", plan).allowed;
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.6 }}
-      className="bg-card/50  border border-white/10 p-6 md:p-8 rounded-3xl hover:border-primary/20 transition-all duration-300 shadow-sm"
+      className="bg-card/50 border border-white/10 p-6 md:p-8 rounded-3xl hover:border-primary/20 transition-all duration-300 shadow-sm"
     >
       <div className="flex items-center gap-4 mb-8">
         <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center border border-primary/10">
           <Palette className="w-6 h-6 text-primary" />
         </div>
-        <div>
-          <h2 className="text-lg font-bold text-foreground">Custom Theme</h2>
+        <div className="flex-1">
+          <div className="flex items-center gap-2">
+            <h2 className="text-lg font-bold text-foreground">Custom Theme</h2>
+            {hasBuilderAccess && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary border border-primary/20">
+                <Sparkles className="h-3 w-3" />
+                MAX
+              </span>
+            )}
+          </div>
           <p className="text-sm text-muted-foreground">
-            Paste CSS from{" "}
-            <a
-              href="https://ui.shadcn.com/themes"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-primary hover:underline underline-offset-4 inline-flex items-center gap-1"
-            >
-              shadcn/ui themes
-              <ExternalLink className="h-3 w-3" />
-            </a>{" "}
-            to customize.
+            {hasBuilderAccess
+              ? "Build your theme visually or paste custom CSS."
+              : "Paste CSS from shadcn/ui themes to customize."}
           </p>
         </div>
       </div>
 
-      <div className="space-y-4">
-        <div className="relative">
-          <Textarea
-            placeholder={`:root {
+      {hasBuilderAccess ? (
+        <Tabs defaultValue="builder" className="w-full">
+          <TabsList className="mb-6">
+            <TabsTrigger value="builder" className="gap-2">
+              <Wand2 className="h-4 w-4" />
+              Theme Builder
+            </TabsTrigger>
+            <TabsTrigger value="css" className="gap-2">
+              <ExternalLink className="h-4 w-4" />
+              Paste CSS
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="builder">
+            <ThemeBuilder />
+          </TabsContent>
+
+          <TabsContent value="css">
+            <CSSPasteSection
+              inputValue={inputValue}
+              setInputValue={setInputValue}
+              handleApply={handleApply}
+              handleClear={handleClear}
+              hasCustomTheme={hasCustomTheme}
+            />
+          </TabsContent>
+        </Tabs>
+      ) : (
+        <CSSPasteSection
+          inputValue={inputValue}
+          setInputValue={setInputValue}
+          handleApply={handleApply}
+          handleClear={handleClear}
+          hasCustomTheme={hasCustomTheme}
+        />
+      )}
+    </motion.div>
+  );
+}
+
+interface CSSPasteSectionProps {
+  inputValue: string;
+  setInputValue: (value: string) => void;
+  handleApply: () => void;
+  handleClear: () => void;
+  hasCustomTheme: boolean;
+}
+
+function CSSPasteSection({
+  inputValue,
+  setInputValue,
+  handleApply,
+  handleClear,
+  hasCustomTheme,
+}: CSSPasteSectionProps) {
+  return (
+    <div className="space-y-4">
+      <p className="text-sm text-muted-foreground">
+        Paste CSS from{" "}
+        <a
+          href="https://ui.shadcn.com/themes"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-primary hover:underline underline-offset-4 inline-flex items-center gap-1"
+        >
+          shadcn/ui themes
+          <ExternalLink className="h-3 w-3" />
+        </a>{" "}
+        to customize your experience.
+      </p>
+      <div className="relative">
+        <Textarea
+          placeholder={`:root {
   --background: oklch(0.91 0.05 82.78);
   --foreground: oklch(0.41 0.08 78.86);
   /* ... paste your full theme CSS here */
 }`}
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            rows={10}
-            className="font-mono text-xs min-h-[200px] bg-secondary/30 border-white/10 focus:border-primary/30 focus:ring-0 resize-y rounded-2xl p-4 leading-relaxed"
-          />
-        </div>
-        <div className="flex gap-3">
-          <Button
-            onClick={handleApply}
-            className="flex-1 rounded-full h-11 font-medium shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
-          >
-            <Check className="h-4 w-4 mr-2" />
-            Apply Theme
-          </Button>
-          {hasCustomTheme && (
-            <Button
-              variant="outline"
-              onClick={handleClear}
-              className="flex-1 rounded-full h-11 bg-transparent border-white/10 hover:bg-secondary/50 hover:border-primary/20 transition-all"
-            >
-              <Trash2 className="h-4 w-4 mr-2" />
-              Clear Theme
-            </Button>
-          )}
-        </div>
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
+          rows={10}
+          className="font-mono text-xs min-h-[200px] bg-secondary/30 border-white/10 focus:border-primary/30 focus:ring-0 resize-y rounded-2xl p-4 leading-relaxed"
+        />
       </div>
-    </motion.div>
+      <div className="flex gap-3">
+        <Button
+          onClick={handleApply}
+          className="flex-1 rounded-full h-11 font-medium shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
+        >
+          <Check className="h-4 w-4 mr-2" />
+          Apply Theme
+        </Button>
+        {hasCustomTheme && (
+          <Button
+            variant="outline"
+            onClick={handleClear}
+            className="flex-1 rounded-full h-11 bg-transparent border-white/10 hover:bg-secondary/50 hover:border-primary/20 transition-all"
+          >
+            <Trash2 className="h-4 w-4 mr-2" />
+            Clear Theme
+          </Button>
+        )}
+      </div>
+    </div>
   );
 }
