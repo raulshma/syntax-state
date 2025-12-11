@@ -313,7 +313,7 @@ export default function ChatPage() {
             animate={{ width: 380, opacity: 1 }}
             exit={{ width: 0, opacity: 0 }}
             transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
-            className="hidden lg:flex flex-col border-r border-border/50 bg-muted/20 backdrop-blur-sm overflow-hidden"
+            className="hidden lg:flex flex-col border-r border-border/50 bg-muted/20 overflow-hidden"
           >
             {/* Sidebar Header */}
             <div className="p-4 border-b border-border/50">
@@ -366,7 +366,7 @@ export default function ChatPage() {
               </div>
 
               {/* Content Preview */}
-              <div className="rounded-2xl bg-background/60 backdrop-blur-sm border border-border/50 p-4">
+              <div className="rounded-2xl bg-background/60 border border-border/50 p-4">
                 <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">
                   Content Preview
                 </h3>
@@ -392,7 +392,7 @@ export default function ChatPage() {
               </div>
 
               {/* Why This Topic */}
-              <div className="rounded-2xl bg-background/60 backdrop-blur-sm border border-border/50 p-4">
+              <div className="rounded-2xl bg-background/60 border border-border/50 p-4">
                 <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">
                   Why This Topic
                 </h3>
@@ -403,7 +403,7 @@ export default function ChatPage() {
 
               {/* Interview Context */}
               {interview && (
-                <div className="rounded-2xl bg-background/60 backdrop-blur-sm border border-border/50 p-4">
+                <div className="rounded-2xl bg-background/60 border border-border/50 p-4">
                   <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">
                     Interview Context
                   </h3>
@@ -443,7 +443,7 @@ export default function ChatPage() {
       {/* Main Chat Area */}
       <main className="flex-1 flex flex-col min-w-0">
         {/* Header */}
-        <header className="sticky top-0 z-50 backdrop-blur-xl bg-background/80 border-b border-border/50">
+        <header className="sticky top-0 z-50 bg-background border-b border-border/50">
           <div className="px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-3">
               {/* Toggle sidebar button - desktop */}
@@ -523,7 +523,7 @@ export default function ChatPage() {
                         className={`relative px-4 py-3 ${
                           isUser
                             ? "bg-foreground text-background rounded-[20px] rounded-br-md"
-                            : "bg-muted/60 backdrop-blur-sm text-foreground rounded-[20px] rounded-bl-md border border-border/30"
+                            : "bg-muted/60 text-foreground rounded-[20px] rounded-bl-md border border-border/30"
                         }`}
                       >
                         {showTyping ? (
@@ -600,7 +600,7 @@ export default function ChatPage() {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.8 }}
               onClick={scrollToBottom}
-              className="fixed bottom-[220px] lg:bottom-[200px] left-1/2 -translate-x-1/2 z-40 w-10 h-10 rounded-full bg-background/90 backdrop-blur-sm border border-border shadow-lg flex items-center justify-center hover:bg-muted transition-colors"
+              className="fixed bottom-[220px] lg:bottom-[200px] left-1/2 -translate-x-1/2 z-40 w-10 h-10 rounded-full bg-background/90 border border-border shadow-lg flex items-center justify-center hover:bg-muted transition-colors"
             >
               <ChevronDown className="w-5 h-5" />
             </motion.button>
@@ -612,7 +612,7 @@ export default function ChatPage() {
           className="fixed bottom-0 left-0 right-0 z-50 pb-safe lg:left-auto lg:right-0"
           style={{ left: sidebarOpen ? "380px" : "0" }}
         >
-          <div className="backdrop-blur-xl bg-background/80 border-t border-border/50">
+          <div className="bg-background border-t border-border/50">
             <div className="max-w-3xl mx-auto px-4 py-4">
               {/* Quick actions */}
               <div className="flex gap-2 mb-3 overflow-x-auto scrollbar-thin pb-1 -mx-1 px-1">

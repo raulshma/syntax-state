@@ -85,7 +85,7 @@ function StatCard({
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-xl p-4"
+      className="bg-card/50 border border-border/50 rounded-xl p-4"
     >
       <div className="flex items-start justify-between">
         <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
@@ -343,7 +343,7 @@ export function FeedbackProgress({
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-xl p-4"
+          className="bg-card/50 border border-border/50 rounded-xl p-4"
         >
           <div className="flex items-center gap-2 mb-4">
             <Calendar className="w-4 h-4 text-primary" />
@@ -408,7 +408,7 @@ export function FeedbackProgress({
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-xl p-4"
+          className="bg-card/50 border border-border/50 rounded-xl p-4"
         >
           <div className="flex items-center gap-2 mb-4">
             <Target className="w-4 h-4 text-primary" />
@@ -435,7 +435,7 @@ export function FeedbackProgress({
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-xl p-4"
+          className="bg-card/50 border border-border/50 rounded-xl p-4"
         >
           <div className="flex items-center gap-2 mb-4">
             <Activity className="w-4 h-4 text-primary" />

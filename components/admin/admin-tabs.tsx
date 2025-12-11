@@ -92,7 +92,7 @@ export function AdminTabs({
     >
       <Tabs defaultValue="users" className="space-y-8">
         <div className="flex w-full overflow-x-auto pb-2 justify-start md:justify-center">
-          <div className="bg-secondary/50 backdrop-blur-xl p-1.5 rounded-full inline-flex min-w-max">
+          <div className="bg-secondary/50  p-1.5 rounded-full inline-flex min-w-max">
             <TabsList className="bg-transparent gap-1 h-auto p-0">
               <TabsTrigger
                 value="users"
@@ -190,7 +190,7 @@ export function AdminTabs({
 
 function UsersTab({ users }: { users: AdminUser[] }) {
   return (
-    <Card className="border-0 shadow-xl shadow-black/5 dark:shadow-black/20 bg-card/80 backdrop-blur-xl rounded-3xl overflow-hidden">
+    <Card className="border-0 shadow-xl shadow-black/5 dark:shadow-black/20 bg-card/80  rounded-3xl overflow-hidden">
       <CardHeader className="border-b border-border/50 p-6 md:p-8">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
           <div className="space-y-1.5">
@@ -328,7 +328,7 @@ function ModelsTab({
 
 function PromptsTab() {
   return (
-    <Card className="border-0 shadow-xl shadow-black/5 dark:shadow-black/20 bg-card/80 backdrop-blur-xl rounded-3xl overflow-hidden">
+    <Card className="border-0 shadow-xl shadow-black/5 dark:shadow-black/20 bg-card/80  rounded-3xl overflow-hidden">
       <CardHeader className="border-b border-border/50 p-6 md:p-8">
         <div className="flex items-center gap-3 mb-1">
           <div className="p-2 rounded-xl bg-primary/10">

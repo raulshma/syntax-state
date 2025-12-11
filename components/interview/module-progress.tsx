@@ -33,7 +33,7 @@ export function ModuleProgress({ moduleStatus }: ModuleProgressProps) {
   ).length;
 
   return (
-    <div className="rounded-3xl border border-border/50 bg-background/60 backdrop-blur-xl shadow-lg p-6">
+    <div className="rounded-3xl border border-border/50 bg-background/60 shadow-lg p-6">
       <div className="flex items-center justify-between mb-6">
         <span className="text-sm font-bold text-foreground tracking-tight">Module Progress</span>
         <span className="text-xs font-medium text-muted-foreground bg-secondary/50 px-2.5 py-1 rounded-full">

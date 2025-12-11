@@ -174,7 +174,7 @@ export function AdminStatsGrid({ stats }: AdminStatsGridProps) {
         >
           {aiStats.map((stat) => (
             <motion.div key={stat.label} variants={itemVariants}>
-              <Card className="border-0 shadow-md shadow-black/5 dark:shadow-black/20 bg-card/50 backdrop-blur-sm hover:bg-card hover:shadow-lg transition-all duration-300 rounded-2xl overflow-hidden group">
+              <Card className="border-0 shadow-md shadow-black/5 dark:shadow-black/20 bg-card/50  hover:bg-card hover:shadow-lg transition-all duration-300 rounded-2xl overflow-hidden group">
                 <CardContent className="p-4">
                   <div className="flex items-center gap-2.5 mb-3">
                     <div className="p-1.5 rounded-lg bg-secondary/50 group-hover:bg-secondary transition-colors">

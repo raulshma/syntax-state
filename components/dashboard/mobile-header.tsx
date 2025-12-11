@@ -35,7 +35,7 @@ export function MobileHeader({
   };
 
   return (
-    <header className="md:hidden sticky top-0 z-40 flex items-center justify-between h-14 px-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="md:hidden sticky top-0 z-40 flex items-center justify-between h-14 px-4 border-b bg-background">
       {/* Left side: Menu trigger */}
       <div className="flex items-center gap-2">
         {menuTrigger}

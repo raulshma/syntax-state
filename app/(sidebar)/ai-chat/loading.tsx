@@ -9,7 +9,7 @@ export default function AIChatLoading() {
     <div className="flex h-screen overflow-hidden bg-zinc-50/50 dark:bg-zinc-950/50">
       {/* Left Sidebar Skeleton - Chat History */}
       <div className="shrink-0 h-full py-4 pl-4 w-80 hidden md:block">
-        <div className="h-full w-full rounded-3xl border border-border/40 bg-background/60 backdrop-blur-xl shadow-sm overflow-hidden p-4 space-y-4">
+        <div className="h-full w-full rounded-3xl border border-border/40 bg-background/60  shadow-sm overflow-hidden p-4 space-y-4">
           {/* Header */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -54,7 +54,7 @@ export default function AIChatLoading() {
 
       {/* Main Chat Area Skeleton */}
       <div className="flex-1 flex flex-col min-w-0 h-full py-4 px-2">
-        <div className="h-full rounded-3xl border border-border/40 bg-background/60 backdrop-blur-xl shadow-sm overflow-hidden flex flex-col">
+        <div className="h-full rounded-3xl border border-border/40 bg-background/60  shadow-sm overflow-hidden flex flex-col">
           {/* Chat Header */}
           <div className="flex items-center justify-between px-6 py-4 border-b border-border/40">
             <div className="flex items-center gap-3">

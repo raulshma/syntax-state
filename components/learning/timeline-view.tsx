@@ -154,7 +154,7 @@ export function TimelineView({ timeline, pathId }: TimelineViewProps) {
                 className="group"
               >
                 <div
-                  className={`rounded-3xl bg-background/80 backdrop-blur-xl border border-border/40 shadow-sm overflow-hidden transition-all duration-300 hover:shadow-lg hover:border-border/60 ${
+                  className={`rounded-3xl bg-background/80  border border-border/40 shadow-sm overflow-hidden transition-all duration-300 hover:shadow-lg hover:border-border/60 ${
                     entry.success
                       ? "hover:border-green-500/20"
                       : "hover:border-destructive/20"

@@ -60,7 +60,7 @@ export default function AdminLoading() {
         </div>
 
         {/* Tab Content Skeleton */}
-        <Card className="border-0 shadow-xl bg-card/80 backdrop-blur-xl rounded-3xl overflow-hidden min-h-[500px]">
+        <Card className="border-0 shadow-xl bg-card/80  rounded-3xl overflow-hidden min-h-[500px]">
           <CardHeader className="p-8 border-b border-border/50 space-y-4">
             <div className="flex items-center justify-between">
               <div className="space-y-2">

@@ -79,7 +79,7 @@ export function InterviewHeader({
     }
   };
   return (
-    <header className="border-b border-border/50 bg-background/80 backdrop-blur-xl sticky top-0 z-40 supports-[backdrop-filter]:bg-background/60">
+    <header className="border-b border-border/50 bg-background sticky top-0 z-40">
       <div className="px-4 md:px-8 py-4">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-4 min-w-0 flex-1">

@@ -116,7 +116,7 @@ function FeedbackEntryCard({
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -10, height: 0 }}
-      className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-xl overflow-hidden"
+      className="bg-card/50 border border-border/50 rounded-xl overflow-hidden"
     >
       {/* Header */}
       <div className="p-4">

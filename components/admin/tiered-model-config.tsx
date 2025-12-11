@@ -524,7 +524,7 @@ export function TieredModelConfig({ initialConfig }: TieredModelConfigProps) {
 
   if (loading) {
     return (
-      <Card className="border-0 shadow-xl shadow-black/5 dark:shadow-black/20 bg-card/80 backdrop-blur-xl rounded-3xl overflow-hidden">
+      <Card className="border-0 shadow-xl shadow-black/5 dark:shadow-black/20 bg-card/80  rounded-3xl overflow-hidden">
         <CardHeader className="p-6 md:p-8 border-b border-border/50">
           <div className="space-y-2">
             <Skeleton className="h-8 w-64 rounded-lg" />
@@ -589,7 +589,7 @@ export function TieredModelConfig({ initialConfig }: TieredModelConfigProps) {
 
   if (error) {
     return (
-      <Card className="border-0 shadow-lg shadow-black/5 dark:shadow-black/20 bg-card/80 backdrop-blur-xl rounded-3xl">
+      <Card className="border-0 shadow-lg shadow-black/5 dark:shadow-black/20 bg-card/80  rounded-3xl">
         <CardContent className="py-12 text-center">
           <div className="w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center mx-auto mb-4">
             <AlertTriangle className="w-6 h-6 text-red-500" />
@@ -611,7 +611,7 @@ export function TieredModelConfig({ initialConfig }: TieredModelConfigProps) {
   }
 
   return (
-    <Card className="border-0 shadow-xl shadow-black/5 dark:shadow-black/20 bg-card/80 backdrop-blur-xl rounded-3xl overflow-hidden">
+    <Card className="border-0 shadow-xl shadow-black/5 dark:shadow-black/20 bg-card/80  rounded-3xl overflow-hidden">
       <CardHeader className="p-6 md:p-8 border-b border-border/50">
         <CardTitle className="text-xl font-bold">
           Tiered Model Configuration
@@ -720,7 +720,7 @@ export function TieredModelConfig({ initialConfig }: TieredModelConfigProps) {
         </div>
 
         {/* Active Tier Configuration */}
-        <div className="space-y-6 p-6 md:p-8 border border-border/50 rounded-3xl bg-background/50 backdrop-blur-sm">
+        <div className="space-y-6 p-6 md:p-8 border border-border/50 rounded-3xl bg-background/50 ">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div
@@ -748,7 +748,7 @@ export function TieredModelConfig({ initialConfig }: TieredModelConfigProps) {
             className="w-full"
           >
             <div className="flex justify-center mb-6">
-              <div className="bg-secondary/50 backdrop-blur-xl p-1 rounded-full inline-flex">
+              <div className="bg-secondary/50  p-1 rounded-full inline-flex">
                 <TabsList className="bg-transparent gap-1 h-auto p-0">
                   <TabsTrigger
                     value="primary"

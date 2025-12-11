@@ -180,14 +180,14 @@ export function AIChatPageSkeleton() {
     <div className="flex h-screen overflow-hidden bg-zinc-50/50 dark:bg-zinc-950/50">
       {/* Left Sidebar */}
       <div className="shrink-0 h-full py-4 pl-4 w-80 hidden md:block">
-        <div className="h-full w-full rounded-3xl border border-border/40 bg-background/60 backdrop-blur-xl shadow-sm overflow-hidden">
+        <div className="h-full w-full rounded-3xl border border-border/40 bg-background/60  shadow-sm overflow-hidden">
           <ChatHistorySkeleton />
         </div>
       </div>
 
       {/* Main Chat Area */}
       <div className="flex-1 flex flex-col min-w-0 h-full py-4 px-2">
-        <div className="h-full rounded-3xl border border-border/40 bg-background/60 backdrop-blur-xl shadow-sm overflow-hidden">
+        <div className="h-full rounded-3xl border border-border/40 bg-background/60  shadow-sm overflow-hidden">
           <ChatMainSkeleton />
         </div>
       </div>

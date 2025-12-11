@@ -396,7 +396,7 @@ export function AIChatPageContent({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-background/80 backdrop-blur-sm z-40"
+              className="fixed inset-0 bg-background/80  z-40"
               onClick={() => {
                 uiActions.setLeftSidebar(false);
                 uiActions.setRightSidebar(false);
@@ -423,7 +423,7 @@ export function AIChatPageContent({
               role="complementary"
               aria-label="Conversation history"
             >
-              <div className="h-full w-full rounded-3xl border border-border/40 bg-background/60 backdrop-blur-xl shadow-sm overflow-hidden">
+              <div className="h-full w-full rounded-3xl border border-border/40 bg-background/60  shadow-sm overflow-hidden">
                 <ChatHistorySidebar
                   conversations={conversations}
                   activeConversationId={conversationsState.activeId ?? undefined}
@@ -451,7 +451,7 @@ export function AIChatPageContent({
           {/* Mobile Header */}
           {(isMobile || isTablet) && (
             <header 
-              className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between px-4 py-2 bg-background/80 backdrop-blur-md border-b border-border/50"
+              className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between px-4 py-2 bg-background/80  border-b border-border/50"
               role="banner"
             >
               <Button
@@ -488,11 +488,11 @@ export function AIChatPageContent({
             </header>
           )}
 
-          <div className="h-full rounded-3xl border border-border/40 bg-background/60 backdrop-blur-xl shadow-sm overflow-hidden flex flex-col relative border-none">
+          <div className="h-full rounded-3xl border border-border/40 bg-background/60  shadow-sm overflow-hidden flex flex-col relative border-none">
             {/* Chat Mode Toggle (MAX plan only) */}
             {userPlan === "MAX" && !isMobile && (
               <div className="absolute top-0 left-1/2 -translate-x-1/2 z-30">
-                <div className="flex items-center gap-1 p-1 rounded-full bg-muted/80 backdrop-blur-sm border border-border/50">
+                <div className="flex items-center gap-1 p-1 rounded-full bg-muted/80  border border-border/50">
                   <Button
                     variant={ui.chatMode === "single" ? "default" : "ghost"}
                     size="sm"
@@ -544,7 +544,7 @@ export function AIChatPageContent({
                   variant="secondary"
                   size="icon"
                   onClick={() => uiActions.setLeftSidebar(true)}
-                  className="h-8 w-8 rounded-full shadow-sm bg-background/80 backdrop-blur-sm hover:bg-background"
+                  className="h-8 w-8 rounded-full shadow-sm bg-background/80  hover:bg-background"
                   aria-label="Show conversation history"
                   aria-expanded={false}
                   aria-controls="conversation-sidebar"
@@ -561,7 +561,7 @@ export function AIChatPageContent({
                   variant="secondary"
                   size="icon"
                   onClick={() => uiActions.setRightSidebar(true)}
-                  className="h-8 w-8 rounded-full shadow-sm bg-background/80 backdrop-blur-sm hover:bg-background"
+                  className="h-8 w-8 rounded-full shadow-sm bg-background/80  hover:bg-background"
                   aria-label="Show AI tools"
                   aria-expanded={false}
                   aria-controls="tools-sidebar"
@@ -589,7 +589,7 @@ export function AIChatPageContent({
               role="complementary"
               aria-label="AI Tools"
             >
-              <div className="h-full w-full rounded-3xl border border-border/40 bg-background/60 backdrop-blur-xl shadow-sm overflow-hidden">
+              <div className="h-full w-full rounded-3xl border border-border/40 bg-background/60  shadow-sm overflow-hidden">
                 <ToolsSidebar
                   onToolSelect={handleToolSelect}
                   onToggleCollapse={!isMobile ? () => uiActions.setRightSidebar(false) : undefined}

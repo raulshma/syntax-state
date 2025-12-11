@@ -21,7 +21,7 @@ function SkeletonCard({
 }) {
     return (
         <Card className={cn(
-            "border-0 shadow-sm bg-card/50 backdrop-blur-xl rounded-3xl overflow-hidden",
+            "border-0 shadow-sm bg-card/50  rounded-3xl overflow-hidden",
             className
         )}>
             <CardContent className="p-6">
@@ -45,7 +45,7 @@ function SkeletonChart({
 }) {
     return (
         <Card className={cn(
-            "border-0 shadow-sm bg-card/50 backdrop-blur-xl rounded-3xl overflow-hidden",
+            "border-0 shadow-sm bg-card/50  rounded-3xl overflow-hidden",
             className
         )}>
             <CardHeader className="p-8 pb-2">
@@ -65,7 +65,7 @@ function SkeletonChart({
 function SkeletonTable({ className }: { className?: string }) {
     return (
         <Card className={cn(
-            "border-0 shadow-sm bg-card/50 backdrop-blur-xl rounded-3xl overflow-hidden",
+            "border-0 shadow-sm bg-card/50  rounded-3xl overflow-hidden",
             className
         )}>
             <CardHeader className="p-8 pb-4">

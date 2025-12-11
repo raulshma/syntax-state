@@ -180,7 +180,7 @@ export function FeedbackSection({ interviewId }: FeedbackSectionProps) {
   return (
     <motion.div
       initial={false}
-      className="bg-card/50 backdrop-blur-xl border border-border/50 rounded-2xl overflow-hidden"
+      className="bg-card/50 border border-border/50 rounded-2xl overflow-hidden"
     >
       {/* Header - Always visible */}
       <button

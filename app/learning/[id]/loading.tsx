@@ -9,7 +9,7 @@ export default function LearningLoading() {
 
       <div className="relative z-10">
         {/* Header */}
-        <header className="border-b border-border/50 bg-background/80 backdrop-blur-xl sticky top-0 z-40">
+        <header className="border-b border-border/50 bg-background sticky top-0 z-40">
           <div className="px-6 py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
@@ -36,7 +36,7 @@ export default function LearningLoading() {
 
         <div className="flex">
           {/* Sidebar */}
-          <aside className="w-72 border-r border-border/50 bg-sidebar/30 backdrop-blur-xl p-6 hidden lg:block min-h-[calc(100vh-73px)]">
+          <aside className="w-72 border-r border-border/50 bg-sidebar/30 p-6 hidden lg:block min-h-[calc(100vh-73px)]">
             <div className="flex items-center gap-3 mb-6 px-2">
               <div className="p-2 bg-secondary/50 rounded-xl">
                 <Target className="w-4 h-4 text-muted-foreground" />
@@ -102,7 +102,7 @@ export default function LearningLoading() {
             </div>
 
             {/* Activity Card */}
-            <div className="rounded-3xl border border-border/50 bg-background/60 backdrop-blur-xl shadow-lg overflow-hidden">
+            <div className="rounded-3xl border border-border/50 bg-background/60 shadow-lg overflow-hidden">
               <div className="p-8 border-b border-border/50">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-5">

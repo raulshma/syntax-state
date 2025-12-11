@@ -323,7 +323,7 @@ export function ImprovementWorkspace({
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-2xl p-6"
+            className="bg-card/50 border border-border/50 rounded-2xl p-6"
           >
             <div className="flex items-start justify-between gap-4">
               <div className="flex items-center gap-4">
@@ -393,7 +393,7 @@ export function ImprovementWorkspace({
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-2xl p-8 text-center"
+              className="bg-card/50 border border-border/50 rounded-2xl p-8 text-center"
             >
               <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
                 <Sparkles className="w-8 h-8 text-primary" />
@@ -419,7 +419,7 @@ export function ImprovementWorkspace({
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-2xl p-8 text-center"
+              className="bg-card/50 border border-border/50 rounded-2xl p-8 text-center"
             >
               <motion.div
                 animate={{ rotate: 360 }}
@@ -442,7 +442,7 @@ export function ImprovementWorkspace({
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-2xl p-6"
+              className="bg-card/50 border border-border/50 rounded-2xl p-6"
             >
               <div className="flex items-center gap-3 mb-4">
                 <Loader2 className="w-5 h-5 text-primary animate-spin" />
@@ -463,7 +463,7 @@ export function ImprovementWorkspace({
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-2xl p-6"
+              className="bg-card/50 border border-border/50 rounded-2xl p-6"
             >
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
@@ -499,7 +499,7 @@ export function ImprovementWorkspace({
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-2xl p-8 text-center"
+              className="bg-card/50 border border-border/50 rounded-2xl p-8 text-center"
             >
               <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center mx-auto mb-4">
                 <AlertCircle className="w-8 h-8 text-destructive" />
@@ -527,7 +527,7 @@ export function ImprovementWorkspace({
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-2xl p-6"
+            className="bg-card/50 border border-border/50 rounded-2xl p-6"
           >
             <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
               <Target className="w-5 h-5 text-primary" />

@@ -88,7 +88,7 @@ export function RegenerateMenu({
       </div>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-[425px] rounded-3xl border-border/50 bg-background/95 backdrop-blur-xl shadow-2xl">
+        <DialogContent className="sm:max-w-[425px] rounded-3xl border-border/50 bg-background/95  shadow-2xl">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold tracking-tight">{label} with Instructions</DialogTitle>
             <DialogDescription className="text-muted-foreground">

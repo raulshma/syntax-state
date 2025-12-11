@@ -331,7 +331,7 @@ export function NewInterviewForm({ usageData }: NewInterviewFormProps) {
             transition={{ duration: 0.4 }}
           >
             <form onSubmit={handlePromptSubmit}>
-              <div className="bg-card/50 backdrop-blur-xl border border-white/10 p-6 md:p-8 rounded-3xl hover:border-primary/20 transition-all duration-300 shadow-sm">
+              <div className="bg-card/50 border border-white/10 p-6 md:p-8 rounded-3xl hover:border-primary/20 transition-all duration-300 shadow-sm">
                 <div className="flex items-center gap-4 mb-6">
                   <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center border border-primary/10">
                     <Wand2 className="w-6 h-6 text-primary" />
@@ -354,7 +354,7 @@ export function NewInterviewForm({ usageData }: NewInterviewFormProps) {
                     disabled={isLoading || isAtLimit}
                   />
                   <div className="absolute bottom-4 right-4">
-                    <p className="text-[10px] text-muted-foreground bg-background/80 backdrop-blur-sm px-2 py-1 rounded-full border border-border/50">
+                    <p className="text-[10px] text-muted-foreground bg-background/80 px-2 py-1 rounded-full border border-border/50">
                       {prompt.length < 10
                         ? `${10 - prompt.length} more chars`
                         : "Ready"}
@@ -528,7 +528,7 @@ export function NewInterviewForm({ usageData }: NewInterviewFormProps) {
                 transition={{ duration: 0.3 }}
               >
                 <form onSubmit={handleDetailedSubmit} className="pt-2">
-                  <div className="bg-card/50 backdrop-blur-xl border border-white/10 p-6 md:p-8 rounded-3xl space-y-6">
+                  <div className="bg-card/50 border border-white/10 p-6 md:p-8 rounded-3xl space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="space-y-2">
                         <Label
@@ -733,7 +733,7 @@ export function NewInterviewForm({ usageData }: NewInterviewFormProps) {
                             className="w-full font-mono text-sm min-h-[100px] bg-secondary/30 border-border/50 rounded-2xl p-4 focus:border-primary/30 focus:ring-0 resize-none"
                             disabled={isLoading || isAtLimit}
                           />
-                          <div className="absolute bottom-4 right-4 text-[10px] text-muted-foreground bg-background/80 backdrop-blur-sm px-2 py-1 rounded-full border border-border/50">
+                          <div className="absolute bottom-4 right-4 text-[10px] text-muted-foreground bg-background/80 px-2 py-1 rounded-full border border-border/50">
                             {customInstructions.length}/2000
                           </div>
                         </div>
@@ -789,7 +789,7 @@ export function NewInterviewForm({ usageData }: NewInterviewFormProps) {
                                 : "Minimum met"}
                             </span>
                           )}
-                          <span className="text-[10px] text-muted-foreground bg-background/80 backdrop-blur-sm px-2 py-1 rounded-full border border-border/50">
+                          <span className="text-[10px] text-muted-foreground bg-background/80 px-2 py-1 rounded-full border border-border/50">
                             {jobDescription.length}/10000
                           </span>
                         </div>
@@ -827,7 +827,7 @@ export function NewInterviewForm({ usageData }: NewInterviewFormProps) {
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.4, delay: 0.2 }}
         >
-          <div className="bg-card/50 backdrop-blur-xl border border-white/10 p-6 rounded-3xl">
+          <div className="bg-card/50 border border-white/10 p-6 rounded-3xl">
             <div className="flex items-center gap-3 mb-5">
               <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
                 <Target className="w-4 h-4 text-primary" />

@@ -112,7 +112,7 @@ function SkillGapCard({
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.05 }}
-      className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-xl p-4 hover:border-primary/20 transition-all duration-200"
+      className="bg-card/50 border border-border/50 rounded-xl p-4 hover:border-primary/20 transition-all duration-200"
     >
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1 min-w-0">

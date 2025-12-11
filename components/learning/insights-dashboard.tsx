@@ -128,7 +128,7 @@ export function InsightsDashboard({ insights, learningPath }: InsightsDashboardP
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="rounded-3xl bg-background/80 backdrop-blur-xl border border-border/40 shadow-sm p-8"
+            className="rounded-3xl bg-background/80  border border-border/40 shadow-sm p-8"
           >
             <div className="flex items-center gap-3 mb-6">
               <div className="p-2.5 rounded-xl bg-primary/10">
@@ -170,7 +170,7 @@ export function InsightsDashboard({ insights, learningPath }: InsightsDashboardP
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="rounded-3xl bg-background/80 backdrop-blur-xl border border-border/40 shadow-sm p-8"
+            className="rounded-3xl bg-background/80  border border-border/40 shadow-sm p-8"
           >
             <div className="flex items-center gap-3 mb-6">
               <div className="p-2.5 rounded-xl bg-green-500/10">
@@ -325,7 +325,7 @@ export function InsightsDashboard({ insights, learningPath }: InsightsDashboardP
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.35 }}
-          className="rounded-3xl bg-background/80 backdrop-blur-xl border border-border/40 shadow-sm p-8"
+          className="rounded-3xl bg-background/80  border border-border/40 shadow-sm p-8"
         >
           <div className="flex items-center gap-3 mb-6">
             <div className="p-2.5 rounded-xl bg-primary/10">
@@ -421,7 +421,7 @@ function StatCard({
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
-      className="rounded-3xl bg-background/80 backdrop-blur-xl border border-border/40 shadow-sm p-6 hover:shadow-md transition-shadow"
+      className="rounded-3xl bg-background/80  border border-border/40 shadow-sm p-6 hover:shadow-md transition-shadow"
     >
       <div className={`w-12 h-12 rounded-2xl ${colorClasses[color]} flex items-center justify-center mb-4`}>
         <Icon className="w-6 h-6" />

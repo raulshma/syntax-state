@@ -97,7 +97,7 @@ export function LearningPathCard({ learningPath }: LearningPathCardProps) {
             </div>
 
             {currentTopic ? (
-              <div className="p-4 rounded-2xl bg-secondary/30 border border-border/50 backdrop-blur-sm">
+              <div className="p-4 rounded-2xl bg-secondary/30 border border-border/50">
                 <div className="flex items-start justify-between mb-2">
                   <p className="font-semibold text-foreground">{currentTopic.title}</p>
                   <span className="text-xs font-mono text-muted-foreground bg-background/50 px-2 py-1 rounded-md">

@@ -66,7 +66,7 @@ export function AIToolsConfig({ initialConfig }: AIToolsConfigProps) {
   };
 
   return (
-    <Card className="border-0 shadow-xl shadow-black/5 dark:shadow-black/20 bg-card/80 backdrop-blur-xl rounded-3xl overflow-hidden">
+    <Card className="border-0 shadow-xl shadow-black/5 dark:shadow-black/20 bg-card/80  rounded-3xl overflow-hidden">
       <CardHeader className="border-b border-border/50 p-6 md:p-8">
         <div className="flex items-center gap-3 mb-1">
           <div className="p-2 rounded-xl bg-primary/10">

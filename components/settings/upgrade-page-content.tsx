@@ -108,7 +108,7 @@ function PlanChangeDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         showCloseButton={false}
-        className="sm:max-w-md p-0 overflow-hidden bg-card/95 backdrop-blur-xl border-white/10"
+        className="sm:max-w-md p-0 overflow-hidden bg-card/95  border-white/10"
       >
         <div className="flex flex-col items-center text-center p-8">
           {/* Icon with animated background */}
@@ -404,8 +404,8 @@ export function UpgradePageContent({ profile }: UpgradePageContentProps) {
               className={`relative rounded-[2.5rem] overflow-hidden flex flex-col h-full ${isMax
                   ? "p-[4px] bg-purple-500/50 shadow-2xl shadow-primary/20"
                   : isPro
-                    ? "p-8 border border-primary/50 bg-card/50 backdrop-blur-xl shadow-xl shadow-primary/10"
-                    : "p-8 border border-white/10 bg-card/30 backdrop-blur-xl"
+                    ? "p-8 border border-primary/50 bg-card/50  shadow-xl shadow-primary/10"
+                    : "p-8 border border-white/10 bg-card/30 "
                 }`}
             >
               {isMax && (
@@ -414,7 +414,7 @@ export function UpgradePageContent({ profile }: UpgradePageContentProps) {
 
               {/* Inner container for Max plan to create the border effect */}
               <div
-                className={`relative z-10 flex flex-col h-full ${isMax ? "bg-card/90 backdrop-blur-xl rounded-[2.4rem] p-8" : ""}`}
+                className={`relative z-10 flex flex-col h-full ${isMax ? "bg-card/90  rounded-[2.4rem] p-8" : ""}`}
               >
                 {/* Background Icon */}
                 <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
@@ -547,7 +547,7 @@ export function UpgradePageContent({ profile }: UpgradePageContentProps) {
           animate={{ opacity: 1, y: 0 }}
           className="mt-8 max-w-2xl mx-auto"
         >
-          <div className="p-6 rounded-3xl bg-amber-500/10 border border-amber-500/20 backdrop-blur-xl">
+          <div className="p-6 rounded-3xl bg-amber-500/10 border border-amber-500/20 ">
             <div className="flex items-start gap-4">
               <div className="w-12 h-12 rounded-2xl bg-amber-500/20 flex items-center justify-center shrink-0">
                 <CalendarClock className="w-6 h-6 text-amber-500" />
@@ -606,7 +606,7 @@ export function UpgradePageContent({ profile }: UpgradePageContentProps) {
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.3 }}
-        className="mt-16 p-8 rounded-[2.5rem] bg-card/30 backdrop-blur-xl border border-white/5"
+        className="mt-16 p-8 rounded-[2.5rem] bg-card/30  border border-white/5"
       >
         <h3 className="text-xl font-bold text-center mb-8">
           Feature Comparison

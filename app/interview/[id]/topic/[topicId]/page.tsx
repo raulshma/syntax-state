@@ -489,7 +489,7 @@ export default function TopicDetailPage() {
         className={cn(
           "fixed top-0 left-0 right-0 z-50 transition-all duration-300 border-b",
           scrolled
-            ? "bg-background/80 backdrop-blur-xl border-border/50 shadow-sm"
+            ? "bg-background border-border/50 shadow-sm"
             : "bg-transparent border-transparent"
         )}
         initial={{ y: -100 }}
@@ -593,11 +593,11 @@ export default function TopicDetailPage() {
 
           <div className="flex flex-col gap-4">
             <div className="flex items-center gap-3 text-sm text-muted-foreground font-medium flex-wrap">
-              <span className="flex items-center gap-1.5 bg-secondary/50 px-3 py-1 rounded-full backdrop-blur-md border border-border/50">
+              <span className="flex items-center gap-1.5 bg-secondary/50 px-3 py-1 rounded-full border border-border/50">
                 <Clock className="w-3.5 h-3.5" />
                 {getReadingTime(topic.content)}
               </span>
-              <span className="flex items-center gap-1.5 bg-secondary/50 px-3 py-1 rounded-full backdrop-blur-md border border-border/50 capitalize">
+              <span className="flex items-center gap-1.5 bg-secondary/50 px-3 py-1 rounded-full border border-border/50 capitalize">
                 <Sparkles className="w-3.5 h-3.5 text-yellow-500/70" />
                 {topic.confidence} Confidence
               </span>
@@ -605,7 +605,7 @@ export default function TopicDetailPage() {
                 <DropdownMenuTrigger asChild>
                   <button 
                     className={cn(
-                      "flex items-center gap-1.5 bg-secondary/50 px-3 py-1 rounded-full backdrop-blur-md border border-border/50 hover:bg-secondary/80 transition-colors cursor-pointer",
+                      "flex items-center gap-1.5 bg-secondary/50 px-3 py-1 rounded-full border border-border/50 hover:bg-secondary/80 transition-colors cursor-pointer",
                       isUpdatingStatus && "opacity-50 pointer-events-none"
                     )}
                     disabled={isUpdatingStatus}
@@ -663,7 +663,7 @@ export default function TopicDetailPage() {
           transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" }}
           className="mb-8 sticky top-20 z-40"
         >
-          <div className="bg-secondary/80 backdrop-blur-xl border border-border/50 p-1.5 rounded-full inline-flex shadow-sm overflow-x-auto max-w-full no-scrollbar">
+          <div className="bg-secondary/80 border border-border/50 p-1.5 rounded-full inline-flex shadow-sm overflow-x-auto max-w-full no-scrollbar">
             {(Object.keys(styleLabels) as AnalogyStyle[]).map((style) => (
               <button
                 key={style}
@@ -700,7 +700,7 @@ export default function TopicDetailPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
         >
-          <Card className="border-none shadow-xl shadow-black/5 bg-card/50 backdrop-blur-sm overflow-hidden ring-1 ring-border/50">
+          <Card className="border-none shadow-xl shadow-black/5 bg-card/50 overflow-hidden ring-1 ring-border/50">
             <CardContent className="p-6 md:p-10">
               <div className="flex items-center justify-between mb-8 pb-6 border-b border-border/40">
                 <div className="flex items-center gap-3">
@@ -773,7 +773,7 @@ export default function TopicDetailPage() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-background/60 backdrop-blur-sm z-50"
+              className="fixed inset-0 bg-background/60 z-50"
               onClick={() => setShowShortcuts(false)}
             />
             <motion.div
@@ -783,7 +783,7 @@ export default function TopicDetailPage() {
               transition={{ type: "spring", duration: 0.5 }}
               className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm z-50 px-4"
             >
-              <Card className="border-border/50 shadow-2xl bg-card/90 backdrop-blur-xl">
+              <Card className="border-border/50 shadow-2xl bg-card/90">
                 <CardContent className="p-6">
                   <div className="flex items-center gap-3 mb-6">
                     <div className="p-2 bg-secondary rounded-lg">

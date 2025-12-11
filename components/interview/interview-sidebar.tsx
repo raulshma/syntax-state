@@ -62,7 +62,7 @@ export function InterviewSidebar({
   }, [topics, searchQuery]);
 
   return (
-    <aside className="w-80 border-r border-border/50 bg-sidebar/30 backdrop-blur-xl p-6 hidden lg:block sticky top-[81px] h-[calc(100vh-81px)] overflow-y-auto">
+    <aside className="w-80 border-r border-border/50 bg-sidebar/30 p-6 hidden lg:block sticky top-[81px] h-[calc(100vh-81px)] overflow-y-auto">
       <div className="flex items-center gap-3 mb-6 px-2">
         <div className="p-2 bg-primary/10 rounded-xl">
           <BookOpen className="w-4 h-4 text-primary" />

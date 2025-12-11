@@ -74,7 +74,7 @@ export function SidebarUser({
         <DropdownMenuContent
           align="end"
           side="top"
-          className="w-72 p-2 rounded-2xl bg-white/80 dark:bg-black/80 backdrop-blur-xl border border-black/5 dark:border-white/10 shadow-2xl"
+          className="w-72 p-2 rounded-2xl bg-white dark:bg-black border border-black/5 dark:border-white/10 shadow-2xl"
           sideOffset={8}
         >
           <div className="px-3 py-3 mb-1">
@@ -100,7 +100,7 @@ export function SidebarUser({
                 <span>Theme</span>
               </div>
             </DropdownMenuSubTrigger>
-            <DropdownMenuSubContent className="p-1.5 rounded-xl bg-white/80 dark:bg-black/80 backdrop-blur-xl border border-black/5 dark:border-white/10 shadow-xl">
+            <DropdownMenuSubContent className="p-1.5 rounded-xl bg-white dark:bg-black border border-black/5 dark:border-white/10 shadow-xl">
               <DropdownMenuItem
                 onClick={() => setTheme("light")}
                 className="rounded-lg px-3 py-2 text-sm font-medium cursor-pointer hover:bg-black/5 dark:hover:bg-white/10"

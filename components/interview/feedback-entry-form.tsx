@@ -133,7 +133,7 @@ export function FeedbackEntryForm({
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -10 }}
-      className="bg-card/50 backdrop-blur-xl border border-border/50 rounded-2xl p-6"
+      className="bg-card/50 border border-border/50 rounded-2xl p-6"
     >
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">

@@ -373,7 +373,7 @@ export default function NewLearningPathPage() {
               {/* Step 5: Review */}
               {currentStep === 4 && (
                 <div className="max-w-2xl mx-auto">
-                  <div className="bg-secondary/30 backdrop-blur-xl rounded-[2.5rem] p-8 md:p-10 space-y-8 border border-white/5">
+                  <div className="bg-secondary/30  rounded-[2.5rem] p-8 md:p-10 space-y-8 border border-white/5">
                     <div className="space-y-6">
                       <div className="flex items-start justify-between border-b border-border/50 pb-6">
                         <div>
@@ -445,7 +445,7 @@ export default function NewLearningPathPage() {
 
       {/* Navigation Footer */}
       <div
-        className="fixed bottom-0 right-0 p-4 md:p-6 bg-background/80 backdrop-blur-xl border-t border-border/50 z-50 transition-[left] duration-300 ease-in-out"
+        className="fixed bottom-0 right-0 p-4 md:p-6 bg-background/80  border-t border-border/50 z-50 transition-[left] duration-300 ease-in-out"
         style={{ left: isMobile ? 0 : isCollapsed ? "5rem" : "18rem" }}
       >
         <div className="flex items-center justify-between max-w-4xl mx-auto w-full">

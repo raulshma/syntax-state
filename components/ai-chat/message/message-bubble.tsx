@@ -263,7 +263,7 @@ export const MessageBubble = memo(function MessageBubble({
                       <a
                         href={part.url}
                         download={part.filename || `generated-image-${index + 1}.png`}
-                        className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium bg-background/90 backdrop-blur-sm border border-border rounded-lg shadow-sm hover:bg-background transition-colors"
+                        className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium bg-background/90  border border-border rounded-lg shadow-sm hover:bg-background transition-colors"
                       >
                         <Download className="h-3 w-3" />
                         Download

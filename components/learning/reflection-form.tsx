@@ -43,7 +43,7 @@ export function ReflectionForm({ activity, onSubmit, isSubmitting }: ReflectionF
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: -20, scale: 0.98 }}
       transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
-      className="rounded-3xl bg-background/80 backdrop-blur-xl border border-border/40 shadow-xl shadow-black/5 overflow-hidden"
+      className="rounded-3xl bg-background/80  border border-border/40 shadow-xl shadow-black/5 overflow-hidden"
     >
       {/* Header */}
       <div className="px-8 py-6 border-b border-border/30 bg-primary/5">

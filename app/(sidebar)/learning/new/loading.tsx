@@ -40,7 +40,7 @@ export default function NewLearningPathLoading() {
 
       {/* Navigation Footer Skeleton */}
       <div
-        className="fixed bottom-0 right-0 p-4 md:p-6 bg-background/80 backdrop-blur-xl border-t border-border/50 z-50 transition-[left] duration-300 ease-in-out"
+        className="fixed bottom-0 right-0 p-4 md:p-6 bg-background/80  border-t border-border/50 z-50 transition-[left] duration-300 ease-in-out"
         style={{ left: isMobile ? 0 : isCollapsed ? "5rem" : "18rem" }}
       >
         <div className="flex items-center justify-between max-w-4xl mx-auto w-full">

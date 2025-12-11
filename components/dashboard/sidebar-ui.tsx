@@ -20,7 +20,7 @@ export function SidebarUi({ data }: SidebarUiProps) {
   return (
     <aside
       className={cn(
-        "bg-white dark:bg-black/20 backdrop-blur-md border-r border-border dark:border-white/10 flex flex-col h-screen sticky top-0 z-50 transition-all duration-300",
+        "bg-white dark:bg-black/20 border-r border-border dark:border-white/10 flex flex-col h-screen sticky top-0 z-50 transition-all duration-300",
         isCollapsed ? "w-20" : "w-72"
       )}
     >
@@ -80,7 +80,7 @@ export function SidebarUi({ data }: SidebarUiProps) {
 
         {/* Plan Badge - Hide when collapsed */}
         {!isCollapsed && (
-          <div className="px-4 py-3 bg-muted dark:bg-white/5 rounded-2xl border border-border dark:border-white/5 backdrop-blur-sm">
+          <div className="px-4 py-3 bg-muted dark:bg-white/5 rounded-2xl border border-border dark:border-white/5">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div

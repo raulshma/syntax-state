@@ -59,7 +59,7 @@ export function BYOKUsageStatsSection({ hasByokKey }: BYOKUsageStatsSectionProps
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.6 }}
-        className="bg-card/50 backdrop-blur-xl border border-white/10 p-6 md:p-8 rounded-3xl"
+        className="bg-card/50  border border-white/10 p-6 md:p-8 rounded-3xl"
       >
         <div className="flex items-center justify-center py-8">
           <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
@@ -75,7 +75,7 @@ export function BYOKUsageStatsSection({ hasByokKey }: BYOKUsageStatsSectionProps
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.6 }}
-        className="bg-card/50 backdrop-blur-xl border border-white/10 p-6 md:p-8 rounded-3xl"
+        className="bg-card/50  border border-white/10 p-6 md:p-8 rounded-3xl"
       >
         <div className="flex items-center gap-2 text-destructive">
           <AlertTriangle className="w-5 h-5" />
@@ -119,7 +119,7 @@ export function BYOKUsageStatsSection({ hasByokKey }: BYOKUsageStatsSectionProps
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.6 }}
-      className="bg-card/50 backdrop-blur-xl border border-white/10 p-6 md:p-8 rounded-3xl hover:border-primary/20 transition-all duration-300 shadow-sm"
+      className="bg-card/50  border border-white/10 p-6 md:p-8 rounded-3xl hover:border-primary/20 transition-all duration-300 shadow-sm"
     >
       <div className="flex items-center gap-4 mb-8">
         <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center border border-primary/10">

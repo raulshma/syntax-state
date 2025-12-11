@@ -105,7 +105,7 @@ function StatCard({
       transition={{ duration: 0.5, delay }}
       className={cn("h-full", className)}
     >
-      <Card className="h-full border-0 shadow-sm bg-card/50 backdrop-blur-xl rounded-3xl overflow-hidden hover:shadow-md transition-all duration-300 group">
+      <Card className="h-full border-0 shadow-sm bg-card/50  rounded-3xl overflow-hidden hover:shadow-md transition-all duration-300 group">
         <CardContent className="p-6 flex flex-col justify-between h-full relative z-10">
           <div className="flex items-center justify-between mb-4">
             <span className="text-sm font-medium text-muted-foreground">
@@ -113,7 +113,7 @@ function StatCard({
             </span>
             <div
               className={cn(
-                "p-2 rounded-full bg-background/50 backdrop-blur-md opacity-80 group-hover:opacity-100 transition-opacity",
+                "p-2 rounded-full bg-background/50  opacity-80 group-hover:opacity-100 transition-opacity",
                 colorClass
               )}
             >
@@ -192,7 +192,7 @@ const renderActiveShape = (props: any) => {
 
 function RecentLogsTable({ logs }: { logs: AILogEntry[] }) {
   return (
-    <Card className="border-0 shadow-sm bg-card/50 backdrop-blur-xl rounded-3xl overflow-hidden">
+    <Card className="border-0 shadow-sm bg-card/50  rounded-3xl overflow-hidden">
       <CardHeader className="p-8 pb-4">
         <div>
           <CardTitle className="text-xl font-semibold tracking-tight">
@@ -497,7 +497,7 @@ export function AIUsageDashboard({ data: initialData }: AIUsageDashboardProps) {
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5, delay: 0.2 }}
         >
-          <Card className="h-full border-0 shadow-sm bg-card/50 backdrop-blur-xl rounded-3xl overflow-hidden">
+          <Card className="h-full border-0 shadow-sm bg-card/50  rounded-3xl overflow-hidden">
             <CardHeader className="p-8 pb-2">
               <div className="flex items-center gap-2">
                 <div className="p-2 rounded-full bg-violet-500/10 text-violet-500">
@@ -559,7 +559,7 @@ export function AIUsageDashboard({ data: initialData }: AIUsageDashboardProps) {
                     allowDecimals={false}
                   />
                     <ChartTooltip
-                      content={<ChartTooltipContent indicator="line" className="backdrop-blur-xl bg-background/80 border-border/50 shadow-xl" />}
+                      content={<ChartTooltipContent indicator="line" className=" bg-background/80 border-border/50 shadow-xl" />}
                       cursor={{
                         stroke: "#8b5cf6",
                         strokeWidth: 1,
@@ -588,7 +588,7 @@ export function AIUsageDashboard({ data: initialData }: AIUsageDashboardProps) {
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5, delay: 0.25 }}
         >
-          <Card className="h-full border-0 shadow-sm bg-card/50 backdrop-blur-xl rounded-3xl overflow-hidden flex flex-col">
+          <Card className="h-full border-0 shadow-sm bg-card/50  rounded-3xl overflow-hidden flex flex-col">
             <CardHeader className="p-6 pb-2">
               <div className="flex items-center gap-2">
                 <div className="p-2 rounded-full bg-emerald-500/10 text-emerald-500">
@@ -669,7 +669,7 @@ export function AIUsageDashboard({ data: initialData }: AIUsageDashboardProps) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.3 }}
         >
-          <Card className="h-full border-0 shadow-sm bg-card/50 backdrop-blur-xl rounded-3xl overflow-hidden">
+          <Card className="h-full border-0 shadow-sm bg-card/50  rounded-3xl overflow-hidden">
             <CardHeader className="p-6 pb-2">
               <div className="flex items-center gap-2">
                 <div className="p-2 rounded-full bg-indigo-500/10 text-indigo-500">
@@ -728,7 +728,7 @@ export function AIUsageDashboard({ data: initialData }: AIUsageDashboardProps) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.35 }}
         >
-          <Card className="h-full border-0 shadow-sm bg-card/50 backdrop-blur-xl rounded-3xl overflow-hidden">
+          <Card className="h-full border-0 shadow-sm bg-card/50  rounded-3xl overflow-hidden">
             <CardHeader className="p-6 pb-2">
               <div className="flex items-center gap-2">
                 <div className="p-2 rounded-full bg-amber-500/10 text-amber-500">
@@ -775,7 +775,7 @@ export function AIUsageDashboard({ data: initialData }: AIUsageDashboardProps) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.4 }}
         >
-          <Card className="h-full border-0 shadow-sm bg-card/50 backdrop-blur-xl rounded-3xl overflow-hidden">
+          <Card className="h-full border-0 shadow-sm bg-card/50  rounded-3xl overflow-hidden">
             <CardHeader className="p-6 pb-2">
               <div className="flex items-center gap-2">
                 <div className="p-2 rounded-full bg-blue-500/10 text-blue-500">
@@ -817,7 +817,7 @@ export function AIUsageDashboard({ data: initialData }: AIUsageDashboardProps) {
                     allowDecimals={false}
                   />
                   <ChartTooltip
-                    content={<ChartTooltipContent indicator="line" className="backdrop-blur-xl bg-background/80 border-border/50 shadow-xl" />}
+                    content={<ChartTooltipContent indicator="line" className=" bg-background/80 border-border/50 shadow-xl" />}
                     cursor={{
                       stroke: "var(--primary)",
                       strokeWidth: 1,
@@ -860,7 +860,7 @@ export function AIUsageDashboard({ data: initialData }: AIUsageDashboardProps) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.45 }}
         >
-          <Card className="h-full border-0 shadow-sm bg-card/50 backdrop-blur-xl rounded-3xl overflow-hidden">
+          <Card className="h-full border-0 shadow-sm bg-card/50  rounded-3xl overflow-hidden">
             <CardHeader className="p-6 pb-2">
               <div className="flex items-center gap-2">
                 <div className="p-2 rounded-full bg-violet-500/10 text-violet-500">
@@ -906,7 +906,7 @@ export function AIUsageDashboard({ data: initialData }: AIUsageDashboardProps) {
                     content={({ active, payload }) => {
                       if (!active || !payload?.length) return null;
                       return (
-                        <div className="rounded-lg border bg-background/80 backdrop-blur-xl p-2 shadow-sm">
+                        <div className="rounded-lg border bg-background/80  p-2 shadow-sm">
                           <div className="flex flex-col gap-1">
                             <span className="text-xs text-muted-foreground">
                               {payload[0].payload.hourLabel}
@@ -938,7 +938,7 @@ export function AIUsageDashboard({ data: initialData }: AIUsageDashboardProps) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.5 }}
         >
-          <Card className="h-full border-0 shadow-sm bg-card/50 backdrop-blur-xl rounded-3xl overflow-hidden">
+          <Card className="h-full border-0 shadow-sm bg-card/50  rounded-3xl overflow-hidden">
             <CardHeader className="p-6 pb-2">
               <div className="flex items-center gap-2">
                 <div className="p-2 rounded-full bg-amber-500/10 text-amber-500">
@@ -994,7 +994,7 @@ export function AIUsageDashboard({ data: initialData }: AIUsageDashboardProps) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.55 }}
         >
-          <Card className="h-full border-0 shadow-sm bg-card/50 backdrop-blur-xl rounded-3xl overflow-hidden">
+          <Card className="h-full border-0 shadow-sm bg-card/50  rounded-3xl overflow-hidden">
             <CardHeader className="p-6 pb-2">
               <div className="flex items-center gap-2">
                 <div className="p-2 rounded-full bg-blue-500/10 text-blue-500">

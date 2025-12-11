@@ -209,7 +209,7 @@ export function LearningWorkspace({
       <header className="fixed top-0 left-0 right-0 z-50">
         <div className="mx-4 mt-4">
           <div className="max-w-6xl mx-auto">
-            <div className="bg-background/70 backdrop-blur-2xl border border-border/40 rounded-2xl shadow-lg shadow-black/5">
+            <div className="bg-background/70  border border-border/40 rounded-2xl shadow-lg shadow-black/5">
               <div className="px-6 py-4 flex items-center justify-between">
                 <div className="flex items-center gap-5">
                   <Link
@@ -256,7 +256,7 @@ export function LearningWorkspace({
         <div className="max-w-6xl mx-auto">
           {/* Navigation Pills - Apple style segmented control */}
           <div className="flex justify-center mb-10">
-            <div className="inline-flex p-1.5 rounded-2xl bg-secondary/40 backdrop-blur-sm border border-border/30">
+            <div className="inline-flex p-1.5 rounded-2xl bg-secondary/40  border border-border/30">
               {[
                 { id: "activity", label: "Learn", icon: Sparkles },
                 { id: "timeline", label: "History", icon: Clock },
@@ -336,7 +336,7 @@ export function LearningWorkspace({
                     )}
 
                     {/* Topics List */}
-                    <div className="p-6 rounded-3xl bg-background/60 backdrop-blur-sm border border-border/40">
+                    <div className="p-6 rounded-3xl bg-background/60  border border-border/40">
                       <h4 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
                         <BookOpen className="w-4 h-4 text-muted-foreground" />
                         All Topics
@@ -372,7 +372,7 @@ export function LearningWorkspace({
 
                     {/* Skills Progress */}
                     {Object.keys(learningPath.skillScores).length > 0 && (
-                      <div className="p-6 rounded-3xl bg-background/60 backdrop-blur-sm border border-border/40">
+                      <div className="p-6 rounded-3xl bg-background/60  border border-border/40">
                         <h4 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
                           <Brain className="w-4 h-4 text-muted-foreground" />
                           Skills
@@ -510,7 +510,7 @@ function ActivityCard({
       animate={{ opacity: 1, scale: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.98, y: -20 }}
       transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
-      className="rounded-3xl bg-background/80 backdrop-blur-xl border border-border/40 shadow-xl shadow-black/5 overflow-hidden"
+      className="rounded-3xl bg-background/80  border border-border/40 shadow-xl shadow-black/5 overflow-hidden"
     >
       {/* Card Header */}
       <div className="px-8 py-6 border-b border-border/30 bg-secondary/20">
@@ -622,7 +622,7 @@ function ActivityLoadingSkeleton() {
       initial={{ opacity: 0, scale: 0.98 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.98 }}
-      className="rounded-3xl bg-background/80 backdrop-blur-xl border border-border/40 shadow-xl shadow-black/5 overflow-hidden"
+      className="rounded-3xl bg-background/80  border border-border/40 shadow-xl shadow-black/5 overflow-hidden"
     >
       <div className="px-8 py-6 border-b border-border/30">
         <div className="flex items-center gap-4">
@@ -729,7 +729,7 @@ function StreamingActivityCard({
       initial={{ opacity: 0, scale: 0.98, y: 20 }}
       animate={{ opacity: 1, scale: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.98, y: -20 }}
-      className="rounded-3xl bg-background/80 backdrop-blur-xl border border-border/40 shadow-xl shadow-black/5 overflow-hidden"
+      className="rounded-3xl bg-background/80  border border-border/40 shadow-xl shadow-black/5 overflow-hidden"
     >
       <div className="px-8 py-6 border-b border-border/30 bg-primary/5">
         <div className="flex items-center justify-between">

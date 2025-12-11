@@ -141,7 +141,7 @@ export function AILogViewer({ logs, totalCount, currentPage, pageSize, onPageCha
 
   return (
     <div className="space-y-4">
-      <div className="rounded-3xl border border-border/50 bg-background/50 backdrop-blur-sm overflow-hidden">
+      <div className="rounded-3xl border border-border/50 bg-background/50  overflow-hidden">
         <div className="overflow-x-auto">
           <Table className="min-w-[1000px]">
             <TableHeader>
@@ -366,7 +366,7 @@ function ExpandedLogContent({ log }: { log: AILogWithDetails }) {
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-        <Card className="border-0 shadow-sm bg-background/80 backdrop-blur-sm">
+        <Card className="border-0 shadow-sm bg-background/80 ">
           <CardContent className="p-5">
             <h4 className="text-sm font-semibold mb-4 flex items-center gap-2 text-foreground">
               <div className="p-1.5 rounded-lg bg-primary/10 text-primary">
@@ -399,7 +399,7 @@ function ExpandedLogContent({ log }: { log: AILogWithDetails }) {
           </CardContent>
         </Card>
 
-        <Card className="border-0 shadow-sm bg-background/80 backdrop-blur-sm">
+        <Card className="border-0 shadow-sm bg-background/80 ">
           <CardContent className="p-5">
             <h4 className="text-sm font-semibold mb-4 flex items-center gap-2 text-foreground">
               <div className="p-1.5 rounded-lg bg-blue-500/10 text-blue-500">
@@ -428,7 +428,7 @@ function ExpandedLogContent({ log }: { log: AILogWithDetails }) {
           </CardContent>
         </Card>
 
-        <Card className="border-0 shadow-sm bg-background/80 backdrop-blur-sm">
+        <Card className="border-0 shadow-sm bg-background/80 ">
           <CardContent className="p-5">
             <h4 className="text-sm font-semibold mb-4 flex items-center gap-2 text-foreground">
               <div className="p-1.5 rounded-lg bg-green-500/10 text-green-500">
@@ -693,7 +693,7 @@ function LogDetailContent({ log, formattedTimestamp }: { log: AILog; formattedTi
 
       <Tabs defaultValue="response" className="w-full">
         <div className="flex justify-center mb-6">
-          <div className="bg-secondary/50 backdrop-blur-xl p-1 rounded-full inline-flex">
+          <div className="bg-secondary/50  p-1 rounded-full inline-flex">
             <TabsList className="bg-transparent gap-1 h-auto p-0">
               <TabsTrigger
                 value="response"

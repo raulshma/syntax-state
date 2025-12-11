@@ -101,7 +101,7 @@ export const Backdrop = memo(function Backdrop({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={backdropTransition}
-          className="fixed inset-0 bg-background/80 backdrop-blur-sm"
+          className="fixed inset-0 bg-background/80 "
           style={{ zIndex: zIndex - 1 }}
           onClick={onClick}
           aria-hidden="true"
@@ -254,7 +254,7 @@ export const SidebarOverlay = memo(function SidebarOverlay({
             data-testid={`sidebar-${position}`}
             data-mobile={isMobile}
           >
-            <div className="h-full w-full rounded-3xl border border-border/40 bg-background/60 backdrop-blur-xl shadow-sm overflow-hidden">
+            <div className="h-full w-full rounded-3xl border border-border/40 bg-background/60  shadow-sm overflow-hidden">
               {children}
             </div>
           </motion.div>

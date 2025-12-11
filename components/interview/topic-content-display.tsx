@@ -335,7 +335,7 @@ export const TopicContentDisplay = memo(function TopicContentDisplay({
               <Button
                 variant="ghost"
                 size="icon"
-                className="absolute top-0 right-0 z-10 h-8 w-8 rounded-lg opacity-0 hover:opacity-100 focus:opacity-100 transition-opacity bg-background/80 backdrop-blur-sm border border-border/50"
+                className="absolute top-0 right-0 z-10 h-8 w-8 rounded-lg opacity-0 hover:opacity-100 focus:opacity-100 transition-opacity bg-background/80 border border-border/50"
                 onClick={handleCopy}
               >
                 {copied ? (

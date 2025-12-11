@@ -115,7 +115,7 @@ function SummaryCard({
   bgColorClass: string;
 }) {
   return (
-    <Card className="border-0 shadow-lg shadow-black/5 dark:shadow-black/20 bg-card/80 backdrop-blur-xl rounded-3xl overflow-hidden hover:scale-[1.02] transition-transform duration-300">
+    <Card className="border-0 shadow-lg shadow-black/5 dark:shadow-black/20 bg-card/80  rounded-3xl overflow-hidden hover:scale-[1.02] transition-transform duration-300">
       <CardContent className="p-6">
         <div className="flex items-center justify-between mb-4">
           <div
@@ -239,7 +239,7 @@ export function AnalyticsDashboard({
       </div>
 
       {/* Usage Trends Chart */}
-      <Card className="border-0 shadow-xl shadow-black/5 dark:shadow-black/20 bg-card/80 backdrop-blur-xl rounded-3xl overflow-hidden">
+      <Card className="border-0 shadow-xl shadow-black/5 dark:shadow-black/20 bg-card/80  rounded-3xl overflow-hidden">
         <CardHeader className="p-6 md:p-8 border-b border-border/50">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-blue-500/10 flex items-center justify-center">
@@ -413,7 +413,7 @@ export function AnalyticsDashboard({
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Popular Topics */}
-        <Card className="border-0 shadow-xl shadow-black/5 dark:shadow-black/20 bg-card/80 backdrop-blur-xl rounded-3xl overflow-hidden">
+        <Card className="border-0 shadow-xl shadow-black/5 dark:shadow-black/20 bg-card/80  rounded-3xl overflow-hidden">
           <CardHeader className="p-6 md:p-8 border-b border-border/50">
             <CardTitle className="text-lg font-bold">
               Popular Job Titles
@@ -466,7 +466,7 @@ export function AnalyticsDashboard({
         </Card>
 
         {/* Top Companies */}
-        <Card className="border-0 shadow-xl shadow-black/5 dark:shadow-black/20 bg-card/80 backdrop-blur-xl rounded-3xl overflow-hidden">
+        <Card className="border-0 shadow-xl shadow-black/5 dark:shadow-black/20 bg-card/80  rounded-3xl overflow-hidden">
           <CardHeader className="p-6 md:p-8 border-b border-border/50">
             <div className="flex items-center gap-2">
               <Building2 className="w-5 h-5 text-muted-foreground" />
@@ -522,7 +522,7 @@ export function AnalyticsDashboard({
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Plan Distribution */}
-        <Card className="border-0 shadow-xl shadow-black/5 dark:shadow-black/20 bg-card/80 backdrop-blur-xl rounded-3xl overflow-hidden">
+        <Card className="border-0 shadow-xl shadow-black/5 dark:shadow-black/20 bg-card/80  rounded-3xl overflow-hidden">
           <CardHeader className="p-6 md:p-8 border-b border-border/50">
             <div className="flex items-center gap-2">
               <PieChartIcon className="w-5 h-5 text-muted-foreground" />
@@ -654,7 +654,7 @@ export function AnalyticsDashboard({
         </Card>
 
         {/* Model Usage */}
-        <Card className="border-0 shadow-xl shadow-black/5 dark:shadow-black/20 bg-card/80 backdrop-blur-xl rounded-3xl overflow-hidden">
+        <Card className="border-0 shadow-xl shadow-black/5 dark:shadow-black/20 bg-card/80  rounded-3xl overflow-hidden">
           <CardHeader className="p-6 md:p-8 border-b border-border/50">
             <div className="flex items-center gap-2">
               <Cpu className="w-5 h-5 text-muted-foreground" />
@@ -710,7 +710,7 @@ export function AnalyticsDashboard({
       </div>
 
       {/* Token Usage Trends */}
-      <Card className="border-0 shadow-xl shadow-black/5 dark:shadow-black/20 bg-card/80 backdrop-blur-xl rounded-3xl overflow-hidden">
+      <Card className="border-0 shadow-xl shadow-black/5 dark:shadow-black/20 bg-card/80  rounded-3xl overflow-hidden">
         <CardHeader className="p-6 md:p-8 border-b border-border/50">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-cyan-500/10 flex items-center justify-center">

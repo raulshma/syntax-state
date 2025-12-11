@@ -48,7 +48,7 @@ export default function TopicLoading() {
         </div>
 
         {/* Main Content Skeleton */}
-        <Card className="border-none shadow-xl shadow-black/5 bg-card/50 backdrop-blur-sm overflow-hidden ring-1 ring-border/50">
+        <Card className="border-none shadow-xl shadow-black/5 bg-card/50 overflow-hidden ring-1 ring-border/50">
           <CardContent className="p-10">
             <div className="flex items-center justify-between mb-8 pb-6 border-b border-border/40">
               <div className="flex items-center gap-3">

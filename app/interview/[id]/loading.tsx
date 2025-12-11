@@ -7,7 +7,7 @@ export default function InterviewLoading() {
 
       <div className="relative z-10">
         {/* Header */}
-        <header className="border-b border-border/50 bg-background/80 backdrop-blur-xl sticky top-0 z-40">
+        <header className="border-b border-border/50 bg-background sticky top-0 z-40">
           <div className="px-4 md:px-8 py-4">
             <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-4 min-w-0 flex-1">
@@ -42,7 +42,7 @@ export default function InterviewLoading() {
 
         <div className="flex">
           {/* Sidebar */}
-          <aside className="w-80 border-r border-border/50 bg-sidebar/30 backdrop-blur-xl p-6 hidden lg:block h-[calc(100vh-81px)]">
+          <aside className="w-80 border-r border-border/50 bg-sidebar/30 p-6 hidden lg:block h-[calc(100vh-81px)]">
             <div className="flex items-center gap-3 mb-6 px-2">
               <div className="p-2 bg-secondary/50 rounded-xl">
                 <BookOpen className="w-4 h-4 text-muted-foreground" />
@@ -65,7 +65,7 @@ export default function InterviewLoading() {
           {/* Main Content */}
           <main className="flex-1 p-4 md:p-8 space-y-8 max-w-5xl mx-auto">
             {/* Module Progress */}
-            <div className="rounded-3xl border border-border/50 bg-background/60 backdrop-blur-xl shadow-lg p-6">
+            <div className="rounded-3xl border border-border/50 bg-background/60 shadow-lg p-6">
               <div className="flex items-center justify-between mb-6">
                 <Skeleton className="h-5 w-32 rounded-full" />
                 <Skeleton className="h-6 w-24 rounded-full" />
@@ -91,7 +91,7 @@ export default function InterviewLoading() {
             ].map((module, index) => (
               <div
                 key={index}
-                className="rounded-3xl border border-border/50 bg-background/60 backdrop-blur-xl shadow-lg overflow-hidden"
+                className="rounded-3xl border border-border/50 bg-background/60 shadow-lg overflow-hidden"
               >
                 <div className="flex items-start justify-between p-6 md:p-8 pb-4 md:pb-6">
                   <div className="flex items-start gap-5">

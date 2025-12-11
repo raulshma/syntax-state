@@ -264,7 +264,7 @@ export function AIMonitoringDashboard({
 
       <Tabs defaultValue="logs" className="space-y-6">
         <div className="flex justify-center">
-          <div className="bg-secondary/50 backdrop-blur-xl p-1.5 rounded-full inline-flex">
+          <div className="bg-secondary/50  p-1.5 rounded-full inline-flex">
             <TabsList className="bg-transparent gap-1 h-auto p-0">
               <TabsTrigger
                 value="logs"
@@ -296,7 +296,7 @@ export function AIMonitoringDashboard({
 
         {/* Request Logs Tab */}
         <TabsContent value="logs" className="mt-0 focus-visible:outline-none">
-          <Card className="border-0 shadow-xl shadow-black/5 dark:shadow-black/20 bg-card/80 backdrop-blur-xl rounded-3xl overflow-hidden">
+          <Card className="border-0 shadow-xl shadow-black/5 dark:shadow-black/20 bg-card/80  rounded-3xl overflow-hidden">
             <CardHeader className="border-b border-border/50 p-6 md:p-8">
               <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
                 <div>
@@ -418,7 +418,7 @@ export function AIMonitoringDashboard({
         >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Latency Percentiles */}
-            <Card className="border-0 shadow-lg shadow-black/5 dark:shadow-black/20 bg-card/80 backdrop-blur-xl rounded-3xl overflow-hidden">
+            <Card className="border-0 shadow-lg shadow-black/5 dark:shadow-black/20 bg-card/80  rounded-3xl overflow-hidden">
               <CardHeader className="p-6 pb-2">
                 <CardTitle className="text-lg font-bold flex items-center gap-2">
                   <Clock className="w-5 h-5 text-blue-500" />
@@ -460,7 +460,7 @@ export function AIMonitoringDashboard({
             </Card>
 
             {/* Usage by Action */}
-            <Card className="border-0 shadow-lg shadow-black/5 dark:shadow-black/20 bg-card/80 backdrop-blur-xl rounded-3xl overflow-hidden">
+            <Card className="border-0 shadow-lg shadow-black/5 dark:shadow-black/20 bg-card/80  rounded-3xl overflow-hidden">
               <CardHeader className="p-6 pb-2">
                 <CardTitle className="text-lg font-bold flex items-center gap-2">
                   <Zap className="w-5 h-5 text-amber-500" />
@@ -508,7 +508,7 @@ export function AIMonitoringDashboard({
             </Card>
 
             {/* Hourly Usage */}
-            <Card className="border-0 shadow-lg shadow-black/5 dark:shadow-black/20 bg-card/80 backdrop-blur-xl rounded-3xl overflow-hidden md:col-span-2">
+            <Card className="border-0 shadow-lg shadow-black/5 dark:shadow-black/20 bg-card/80  rounded-3xl overflow-hidden md:col-span-2">
               <CardHeader className="p-6 pb-2">
                 <CardTitle className="text-lg font-bold flex items-center gap-2">
                   <TrendingUp className="w-5 h-5 text-green-500" />
@@ -563,7 +563,7 @@ export function AIMonitoringDashboard({
             </Card>
 
             {/* Slow Requests */}
-            <Card className="border-0 shadow-lg shadow-black/5 dark:shadow-black/20 bg-card/80 backdrop-blur-xl rounded-3xl overflow-hidden md:col-span-2">
+            <Card className="border-0 shadow-lg shadow-black/5 dark:shadow-black/20 bg-card/80  rounded-3xl overflow-hidden md:col-span-2">
               <CardHeader className="p-6 pb-2">
                 <CardTitle className="text-lg font-bold flex items-center gap-2">
                   <Clock className="w-5 h-5 text-yellow-500" />
@@ -617,7 +617,7 @@ export function AIMonitoringDashboard({
         <TabsContent value="errors" className="mt-0 focus-visible:outline-none">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Error Stats */}
-            <Card className="border-0 shadow-lg shadow-black/5 dark:shadow-black/20 bg-card/80 backdrop-blur-xl rounded-3xl overflow-hidden">
+            <Card className="border-0 shadow-lg shadow-black/5 dark:shadow-black/20 bg-card/80  rounded-3xl overflow-hidden">
               <CardHeader className="p-6 pb-2">
                 <CardTitle className="text-lg font-bold flex items-center gap-2">
                   <AlertTriangle className="w-5 h-5 text-red-500" />
@@ -667,7 +667,7 @@ export function AIMonitoringDashboard({
             </Card>
 
             {/* Recent Errors */}
-            <Card className="border-0 shadow-lg shadow-black/5 dark:shadow-black/20 bg-card/80 backdrop-blur-xl rounded-3xl overflow-hidden">
+            <Card className="border-0 shadow-lg shadow-black/5 dark:shadow-black/20 bg-card/80  rounded-3xl overflow-hidden">
               <CardHeader className="p-6 pb-2">
                 <CardTitle className="text-lg font-bold">
                   Recent Errors
@@ -712,7 +712,7 @@ export function AIMonitoringDashboard({
         <TabsContent value="costs" className="mt-0 focus-visible:outline-none">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Provider Usage */}
-            <Card className="border-0 shadow-lg shadow-black/5 dark:shadow-black/20 bg-card/80 backdrop-blur-xl rounded-3xl overflow-hidden">
+            <Card className="border-0 shadow-lg shadow-black/5 dark:shadow-black/20 bg-card/80  rounded-3xl overflow-hidden">
               <CardHeader className="p-6 pb-2">
                 <CardTitle className="text-lg font-bold flex items-center gap-2">
                   <Cpu className="w-5 h-5 text-violet-500" />
@@ -757,7 +757,7 @@ export function AIMonitoringDashboard({
             </Card>
 
             {/* Cost by Model */}
-            <Card className="border-0 shadow-lg shadow-black/5 dark:shadow-black/20 bg-card/80 backdrop-blur-xl rounded-3xl overflow-hidden">
+            <Card className="border-0 shadow-lg shadow-black/5 dark:shadow-black/20 bg-card/80  rounded-3xl overflow-hidden">
               <CardHeader className="p-6 pb-2">
                 <CardTitle className="text-lg font-bold flex items-center gap-2">
                   <DollarSign className="w-5 h-5 text-green-500" />
@@ -800,7 +800,7 @@ export function AIMonitoringDashboard({
             </Card>
 
             {/* Token Usage Summary */}
-            <Card className="border-0 shadow-lg shadow-black/5 dark:shadow-black/20 bg-card/80 backdrop-blur-xl rounded-3xl overflow-hidden">
+            <Card className="border-0 shadow-lg shadow-black/5 dark:shadow-black/20 bg-card/80  rounded-3xl overflow-hidden">
               <CardHeader className="p-6 pb-2">
                 <CardTitle className="text-lg font-bold flex items-center gap-2">
                   <Database className="w-5 h-5 text-blue-500" />
@@ -881,7 +881,7 @@ export function AIMonitoringDashboard({
             </Card>
 
             {/* Pricing Cache Status */}
-            <Card className="border-0 shadow-lg shadow-black/5 dark:shadow-black/20 bg-card/80 backdrop-blur-xl rounded-3xl overflow-hidden md:col-span-2">
+            <Card className="border-0 shadow-lg shadow-black/5 dark:shadow-black/20 bg-card/80  rounded-3xl overflow-hidden md:col-span-2">
               <CardHeader className="p-6 pb-2">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg font-bold">

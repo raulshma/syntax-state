@@ -81,7 +81,7 @@ export function UsageUpgradePrompt() {
 
             {/* Right Side: Visual */}
             <div className="flex-1 w-full max-w-md md:max-w-none relative">
-              <div className="relative aspect-square md:aspect-[4/5] rounded-3xl overflow-hidden border border-white/10 bg-white/5 backdrop-blur-md shadow-2xl">
+              <div className="relative aspect-square md:aspect-[4/5] rounded-3xl overflow-hidden border border-white/10 bg-white/5  shadow-2xl">
                 {/* Mock UI for Analytics */}
                 <div className="absolute inset-0 p-6 flex flex-col gap-4 opacity-80">
                   {/* Header Mock */}
@@ -124,8 +124,8 @@ export function UsageUpgradePrompt() {
                 </div>
 
                 {/* Lock Overlay */}
-                <div className="absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-[2px]">
-                  <div className="w-20 h-20 rounded-full bg-black/50 backdrop-blur-xl border border-white/20 flex items-center justify-center shadow-2xl">
+                <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+                  <div className="w-20 h-20 rounded-full bg-black/50  border border-white/20 flex items-center justify-center shadow-2xl">
                     <Lock className="w-8 h-8 text-white" />
                   </div>
                 </div>

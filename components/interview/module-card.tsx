@@ -65,7 +65,7 @@ export function ModuleCard({
       className="relative"
     >
       <div
-        className={`rounded-3xl border bg-background/60 backdrop-blur-xl shadow-lg overflow-hidden transition-all duration-300 ${isError
+        className={`rounded-3xl border bg-background/60 shadow-lg overflow-hidden transition-all duration-300 ${isError
           ? "border-destructive/30 shadow-destructive/5"
           : isLoading || isStreaming
             ? "border-primary/30 shadow-primary/5"

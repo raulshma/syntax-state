@@ -584,7 +584,7 @@ export const AIChatMain = memo(function AIChatMain({
                 variant="ghost"
                 size="sm"
                 onClick={handleCopyAll}
-                className="rounded-full shadow-lg gap-1.5 px-3 h-8 bg-background/90 backdrop-blur-sm border border-border/50 hover:bg-background text-muted-foreground hover:text-foreground"
+                className="rounded-full shadow-lg gap-1.5 px-3 h-8 bg-background/90  border border-border/50 hover:bg-background text-muted-foreground hover:text-foreground"
                 title="Copy entire conversation"
               >
                 <Copy className="h-3.5 w-3.5" />
@@ -598,7 +598,7 @@ export const AIChatMain = memo(function AIChatMain({
                 variant="secondary"
                 size="sm"
                 onClick={handleScrollToBottom}
-                className="rounded-full shadow-lg gap-1.5 px-3 h-8 bg-background/90 backdrop-blur-sm border border-border/50 hover:bg-background"
+                className="rounded-full shadow-lg gap-1.5 px-3 h-8 bg-background/90  border border-border/50 hover:bg-background"
               >
                 <ArrowDown className="h-3.5 w-3.5" />
                 <span className="text-xs">New messages</span>
