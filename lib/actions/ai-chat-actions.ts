@@ -9,6 +9,7 @@ import { userRepository } from "@/lib/db/repositories/user-repository";
 import { getTierConfigFromDB } from "@/lib/db/tier-config";
 import type { AIMessage, AIConversation } from "@/lib/db/schemas/ai-conversation";
 import { createProviderWithFallback, type AIProviderType } from "@/lib/ai";
+import { extractTokenUsage } from "@/lib/services/ai-logger";
 
 /**
  * Helper to get the MongoDB user ID from Clerk ID
@@ -163,11 +164,8 @@ export async function generateConversationTitle(
     // Update conversation with generated title
     await aiConversationRepository.updateTitle(conversationId, generatedTitle);
 
-    // Extract token usage (AI SDK v5 uses input/outputTokens)
-    const inputTokens = (result.usage as Record<string, unknown>)?.inputTokens ?? 
-                        (result.usage as Record<string, unknown>)?.promptTokens ?? 0;
-    const outputTokens = (result.usage as Record<string, unknown>)?.outputTokens ?? 
-                         (result.usage as Record<string, unknown>)?.completionTokens ?? 0;
+    // Extract token usage using the standard helper
+    const tokenUsage = extractTokenUsage(result.usage as Record<string, unknown>);
 
     // Log the AI request (0.05 iteration usage)
     await aiLogRepository.create({
@@ -182,10 +180,7 @@ export async function generateConversationTitle(
       toolsUsed: [],
       searchQueries: [],
       searchResults: [],
-      tokenUsage: {
-        input: inputTokens as number,
-        output: outputTokens as number,
-      },
+      tokenUsage,
       latencyMs: Date.now() - startTime,
       timestamp: new Date(),
       metadata: {

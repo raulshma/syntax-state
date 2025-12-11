@@ -302,11 +302,12 @@ export async function POST(request: NextRequest) {
         const latencyMs = finalMetadata?.latencyMs ?? (Date.now() - requestStartTime);
         const ttft = finalMetadata?.ttft ?? (firstTokenTime ? firstTokenTime - requestStartTime : undefined);
         
-        // Use actual token counts from provider if available, otherwise estimate
+        // Use actual token counts from finalMetadata (captured from part.totalUsage in messageMetadata)
+        // If not available, fall back to estimates
         const tokensIn = finalMetadata?.tokensIn ?? estimatedInputTokens;
         outputTokenCount = finalMetadata?.tokensOut ?? Math.ceil(assistantResponseText.length / 4);
-        const totalTokens = finalMetadata?.totalTokens ?? (tokensIn + outputTokenCount);
-        const throughput = finalMetadata?.throughput ?? (latencyMs > 0 ? Math.round((outputTokenCount / latencyMs) * 1000) : undefined);
+        const totalTokens = tokensIn + outputTokenCount;
+        const throughput = latencyMs > 0 ? Math.round((outputTokenCount / latencyMs) * 1000) : undefined;
         
         // Build metadata object
         const messageMetadata: AIRequestMetadata = {
@@ -367,7 +368,7 @@ export async function POST(request: NextRequest) {
           toolsUsed: toolStatuses.map((t) => t.toolName),
           searchQueries: loggerCtx.searchQueries,
           searchResults: loggerCtx.searchResults,
-          tokenUsage: { input: estimatedInputTokens, output: outputTokenCount },
+          tokenUsage: { input: tokensIn, output: outputTokenCount },
           latencyMs,
           timeToFirstToken: ttft,
           metadata: {
