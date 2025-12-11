@@ -121,26 +121,56 @@ async function getMongoUserId(): Promise<{ clerkId: string; mongoId: string }> {
 // Theme Generation
 // ============================================================================
 
-const THEME_SYSTEM_PROMPT = `You are an expert UI/UX designer specializing in color theory and theme design for web applications. Generate a complete theme configuration based on the user's description.
+const THEME_SYSTEM_PROMPT = `You are an expert UI/UX designer specializing in color theory and accessible theme design. Generate a complete theme based on the user's description.
 
-IMPORTANT GUIDELINES:
-1. All colors must be in hex format (e.g., #ffffff, #0a0a0a)
-2. Ensure sufficient contrast between background and foreground colors (WCAG AA minimum - 4.5:1 for text)
-3. Light mode should have light backgrounds with dark text
-4. Dark mode should have dark backgrounds with light text
-5. Primary color should be vibrant and stand out
-6. Destructive color should typically be a red variant
-7. Chart colors should be visually distinct from each other
-8. Sidebar colors should complement the main theme
-9. Shadow color should typically match or complement the primary color
+CRITICAL - COLOR EXTRACTION FROM PROMPT:
+- Analyze the user's prompt to identify the PRIMARY color concept (e.g., "ocean" = blue/teal, "forest" = green, "sunset" = orange/coral, "royal" = purple/gold)
+- The primary, accent, and chart colors MUST reflect the prompt's theme/mood
+- Use color psychology: warm colors for energy, cool colors for calm, etc.
 
-For the shadow configuration:
-- x and y should be in pixels (e.g., "0px", "1px")
-- blur and spread should be in pixels
-- opacity should be a decimal between 0 and 1 (e.g., "0.05")
-- color should be in hex format
+STRICT COLOR FORMAT:
+- All colors MUST be valid 6-digit hex codes (e.g., #3b82f6, #0f172a)
+- DO NOT use shorthand (e.g., #fff) or named colors
 
-Create a cohesive, professional theme that matches the user's description.`;
+CONTRAST REQUIREMENTS (WCAG AA - MANDATORY):
+For foreground text colors, ensure minimum 4.5:1 contrast ratio:
+- Light mode backgrounds (#f5f5f5 - #ffffff): Use foreground with L < 45 in HSL (e.g., #1a1a1a, #0f172a)
+- Dark mode backgrounds (#0a0a0a - #1f1f1f): Use foreground with L > 70 in HSL (e.g., #f5f5f5, #e2e8f0)
+- For "Foreground" colors on light backgrounds: use very dark colors (black to dark gray)
+- For "Foreground" colors on dark backgrounds: use very light colors (white to light gray)
+
+PRIMARY/ACCENT COLOR RULES:
+- primaryForeground on primary: If primary is dark (L < 50), use white/light. If primary is light (L > 50), use black/dark.
+- Same logic applies to: accentForeground, secondaryForeground, destructiveForeground, sidebarPrimaryForeground
+
+LIGHT MODE PALETTE:
+- background: #ffffff or very light tint of theme color
+- foreground: #0a0a0a to #1f2937 (MUST be very dark for readability)
+- card/popover: Match or slightly darker than background
+- secondary/muted: Light gray (#f1f5f9 to #f5f5f5)
+- border/input: Light gray (#e2e8f0 to #e5e5e5)
+
+DARK MODE PALETTE:
+- background: #0a0a0a to #1a1a2e (very dark)
+- foreground: #fafafa to #e2e8f0 (MUST be very light for readability)
+- card/popover: Slightly lighter than background (#1f1f1f to #27272a)
+- secondary/muted: Dark gray (#262626 to #3f3f46)
+- border/input: Dark gray (#27272a to #3f3f46)
+
+CHART COLORS:
+Generate 5 distinct, vibrant colors that work well together and relate to the theme.
+Ensure each chart color has good saturation (S > 40 in HSL) for data visualization.
+
+SHADOW CONFIGURATION:
+- x and y: pixels (e.g., "0px", "1px", "2px")
+- blur and spread: pixels (e.g., "4px", "0px")
+- opacity: decimal 0-1 (e.g., "0.05", "0.1")
+- color: hex that complements the primary color
+
+THEME NAME:
+Create a short, evocative 2-3 word name that captures the theme essence.
+
+Remember: The generated colors MUST clearly reflect the user's prompt. If they ask for "ocean theme", use blues and teals. If they ask for "sunset", use oranges, corals, and pinks.`;
 
 /**
  * Generate a theme configuration using AI based on user prompt
