@@ -976,21 +976,46 @@ export async function runOrchestrator(
 
   const provider = getProviderClient(providerType, apiKey);
 
-  // Create tools based on user's plan and enabled tools
-  let tools: ToolSet = createOrchestratorTools(ctx, handleToolStatus, enabledTools);
-
-  // Add Google-specific tools if provider is Google and tools are enabled
-  if (providerType === 'google' && ctx.providerTools && ctx.providerTools.length > 0) {
-    const googleTools = buildGoogleTools(ctx.providerTools as ProviderToolType[]);
-    // Merge Google tools with orchestrator tools
-    tools = { ...tools, ...googleTools } as ToolSet;
+  // Check if we're trying to use tools
+  const hasToolsEnabled = enabledTools.size > 0 || (ctx.providerTools && ctx.providerTools.length > 0);
+  
+  // Check if the model supports tools (for OpenRouter)
+  let modelSupportsTools = true;
+  if (providerType === 'openrouter' && hasToolsEnabled) {
+    try {
+      const models = await provider.listModels();
+      const modelMetadata = models.find(m => m.id === modelToUse);
+      modelSupportsTools = modelMetadata?.capabilities?.tools ?? false;
+      
+      if (!modelSupportsTools) {
+        console.warn(`[AI Orchestrator] Model ${modelToUse} does not support tools. Disabling tool use.`);
+      }
+    } catch (error) {
+      console.error('[AI Orchestrator] Failed to check model capabilities:', error);
+      // Assume no tool support if we can't check
+      modelSupportsTools = false;
+    }
+  }
+  
+  // Create tools based on user's plan, enabled tools, and model capabilities
+  let tools: ToolSet | undefined = undefined;
+  
+  if (hasToolsEnabled && modelSupportsTools) {
+    tools = createOrchestratorTools(ctx, handleToolStatus, enabledTools);
+    
+    // Add Google-specific tools if provider is Google and tools are enabled
+    if (providerType === 'google' && ctx.providerTools && ctx.providerTools.length > 0) {
+      const googleTools = buildGoogleTools(ctx.providerTools as ProviderToolType[]);
+      // Merge Google tools with orchestrator tools
+      tools = { ...tools, ...googleTools } as ToolSet;
+    }
   }
 
   // Build the system prompt with context
   let systemPrompt = buildSystemPrompt(ctx);
 
-  // Add provider tool hints to system prompt
-  if (ctx.providerTools && ctx.providerTools.length > 0) {
+  // Add provider tool hints to system prompt (only if tools are actually enabled)
+  if (ctx.providerTools && ctx.providerTools.length > 0 && modelSupportsTools) {
     const toolHints: string[] = [];
     if (ctx.providerTools.includes('googleSearch')) {
       toolHints.push('- Google Search: You can search the web for real-time information using the google_search tool');
@@ -1004,6 +1029,9 @@ export async function runOrchestrator(
     if (toolHints.length > 0) {
       systemPrompt += `\n\nEnabled Provider Tools:\n${toolHints.join('\n')}`;
     }
+  } else if (ctx.providerTools && ctx.providerTools.length > 0 && !modelSupportsTools) {
+    // Inform the AI that tools were requested but are not available
+    systemPrompt += `\n\nNote: Tool use was requested but the current model (${modelToUse}) does not support tools. Please provide responses without using external tools.`;
   }
 
   // Check if image generation is enabled for this request
@@ -1022,8 +1050,8 @@ export async function runOrchestrator(
     model: provider.getModel(modelToUse),
     system: systemPrompt,
     messages: convertToModelMessages(messages),
-    tools: imageGenerationEnabled ? undefined : tools, // Image gen models don't support tools
-    stopWhen: imageGenerationEnabled ? undefined : stepCountIs(maxSteps),
+    tools: imageGenerationEnabled ? undefined : (tools && Object.keys(tools).length > 0 ? tools : undefined), // Image gen models don't support tools, and only pass tools if they exist
+    stopWhen: imageGenerationEnabled || !tools ? undefined : stepCountIs(maxSteps),
     temperature: config.temperature,
     maxOutputTokens: config.maxTokens,
     maxRetries: 0, // Don't retry - rate limits should be shown to user immediately
@@ -1041,6 +1069,9 @@ export async function runOrchestrator(
     stream: result,
     toolStatuses,
     modelId: modelToUse,
+    warnings: !modelSupportsTools && hasToolsEnabled 
+      ? [`Model ${modelToUse} does not support tool use. Tools have been disabled for this conversation.`]
+      : [],
   };
 }
 

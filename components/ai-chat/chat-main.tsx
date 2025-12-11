@@ -44,6 +44,7 @@ export function AIChatMain({
   const promptUsedRef = useRef(false);
   const isUserScrollingRef = useRef(false);
   const titleGeneratedRef = useRef(false);
+  const shownErrorToastsRef = useRef<Set<string>>(new Set());
 
   // Model selection state (MAX plan only)
   const isMaxPlan = userPlan === "MAX";
@@ -197,32 +198,62 @@ export function AIChatMain({
     }
   }, [conversationId]);
 
-  // Detect error messages and show toast for rate limit errors
+  // Track message count to detect when new messages are added vs when conversation loads
+  const prevMessageCountRef = useRef(0);
+
+  // Detect error messages and show toast for rate limit errors (only for new errors)
   useEffect(() => {
-    if (messages.length === 0) return;
+    if (messages.length === 0) {
+      prevMessageCountRef.current = 0;
+      shownErrorToastsRef.current.clear();
+      return;
+    }
     
-    const lastMessage = messages[messages.length - 1];
-    if (lastMessage.role === "assistant" && isErrorMessage(lastMessage)) {
-      const errorContent = getErrorContent(lastMessage);
-      if (errorContent) {
-        const errorText = errorContent.error.toLowerCase();
-        const errorCode = errorContent.errorDetails?.code?.toLowerCase() || "";
-        
-        if (
-          errorText.includes("rate limit") ||
-          errorText.includes("quota") ||
-          errorText.includes("429") ||
-          errorText.includes("temporarily unavailable") ||
-          errorCode === "rate_limit" ||
-          errorCode === "resource_exhausted"
-        ) {
-          toast.error("Rate Limit Exceeded", {
-            description: "The AI model is temporarily unavailable due to quota limits. Please try again in a few moments or select a different model.",
-            duration: 8000,
-          });
+    // If this is the initial load (message count jumped significantly), mark all errors as shown
+    const isInitialLoad = prevMessageCountRef.current === 0 && messages.length > 1;
+    
+    if (isInitialLoad) {
+      // Mark all existing error messages as already shown
+      messages.forEach((m) => {
+        if (m.role === "assistant" && isErrorMessage(m)) {
+          shownErrorToastsRef.current.add(m.id);
+        }
+      });
+      prevMessageCountRef.current = messages.length;
+      return;
+    }
+    
+    // Only check the last message if it's a new message (count increased by 1)
+    if (messages.length === prevMessageCountRef.current + 1) {
+      const lastMessage = messages[messages.length - 1];
+      if (lastMessage.role === "assistant" && isErrorMessage(lastMessage)) {
+        // Only show toast if we haven't shown it for this message ID before
+        if (!shownErrorToastsRef.current.has(lastMessage.id)) {
+          const errorContent = getErrorContent(lastMessage);
+          if (errorContent) {
+            const errorText = errorContent.error.toLowerCase();
+            const errorCode = errorContent.errorDetails?.code?.toLowerCase() || "";
+            
+            if (
+              errorText.includes("rate limit") ||
+              errorText.includes("quota") ||
+              errorText.includes("429") ||
+              errorText.includes("temporarily unavailable") ||
+              errorCode === "rate_limit" ||
+              errorCode === "resource_exhausted"
+            ) {
+              shownErrorToastsRef.current.add(lastMessage.id);
+              toast.error("Rate Limit Exceeded", {
+                description: "The AI model is temporarily unavailable due to quota limits. Please try again in a few moments or select a different model.",
+                duration: 8000,
+              });
+            }
+          }
         }
       }
     }
+    
+    prevMessageCountRef.current = messages.length;
   }, [messages]);
 
   const suggestionCategory: SuggestionCategory = learningPathId

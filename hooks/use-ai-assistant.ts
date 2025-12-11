@@ -130,9 +130,8 @@ export function useAIAssistant(
   const [input, setInput] = useState("");
   const [lastModelId, setLastModelId] = useState<string | undefined>(undefined);
   const activeToolsRef = useRef<AssistantToolStatus[]>([]);
-  const messageMetadataRef = useRef<Map<string, MessageMetadata>>(new Map());
-  // Use a counter to force re-renders when metadata changes
-  const [metadataVersion, setMetadataVersion] = useState(0);
+  // Store metadata in state instead of ref to trigger re-renders
+  const [messageMetadata, setMessageMetadata] = useState<Map<string, MessageMetadata>>(new Map());
 
   // Track previous conversationId to detect changes
   const prevConversationIdRef = useRef<string | undefined>(undefined);
@@ -173,24 +172,22 @@ export function useAIAssistant(
       if (contextRefs.lastModelId && result.message) {
         const messageId = result.message.id;
 
-        // Only process if we haven't already
-        if (!messageMetadataRef.current.has(messageId)) {
-          // Create metadata for this message
-          const metadata: MessageMetadata = {
-            model: contextRefs.lastModelId,
-          };
+        // Create metadata for this message
+        const metadata: MessageMetadata = {
+          model: contextRefs.lastModelId,
+        };
 
-          // Store in ref immediately (no re-render)
-          messageMetadataRef.current.set(messageId, metadata);
-
-          // Use queueMicrotask to defer state updates completely outside React's update cycle
-          // This prevents "Maximum update depth exceeded" errors
-          queueMicrotask(() => {
-            setLastModelId(contextRefs.lastModelId);
-            setMetadataVersion((v) => v + 1);
-            onMessageMetadata?.(messageId, metadata);
+        // Use queueMicrotask to defer state updates completely outside React's update cycle
+        // This prevents "Maximum update depth exceeded" errors
+        queueMicrotask(() => {
+          setLastModelId(contextRefs.lastModelId);
+          setMessageMetadata((prev) => {
+            const next = new Map(prev);
+            next.set(messageId, metadata);
+            return next;
           });
-        }
+          onMessageMetadata?.(messageId, metadata);
+        });
       }
     },
   });
@@ -283,12 +280,10 @@ export function useAIAssistant(
           });
 
           setMessages(uiMessages as UIMessage[]);
-          messageMetadataRef.current = metadataMap;
-          setMetadataVersion((v) => v + 1);
+          setMessageMetadata(metadataMap);
         } else {
           setMessages([]);
-          messageMetadataRef.current = new Map();
-          setMetadataVersion((v) => v + 1);
+          setMessageMetadata(new Map());
         }
       } catch (err) {
         console.error("Failed to load conversation:", err);
@@ -341,16 +336,11 @@ export function useAIAssistant(
     setMessages([]);
     setActiveTools([]);
     activeToolsRef.current = [];
-    messageMetadataRef.current = new Map();
-    setMetadataVersion((v) => v + 1);
+    setMessageMetadata(new Map());
   }, [setMessages]);
 
   // Derive isLoading from status for backwards compatibility
   const isLoading = status === "streaming" || status === "submitted";
-
-  // metadataVersion is used to trigger re-renders when metadata changes
-  // We access it here to ensure the component re-renders
-  void metadataVersion;
 
   return {
     messages,
@@ -359,7 +349,7 @@ export function useAIAssistant(
     isLoading,
     error,
     activeTools,
-    messageMetadata: messageMetadataRef.current,
+    messageMetadata,
     lastModelId,
     sendMessage,
     stop,
