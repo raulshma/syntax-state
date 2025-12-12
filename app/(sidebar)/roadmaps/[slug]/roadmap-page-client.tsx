@@ -18,9 +18,9 @@ interface RoadmapPageClientProps {
   subRoadmapProgressMap?: Record<string, SubRoadmapProgressInfo>;
 }
 
-export function RoadmapPageClient({ 
-  initialRoadmap, 
-  initialProgress, 
+export function RoadmapPageClient({
+  initialRoadmap,
+  initialProgress,
   initialLessonAvailability,
   initialGamification,
   parentRoadmap,
@@ -34,9 +34,9 @@ export function RoadmapPageClient({
 
   return (
     <div className="h-[calc(100vh-4rem)]">
-      <RoadmapClient 
-        initialRoadmap={initialRoadmap} 
-        initialProgress={initialProgress} 
+      <RoadmapClient
+        initialRoadmap={initialRoadmap}
+        initialProgress={initialProgress}
         initialLessonAvailability={initialLessonAvailability}
         initialGamification={initialGamification}
         parentRoadmap={parentRoadmap}
