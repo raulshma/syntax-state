@@ -146,6 +146,24 @@ export const BADGES = {
     icon: '👑',
     category: 'level',
   },
+  
+  // JavaScript milestone badges
+  JAVASCRIPT_JOURNEYMAN: {
+    id: 'javascript-journeyman',
+    name: 'JavaScript Journeyman',
+    description: 'Complete all JavaScript lessons at any level',
+    icon: '🟨',
+    category: 'mastery',
+  },
+  
+  // React milestone badges
+  REACT_RANGER: {
+    id: 'react-ranger',
+    name: 'React Ranger',
+    description: 'Complete all React lessons at any level',
+    icon: '⚛️',
+    category: 'mastery',
+  },
 } as const;
 
 export type BadgeId = keyof typeof BADGES;
@@ -228,6 +246,10 @@ export function checkNewBadges(stats: {
   internetLessonsIntermediateCompleted: number;
   internetLessonsAdvancedCompleted: number;
   totalInternetLessons: number;
+  javascriptLessonsCompleted?: number;
+  totalJavaScriptLessons?: number;
+  reactLessonsCompleted?: number;
+  totalReactLessons?: number;
 }, existingBadgeIds: string[]): string[] {
   const newBadges: string[] = [];
   
@@ -282,6 +304,22 @@ export function checkNewBadges(stats: {
     newBadges.push('internet-advanced');
   }
   
+  // Check JavaScript Journeyman badge (Requirement 20.4)
+  if (stats.javascriptLessonsCompleted !== undefined && 
+      stats.totalJavaScriptLessons !== undefined &&
+      stats.javascriptLessonsCompleted >= stats.totalJavaScriptLessons && 
+      !existingBadgeIds.includes('javascript-journeyman')) {
+    newBadges.push('javascript-journeyman');
+  }
+  
+  // Check React Ranger badge (Requirement 20.5)
+  if (stats.reactLessonsCompleted !== undefined && 
+      stats.totalReactLessons !== undefined &&
+      stats.reactLessonsCompleted >= stats.totalReactLessons && 
+      !existingBadgeIds.includes('react-ranger')) {
+    newBadges.push('react-ranger');
+  }
+  
   return newBadges;
 }
 
@@ -303,6 +341,39 @@ export const INTERNET_LESSON_IDS = [
   'internet/what-is-hosting',
   'internet/dns-and-how-it-works',
   'internet/browsers-and-how-they-work',
+];
+
+// Total number of JavaScript lessons for badge completion checks
+export const TOTAL_JAVASCRIPT_LESSONS = 10;
+
+// JavaScript lesson IDs for badge tracking
+export const JAVASCRIPT_LESSON_IDS = [
+  'javascript/syntax-and-basic-constructs',
+  'javascript/learn-dom-manipulation',
+  'javascript/learn-fetch-api',
+  'javascript/es6-and-modular-javascript',
+  'javascript/hoisting-scope-prototype',
+  'javascript/async-await-promises',
+  'javascript/error-handling-debugging',
+  'javascript/arrays-and-objects',
+  'javascript/regular-expressions',
+  'javascript/web-storage',
+];
+
+// Total number of React lessons for badge completion checks
+export const TOTAL_REACT_LESSONS = 9;
+
+// React lesson IDs for badge tracking
+export const REACT_LESSON_IDS = [
+  'react/components-and-jsx',
+  'react/state-and-props',
+  'react/hooks-usestate-useeffect',
+  'react/context-api',
+  'react/react-router',
+  'react/forms-in-react',
+  'react/performance-optimization',
+  'react/error-boundaries',
+  'react/server-components',
 ];
 
 /**
@@ -327,6 +398,48 @@ export function checkInternetMilestoneBadge(
       case 'advanced':
         return 'internet-advanced';
     }
+  }
+  
+  return null;
+}
+
+/**
+ * Check if user has completed all JavaScript lessons at any level
+ * Returns 'javascript-journeyman' badge ID if all lessons are completed
+ */
+export function checkJavaScriptMilestoneBadge(
+  completedLessons: Array<{ lessonId: string; experienceLevel: string }>
+): string | null {
+  // Get unique JavaScript lesson IDs that have been completed at any level
+  const completedJsLessonIds = new Set(
+    completedLessons
+      .filter(lesson => JAVASCRIPT_LESSON_IDS.includes(lesson.lessonId))
+      .map(lesson => lesson.lessonId)
+  );
+  
+  if (completedJsLessonIds.size >= TOTAL_JAVASCRIPT_LESSONS) {
+    return 'javascript-journeyman';
+  }
+  
+  return null;
+}
+
+/**
+ * Check if user has completed all React lessons at any level
+ * Returns 'react-ranger' badge ID if all lessons are completed
+ */
+export function checkReactMilestoneBadge(
+  completedLessons: Array<{ lessonId: string; experienceLevel: string }>
+): string | null {
+  // Get unique React lesson IDs that have been completed at any level
+  const completedReactLessonIds = new Set(
+    completedLessons
+      .filter(lesson => REACT_LESSON_IDS.includes(lesson.lessonId))
+      .map(lesson => lesson.lessonId)
+  );
+  
+  if (completedReactLessonIds.size >= TOTAL_REACT_LESSONS) {
+    return 'react-ranger';
   }
   
   return null;

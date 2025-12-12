@@ -65,6 +65,28 @@ import { AsyncTimeline } from '@/components/learn/interactive/javascript/AsyncTi
 import { ErrorTypeExplorer } from '@/components/learn/interactive/javascript/ErrorTypeExplorer';
 import { DebugSimulator } from '@/components/learn/interactive/javascript/DebugSimulator';
 import { StackTraceAnalyzer } from '@/components/learn/interactive/javascript/StackTraceAnalyzer';
+import { ArrayMethodVisualizer } from '@/components/learn/interactive/javascript/ArrayMethodVisualizer';
+import { MethodChainingPlayground } from '@/components/learn/interactive/javascript/MethodChainingPlayground';
+import { ObjectExplorer } from '@/components/learn/interactive/javascript/ObjectExplorer';
+import { RegexTester } from '@/components/learn/interactive/javascript/RegexTester';
+import { PatternBuilder } from '@/components/learn/interactive/javascript/PatternBuilder';
+import { StorageInspector } from '@/components/learn/interactive/javascript/StorageInspector';
+import { StorageComparison } from '@/components/learn/interactive/javascript/StorageComparison';
+
+// React Lesson Components
+import {
+  ReactPlayground,
+  JsxTransformer,
+  ComponentTreeVisualizer,
+  DataFlowDiagram,
+  PropsInspector,
+  StateTimeline,
+  ErrorBoundarySimulator,
+  ErrorPropagationVisualizer,
+  ServerClientBoundaryVisualizer,
+  ComponentTypeSelector,
+  ServerDataFlowDiagram,
+} from '@/components/learn/interactive/react';
 
 /**
  * MDX Components Configuration
@@ -148,6 +170,28 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
     ErrorTypeExplorer,
     DebugSimulator,
     StackTraceAnalyzer,
+    ArrayMethodVisualizer,
+    MethodChainingPlayground,
+    ObjectExplorer,
+    RegexTester,
+    PatternBuilder,
+    StorageInspector,
+    StorageComparison,
+
+    // React Lesson Components
+    ReactPlayground,
+    JsxTransformer,
+    ComponentTreeVisualizer,
+    DataFlowDiagram,
+    PropsInspector,
+    StateTimeline,
+    ErrorBoundarySimulator,
+    ErrorPropagationVisualizer,
+    
+    // Server Components Lesson Components
+    ServerClientBoundaryVisualizer,
+    ComponentTypeSelector,
+    ServerDataFlowDiagram,
 
     // Enhanced HTML elements with proper styling
     h1: ({ children, ...props }) => (

@@ -1,0 +1,364 @@
+# Regular Expressions: Intermediate
+
+Ready to level up your regex skills? In this lesson, we'll explore quantifiers with precision, capturing groups, lookahead/lookbehind assertions, and practical patterns for real-world use cases.
+
+<InfoBox type="tip" title="Building on Basics">
+This lesson assumes you're comfortable with basic patterns, character classes, and simple quantifiers. We'll now combine these into powerful, precise patterns.
+</InfoBox>
+
+<ProgressCheckpoint section="introduction" xpReward={20} />
+
+## Precise Quantifiers
+
+Beyond `*`, `+`, and `?`, you can specify exact quantities with curly braces.
+
+### Exact Counts
+
+```javascript
+// {n} - exactly n times
+/\d{3}/.test("123");     // true - exactly 3 digits
+/\d{3}/.test("12");      // false - only 2 digits
+/\d{3}/.test("1234");    // true - has 3 digits (and more)
+
+// {n,m} - between n and m times
+/\d{2,4}/.test("1");     // false - too few
+/\d{2,4}/.test("12");    // true
+/\d{2,4}/.test("1234");  // true
+/\d{2,4}/.test("12345"); // true - matches first 4
+
+// {n,} - n or more times
+/\d{3,}/.test("12");     // false - need at least 3
+/\d{3,}/.test("123456"); // true
+```
+
+### Practical Phone Number Pattern
+
+```javascript
+// US phone: 123-456-7890 or (123) 456-7890
+const phonePattern = /\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/;
+
+phonePattern.test("123-456-7890");   // true
+phonePattern.test("(123) 456-7890"); // true
+phonePattern.test("123.456.7890");   // true
+phonePattern.test("1234567890");     // true
+```
+
+<ProgressCheckpoint section="basic-patterns" xpReward={20} />
+
+## Capturing Groups
+
+Parentheses `()` create capturing groups that let you extract parts of a match.
+
+### Basic Capturing
+
+```javascript
+const datePattern = /(\d{4})-(\d{2})-(\d{2})/;
+const match = "2024-03-15".match(datePattern);
+
+console.log(match[0]); // "2024-03-15" (full match)
+console.log(match[1]); // "2024" (first group - year)
+console.log(match[2]); // "03" (second group - month)
+console.log(match[3]); // "15" (third group - day)
+```
+
+### Named Capturing Groups
+
+Use `(?<name>...)` to give groups meaningful names:
+
+```javascript
+const datePattern = /(?<year>\d{4})-(?<month>\d{2})-(?<day>\d{2})/;
+const match = "2024-03-15".match(datePattern);
+
+console.log(match.groups.year);  // "2024"
+console.log(match.groups.month); // "03"
+console.log(match.groups.day);   // "15"
+```
+
+### Non-Capturing Groups
+
+Use `(?:...)` when you need grouping but don't need to capture:
+
+```javascript
+// Capturing - stores the match
+const capturing = /(https?):\/\//;
+"https://example.com".match(capturing);
+// ["https://", "https"]
+
+// Non-capturing - groups but doesn't store
+const nonCapturing = /(?:https?):\/\//;
+"https://example.com".match(nonCapturing);
+// ["https://"] - no second element
+```
+
+<KeyConcept title="When to Use Non-Capturing Groups">
+Use `(?:...)` when you need to group for quantifiers or alternation but don't need the matched text. This improves performance and keeps your match results cleaner.
+</KeyConcept>
+
+<RegexTester 
+  initialPattern="(?<protocol>https?):\/\/(?<domain>[^\/]+)"
+  initialText="Visit https://example.com or http://test.org for more info."
+/>
+
+<ProgressCheckpoint section="character-classes" xpReward={20} />
+
+## Alternation and Backreferences
+
+### Alternation (OR)
+
+The pipe `|` lets you match one pattern OR another:
+
+```javascript
+// Match different file extensions
+const imagePattern = /\.(jpg|jpeg|png|gif|webp)$/i;
+
+imagePattern.test("photo.jpg");  // true
+imagePattern.test("image.PNG");  // true (case insensitive)
+imagePattern.test("doc.pdf");    // false
+
+// Match different date formats
+const datePattern = /\d{4}[-\/]\d{2}[-\/]\d{2}/;
+datePattern.test("2024-03-15"); // true
+datePattern.test("2024/03/15"); // true
+```
+
+### Backreferences
+
+Reference a captured group later in the pattern with `\1`, `\2`, etc.:
+
+```javascript
+// Match repeated words
+const repeatedWord = /\b(\w+)\s+\1\b/i;
+
+repeatedWord.test("the the");     // true
+repeatedWord.test("hello hello"); // true
+repeatedWord.test("hello world"); // false
+
+// Find the repeated word
+"I said said hello".match(repeatedWord);
+// ["said said", "said"]
+```
+
+<ProgressCheckpoint section="quantifiers" xpReward={20} />
+
+## Lookahead and Lookbehind
+
+These are "zero-width assertions" — they check for patterns without including them in the match.
+
+### Positive Lookahead (?=...)
+
+Match something only if it's followed by another pattern:
+
+```javascript
+// Match numbers followed by "px"
+const pxPattern = /\d+(?=px)/g;
+
+"width: 100px, height: 50px, margin: 10em".match(pxPattern);
+// ["100", "50"] - matches numbers, but not "px"
+
+// Match words followed by exclamation
+const excitedWords = /\w+(?=!)/g;
+"Hello! How are you? Great!".match(excitedWords);
+// ["Hello", "Great"]
+```
+
+### Negative Lookahead (?!...)
+
+Match something only if it's NOT followed by another pattern:
+
+```javascript
+// Match numbers NOT followed by "px"
+const notPxPattern = /\d+(?!px)/g;
+
+"width: 100px, height: 50, margin: 10em".match(notPxPattern);
+// ["10", "50", "10"] - note: "100" partially matches as "10"
+
+// Better: word boundary
+const notPxBetter = /\d+\b(?!px)/g;
+"width: 100px, height: 50, margin: 10em".match(notPxBetter);
+// ["50", "10"]
+```
+
+### Positive Lookbehind (?<=...)
+
+Match something only if it's preceded by another pattern:
+
+```javascript
+// Match numbers after "$"
+const pricePattern = /(?<=\$)\d+(\.\d{2})?/g;
+
+"Price: $99.99, Tax: $5.00, Total: 104.99".match(pricePattern);
+// ["99.99", "5.00"] - only numbers after $
+```
+
+### Negative Lookbehind (?<!...)
+
+Match something only if it's NOT preceded by another pattern:
+
+```javascript
+// Match "cat" not preceded by "bob"
+const notBobsCat = /(?<!bob)cat/gi;
+
+"bobcat and cat and tomcat".match(notBobsCat);
+// ["cat", "cat"] - excludes "bobcat"
+```
+
+<InfoBox type="warning" title="Browser Support">
+Lookbehind assertions (`(?<=...)` and `(?<!...)`) are supported in modern browsers but not in older ones. Check compatibility if supporting legacy browsers.
+</InfoBox>
+
+<ProgressCheckpoint section="groups" xpReward={20} />
+
+## Regex Methods Deep Dive
+
+### exec() for Iteration
+
+Use `exec()` with a global regex to iterate through all matches:
+
+```javascript
+const pattern = /\d+/g;
+const text = "I have 3 cats and 2 dogs";
+let match;
+
+while ((match = pattern.exec(text)) !== null) {
+  console.log(`Found "${match[0]}" at index ${match.index}`);
+}
+// Found "3" at index 7
+// Found "2" at index 18
+```
+
+### replace() with Functions
+
+Pass a function to `replace()` for dynamic replacements:
+
+```javascript
+// Convert to uppercase
+"hello world".replace(/\w+/g, (match) => match.toUpperCase());
+// "HELLO WORLD"
+
+// Use captured groups
+"John Smith".replace(/(\w+) (\w+)/, "$2, $1");
+// "Smith, John"
+
+// Complex transformation
+"price: 100, tax: 20".replace(/\d+/g, (match) => {
+  return (parseInt(match) * 1.1).toFixed(2);
+});
+// "price: 110.00, tax: 22.00"
+```
+
+### split() with Regex
+
+Split strings using patterns:
+
+```javascript
+// Split on multiple delimiters
+"apple,banana;cherry orange".split(/[,;\s]+/);
+// ["apple", "banana", "cherry", "orange"]
+
+// Keep the delimiters using capturing group
+"one1two2three3".split(/(\d)/);
+// ["one", "1", "two", "2", "three", "3", ""]
+```
+
+<PatternBuilder 
+  testString="Email: john.doe@example.com, Phone: (555) 123-4567, Price: $99.99"
+/>
+
+<ProgressCheckpoint section="regex-methods" xpReward={20} />
+
+## Practical Patterns
+
+### Email Validation (Simplified)
+
+```javascript
+// Basic email pattern
+const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+emailPattern.test("user@example.com");     // true
+emailPattern.test("user.name@domain.org"); // true
+emailPattern.test("invalid@");             // false
+emailPattern.test("no spaces@test.com");   // false
+```
+
+### URL Parsing
+
+```javascript
+const urlPattern = /^(https?):\/\/([^\/]+)(\/.*)?$/;
+const url = "https://example.com/path/to/page";
+const match = url.match(urlPattern);
+
+console.log(match[1]); // "https" (protocol)
+console.log(match[2]); // "example.com" (domain)
+console.log(match[3]); // "/path/to/page" (path)
+```
+
+### Password Strength
+
+```javascript
+// At least 8 chars, one uppercase, one lowercase, one digit
+const strongPassword = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+
+strongPassword.test("weakpass");    // false - no uppercase or digit
+strongPassword.test("Weak1");       // false - too short
+strongPassword.test("StrongPass1"); // true
+```
+
+<ProgressCheckpoint section="summary" xpReward={15} />
+
+## Quick Reference
+
+<KeyConcept title="Quantifiers">
+- `{n}` — Exactly n times
+- `{n,m}` — Between n and m times
+- `{n,}` — n or more times
+</KeyConcept>
+
+<KeyConcept title="Groups">
+- `(...)` — Capturing group
+- `(?:...)` — Non-capturing group
+- `(?<name>...)` — Named capturing group
+- `\1`, `\2` — Backreferences
+</KeyConcept>
+
+<KeyConcept title="Lookaround">
+- `(?=...)` — Positive lookahead
+- `(?!...)` — Negative lookahead
+- `(?<=...)` — Positive lookbehind
+- `(?<!...)` — Negative lookbehind
+</KeyConcept>
+
+## Quick Quiz
+
+<Quiz>
+  <Question text="What does /\d{2,4}/ match?">
+    <Answer>Exactly 2 or exactly 4 digits</Answer>
+    <Answer correct>Between 2 and 4 digits</Answer>
+    <Answer>2 followed by 4</Answer>
+    <Answer>24 digits</Answer>
+  </Question>
+  
+  <Question text="What is the purpose of (?:...) in regex?">
+    <Answer>Create a named group</Answer>
+    <Answer correct>Group without capturing</Answer>
+    <Answer>Make the group optional</Answer>
+    <Answer>Create a lookahead</Answer>
+  </Question>
+  
+  <Question text="What does /\d+(?=px)/ match in '100px 50em'?">
+    <Answer>"100px"</Answer>
+    <Answer correct>"100"</Answer>
+    <Answer>"100" and "50"</Answer>
+    <Answer>"px"</Answer>
+  </Question>
+  
+  <Question text="How do you reference the first captured group in a replacement?">
+    <Answer>\1</Answer>
+    <Answer correct>$1</Answer>
+    <Answer>%1</Answer>
+    <Answer>group(1)</Answer>
+  </Question>
+</Quiz>
+
+---
+
+**Impressive progress!** 🎉 You've mastered intermediate regex concepts. In the advanced level, we'll explore performance optimization, Unicode support, and complex pattern construction!

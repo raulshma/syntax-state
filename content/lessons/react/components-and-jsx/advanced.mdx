@@ -1,0 +1,614 @@
+# Components and JSX
+
+Welcome to the advanced level! Here we'll dive deep into how JSX actually works under the hood, explore advanced component patterns like Higher-Order Components and Render Props, and understand the performance implications of different approaches.
+
+<InfoBox type="info" title="What You'll Learn">
+This level covers JSX compilation, advanced component patterns, and techniques used in production React applications and libraries.
+</InfoBox>
+
+<ProgressCheckpoint section="introduction" xpReward={30} />
+
+## JSX Compilation Deep Dive
+
+JSX is syntactic sugar that gets compiled to JavaScript function calls. Understanding this transformation helps you write better React code.
+
+### The Transformation
+
+```jsx
+// What you write (JSX)
+<div className="container">
+  <h1>Hello</h1>
+  <p>World</p>
+</div>
+
+// What it becomes (JavaScript)
+React.createElement(
+  'div',
+  { className: 'container' },
+  React.createElement('h1', null, 'Hello'),
+  React.createElement('p', null, 'World')
+)
+```
+
+### React.createElement Signature
+
+```javascript
+React.createElement(
+  type,       // 'div', 'span', or a component
+  props,      // object of props or null
+  ...children // any number of children
+)
+```
+
+<JsxTransformer 
+  jsx={`<Card variant="primary">
+  <CardHeader>
+    <Title>Welcome</Title>
+  </CardHeader>
+  <CardBody>
+    <p>Content here</p>
+  </CardBody>
+</Card>`}
+  animated={true}
+/>
+
+### The New JSX Transform (React 17+)
+
+React 17 introduced a new JSX transform that doesn't require importing React:
+
+```jsx
+// Old transform (React 16 and earlier)
+import React from 'react';
+const element = React.createElement('div', null, 'Hello');
+
+// New transform (React 17+)
+import { jsx as _jsx } from 'react/jsx-runtime';
+const element = _jsx('div', { children: 'Hello' });
+```
+
+<KeyConcept title="Why the New Transform?">
+The new transform is slightly smaller in bundle size and doesn't require `import React` in every file. It also enables future optimizations.
+</KeyConcept>
+
+<ProgressCheckpoint section="what-are-components" xpReward={30} />
+
+## Higher-Order Components (HOCs)
+
+A **Higher-Order Component** is a function that takes a component and returns a new enhanced component. It's a pattern for reusing component logic.
+
+```jsx
+// HOC that adds loading state
+function withLoading(WrappedComponent) {
+  return function WithLoadingComponent({ isLoading, ...props }) {
+    if (isLoading) {
+      return <div>Loading...</div>;
+    }
+    return <WrappedComponent {...props} />;
+  };
+}
+
+// Usage
+const UserListWithLoading = withLoading(UserList);
+
+// In your app
+<UserListWithLoading isLoading={loading} users={users} />
+```
+
+### Common HOC Patterns
+
+```jsx
+// Authentication HOC
+function withAuth(WrappedComponent) {
+  return function WithAuthComponent(props) {
+    const { user } = useAuth();
+    
+    if (!user) {
+      return <Navigate to="/login" />;
+    }
+    
+    return <WrappedComponent {...props} user={user} />;
+  };
+}
+
+// Data fetching HOC
+function withData(WrappedComponent, fetchData) {
+  return function WithDataComponent(props) {
+    const [data, setData] = React.useState(null);
+    const [loading, setLoading] = React.useState(true);
+    
+    React.useEffect(() => {
+      fetchData().then(result => {
+        setData(result);
+        setLoading(false);
+      });
+    }, []);
+    
+    if (loading) return <Spinner />;
+    return <WrappedComponent {...props} data={data} />;
+  };
+}
+```
+
+<ReactPlayground
+  initialCode={`// Higher-Order Component example
+function withTheme(WrappedComponent) {
+  return function WithThemeComponent(props) {
+    const [theme, setTheme] = React.useState('light');
+    
+    const themeStyles = {
+      light: { background: '#ffffff', color: '#1a1a1a' },
+      dark: { background: '#1a1a1a', color: '#ffffff' }
+    };
+    
+    return (
+      <div style={{ padding: '16px', borderRadius: '12px', ...themeStyles[theme] }}>
+        <button 
+          onClick={() => setTheme(t => t === 'light' ? 'dark' : 'light')}
+          style={{ marginBottom: '12px' }}
+        >
+          Toggle Theme
+        </button>
+        <WrappedComponent {...props} theme={theme} />
+      </div>
+    );
+  };
+}
+
+// Original component
+function UserCard({ name, role, theme }) {
+  return (
+    <div>
+      <h3 style={{ margin: '0 0 4px' }}>{name}</h3>
+      <p style={{ margin: 0, opacity: 0.7 }}>{role}</p>
+      <small>Current theme: {theme}</small>
+    </div>
+  );
+}
+
+// Enhanced component
+const ThemedUserCard = withTheme(UserCard);
+
+render(<ThemedUserCard name="Alice" role="Developer" />);`}
+  height={280}
+/>
+
+<ProgressCheckpoint section="jsx-basics" xpReward={30} />
+
+## Render Props Pattern
+
+**Render Props** is a pattern where a component receives a function as a prop that returns React elements. This allows sharing code between components.
+
+```jsx
+// Component with render prop
+function MouseTracker({ render }) {
+  const [position, setPosition] = React.useState({ x: 0, y: 0 });
+  
+  function handleMouseMove(event) {
+    setPosition({ x: event.clientX, y: event.clientY });
+  }
+  
+  return (
+    <div onMouseMove={handleMouseMove}>
+      {render(position)}
+    </div>
+  );
+}
+
+// Usage
+<MouseTracker 
+  render={({ x, y }) => (
+    <p>Mouse is at ({x}, {y})</p>
+  )}
+/>
+```
+
+### Children as a Function
+
+A common variation uses `children` as the render prop:
+
+```jsx
+function DataFetcher({ url, children }) {
+  const [data, setData] = React.useState(null);
+  const [loading, setLoading] = React.useState(true);
+  
+  React.useEffect(() => {
+    fetch(url)
+      .then(res => res.json())
+      .then(data => {
+        setData(data);
+        setLoading(false);
+      });
+  }, [url]);
+  
+  return children({ data, loading });
+}
+
+// Usage
+<DataFetcher url="/api/users">
+  {({ data, loading }) => (
+    loading ? <Spinner /> : <UserList users={data} />
+  )}
+</DataFetcher>
+```
+
+<ReactPlayground
+  initialCode={`// Render Props pattern
+function Toggle({ children }) {
+  const [isOn, setIsOn] = React.useState(false);
+  
+  return children({
+    isOn,
+    toggle: () => setIsOn(prev => !prev),
+    setOn: () => setIsOn(true),
+    setOff: () => setIsOn(false)
+  });
+}
+
+function App() {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      {/* Same Toggle logic, different UIs */}
+      <Toggle>
+        {({ isOn, toggle }) => (
+          <button 
+            onClick={toggle}
+            style={{
+              padding: '12px 24px',
+              background: isOn ? '#22c55e' : '#e2e8f0',
+              color: isOn ? 'white' : 'black',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: 'pointer'
+            }}
+          >
+            {isOn ? 'ON' : 'OFF'}
+          </button>
+        )}
+      </Toggle>
+      
+      <Toggle>
+        {({ isOn, toggle }) => (
+          <div 
+            onClick={toggle}
+            style={{
+              width: '60px',
+              height: '30px',
+              background: isOn ? '#22c55e' : '#e2e8f0',
+              borderRadius: '15px',
+              padding: '3px',
+              cursor: 'pointer',
+              transition: 'background 0.2s'
+            }}
+          >
+            <div style={{
+              width: '24px',
+              height: '24px',
+              background: 'white',
+              borderRadius: '50%',
+              transform: isOn ? 'translateX(30px)' : 'translateX(0)',
+              transition: 'transform 0.2s'
+            }} />
+          </div>
+        )}
+      </Toggle>
+    </div>
+  );
+}
+
+render(<App />);`}
+  height={250}
+/>
+
+<ProgressCheckpoint section="component-composition" xpReward={30} />
+
+## Compound Components Pattern
+
+**Compound Components** work together to form a complete UI. They share implicit state through React Context.
+
+```jsx
+// The compound component pattern
+<Select value={selected} onChange={setSelected}>
+  <Select.Option value="apple">Apple</Select.Option>
+  <Select.Option value="banana">Banana</Select.Option>
+  <Select.Option value="cherry">Cherry</Select.Option>
+</Select>
+```
+
+### Implementation
+
+```jsx
+const SelectContext = React.createContext();
+
+function Select({ children, value, onChange }) {
+  return (
+    <SelectContext.Provider value={{ value, onChange }}>
+      <div className="select">{children}</div>
+    </SelectContext.Provider>
+  );
+}
+
+function Option({ value, children }) {
+  const { value: selectedValue, onChange } = React.useContext(SelectContext);
+  const isSelected = value === selectedValue;
+  
+  return (
+    <div 
+      className={`option ${isSelected ? 'selected' : ''}`}
+      onClick={() => onChange(value)}
+    >
+      {children}
+    </div>
+  );
+}
+
+// Attach Option to Select
+Select.Option = Option;
+```
+
+<ReactPlayground
+  initialCode={`// Compound Components pattern
+const TabsContext = React.createContext();
+
+function Tabs({ children, defaultTab }) {
+  const [activeTab, setActiveTab] = React.useState(defaultTab);
+  
+  return (
+    <TabsContext.Provider value={{ activeTab, setActiveTab }}>
+      <div>{children}</div>
+    </TabsContext.Provider>
+  );
+}
+
+function TabList({ children }) {
+  return (
+    <div style={{ 
+      display: 'flex', 
+      borderBottom: '2px solid #e2e8f0',
+      marginBottom: '16px'
+    }}>
+      {children}
+    </div>
+  );
+}
+
+function Tab({ value, children }) {
+  const { activeTab, setActiveTab } = React.useContext(TabsContext);
+  const isActive = activeTab === value;
+  
+  return (
+    <button
+      onClick={() => setActiveTab(value)}
+      style={{
+        padding: '12px 24px',
+        border: 'none',
+        background: 'none',
+        cursor: 'pointer',
+        borderBottom: isActive ? '2px solid #3b82f6' : '2px solid transparent',
+        marginBottom: '-2px',
+        color: isActive ? '#3b82f6' : '#64748b',
+        fontWeight: isActive ? '600' : '400'
+      }}
+    >
+      {children}
+    </button>
+  );
+}
+
+function TabPanels({ children }) {
+  return <div>{children}</div>;
+}
+
+function TabPanel({ value, children }) {
+  const { activeTab } = React.useContext(TabsContext);
+  if (activeTab !== value) return null;
+  return <div>{children}</div>;
+}
+
+// Attach sub-components
+Tabs.List = TabList;
+Tabs.Tab = Tab;
+Tabs.Panels = TabPanels;
+Tabs.Panel = TabPanel;
+
+function App() {
+  return (
+    <Tabs defaultTab="overview">
+      <Tabs.List>
+        <Tabs.Tab value="overview">Overview</Tabs.Tab>
+        <Tabs.Tab value="features">Features</Tabs.Tab>
+        <Tabs.Tab value="pricing">Pricing</Tabs.Tab>
+      </Tabs.List>
+      
+      <Tabs.Panels>
+        <Tabs.Panel value="overview">
+          <h3>Product Overview</h3>
+          <p>Learn about our amazing product.</p>
+        </Tabs.Panel>
+        <Tabs.Panel value="features">
+          <h3>Key Features</h3>
+          <ul>
+            <li>Feature 1</li>
+            <li>Feature 2</li>
+          </ul>
+        </Tabs.Panel>
+        <Tabs.Panel value="pricing">
+          <h3>Pricing Plans</h3>
+          <p>Starting at $9.99/month</p>
+        </Tabs.Panel>
+      </Tabs.Panels>
+    </Tabs>
+  );
+}
+
+render(<App />);`}
+  height={350}
+/>
+
+<ProgressCheckpoint section="conditional-rendering" xpReward={30} />
+
+## Performance Considerations
+
+### Avoiding Unnecessary Re-renders
+
+Every time a parent re-renders, all children re-render too. Here's how to optimize:
+
+```jsx
+// ❌ Creates new function every render
+<Button onClick={() => handleClick(id)} />
+
+// ✅ Memoize with useCallback
+const handleButtonClick = useCallback(() => {
+  handleClick(id);
+}, [id]);
+<Button onClick={handleButtonClick} />
+
+// ❌ Creates new object every render
+<Card style={{ padding: 20 }} />
+
+// ✅ Define outside or memoize
+const cardStyle = { padding: 20 };
+<Card style={cardStyle} />
+```
+
+### React.memo for Pure Components
+
+```jsx
+// Only re-renders if props change
+const ExpensiveComponent = React.memo(function ExpensiveComponent({ data }) {
+  // expensive rendering logic
+  return <div>{/* ... */}</div>;
+});
+
+// With custom comparison
+const MemoizedComponent = React.memo(
+  MyComponent,
+  (prevProps, nextProps) => {
+    // return true if props are equal (skip re-render)
+    return prevProps.id === nextProps.id;
+  }
+);
+```
+
+<KeyConcept title="Don't Over-Optimize">
+React is fast by default. Only add memoization when you've identified a performance problem. Premature optimization can make code harder to maintain.
+</KeyConcept>
+
+<ProgressCheckpoint section="lists-and-keys" xpReward={25} />
+
+## Component Tree Visualization
+
+Understanding how your component tree is structured helps with debugging and optimization:
+
+<ComponentTreeVisualizer 
+  code={`function App() {
+  const [theme, setTheme] = React.useState('light');
+  
+  return (
+    <ThemeProvider value={theme}>
+      <Layout>
+        <Header onThemeToggle={() => setTheme(t => t === 'light' ? 'dark' : 'light')} />
+        <Sidebar>
+          <Navigation items={['Home', 'About', 'Contact']} />
+        </Sidebar>
+        <Main>
+          <Dashboard>
+            <StatsCard title="Users" value={1234} />
+            <StatsCard title="Revenue" value={5678} />
+            <ActivityFeed items={[]} />
+          </Dashboard>
+        </Main>
+      </Layout>
+    </ThemeProvider>
+  );
+}
+
+function ThemeProvider({ value, children }) {
+  return <div data-theme={value}>{children}</div>;
+}
+
+function Layout({ children }) {
+  return <div className="layout">{children}</div>;
+}
+
+function Header({ onThemeToggle }) {
+  return <header><button onClick={onThemeToggle}>Toggle</button></header>;
+}
+
+function Sidebar({ children }) {
+  return <aside>{children}</aside>;
+}
+
+function Navigation({ items }) {
+  return <nav>{items.map(i => <a key={i}>{i}</a>)}</nav>;
+}
+
+function Main({ children }) {
+  return <main>{children}</main>;
+}
+
+function Dashboard({ children }) {
+  return <div className="dashboard">{children}</div>;
+}
+
+function StatsCard({ title, value }) {
+  return <div>{title}: {value}</div>;
+}
+
+function ActivityFeed({ items }) {
+  return <div>Activity: {items.length} items</div>;
+}`}
+  showProps={true}
+  showState={true}
+/>
+
+<ProgressCheckpoint section="summary" xpReward={20} />
+
+## Key Takeaways
+
+<KeyConcept title="JSX is Just JavaScript">
+Understanding JSX compilation helps you write better code and debug issues. JSX transforms to React.createElement calls.
+</KeyConcept>
+
+<KeyConcept title="HOCs vs Render Props vs Hooks">
+HOCs wrap components, render props use functions as children, and hooks (modern approach) share logic without wrapper components. Choose based on your use case.
+</KeyConcept>
+
+<KeyConcept title="Compound Components for APIs">
+Use compound components when building reusable component libraries. They provide flexible, declarative APIs.
+</KeyConcept>
+
+## Quick Quiz
+
+<Quiz>
+  <Question text="What does JSX compile to?">
+    <Answer>HTML strings</Answer>
+    <Answer correct>React.createElement calls</Answer>
+    <Answer>DOM nodes directly</Answer>
+    <Answer>Virtual DOM objects</Answer>
+  </Question>
+  
+  <Question text="What is a Higher-Order Component?">
+    <Answer>A component that renders above others</Answer>
+    <Answer correct>A function that takes a component and returns a new component</Answer>
+    <Answer>A component with higher z-index</Answer>
+    <Answer>A component that uses hooks</Answer>
+  </Question>
+  
+  <Question text="What pattern uses a function as the children prop?">
+    <Answer>Higher-Order Components</Answer>
+    <Answer correct>Render Props</Answer>
+    <Answer>Compound Components</Answer>
+    <Answer>Container Components</Answer>
+  </Question>
+  
+  <Question text="When should you use React.memo?">
+    <Answer>Always, for all components</Answer>
+    <Answer>Never, it's deprecated</Answer>
+    <Answer correct>When you've identified a performance problem with re-renders</Answer>
+    <Answer>Only for class components</Answer>
+  </Question>
+</Quiz>
+
+---
+
+**Congratulations!** 🎉 You've mastered advanced component patterns and JSX internals. These patterns are used in production React applications and popular libraries. You're now equipped to build sophisticated, performant React applications!

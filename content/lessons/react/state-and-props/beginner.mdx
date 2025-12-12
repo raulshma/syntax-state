@@ -1,0 +1,313 @@
+# State and Props
+
+Welcome back! Now that you understand components, it's time to learn how to make them dynamic and interactive. In React, we use **props** and **state** to manage data.
+
+Think of it this way:
+- **Props** are like function arguments - data passed INTO a component from outside
+- **State** is like a component's memory - data that lives INSIDE a component
+
+<InfoBox type="tip" title="The Key Difference">
+Props come from parents and are read-only. State is owned by the component and can change over time.
+</InfoBox>
+
+<ProgressCheckpoint section="introduction" xpReward={15} />
+
+## Understanding Props
+
+**Props** (short for "properties") are how parent components pass data to their children. Think of props like giving instructions to someone:
+
+```jsx
+// Parent gives instructions via props
+<Greeting name="Alice" age={25} />
+
+// Child receives and uses the props
+function Greeting({ name, age }) {
+  return <p>Hello, {name}! You are {age} years old.</p>;
+}
+```
+
+### Props Are Like Function Arguments
+
+Just like you pass arguments to a function, you pass props to a component:
+
+```javascript
+// Regular function with arguments
+function greet(name) {
+  return `Hello, ${name}!`;
+}
+greet("Alice"); // "Hello, Alice!"
+
+// React component with props
+function Greeting({ name }) {
+  return <h1>Hello, {name}!</h1>;
+}
+<Greeting name="Alice" /> // Renders: Hello, Alice!
+```
+
+<PropsInspector 
+  code={`function UserCard({ 
+  name,           // string (required)
+  role,           // string
+  isOnline,       // boolean
+  skills          // array
+}) {
+  return (
+    <div className="card">
+      <h2>{name}</h2>
+      <p>Role: {role}</p>
+      <p>Status: {isOnline ? "Online" : "Offline"}</p>
+    </div>
+  );
+}`}
+  showPropTypes={true}
+  showDefaultProps={true}
+/>
+
+<ProgressCheckpoint section="understanding-props" xpReward={15} />
+
+## Understanding State
+
+**State** is a component's memory. It's data that can change over time, and when it changes, React automatically updates the screen.
+
+Think of state like a whiteboard in a classroom:
+- The whiteboard (state) holds information
+- Anyone can read what's on it
+- Only the teacher (the component) can change it
+- When it changes, everyone sees the update
+
+### Using useState
+
+React provides a special function called `useState` to create state:
+
+```jsx
+import { useState } from 'react';
+
+function Counter() {
+  // Create state: [currentValue, functionToUpdateIt]
+  const [count, setCount] = useState(0);
+  
+  return (
+    <div>
+      <p>Count: {count}</p>
+      <button onClick={() => setCount(count + 1)}>
+        Add 1
+      </button>
+    </div>
+  );
+}
+```
+
+<KeyConcept title="useState Returns Two Things">
+1. **The current value** (count) - what's stored in state right now
+2. **A setter function** (setCount) - the ONLY way to update the state
+</KeyConcept>
+
+<ReactPlayground
+  initialCode={`function Counter() {
+  const [count, setCount] = React.useState(0);
+  
+  return (
+    <div style={{ 
+      padding: '20px', 
+      textAlign: 'center',
+      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      borderRadius: '12px',
+      color: 'white'
+    }}>
+      <h2>Counter: {count}</h2>
+      <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
+        <button 
+          onClick={() => setCount(count - 1)}
+          style={{ padding: '10px 20px', fontSize: '18px', cursor: 'pointer' }}
+        >
+          -
+        </button>
+        <button 
+          onClick={() => setCount(count + 1)}
+          style={{ padding: '10px 20px', fontSize: '18px', cursor: 'pointer' }}
+        >
+          +
+        </button>
+      </div>
+      <button 
+        onClick={() => setCount(0)}
+        style={{ marginTop: '10px', padding: '8px 16px', cursor: 'pointer' }}
+      >
+        Reset
+      </button>
+    </div>
+  );
+}
+
+render(<Counter />);`}
+  height={280}
+/>
+
+<ProgressCheckpoint section="understanding-state" xpReward={15} />
+
+## Data Flow: Props Down, Events Up
+
+In React, data flows in ONE direction - from parent to child through props. But how do children communicate back to parents? Through **callback functions**!
+
+<DataFlowDiagram 
+  showPropsFlow={true}
+  showEventsFlow={true}
+  animated={true}
+/>
+
+### The Pattern
+
+1. **Parent** passes data DOWN via props
+2. **Parent** also passes callback functions as props
+3. **Child** calls those functions to send data UP
+
+```jsx
+// Parent component
+function Parent() {
+  const [message, setMessage] = useState("Hello");
+  
+  // This function will be passed to child
+  const handleChange = (newMessage) => {
+    setMessage(newMessage);
+  };
+  
+  return (
+    <Child 
+      message={message}           // Data flows DOWN
+      onMessageChange={handleChange}  // Callback for events UP
+    />
+  );
+}
+
+// Child component
+function Child({ message, onMessageChange }) {
+  return (
+    <div>
+      <p>{message}</p>
+      <button onClick={() => onMessageChange("Goodbye")}>
+        Change Message
+      </button>
+    </div>
+  );
+}
+```
+
+<ProgressCheckpoint section="data-flow" xpReward={15} />
+
+## Putting It Together
+
+Let's see props and state working together in a real example:
+
+<ReactPlayground
+  initialCode={`// Child component - receives props, triggers events
+function TodoItem({ text, completed, onToggle }) {
+  return (
+    <div 
+      onClick={onToggle}
+      style={{
+        padding: '10px',
+        margin: '5px 0',
+        background: completed ? '#d4edda' : '#f8f9fa',
+        borderRadius: '8px',
+        cursor: 'pointer',
+        textDecoration: completed ? 'line-through' : 'none',
+        border: '1px solid #dee2e6'
+      }}
+    >
+      {completed ? '✅' : '⬜'} {text}
+    </div>
+  );
+}
+
+// Parent component - owns the state
+function TodoList() {
+  const [todos, setTodos] = React.useState([
+    { id: 1, text: 'Learn React', completed: false },
+    { id: 2, text: 'Build an app', completed: false },
+    { id: 3, text: 'Deploy it!', completed: false },
+  ]);
+  
+  const toggleTodo = (id) => {
+    setTodos(todos.map(todo =>
+      todo.id === id 
+        ? { ...todo, completed: !todo.completed }
+        : todo
+    ));
+  };
+  
+  const completedCount = todos.filter(t => t.completed).length;
+  
+  return (
+    <div style={{ padding: '20px', maxWidth: '300px' }}>
+      <h3>My Todos ({completedCount}/{todos.length})</h3>
+      {todos.map(todo => (
+        <TodoItem
+          key={todo.id}
+          text={todo.text}
+          completed={todo.completed}
+          onToggle={() => toggleTodo(todo.id)}
+        />
+      ))}
+    </div>
+  );
+}
+
+render(<TodoList />);`}
+  height={350}
+/>
+
+<ProgressCheckpoint section="lifting-state" xpReward={15} />
+
+## Key Takeaways
+
+<KeyConcept title="Props = External Data">
+Props are passed from parent to child. They are read-only - a component cannot change its own props.
+</KeyConcept>
+
+<KeyConcept title="State = Internal Data">
+State is owned by the component. Use useState to create it, and the setter function to update it.
+</KeyConcept>
+
+<KeyConcept title="One-Way Data Flow">
+Data flows down through props. Events flow up through callback functions.
+</KeyConcept>
+
+<ProgressCheckpoint section="controlled-components" xpReward={10} />
+
+## Quick Quiz
+
+<Quiz>
+  <Question text="What is the main difference between props and state?">
+    <Answer>Props are faster than state</Answer>
+    <Answer correct>Props come from parents, state is owned by the component</Answer>
+    <Answer>State is for styling, props are for data</Answer>
+    <Answer>There is no difference</Answer>
+  </Question>
+  
+  <Question text="How do you create state in a functional component?">
+    <Answer>this.state = {}</Answer>
+    <Answer>const state = {}</Answer>
+    <Answer correct>const [value, setValue] = useState(initialValue)</Answer>
+    <Answer>state.create()</Answer>
+  </Question>
+  
+  <Question text="How does a child component communicate with its parent?">
+    <Answer>By modifying the parent's state directly</Answer>
+    <Answer>By using global variables</Answer>
+    <Answer correct>By calling callback functions passed as props</Answer>
+    <Answer>Children cannot communicate with parents</Answer>
+  </Question>
+  
+  <Question text="What happens when state changes?">
+    <Answer>Nothing, you must manually refresh</Answer>
+    <Answer correct>React automatically re-renders the component</Answer>
+    <Answer>The page reloads</Answer>
+    <Answer>An error is thrown</Answer>
+  </Question>
+</Quiz>
+
+<ProgressCheckpoint section="summary" xpReward={10} />
+
+---
+
+**Excellent work!** 🎉 You now understand the fundamentals of props and state. In the intermediate level, we'll explore more advanced patterns like prop drilling, lifting state up, and controlled components.

@@ -1,0 +1,308 @@
+# Server Components Basics
+
+Welcome back! Now that you understand the basics of Server and Client Components, let's dive deeper into practical patterns and best practices. 🚀
+
+<ProgressCheckpoint section="introduction" xpReward={15} />
+
+## The 'use client' Boundary
+
+When you add `'use client'` to a file, that component AND all components it imports become Client Components. This creates a "boundary" in your component tree.
+
+```jsx
+// Header.tsx - Server Component (no directive)
+import Navigation from './Navigation';  // This import matters!
+
+export function Header() {
+  return (
+    <header>
+      <Logo />           {/* Server Component */}
+      <Navigation />     {/* What type is this? */}
+    </header>
+  );
+}
+
+// Navigation.tsx
+'use client';  // 👈 This is a Client Component
+
+import { useState } from 'react';
+import MenuItem from './MenuItem';  // Also becomes Client!
+
+export function Navigation() {
+  const [isOpen, setIsOpen] = useState(false);
+  return (/* ... */);
+}
+```
+
+<KeyConcept title="The Boundary Rule">
+Once you cross into Client Component territory with `'use client'`, everything below stays on the client. But you can pass Server Components as children to Client Components!
+</KeyConcept>
+
+<ServerClientBoundaryVisualizer 
+  showDataFlow={true}
+  animated={true}
+/>
+
+<ProgressCheckpoint section="server-vs-client" xpReward={15} />
+
+## Composition Pattern: Children as Server Components
+
+Here's a powerful pattern - you can pass Server Components as children to Client Components:
+
+```jsx
+// ClientWrapper.tsx
+'use client';
+
+export function ClientWrapper({ children }) {
+  const [isVisible, setIsVisible] = useState(true);
+  
+  return (
+    <div>
+      <button onClick={() => setIsVisible(!isVisible)}>
+        Toggle
+      </button>
+      {isVisible && children}  {/* children can be Server Components! */}
+    </div>
+  );
+}
+
+// Page.tsx (Server Component)
+import { ClientWrapper } from './ClientWrapper';
+import { ServerContent } from './ServerContent';
+
+export default function Page() {
+  return (
+    <ClientWrapper>
+      <ServerContent />  {/* This stays a Server Component! */}
+    </ClientWrapper>
+  );
+}
+```
+
+<InfoBox type="tip" title="The Children Trick">
+When you pass components as `children` props, they're rendered by the parent (Server Component), not by the Client Component. This lets you keep server benefits while adding client interactivity!
+</InfoBox>
+
+<ProgressCheckpoint section="use-client-directive" xpReward={15} />
+
+## When to Use Each Type
+
+Use this decision tree to choose the right component type:
+
+<ComponentTypeSelector showExplanations={true} />
+
+### Use Server Components When:
+- Fetching data from databases or APIs
+- Accessing backend resources (file system, etc.)
+- Keeping sensitive information on the server
+- Reducing client-side JavaScript
+- The component doesn't need interactivity
+
+### Use Client Components When:
+- Adding event listeners (onClick, onChange)
+- Using React state (useState, useReducer)
+- Using lifecycle effects (useEffect)
+- Using browser-only APIs (localStorage, geolocation)
+- Using custom hooks that depend on state/effects
+
+<ProgressCheckpoint section="data-fetching" xpReward={15} />
+
+## Data Fetching Patterns
+
+### Pattern 1: Fetch in Server Components
+
+```jsx
+// app/posts/page.tsx (Server Component)
+async function PostsPage() {
+  // Direct database access - no API route needed!
+  const posts = await prisma.post.findMany({
+    orderBy: { createdAt: 'desc' },
+    take: 10,
+  });
+  
+  return (
+    <div>
+      <h1>Latest Posts</h1>
+      {posts.map(post => (
+        <PostCard key={post.id} post={post} />
+      ))}
+    </div>
+  );
+}
+```
+
+### Pattern 2: Parallel Data Fetching
+
+```jsx
+async function Dashboard() {
+  // Fetch in parallel - much faster!
+  const [user, posts, notifications] = await Promise.all([
+    getUser(),
+    getPosts(),
+    getNotifications(),
+  ]);
+  
+  return (
+    <div>
+      <UserProfile user={user} />
+      <PostList posts={posts} />
+      <NotificationBell notifications={notifications} />
+    </div>
+  );
+}
+```
+
+### Pattern 3: Passing Data to Client Components
+
+```jsx
+// Server Component fetches data
+async function ProductPage({ id }) {
+  const product = await getProduct(id);
+  
+  return (
+    <div>
+      <h1>{product.name}</h1>
+      <p>{product.description}</p>
+      {/* Pass serializable data to Client Component */}
+      <AddToCartButton productId={product.id} price={product.price} />
+    </div>
+  );
+}
+
+// Client Component receives data as props
+'use client';
+function AddToCartButton({ productId, price }) {
+  const [quantity, setQuantity] = useState(1);
+  
+  return (
+    <button onClick={() => addToCart(productId, quantity)}>
+      Add {quantity} to Cart - ${price * quantity}
+    </button>
+  );
+}
+```
+
+<KeyConcept title="Serializable Props Only">
+When passing props from Server to Client Components, the data must be serializable (JSON-compatible). You can't pass functions, classes, or Dates directly.
+</KeyConcept>
+
+<ProgressCheckpoint section="streaming" xpReward={15} />
+
+## Streaming with Suspense
+
+Server Components support streaming - sending HTML progressively as data becomes available:
+
+<ServerDataFlowDiagram 
+  showStreaming={true}
+  showSuspense={true}
+  animated={true}
+/>
+
+```jsx
+import { Suspense } from 'react';
+
+async function Page() {
+  return (
+    <div>
+      <Header />  {/* Renders immediately */}
+      
+      <Suspense fallback={<PostsSkeleton />}>
+        <Posts />  {/* Streams in when ready */}
+      </Suspense>
+      
+      <Suspense fallback={<CommentsSkeleton />}>
+        <Comments />  {/* Streams in independently */}
+      </Suspense>
+    </div>
+  );
+}
+
+async function Posts() {
+  const posts = await getPosts();  // Slow query
+  return <PostList posts={posts} />;
+}
+```
+
+<InfoBox type="info" title="Progressive Loading">
+With Suspense, users see the page shell immediately. Content fills in as each data fetch completes. No more waiting for the slowest query!
+</InfoBox>
+
+<ProgressCheckpoint section="server-actions" xpReward={15} />
+
+## Server Actions Preview
+
+Server Actions let you call server functions directly from Client Components:
+
+```jsx
+// actions.ts
+'use server';
+
+export async function createPost(formData: FormData) {
+  const title = formData.get('title');
+  const content = formData.get('content');
+  
+  await prisma.post.create({
+    data: { title, content },
+  });
+  
+  revalidatePath('/posts');
+}
+
+// CreatePostForm.tsx
+'use client';
+
+import { createPost } from './actions';
+
+export function CreatePostForm() {
+  return (
+    <form action={createPost}>
+      <input name="title" placeholder="Title" />
+      <textarea name="content" placeholder="Content" />
+      <button type="submit">Create Post</button>
+    </form>
+  );
+}
+```
+
+<KeyConcept title="No API Routes Needed">
+Server Actions eliminate the need for API routes for mutations. The function runs on the server, but you call it like a regular function!
+</KeyConcept>
+
+## Quick Quiz
+
+<Quiz>
+  <Question text="What happens when you import a component into a 'use client' file?">
+    <Answer>It stays a Server Component</Answer>
+    <Answer correct>It becomes a Client Component</Answer>
+    <Answer>It throws an error</Answer>
+    <Answer>It becomes a hybrid component</Answer>
+  </Question>
+  
+  <Question text="How can you use a Server Component inside a Client Component?">
+    <Answer>Import it directly</Answer>
+    <Answer correct>Pass it as children props</Answer>
+    <Answer>Use the useServer hook</Answer>
+    <Answer>You cannot do this</Answer>
+  </Question>
+  
+  <Question text="What does Suspense do with Server Components?">
+    <Answer>Makes them run faster</Answer>
+    <Answer>Converts them to Client Components</Answer>
+    <Answer correct>Shows a fallback while async content loads</Answer>
+    <Answer>Caches the component output</Answer>
+  </Question>
+  
+  <Question text="What type of data can you pass from Server to Client Components?">
+    <Answer>Any JavaScript value</Answer>
+    <Answer>Only strings</Answer>
+    <Answer correct>Serializable (JSON-compatible) data</Answer>
+    <Answer>Only primitive types</Answer>
+  </Question>
+</Quiz>
+
+<ProgressCheckpoint section="summary" xpReward={10} />
+
+---
+
+**Excellent progress!** 🎉 You now understand the practical patterns for working with Server and Client Components. Remember: start with Server Components, add `'use client'` only when needed, and use the children pattern to keep server benefits.
+
+In the advanced level, we'll explore streaming internals, server actions in depth, and performance optimization strategies!

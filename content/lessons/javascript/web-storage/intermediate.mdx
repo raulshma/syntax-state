@@ -1,0 +1,423 @@
+# Web Storage
+
+Welcome back! Now that you understand the basics of localStorage and sessionStorage, let's dive deeper into storage events, working with cookies, and building robust storage patterns.
+
+<InfoBox type="tip" title="What You'll Learn">
+In this lesson, you'll master storage events for cross-tab communication, learn to work with cookies properly, handle JSON serialization edge cases, and build reusable storage utilities.
+</InfoBox>
+
+<ProgressCheckpoint section="introduction" xpReward={15} />
+
+## Storage Events: Cross-Tab Communication
+
+One powerful feature of localStorage is that changes trigger events across all tabs of the same origin. This enables real-time synchronization!
+
+```javascript
+// Listen for storage changes from OTHER tabs
+window.addEventListener('storage', (event) => {
+  console.log('Storage changed!');
+  console.log('Key:', event.key);
+  console.log('Old value:', event.oldValue);
+  console.log('New value:', event.newValue);
+  console.log('URL:', event.url);
+});
+```
+
+<KeyConcept title="Important: Same Tab Doesn't Fire">
+The storage event only fires in OTHER tabs/windows. The tab that made the change doesn't receive the event. This is by design — you already know what you changed!
+</KeyConcept>
+
+### Practical Example: Theme Sync
+
+```javascript
+// Tab 1: Change the theme
+function setTheme(theme) {
+  localStorage.setItem('theme', theme);
+  applyTheme(theme); // Apply locally
+}
+
+// Tab 2: Listen for theme changes
+window.addEventListener('storage', (event) => {
+  if (event.key === 'theme' && event.newValue) {
+    applyTheme(event.newValue); // Sync the theme!
+  }
+});
+
+function applyTheme(theme) {
+  document.body.className = theme;
+}
+```
+
+<CodePlayground
+  initialCode={`// Storage event demo
+// Open this page in two tabs to see it work!
+
+// Set up the listener
+window.addEventListener('storage', (event) => {
+  console.log('Change detected from another tab!');
+  console.log('Key:', event.key);
+  console.log('New value:', event.newValue);
+});
+
+// Make a change (this won't trigger the event in THIS tab)
+localStorage.setItem('syncTest', Date.now().toString());
+console.log('Value set! Open another tab and change this value to see the event.');
+console.log('Current value:', localStorage.getItem('syncTest'));`}
+  language="javascript"
+/>
+
+<ProgressCheckpoint section="local-storage" xpReward={15} />
+
+## Robust JSON Handling
+
+When working with JSON in storage, things can go wrong. Let's build bulletproof utilities:
+
+```javascript
+// Safe storage utility
+const storage = {
+  set(key, value) {
+    try {
+      const serialized = JSON.stringify(value);
+      localStorage.setItem(key, serialized);
+      return true;
+    } catch (error) {
+      console.error('Failed to save:', error);
+      return false;
+    }
+  },
+
+  get(key, defaultValue = null) {
+    try {
+      const item = localStorage.getItem(key);
+      if (item === null) return defaultValue;
+      return JSON.parse(item);
+    } catch (error) {
+      console.error('Failed to parse:', error);
+      return defaultValue;
+    }
+  },
+
+  remove(key) {
+    localStorage.removeItem(key);
+  }
+};
+
+// Usage
+storage.set('user', { name: 'Alex', level: 5 });
+const user = storage.get('user', { name: 'Guest', level: 1 });
+```
+
+<InfoBox type="warning" title="Watch Out For">
+- **Circular references** — Objects that reference themselves can't be stringified
+- **Functions** — JSON.stringify ignores functions
+- **undefined** — Becomes null in JSON
+- **Dates** — Become strings, need manual conversion back
+</InfoBox>
+
+### Handling Dates
+
+```javascript
+// Dates need special handling
+const data = {
+  name: 'Event',
+  date: new Date()
+};
+
+// Save it
+localStorage.setItem('event', JSON.stringify(data));
+
+// Load it - date is now a string!
+const loaded = JSON.parse(localStorage.getItem('event'));
+console.log(typeof loaded.date); // 'string'
+
+// Convert back to Date
+loaded.date = new Date(loaded.date);
+console.log(loaded.date instanceof Date); // true
+```
+
+<ProgressCheckpoint section="session-storage" xpReward={15} />
+
+## Working with Cookies
+
+Cookies have a notoriously awkward API. Let's understand it and build something better:
+
+### Reading Cookies
+
+```javascript
+// document.cookie returns ALL cookies as one string
+console.log(document.cookie);
+// "theme=dark; userId=123; session=abc"
+
+// Parse cookies into an object
+function getCookies() {
+  return document.cookie
+    .split('; ')
+    .reduce((cookies, cookie) => {
+      const [name, value] = cookie.split('=');
+      cookies[name] = decodeURIComponent(value);
+      return cookies;
+    }, {});
+}
+
+const cookies = getCookies();
+console.log(cookies.theme); // 'dark'
+```
+
+### Setting Cookies
+
+```javascript
+// Basic cookie
+document.cookie = 'username=Alex';
+
+// Cookie with expiration (7 days)
+const expires = new Date();
+expires.setDate(expires.getDate() + 7);
+document.cookie = `username=Alex; expires=${expires.toUTCString()}`;
+
+// Cookie with path and secure flags
+document.cookie = 'token=abc123; path=/; secure; samesite=strict';
+```
+
+<KeyConcept title="Cookie Attributes">
+- **expires** — When the cookie should be deleted
+- **max-age** — Seconds until expiration (alternative to expires)
+- **path** — URL path where cookie is valid
+- **domain** — Domain where cookie is valid
+- **secure** — Only send over HTTPS
+- **samesite** — CSRF protection (strict, lax, none)
+- **httponly** — Can't be accessed by JavaScript (server-set only)
+</KeyConcept>
+
+### Cookie Utility Class
+
+```javascript
+const Cookie = {
+  set(name, value, days = 7, options = {}) {
+    const expires = new Date();
+    expires.setDate(expires.getDate() + days);
+    
+    let cookie = `${encodeURIComponent(name)}=${encodeURIComponent(value)}`;
+    cookie += `; expires=${expires.toUTCString()}`;
+    cookie += `; path=${options.path || '/'}`;
+    
+    if (options.secure) cookie += '; secure';
+    if (options.sameSite) cookie += `; samesite=${options.sameSite}`;
+    
+    document.cookie = cookie;
+  },
+
+  get(name) {
+    const cookies = document.cookie.split('; ');
+    for (const cookie of cookies) {
+      const [cookieName, cookieValue] = cookie.split('=');
+      if (cookieName === encodeURIComponent(name)) {
+        return decodeURIComponent(cookieValue);
+      }
+    }
+    return null;
+  },
+
+  delete(name) {
+    document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`;
+  }
+};
+
+// Usage
+Cookie.set('preference', 'dark', 30); // 30 days
+console.log(Cookie.get('preference')); // 'dark'
+Cookie.delete('preference');
+```
+
+<ProgressCheckpoint section="cookies" xpReward={15} />
+
+## Storage Limits and Quota
+
+Browsers limit how much you can store. Here's how to handle it:
+
+```javascript
+// Check available storage (approximate)
+function getStorageUsage() {
+  let total = 0;
+  for (let key in localStorage) {
+    if (localStorage.hasOwnProperty(key)) {
+      total += localStorage[key].length + key.length;
+    }
+  }
+  return {
+    used: total * 2, // UTF-16 = 2 bytes per character
+    usedKB: (total * 2 / 1024).toFixed(2),
+    usedMB: (total * 2 / 1024 / 1024).toFixed(4)
+  };
+}
+
+// Handle quota exceeded
+function safeSetItem(key, value) {
+  try {
+    localStorage.setItem(key, value);
+    return true;
+  } catch (e) {
+    if (e.name === 'QuotaExceededError') {
+      console.error('Storage is full!');
+      // Maybe clear old data or notify user
+      return false;
+    }
+    throw e;
+  }
+}
+```
+
+<StorageInspector showQuota={true} />
+
+<ProgressCheckpoint section="indexed-db" xpReward={15} />
+
+## Storage Patterns
+
+### Pattern 1: Versioned Storage
+
+```javascript
+const STORAGE_VERSION = '1.0';
+
+function migrateStorage() {
+  const version = localStorage.getItem('storageVersion');
+  
+  if (version !== STORAGE_VERSION) {
+    // Perform migration
+    console.log('Migrating storage from', version, 'to', STORAGE_VERSION);
+    
+    // Example: rename old keys
+    const oldData = localStorage.getItem('userData');
+    if (oldData) {
+      localStorage.setItem('user', oldData);
+      localStorage.removeItem('userData');
+    }
+    
+    localStorage.setItem('storageVersion', STORAGE_VERSION);
+  }
+}
+
+// Run on app start
+migrateStorage();
+```
+
+### Pattern 2: Expiring Storage
+
+```javascript
+const ExpiringStorage = {
+  set(key, value, ttlMinutes) {
+    const item = {
+      value,
+      expiry: Date.now() + ttlMinutes * 60 * 1000
+    };
+    localStorage.setItem(key, JSON.stringify(item));
+  },
+
+  get(key) {
+    const itemStr = localStorage.getItem(key);
+    if (!itemStr) return null;
+
+    const item = JSON.parse(itemStr);
+    if (Date.now() > item.expiry) {
+      localStorage.removeItem(key);
+      return null;
+    }
+    return item.value;
+  }
+};
+
+// Cache API response for 5 minutes
+ExpiringStorage.set('apiCache', responseData, 5);
+```
+
+### Pattern 3: Namespaced Storage
+
+```javascript
+function createNamespacedStorage(namespace) {
+  const prefix = `${namespace}:`;
+  
+  return {
+    set(key, value) {
+      localStorage.setItem(prefix + key, JSON.stringify(value));
+    },
+    get(key, defaultValue = null) {
+      const item = localStorage.getItem(prefix + key);
+      return item ? JSON.parse(item) : defaultValue;
+    },
+    remove(key) {
+      localStorage.removeItem(prefix + key);
+    },
+    clear() {
+      Object.keys(localStorage)
+        .filter(key => key.startsWith(prefix))
+        .forEach(key => localStorage.removeItem(key));
+    }
+  };
+}
+
+// Usage
+const userStorage = createNamespacedStorage('user');
+const appStorage = createNamespacedStorage('app');
+
+userStorage.set('name', 'Alex');  // Stored as 'user:name'
+appStorage.set('theme', 'dark');  // Stored as 'app:theme'
+```
+
+<ProgressCheckpoint section="storage-comparison" xpReward={15} />
+
+## Storage Comparison
+
+<StorageComparison />
+
+<ProgressCheckpoint section="summary" xpReward={10} />
+
+## Quick Reference
+
+<KeyConcept title="Storage Events">
+```javascript
+window.addEventListener('storage', (e) => {
+  // e.key, e.oldValue, e.newValue, e.url
+});
+```
+Only fires in OTHER tabs, not the one making changes.
+</KeyConcept>
+
+<KeyConcept title="Cookie Syntax">
+```javascript
+document.cookie = 'name=value; expires=DATE; path=/; secure; samesite=strict';
+```
+</KeyConcept>
+
+## Quick Quiz
+
+<Quiz>
+  <Question text="When does the storage event fire?">
+    <Answer>When any storage change happens</Answer>
+    <Answer correct>When storage changes in another tab</Answer>
+    <Answer>Only when localStorage is cleared</Answer>
+    <Answer>When the page loads</Answer>
+  </Question>
+  
+  <Question text="What's the approximate storage limit for localStorage?">
+    <Answer>4KB</Answer>
+    <Answer correct>5MB</Answer>
+    <Answer>50MB</Answer>
+    <Answer>Unlimited</Answer>
+  </Question>
+  
+  <Question text="How do you delete a cookie?">
+    <Answer>document.cookie.delete('name')</Answer>
+    <Answer>deleteCookie('name')</Answer>
+    <Answer correct>Set it with an expired date</Answer>
+    <Answer>document.cookie.remove('name')</Answer>
+  </Question>
+  
+  <Question text="What happens when you JSON.stringify a Date object?">
+    <Answer>It throws an error</Answer>
+    <Answer correct>It becomes a string</Answer>
+    <Answer>It stays as a Date</Answer>
+    <Answer>It becomes null</Answer>
+  </Question>
+</Quiz>
+
+---
+
+**Excellent work!** 🎉 You now understand storage events, cookies, and advanced patterns. In the advanced level, we'll explore IndexedDB, the Cache API, and security considerations!

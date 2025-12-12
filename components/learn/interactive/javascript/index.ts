@@ -39,6 +39,19 @@ import { ErrorTypeExplorer as ErrorTypeExplorerBase } from './ErrorTypeExplorer'
 import { DebugSimulator as DebugSimulatorBase } from './DebugSimulator';
 import { StackTraceAnalyzer as StackTraceAnalyzerBase } from './StackTraceAnalyzer';
 
+// Arrays and Objects components
+import { ArrayMethodVisualizer as ArrayMethodVisualizerBase } from './ArrayMethodVisualizer';
+import { MethodChainingPlayground as MethodChainingPlaygroundBase } from './MethodChainingPlayground';
+import { ObjectExplorer as ObjectExplorerBase } from './ObjectExplorer';
+
+// Regular Expressions components
+import { RegexTester as RegexTesterBase } from './RegexTester';
+import { PatternBuilder as PatternBuilderBase } from './PatternBuilder';
+
+// Web Storage components
+import { StorageInspector as StorageInspectorBase } from './StorageInspector';
+import { StorageComparison as StorageComparisonBase } from './StorageComparison';
+
 // Wrap all interactive components with error boundaries
 export const CodePlayground = withErrorBoundary(CodePlaygroundBase, 'CodePlayground');
 export const VariableVisualizer = withErrorBoundary(VariableVisualizerBase, 'VariableVisualizer');
@@ -60,6 +73,13 @@ export const AsyncTimeline = withErrorBoundary(AsyncTimelineBase, 'AsyncTimeline
 export const ErrorTypeExplorer = withErrorBoundary(ErrorTypeExplorerBase, 'ErrorTypeExplorer');
 export const DebugSimulator = withErrorBoundary(DebugSimulatorBase, 'DebugSimulator');
 export const StackTraceAnalyzer = withErrorBoundary(StackTraceAnalyzerBase, 'StackTraceAnalyzer');
+export const ArrayMethodVisualizer = withErrorBoundary(ArrayMethodVisualizerBase, 'ArrayMethodVisualizer');
+export const MethodChainingPlayground = withErrorBoundary(MethodChainingPlaygroundBase, 'MethodChainingPlayground');
+export const ObjectExplorer = withErrorBoundary(ObjectExplorerBase, 'ObjectExplorer');
+export const RegexTester = withErrorBoundary(RegexTesterBase, 'RegexTester');
+export const PatternBuilder = withErrorBoundary(PatternBuilderBase, 'PatternBuilder');
+export const StorageInspector = withErrorBoundary(StorageInspectorBase, 'StorageInspector');
+export const StorageComparison = withErrorBoundary(StorageComparisonBase, 'StorageComparison');
 
 // Re-export types
 export type {
@@ -185,6 +205,48 @@ export type {
   ParsedStackTrace,
 } from './StackTraceAnalyzer';
 
+export type {
+  ArrayMethodVisualizerProps,
+  ArrayMethod,
+  ArrayMethodStep,
+} from './ArrayMethodVisualizer';
+
+export type {
+  MethodChainingPlaygroundProps,
+  ChainableMethod,
+  ChainStep,
+} from './MethodChainingPlayground';
+
+export type {
+  ObjectExplorerProps,
+  ObjectProperty,
+} from './ObjectExplorer';
+
+export type {
+  RegexTesterProps,
+  RegexMatch,
+  RegexTestResult,
+} from './RegexTester';
+
+export type {
+  PatternBuilderProps,
+  PatternElement,
+  PatternElementType,
+} from './PatternBuilder';
+
+export type {
+  StorageInspectorProps,
+  StorageItem,
+  StorageQuota,
+  StorageType,
+} from './StorageInspector';
+
+export type {
+  StorageComparisonProps,
+  StorageFeature,
+  StorageTypeInfo,
+} from './StorageComparison';
+
 // Export base components for testing
 export { CodePlaygroundBase };
 export { VariableVisualizerBase };
@@ -206,3 +268,10 @@ export { AsyncTimelineBase };
 export { ErrorTypeExplorerBase };
 export { DebugSimulatorBase };
 export { StackTraceAnalyzerBase };
+export { ArrayMethodVisualizerBase };
+export { MethodChainingPlaygroundBase };
+export { ObjectExplorerBase };
+export { RegexTesterBase };
+export { PatternBuilderBase };
+export { StorageInspectorBase };
+export { StorageComparisonBase };

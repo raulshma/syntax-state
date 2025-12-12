@@ -1,0 +1,261 @@
+# Working with Arrays and Objects
+
+Welcome to one of the most practical JavaScript lessons! Arrays and objects are the building blocks for organizing and manipulating data. Think of them as your toolbox for handling collections of information.
+
+<InfoBox type="tip" title="Why This Matters">
+Almost every JavaScript application works with arrays and objects. Whether you're displaying a list of products, managing user data, or processing API responses — these skills are essential!
+</InfoBox>
+
+<ProgressCheckpoint section="introduction" xpReward={15} />
+
+## Arrays: Your Ordered Lists
+
+An **array** is like a numbered list. Each item has a position (index) starting from 0.
+
+```javascript
+// Creating an array
+const fruits = ['apple', 'banana', 'cherry'];
+
+// Accessing items by index
+console.log(fruits[0]); // 'apple' (first item)
+console.log(fruits[1]); // 'banana' (second item)
+console.log(fruits[2]); // 'cherry' (third item)
+
+// Array length
+console.log(fruits.length); // 3
+```
+
+<KeyConcept title="Zero-Based Indexing">
+Arrays start counting at 0, not 1. The first item is at index 0, the second at index 1, and so on.
+</KeyConcept>
+
+<ProgressCheckpoint section="array-basics" xpReward={15} />
+
+## The Power of Array Methods
+
+JavaScript arrays come with built-in methods that make working with data a breeze. Let's explore the most useful ones!
+
+### .map() - Transform Every Item
+
+Use `.map()` when you want to transform each item in an array into something new.
+
+```javascript
+const numbers = [1, 2, 3, 4, 5];
+
+// Double each number
+const doubled = numbers.map(num => num * 2);
+console.log(doubled); // [2, 4, 6, 8, 10]
+
+// The original array is unchanged!
+console.log(numbers); // [1, 2, 3, 4, 5]
+```
+
+<InfoBox type="info" title="Non-Destructive">
+`.map()` creates a NEW array — it doesn't change the original. This is called being "non-destructive" or "immutable."
+</InfoBox>
+
+### .filter() - Keep What You Need
+
+Use `.filter()` to create a new array with only the items that pass a test.
+
+```javascript
+const numbers = [1, 2, 3, 4, 5, 6, 7, 8];
+
+// Keep only even numbers
+const evens = numbers.filter(num => num % 2 === 0);
+console.log(evens); // [2, 4, 6, 8]
+
+// Keep numbers greater than 5
+const big = numbers.filter(num => num > 5);
+console.log(big); // [6, 7, 8]
+```
+
+### .find() - Get the First Match
+
+Use `.find()` to get the first item that passes a test.
+
+```javascript
+const users = [
+  { name: 'Alice', age: 25 },
+  { name: 'Bob', age: 30 },
+  { name: 'Charlie', age: 25 }
+];
+
+// Find the first user who is 25
+const user = users.find(u => u.age === 25);
+console.log(user); // { name: 'Alice', age: 25 }
+```
+
+### .forEach() - Do Something With Each Item
+
+Use `.forEach()` when you want to perform an action for each item (but don't need a new array).
+
+```javascript
+const colors = ['red', 'green', 'blue'];
+
+colors.forEach(color => {
+  console.log(`I like ${color}!`);
+});
+// Output:
+// I like red!
+// I like green!
+// I like blue!
+```
+
+<ArrayMethodVisualizer />
+
+<ProgressCheckpoint section="array-methods" xpReward={15} />
+
+## Chaining Methods Together
+
+The real power comes from chaining multiple methods together!
+
+```javascript
+const numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+
+// Get even numbers, then double them
+const result = numbers
+  .filter(n => n % 2 === 0)  // [2, 4, 6, 8, 10]
+  .map(n => n * 2);          // [4, 8, 12, 16, 20]
+
+console.log(result); // [4, 8, 12, 16, 20]
+```
+
+<MethodChainingPlayground />
+
+<ProgressCheckpoint section="method-chaining" xpReward={15} />
+
+## Objects: Your Data Containers
+
+An **object** is like a container with labeled compartments. Each compartment has a name (key) and holds a value.
+
+```javascript
+// Creating an object
+const person = {
+  name: 'Alice',
+  age: 28,
+  city: 'New York',
+  isStudent: false
+};
+
+// Accessing values
+console.log(person.name);     // 'Alice' (dot notation)
+console.log(person['age']);   // 28 (bracket notation)
+```
+
+<KeyConcept title="Dot vs Bracket Notation">
+Use **dot notation** (`person.name`) for simple property names. Use **bracket notation** (`person['name']`) when the property name is in a variable or has special characters.
+</KeyConcept>
+
+<ProgressCheckpoint section="object-basics" xpReward={15} />
+
+## Working with Objects
+
+### Adding and Modifying Properties
+
+```javascript
+const car = {
+  brand: 'Toyota',
+  model: 'Camry'
+};
+
+// Add a new property
+car.year = 2023;
+
+// Modify an existing property
+car.model = 'Corolla';
+
+console.log(car);
+// { brand: 'Toyota', model: 'Corolla', year: 2023 }
+```
+
+### Checking if a Property Exists
+
+```javascript
+const user = { name: 'Bob', email: 'bob@example.com' };
+
+// Using 'in' operator
+console.log('name' in user);    // true
+console.log('phone' in user);   // false
+
+// Using optional chaining (safe access)
+console.log(user.phone?.number); // undefined (no error!)
+```
+
+### Nested Objects
+
+Objects can contain other objects!
+
+```javascript
+const company = {
+  name: 'TechCorp',
+  address: {
+    street: '123 Main St',
+    city: 'San Francisco',
+    country: 'USA'
+  },
+  employees: ['Alice', 'Bob', 'Charlie']
+};
+
+// Access nested properties
+console.log(company.address.city); // 'San Francisco'
+console.log(company.employees[0]); // 'Alice'
+```
+
+<ObjectExplorer />
+
+<ProgressCheckpoint section="object-methods" xpReward={15} />
+
+## Quick Reference
+
+<KeyConcept title="Array Methods">
+- `.map()` — Transform each item
+- `.filter()` — Keep items that pass a test
+- `.find()` — Get first matching item
+- `.forEach()` — Do something with each item
+</KeyConcept>
+
+<KeyConcept title="Object Basics">
+- Use `{}` to create objects
+- Access with `.property` or `['property']`
+- Objects can be nested
+- Use `in` to check if property exists
+</KeyConcept>
+
+<ProgressCheckpoint section="summary" xpReward={10} />
+
+## Quick Quiz
+
+<Quiz>
+  <Question text="What does .map() return?">
+    <Answer>The original array, modified</Answer>
+    <Answer correct>A new array with transformed items</Answer>
+    <Answer>The first matching item</Answer>
+    <Answer>Nothing (undefined)</Answer>
+  </Question>
+  
+  <Question text="What is the index of the first item in an array?">
+    <Answer>1</Answer>
+    <Answer correct>0</Answer>
+    <Answer>-1</Answer>
+    <Answer>It depends on the array</Answer>
+  </Question>
+  
+  <Question text="Which method would you use to find all numbers greater than 10?">
+    <Answer>.map()</Answer>
+    <Answer correct>.filter()</Answer>
+    <Answer>.find()</Answer>
+    <Answer>.forEach()</Answer>
+  </Question>
+  
+  <Question text="How do you access the 'name' property of an object called 'user'?">
+    <Answer>user(name)</Answer>
+    <Answer>user->name</Answer>
+    <Answer correct>user.name or user['name']</Answer>
+    <Answer>user[0]</Answer>
+  </Question>
+</Quiz>
+
+---
+
+**Great job!** 🎉 You've learned the fundamentals of arrays and objects. In the intermediate level, we'll explore more powerful methods like `.reduce()` and `.sort()`, plus advanced object techniques!

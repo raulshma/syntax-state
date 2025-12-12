@@ -1,0 +1,675 @@
+# Forms in React - Advanced
+
+Let's explore advanced form patterns: using refs for uncontrolled components, complex validation with schemas, form state management, and building accessible forms.
+
+<InfoBox type="info" title="What You'll Learn">
+- Uncontrolled components with refs
+- Schema-based validation with Zod
+- Complex form state patterns
+- Accessibility best practices
+</InfoBox>
+
+<ProgressCheckpoint section="introduction" xpReward={25} />
+
+## Uncontrolled Components with Refs
+
+While controlled components are recommended, sometimes uncontrolled components are useful. Use `useRef` to access DOM values directly:
+
+```jsx
+import { useRef } from 'react';
+
+function UncontrolledForm() {
+  const nameRef = useRef(null);
+  const emailRef = useRef(null);
+  
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    
+    // Access values directly from DOM
+    const name = nameRef.current.value;
+    const email = emailRef.current.value;
+    
+    console.log({ name, email });
+  };
+  
+  return (
+    <form onSubmit={handleSubmit}>
+      <input ref={nameRef} defaultValue="" />
+      <input ref={emailRef} type="email" defaultValue="" />
+      <button type="submit">Submit</button>
+    </form>
+  );
+}
+```
+
+<KeyConcept title="defaultValue vs value">
+Uncontrolled inputs use `defaultValue` (or `defaultChecked`) to set initial values. Using `value` without `onChange` makes the input read-only!
+</KeyConcept>
+
+### File Inputs (Always Uncontrolled)
+
+File inputs are always uncontrolled because their value is read-only for security reasons:
+
+```jsx
+function FileUpload() {
+  const fileRef = useRef(null);
+  
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const file = fileRef.current.files[0];
+    
+    if (file) {
+      console.log('File:', file.name, file.size, file.type);
+      // Upload file...
+    }
+  };
+  
+  return (
+    <form onSubmit={handleSubmit}>
+      <input type="file" ref={fileRef} accept="image/*" />
+      <button type="submit">Upload</button>
+    </form>
+  );
+}
+```
+
+<ReactPlayground
+  initialCode={`function FileUploadDemo() {
+  const fileRef = React.useRef(null);
+  const [preview, setPreview] = React.useState(null);
+  const [fileInfo, setFileInfo] = React.useState(null);
+  
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setFileInfo({
+        name: file.name,
+        size: (file.size / 1024).toFixed(2) + ' KB',
+        type: file.type
+      });
+      
+      // Create preview for images
+      if (file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = (e) => setPreview(e.target.result);
+        reader.readAsDataURL(file);
+      } else {
+        setPreview(null);
+      }
+    }
+  };
+  
+  const handleClear = () => {
+    fileRef.current.value = '';
+    setPreview(null);
+    setFileInfo(null);
+  };
+  
+  return (
+    <div style={{ padding: '20px', maxWidth: '400px' }}>
+      <h3>File Upload</h3>
+      
+      <div style={{ 
+        border: '2px dashed #ddd', 
+        borderRadius: '12px', 
+        padding: '30px',
+        textAlign: 'center',
+        marginBottom: '15px'
+      }}>
+        <input
+          type="file"
+          ref={fileRef}
+          onChange={handleFileChange}
+          accept="image/*,.pdf,.doc,.docx"
+          style={{ display: 'none' }}
+          id="file-input"
+        />
+        <label 
+          htmlFor="file-input"
+          style={{ cursor: 'pointer', color: '#3b82f6' }}
+        >
+          📁 Click to select a file
+        </label>
+      </div>
+      
+      {fileInfo && (
+        <div style={{ 
+          padding: '15px', 
+          background: '#f8fafc', 
+          borderRadius: '8px',
+          marginBottom: '15px'
+        }}>
+          <p><strong>Name:</strong> {fileInfo.name}</p>
+          <p><strong>Size:</strong> {fileInfo.size}</p>
+          <p><strong>Type:</strong> {fileInfo.type}</p>
+          
+          {preview && (
+            <img 
+              src={preview} 
+              alt="Preview" 
+              style={{ 
+                maxWidth: '100%', 
+                maxHeight: '150px',
+                marginTop: '10px',
+                borderRadius: '8px'
+              }} 
+            />
+          )}
+          
+          <button
+            onClick={handleClear}
+            style={{
+              marginTop: '10px',
+              padding: '8px 16px',
+              background: '#ef4444',
+              color: 'white',
+              border: 'none',
+              borderRadius: '6px',
+              cursor: 'pointer'
+            }}
+          >
+            Clear
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+render(<FileUploadDemo />);`}
+  height={450}
+/>
+
+<ProgressCheckpoint section="controlled-components" xpReward={25} />
+
+## Schema-Based Validation with Zod
+
+For complex validation, use a schema library like Zod. It provides type-safe validation with clear error messages:
+
+```typescript
+import { z } from 'zod';
+
+// Define your schema
+const signupSchema = z.object({
+  username: z.string()
+    .min(3, 'Username must be at least 3 characters')
+    .max(20, 'Username must be at most 20 characters')
+    .regex(/^[a-zA-Z0-9_]+$/, 'Only letters, numbers, and underscores'),
+  
+  email: z.string()
+    .email('Please enter a valid email'),
+  
+  password: z.string()
+    .min(8, 'Password must be at least 8 characters')
+    .regex(/[A-Z]/, 'Must contain an uppercase letter')
+    .regex(/[a-z]/, 'Must contain a lowercase letter')
+    .regex(/[0-9]/, 'Must contain a number'),
+  
+  confirmPassword: z.string(),
+  
+  age: z.number()
+    .min(13, 'Must be at least 13 years old')
+    .max(120, 'Invalid age'),
+}).refine(data => data.password === data.confirmPassword, {
+  message: 'Passwords do not match',
+  path: ['confirmPassword'],
+});
+
+// Use in your component
+function SignupForm() {
+  const [errors, setErrors] = useState({});
+  
+  const handleSubmit = (formData) => {
+    const result = signupSchema.safeParse(formData);
+    
+    if (!result.success) {
+      // Convert Zod errors to our format
+      const fieldErrors = {};
+      result.error.errors.forEach(err => {
+        fieldErrors[err.path[0]] = err.message;
+      });
+      setErrors(fieldErrors);
+      return;
+    }
+    
+    // Valid! Submit the data
+    console.log('Valid data:', result.data);
+  };
+}
+```
+
+<KeyConcept title="Why Schema Validation?">
+Schema validation separates your validation logic from your components, making it reusable, testable, and type-safe.
+</KeyConcept>
+
+<ProgressCheckpoint section="form-inputs" xpReward={25} />
+
+## Complex Form State Patterns
+
+### useReducer for Complex Forms
+
+For forms with complex state logic, `useReducer` can be cleaner than `useState`:
+
+```jsx
+const formReducer = (state, action) => {
+  switch (action.type) {
+    case 'SET_FIELD':
+      return {
+        ...state,
+        values: { ...state.values, [action.field]: action.value },
+        errors: { ...state.errors, [action.field]: '' },
+        touched: { ...state.touched, [action.field]: true },
+      };
+    case 'SET_ERROR':
+      return {
+        ...state,
+        errors: { ...state.errors, [action.field]: action.error },
+      };
+    case 'SET_SUBMITTING':
+      return { ...state, isSubmitting: action.value };
+    case 'RESET':
+      return initialState;
+    default:
+      return state;
+  }
+};
+
+function ComplexForm() {
+  const [state, dispatch] = useReducer(formReducer, initialState);
+  
+  const handleChange = (e) => {
+    dispatch({
+      type: 'SET_FIELD',
+      field: e.target.name,
+      value: e.target.value,
+    });
+  };
+  
+  // ...
+}
+```
+
+### Custom Form Hook
+
+Extract form logic into a reusable hook:
+
+```jsx
+function useForm(initialValues, validate) {
+  const [values, setValues] = useState(initialValues);
+  const [errors, setErrors] = useState({});
+  const [touched, setTouched] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    const newValue = type === 'checkbox' ? checked : value;
+    
+    setValues(prev => ({ ...prev, [name]: newValue }));
+    
+    if (touched[name]) {
+      setErrors(prev => ({
+        ...prev,
+        [name]: validate(name, newValue, values),
+      }));
+    }
+  };
+  
+  const handleBlur = (e) => {
+    const { name, value } = e.target;
+    setTouched(prev => ({ ...prev, [name]: true }));
+    setErrors(prev => ({
+      ...prev,
+      [name]: validate(name, value, values),
+    }));
+  };
+  
+  const handleSubmit = (onSubmit) => async (e) => {
+    e.preventDefault();
+    
+    // Validate all fields
+    const newErrors = {};
+    Object.keys(values).forEach(key => {
+      newErrors[key] = validate(key, values[key], values);
+    });
+    setErrors(newErrors);
+    setTouched(Object.keys(values).reduce((acc, key) => ({ ...acc, [key]: true }), {}));
+    
+    if (Object.values(newErrors).every(e => !e)) {
+      setIsSubmitting(true);
+      await onSubmit(values);
+      setIsSubmitting(false);
+    }
+  };
+  
+  const reset = () => {
+    setValues(initialValues);
+    setErrors({});
+    setTouched({});
+  };
+  
+  return {
+    values,
+    errors,
+    touched,
+    isSubmitting,
+    handleChange,
+    handleBlur,
+    handleSubmit,
+    reset,
+  };
+}
+```
+
+<ProgressCheckpoint section="validation" xpReward={25} />
+
+## Accessibility Best Practices
+
+Forms must be accessible to all users. Here are the key requirements:
+
+### 1. Labels and IDs
+
+Every input needs a label connected via `htmlFor`:
+
+```jsx
+<label htmlFor="email">Email Address</label>
+<input id="email" type="email" name="email" />
+```
+
+### 2. Error Announcements
+
+Use `aria-describedby` to connect error messages:
+
+```jsx
+<input
+  id="email"
+  aria-invalid={!!errors.email}
+  aria-describedby={errors.email ? 'email-error' : undefined}
+/>
+{errors.email && (
+  <span id="email-error" role="alert">
+    {errors.email}
+  </span>
+)}
+```
+
+### 3. Required Fields
+
+Mark required fields clearly:
+
+```jsx
+<label htmlFor="name">
+  Name <span aria-hidden="true">*</span>
+  <span className="sr-only">(required)</span>
+</label>
+<input id="name" required aria-required="true" />
+```
+
+### 4. Fieldsets for Groups
+
+Group related inputs with `fieldset` and `legend`:
+
+```jsx
+<fieldset>
+  <legend>Shipping Address</legend>
+  <label htmlFor="street">Street</label>
+  <input id="street" name="street" />
+  {/* More address fields */}
+</fieldset>
+```
+
+<ReactPlayground
+  initialCode={`function AccessibleForm() {
+  const [formData, setFormData] = React.useState({
+    name: '',
+    email: '',
+    message: ''
+  });
+  const [errors, setErrors] = React.useState({});
+  const [submitted, setSubmitted] = React.useState(false);
+  
+  const validate = (name, value) => {
+    switch (name) {
+      case 'name':
+        return !value ? 'Name is required' : '';
+      case 'email':
+        if (!value) return 'Email is required';
+        if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(value)) return 'Invalid email';
+        return '';
+      case 'message':
+        return !value ? 'Message is required' : '';
+      default:
+        return '';
+    }
+  };
+  
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+    setErrors(prev => ({ ...prev, [name]: validate(name, value) }));
+  };
+  
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const newErrors = {};
+    Object.keys(formData).forEach(key => {
+      newErrors[key] = validate(key, formData[key]);
+    });
+    setErrors(newErrors);
+    
+    if (Object.values(newErrors).every(e => !e)) {
+      setSubmitted(true);
+    }
+  };
+  
+  if (submitted) {
+    return (
+      <div role="status" style={{ padding: '20px', textAlign: 'center' }}>
+        <h3>✅ Form Submitted Successfully!</h3>
+        <button onClick={() => setSubmitted(false)}>Submit Another</button>
+      </div>
+    );
+  }
+  
+  const inputStyle = (hasError) => ({
+    width: '100%',
+    padding: '10px',
+    borderRadius: '6px',
+    border: hasError ? '2px solid #ef4444' : '1px solid #ddd'
+  });
+  
+  return (
+    <form onSubmit={handleSubmit} style={{ padding: '20px', maxWidth: '400px' }}>
+      <h3>Accessible Contact Form</h3>
+      
+      {/* Name Field */}
+      <div style={{ marginBottom: '20px' }}>
+        <label htmlFor="name" style={{ display: 'block', marginBottom: '5px' }}>
+          Name <span aria-hidden="true" style={{ color: '#ef4444' }}>*</span>
+          <span className="sr-only">(required)</span>
+        </label>
+        <input
+          id="name"
+          name="name"
+          type="text"
+          value={formData.name}
+          onChange={handleChange}
+          aria-required="true"
+          aria-invalid={!!errors.name}
+          aria-describedby={errors.name ? 'name-error' : undefined}
+          style={inputStyle(errors.name)}
+        />
+        {errors.name && (
+          <span id="name-error" role="alert" style={{ color: '#ef4444', fontSize: '12px' }}>
+            {errors.name}
+          </span>
+        )}
+      </div>
+      
+      {/* Email Field */}
+      <div style={{ marginBottom: '20px' }}>
+        <label htmlFor="email" style={{ display: 'block', marginBottom: '5px' }}>
+          Email <span aria-hidden="true" style={{ color: '#ef4444' }}>*</span>
+        </label>
+        <input
+          id="email"
+          name="email"
+          type="email"
+          value={formData.email}
+          onChange={handleChange}
+          aria-required="true"
+          aria-invalid={!!errors.email}
+          aria-describedby={errors.email ? 'email-error' : undefined}
+          style={inputStyle(errors.email)}
+        />
+        {errors.email && (
+          <span id="email-error" role="alert" style={{ color: '#ef4444', fontSize: '12px' }}>
+            {errors.email}
+          </span>
+        )}
+      </div>
+      
+      {/* Message Field */}
+      <div style={{ marginBottom: '20px' }}>
+        <label htmlFor="message" style={{ display: 'block', marginBottom: '5px' }}>
+          Message <span aria-hidden="true" style={{ color: '#ef4444' }}>*</span>
+        </label>
+        <textarea
+          id="message"
+          name="message"
+          value={formData.message}
+          onChange={handleChange}
+          rows={4}
+          aria-required="true"
+          aria-invalid={!!errors.message}
+          aria-describedby={errors.message ? 'message-error' : undefined}
+          style={{ ...inputStyle(errors.message), resize: 'vertical' }}
+        />
+        {errors.message && (
+          <span id="message-error" role="alert" style={{ color: '#ef4444', fontSize: '12px' }}>
+            {errors.message}
+          </span>
+        )}
+      </div>
+      
+      <button
+        type="submit"
+        style={{
+          width: '100%',
+          padding: '12px',
+          background: '#3b82f6',
+          color: 'white',
+          border: 'none',
+          borderRadius: '8px',
+          cursor: 'pointer',
+          fontSize: '16px'
+        }}
+      >
+        Send Message
+      </button>
+      
+      <p style={{ fontSize: '12px', color: '#666', marginTop: '10px' }}>
+        <span aria-hidden="true" style={{ color: '#ef4444' }}>*</span> Required fields
+      </p>
+    </form>
+  );
+}
+
+render(<AccessibleForm />);`}
+  height={550}
+/>
+
+<ProgressCheckpoint section="form-submission" xpReward={20} />
+
+## Form Libraries Deep Dive
+
+### React Hook Form with Zod
+
+The most popular combination for type-safe forms:
+
+```typescript
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+
+const schema = z.object({
+  email: z.string().email(),
+  password: z.string().min(8),
+});
+
+type FormData = z.infer<typeof schema>;
+
+function LoginForm() {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<FormData>({
+    resolver: zodResolver(schema),
+  });
+  
+  const onSubmit = async (data: FormData) => {
+    await loginUser(data);
+  };
+  
+  return (
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <input {...register('email')} />
+      {errors.email && <span>{errors.email.message}</span>}
+      
+      <input {...register('password')} type="password" />
+      {errors.password && <span>{errors.password.message}</span>}
+      
+      <button disabled={isSubmitting}>
+        {isSubmitting ? 'Logging in...' : 'Log In'}
+      </button>
+    </form>
+  );
+}
+```
+
+<ProgressCheckpoint section="form-libraries" xpReward={15} />
+
+## Quick Quiz
+
+<Quiz>
+  <Question text="When should you use an uncontrolled component?">
+    <Answer>For all form inputs</Answer>
+    <Answer>When you need real-time validation</Answer>
+    <Answer correct>For file inputs or when integrating with non-React code</Answer>
+    <Answer>Never, always use controlled</Answer>
+  </Question>
+  
+  <Question text="What attribute connects an error message to an input for screen readers?">
+    <Answer>aria-label</Answer>
+    <Answer correct>aria-describedby</Answer>
+    <Answer>aria-error</Answer>
+    <Answer>aria-message</Answer>
+  </Question>
+  
+  <Question text="What's the benefit of schema-based validation with Zod?">
+    <Answer>It's faster</Answer>
+    <Answer correct>It's reusable, testable, and type-safe</Answer>
+    <Answer>It's required by React</Answer>
+    <Answer>It replaces useState</Answer>
+  </Question>
+  
+  <Question text="What attribute should you use for initial values in uncontrolled inputs?">
+    <Answer>value</Answer>
+    <Answer>initialValue</Answer>
+    <Answer correct>defaultValue</Answer>
+    <Answer>startValue</Answer>
+  </Question>
+  
+  <Question text="What role should error messages have for accessibility?">
+    <Answer>status</Answer>
+    <Answer correct>alert</Answer>
+    <Answer>error</Answer>
+    <Answer>message</Answer>
+  </Question>
+</Quiz>
+
+<ProgressCheckpoint section="summary" xpReward={10} />
+
+---
+
+**Congratulations!** 🎓 You've mastered forms in React, from basic controlled components to advanced patterns with schema validation and accessibility. You're now equipped to build robust, user-friendly forms for any application!

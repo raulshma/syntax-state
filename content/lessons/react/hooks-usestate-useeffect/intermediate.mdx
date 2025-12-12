@@ -1,0 +1,436 @@
+# Hooks: useState and useEffect - Intermediate
+
+Now that you understand the basics of hooks, let's dive deeper into patterns that will help you write more robust and efficient React code.
+
+<InfoBox type="info" title="What You'll Learn">
+- Dependency arrays in depth
+- Cleanup functions and when to use them
+- The rules of hooks explained
+- Common useEffect patterns
+</InfoBox>
+
+<ProgressCheckpoint section="introduction" xpReward={20} />
+
+## Dependency Arrays Deep Dive
+
+The dependency array is crucial for controlling when your effects run. Getting it wrong can cause bugs or performance issues.
+
+### Understanding Dependencies
+
+Every value from your component that the effect uses should be in the dependency array:
+
+```jsx
+function SearchResults({ query, filters }) {
+  const [results, setResults] = useState([]);
+  
+  useEffect(() => {
+    // This effect uses 'query' and 'filters'
+    fetchResults(query, filters).then(setResults);
+  }, [query, filters]); // Both must be listed!
+  
+  return <ResultsList results={results} />;
+}
+```
+
+<DependencyAnalyzer 
+  showWarnings={true}
+  suggestFixes={true}
+/>
+
+### Common Dependency Mistakes
+
+```jsx
+// ❌ Missing dependency - stale closure bug!
+useEffect(() => {
+  const timer = setInterval(() => {
+    setCount(count + 1); // 'count' is stale!
+  }, 1000);
+  return () => clearInterval(timer);
+}, []); // count is missing!
+
+// ✅ Fixed with functional update
+useEffect(() => {
+  const timer = setInterval(() => {
+    setCount(c => c + 1); // Uses previous value
+  }, 1000);
+  return () => clearInterval(timer);
+}, []); // No dependency needed!
+```
+
+<KeyConcept title="Functional Updates">
+When your new state depends on the previous state, use the functional form of setState: `setCount(prev => prev + 1)`. This avoids stale closure issues and removes the need to list the state in dependencies.
+</KeyConcept>
+
+<ProgressCheckpoint section="usestate-basics" xpReward={20} />
+
+## Cleanup Functions
+
+Cleanup functions prevent memory leaks and unexpected behavior. They run:
+1. Before the effect runs again (when dependencies change)
+2. When the component unmounts
+
+### When You Need Cleanup
+
+- **Timers**: clearInterval, clearTimeout
+- **Subscriptions**: WebSocket connections, event listeners
+- **Async operations**: Canceling fetch requests
+
+<ReactPlayground
+  initialCode={`function WindowSize() {
+  const [size, setSize] = React.useState({
+    width: window.innerWidth,
+    height: window.innerHeight
+  });
+  
+  React.useEffect(() => {
+    // Handler function
+    const handleResize = () => {
+      setSize({
+        width: window.innerWidth,
+        height: window.innerHeight
+      });
+    };
+    
+    // Subscribe to window resize
+    window.addEventListener('resize', handleResize);
+    console.log('✅ Added resize listener');
+    
+    // Cleanup: unsubscribe when component unmounts
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      console.log('🧹 Removed resize listener');
+    };
+  }, []); // Empty array - only run on mount/unmount
+  
+  return (
+    <div style={{ 
+      padding: '20px', 
+      background: '#f0f4f8',
+      borderRadius: '12px',
+      textAlign: 'center'
+    }}>
+      <h3>Window Size</h3>
+      <p style={{ fontSize: '24px', fontWeight: 'bold', color: '#4a5568' }}>
+        {size.width} × {size.height}
+      </p>
+      <p style={{ fontSize: '12px', color: '#718096' }}>
+        Try resizing your browser window!
+      </p>
+    </div>
+  );
+}
+
+render(<WindowSize />);`}
+  height={220}
+/>
+
+### Handling Async Operations
+
+When fetching data, you need to handle the case where the component unmounts before the fetch completes:
+
+```jsx
+useEffect(() => {
+  let isCancelled = false;
+  
+  async function fetchData() {
+    const response = await fetch(\`/api/user/\${userId}\`);
+    const data = await response.json();
+    
+    // Only update state if component is still mounted
+    if (!isCancelled) {
+      setUser(data);
+    }
+  }
+  
+  fetchData();
+  
+  // Cleanup: mark as cancelled
+  return () => {
+    isCancelled = true;
+  };
+}, [userId]);
+```
+
+<ProgressCheckpoint section="useeffect-basics" xpReward={20} />
+
+## The Rules of Hooks Explained
+
+### Rule 1: Only Call Hooks at the Top Level
+
+React relies on the **order** of hook calls to track state. If you call hooks conditionally, the order can change between renders, breaking React's tracking.
+
+```jsx
+// ❌ BAD - Order changes based on condition
+function BadComponent({ showExtra }) {
+  const [name, setName] = useState('');
+  
+  if (showExtra) {
+    const [extra, setExtra] = useState(''); // Order changes!
+  }
+  
+  const [count, setCount] = useState(0);
+}
+
+// ✅ GOOD - Always call all hooks
+function GoodComponent({ showExtra }) {
+  const [name, setName] = useState('');
+  const [extra, setExtra] = useState(''); // Always called
+  const [count, setCount] = useState(0);
+  
+  // Use the value conditionally instead
+  return showExtra ? <p>{extra}</p> : null;
+}
+```
+
+<HookLifecycleVisualizer 
+  showMountUnmount={true}
+  showDependencies={true}
+/>
+
+### Rule 2: Only Call Hooks from React Functions
+
+Hooks only work inside:
+- React function components
+- Custom hooks (functions starting with "use")
+
+```jsx
+// ✅ In a component
+function MyComponent() {
+  const [value, setValue] = useState(0);
+}
+
+// ✅ In a custom hook
+function useCounter(initial) {
+  const [count, setCount] = useState(initial);
+  const increment = () => setCount(c => c + 1);
+  return { count, increment };
+}
+
+// ❌ In a regular function
+function helper() {
+  const [value, setValue] = useState(0); // Error!
+}
+```
+
+<ProgressCheckpoint section="dependency-arrays" xpReward={20} />
+
+## Common useEffect Patterns
+
+### Pattern 1: Data Fetching
+
+<ReactPlayground
+  initialCode={`function UserProfile({ userId }) {
+  const [user, setUser] = React.useState(null);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState(null);
+  
+  React.useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+    
+    // Simulate API call
+    const fetchUser = async () => {
+      try {
+        await new Promise(r => setTimeout(r, 1000)); // Fake delay
+        
+        if (cancelled) return;
+        
+        // Fake user data
+        setUser({
+          id: userId,
+          name: userId === 1 ? 'Alice' : 'Bob',
+          email: userId === 1 ? 'alice@example.com' : 'bob@example.com'
+        });
+      } catch (err) {
+        if (!cancelled) setError(err.message);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+    
+    fetchUser();
+    
+    return () => { cancelled = true; };
+  }, [userId]);
+  
+  if (loading) return <div style={{ padding: '20px' }}>Loading...</div>;
+  if (error) return <div style={{ padding: '20px', color: 'red' }}>Error: {error}</div>;
+  
+  return (
+    <div style={{ padding: '20px', background: '#f7fafc', borderRadius: '12px' }}>
+      <h3>{user.name}</h3>
+      <p style={{ color: '#718096' }}>{user.email}</p>
+      <p style={{ fontSize: '12px', color: '#a0aec0' }}>User ID: {user.id}</p>
+    </div>
+  );
+}
+
+function App() {
+  const [userId, setUserId] = React.useState(1);
+  
+  return (
+    <div style={{ padding: '20px' }}>
+      <div style={{ marginBottom: '15px' }}>
+        <button 
+          onClick={() => setUserId(1)}
+          style={{ 
+            marginRight: '10px', 
+            padding: '8px 16px',
+            background: userId === 1 ? '#4299e1' : '#e2e8f0',
+            color: userId === 1 ? 'white' : 'black',
+            border: 'none',
+            borderRadius: '6px',
+            cursor: 'pointer'
+          }}
+        >
+          User 1
+        </button>
+        <button 
+          onClick={() => setUserId(2)}
+          style={{ 
+            padding: '8px 16px',
+            background: userId === 2 ? '#4299e1' : '#e2e8f0',
+            color: userId === 2 ? 'white' : 'black',
+            border: 'none',
+            borderRadius: '6px',
+            cursor: 'pointer'
+          }}
+        >
+          User 2
+        </button>
+      </div>
+      <UserProfile userId={userId} />
+    </div>
+  );
+}
+
+render(<App />);`}
+  height={320}
+/>
+
+### Pattern 2: Debounced Search
+
+```jsx
+function SearchInput() {
+  const [query, setQuery] = useState('');
+  const [debouncedQuery, setDebouncedQuery] = useState('');
+  
+  // Debounce the query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedQuery(query);
+    }, 300);
+    
+    return () => clearTimeout(timer);
+  }, [query]);
+  
+  // Fetch when debounced query changes
+  useEffect(() => {
+    if (debouncedQuery) {
+      fetchSearchResults(debouncedQuery);
+    }
+  }, [debouncedQuery]);
+  
+  return <input value={query} onChange={e => setQuery(e.target.value)} />;
+}
+```
+
+### Pattern 3: Syncing with External Systems
+
+```jsx
+function ChatRoom({ roomId }) {
+  useEffect(() => {
+    // Connect to chat room
+    const connection = createConnection(roomId);
+    connection.connect();
+    
+    // Cleanup: disconnect when roomId changes or unmount
+    return () => connection.disconnect();
+  }, [roomId]);
+  
+  return <Chat />;
+}
+```
+
+<ProgressCheckpoint section="cleanup-functions" xpReward={20} />
+
+## Multiple useEffect Calls
+
+It's often better to have multiple focused effects than one large effect:
+
+```jsx
+// ✅ GOOD - Separate concerns
+function UserDashboard({ userId }) {
+  // Effect 1: Fetch user data
+  useEffect(() => {
+    fetchUser(userId).then(setUser);
+  }, [userId]);
+  
+  // Effect 2: Update document title
+  useEffect(() => {
+    document.title = \`Dashboard - \${user?.name}\`;
+  }, [user?.name]);
+  
+  // Effect 3: Track page view
+  useEffect(() => {
+    analytics.trackPageView('dashboard');
+  }, []);
+}
+
+// ❌ BAD - One giant effect doing everything
+function UserDashboard({ userId }) {
+  useEffect(() => {
+    fetchUser(userId).then(setUser);
+    document.title = \`Dashboard - \${user?.name}\`;
+    analytics.trackPageView('dashboard');
+  }, [userId, user?.name]); // Confusing dependencies!
+}
+```
+
+<ProgressCheckpoint section="custom-hooks" xpReward={15} />
+
+## Quick Quiz
+
+<Quiz>
+  <Question text="What happens if you forget a dependency in useEffect?">
+    <Answer>The effect never runs</Answer>
+    <Answer correct>The effect may use stale values (stale closure)</Answer>
+    <Answer>React throws an error</Answer>
+    <Answer>The component won't render</Answer>
+  </Question>
+  
+  <Question text="When does the cleanup function run?">
+    <Answer>Only when the component mounts</Answer>
+    <Answer>Only when the component unmounts</Answer>
+    <Answer correct>Before the effect runs again AND when the component unmounts</Answer>
+    <Answer>After every render</Answer>
+  </Question>
+  
+  <Question text="Why can't you call hooks inside conditions?">
+    <Answer>It's a JavaScript syntax error</Answer>
+    <Answer correct>React relies on hook call order to track state</Answer>
+    <Answer>Conditions are too slow</Answer>
+    <Answer>You actually can, it's just not recommended</Answer>
+  </Question>
+  
+  <Question text="How do you avoid stale closures when updating state based on previous state?">
+    <Answer>Add the state to dependencies</Answer>
+    <Answer correct>Use the functional update form: setState(prev => prev + 1)</Answer>
+    <Answer>Use useRef instead</Answer>
+    <Answer>Call setState twice</Answer>
+  </Question>
+  
+  <Question text="What's the best practice for multiple unrelated effects?">
+    <Answer>Combine them into one useEffect</Answer>
+    <Answer correct>Use separate useEffect calls for each concern</Answer>
+    <Answer>Use useLayoutEffect instead</Answer>
+    <Answer>Avoid using multiple effects</Answer>
+  </Question>
+</Quiz>
+
+<ProgressCheckpoint section="summary" xpReward={15} />
+
+---
+
+**Excellent progress!** 🚀 You now understand the nuances of useEffect and dependency management. In the advanced level, we'll explore custom hooks, useCallback, useMemo, useRef, and performance optimization techniques.

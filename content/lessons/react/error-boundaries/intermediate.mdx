@@ -1,0 +1,312 @@
+# Error Boundaries
+
+Welcome back! Now that you understand the basics of error boundaries, let's dive deeper into the lifecycle methods, error information, and how to build production-ready error handling. 🔧
+
+<ProgressCheckpoint section="introduction" xpReward={15} />
+
+## The Two Error Boundary Methods
+
+Error boundaries use two special lifecycle methods:
+
+### 1. getDerivedStateFromError(error)
+
+This static method is called during the "render" phase. Use it to update state and render a fallback UI.
+
+```jsx
+class ErrorBoundary extends React.Component {
+  state = { hasError: false, error: null };
+
+  // Called during render phase - update state here
+  static getDerivedStateFromError(error) {
+    // Return new state
+    return { 
+      hasError: true, 
+      error: error 
+    };
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return <FallbackUI error={this.state.error} />;
+    }
+    return this.props.children;
+  }
+}
+```
+
+### 2. componentDidCatch(error, errorInfo)
+
+This method is called during the "commit" phase. Use it for side effects like logging errors.
+
+```jsx
+class ErrorBoundary extends React.Component {
+  state = { hasError: false };
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true };
+  }
+
+  // Called during commit phase - side effects here
+  componentDidCatch(error, errorInfo) {
+    // Log to error reporting service
+    console.error('Error caught:', error);
+    console.error('Component stack:', errorInfo.componentStack);
+    
+    // Send to error tracking (Sentry, LogRocket, etc.)
+    logErrorToService(error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return <h1>Something went wrong.</h1>;
+    }
+    return this.props.children;
+  }
+}
+```
+
+<KeyConcept title="Two Methods, Two Purposes">
+- `getDerivedStateFromError`: Update state to show fallback UI (render phase)
+- `componentDidCatch`: Log errors and perform side effects (commit phase)
+</KeyConcept>
+
+<ProgressCheckpoint section="error-boundary-concept" xpReward={15} />
+
+## Understanding Error Info
+
+The `componentDidCatch` method receives valuable debugging information:
+
+```jsx
+componentDidCatch(error, errorInfo) {
+  // error: The actual Error object
+  console.log(error.message);  // "Cannot read property 'map' of undefined"
+  console.log(error.stack);    // Full stack trace
+  
+  // errorInfo: React-specific information
+  console.log(errorInfo.componentStack);
+  // Output:
+  //   in UserProfile (at App.js:15)
+  //   in ErrorBoundary (at App.js:12)
+  //   in div (at App.js:10)
+  //   in App (at index.js:6)
+}
+```
+
+<ErrorBoundarySimulator 
+  showErrorInfo={true}
+  showFallback={true}
+/>
+
+<ProgressCheckpoint section="creating-boundaries" xpReward={15} />
+
+## Building a Reusable Error Boundary
+
+Here's a production-ready error boundary with reset functionality:
+
+```jsx
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null, errorInfo: null };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    this.setState({ errorInfo });
+    
+    // Log to your error service
+    if (this.props.onError) {
+      this.props.onError(error, errorInfo);
+    }
+  }
+
+  // Allow users to retry
+  handleReset = () => {
+    this.setState({ hasError: false, error: null, errorInfo: null });
+  };
+
+  render() {
+    if (this.state.hasError) {
+      // Use custom fallback if provided
+      if (this.props.fallback) {
+        return this.props.fallback({
+          error: this.state.error,
+          resetErrorBoundary: this.handleReset,
+        });
+      }
+
+      // Default fallback
+      return (
+        <div className="error-fallback">
+          <h2>Something went wrong</h2>
+          <button onClick={this.handleReset}>Try again</button>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
+// Usage with custom fallback
+<ErrorBoundary
+  fallback={({ error, resetErrorBoundary }) => (
+    <div>
+      <p>Error: {error.message}</p>
+      <button onClick={resetErrorBoundary}>Retry</button>
+    </div>
+  )}
+  onError={(error, info) => logToService(error, info)}
+>
+  <MyComponent />
+</ErrorBoundary>
+```
+
+<FallbackUIBuilder 
+  showCode={true}
+  showPreview={true}
+/>
+
+<ProgressCheckpoint section="error-handling-methods" xpReward={15} />
+
+## Error Boundary Placement Strategies
+
+Where you place error boundaries affects what gets protected:
+
+### Strategy 1: Top-Level Boundary
+Catches everything, but shows one fallback for all errors.
+
+```jsx
+function App() {
+  return (
+    <ErrorBoundary fallback={<AppCrashScreen />}>
+      <Header />
+      <Main />
+      <Footer />
+    </ErrorBoundary>
+  );
+}
+```
+
+### Strategy 2: Feature-Level Boundaries
+Isolates features so one crash doesn't affect others.
+
+```jsx
+function App() {
+  return (
+    <div>
+      <ErrorBoundary fallback={<HeaderFallback />}>
+        <Header />
+      </ErrorBoundary>
+      
+      <ErrorBoundary fallback={<MainFallback />}>
+        <Main />
+      </ErrorBoundary>
+      
+      <ErrorBoundary fallback={<FooterFallback />}>
+        <Footer />
+      </ErrorBoundary>
+    </div>
+  );
+}
+```
+
+### Strategy 3: Granular Boundaries
+Wrap individual risky components.
+
+```jsx
+function Dashboard() {
+  return (
+    <div>
+      <ErrorBoundary fallback={<ChartError />}>
+        <AnalyticsChart />
+      </ErrorBoundary>
+      
+      <ErrorBoundary fallback={<TableError />}>
+        <DataTable />
+      </ErrorBoundary>
+    </div>
+  );
+}
+```
+
+<ErrorPropagationVisualizer 
+  showBoundaries={true}
+  speed="normal"
+/>
+
+<KeyConcept title="Balance Protection and Complexity">
+More boundaries = better isolation but more code. Start with feature-level boundaries and add granular ones for known risky components.
+</KeyConcept>
+
+<ProgressCheckpoint section="fallback-ui" xpReward={15} />
+
+## Handling Errors in Event Handlers
+
+Remember, error boundaries don't catch event handler errors. Use try/catch:
+
+```jsx
+function MyComponent() {
+  const [error, setError] = useState(null);
+
+  const handleClick = async () => {
+    try {
+      await riskyOperation();
+    } catch (err) {
+      // Handle the error yourself
+      setError(err);
+      // Or log it
+      logError(err);
+    }
+  };
+
+  if (error) {
+    return <div>Error: {error.message}</div>;
+  }
+
+  return <button onClick={handleClick}>Do Something</button>;
+}
+```
+
+<ProgressCheckpoint section="error-reporting" xpReward={15} />
+
+## Quick Quiz
+
+<Quiz>
+  <Question text="What is getDerivedStateFromError used for?">
+    <Answer>Logging errors to a service</Answer>
+    <Answer correct>Updating state to render a fallback UI</Answer>
+    <Answer>Catching errors in event handlers</Answer>
+    <Answer>Preventing errors from occurring</Answer>
+  </Question>
+  
+  <Question text="What is componentDidCatch used for?">
+    <Answer>Rendering the fallback UI</Answer>
+    <Answer>Preventing the error from happening</Answer>
+    <Answer correct>Logging errors and performing side effects</Answer>
+    <Answer>Resetting the component state</Answer>
+  </Question>
+  
+  <Question text="What does errorInfo.componentStack contain?">
+    <Answer>The JavaScript call stack</Answer>
+    <Answer correct>The React component hierarchy where the error occurred</Answer>
+    <Answer>A list of all components in the app</Answer>
+    <Answer>The error message</Answer>
+  </Question>
+  
+  <Question text="Which placement strategy provides the best isolation?">
+    <Answer>Top-level boundary only</Answer>
+    <Answer correct>Feature-level or granular boundaries</Answer>
+    <Answer>No boundaries at all</Answer>
+    <Answer>One boundary per component</Answer>
+  </Question>
+</Quiz>
+
+<ProgressCheckpoint section="summary" xpReward={10} />
+
+---
+
+**Excellent work!** 🎉 You now know how to build production-ready error boundaries. In the advanced level, we'll explore error recovery patterns, integration with error reporting services, and handling async errors.

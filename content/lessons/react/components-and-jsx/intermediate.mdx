@@ -1,0 +1,667 @@
+# Components and JSX
+
+Welcome to the intermediate level! Now that you understand the basics of components and JSX, let's explore more powerful patterns. You'll learn about component composition, conditional rendering, working with lists, and how to structure your components effectively.
+
+<InfoBox type="info" title="What You'll Learn">
+This level covers practical patterns you'll use daily: rendering content conditionally, displaying lists of data, and composing components in flexible ways.
+</InfoBox>
+
+<ProgressCheckpoint section="introduction" xpReward={20} />
+
+## Component Composition Patterns
+
+**Composition** is the heart of React. Instead of inheritance, React uses composition to build complex UIs from simple components.
+
+### The Children Prop
+
+The special `children` prop lets you pass components as content:
+
+```jsx
+function Card({ children, title }) {
+  return (
+    <div className="card">
+      <h2>{title}</h2>
+      <div className="card-content">
+        {children}
+      </div>
+    </div>
+  );
+}
+
+// Usage - anything between tags becomes children
+<Card title="Welcome">
+  <p>This paragraph is the children!</p>
+  <button>Click me</button>
+</Card>
+```
+
+### Specialization Pattern
+
+Create specialized versions of generic components:
+
+```jsx
+// Generic Dialog
+function Dialog({ title, message, children }) {
+  return (
+    <div className="dialog">
+      <h2>{title}</h2>
+      <p>{message}</p>
+      {children}
+    </div>
+  );
+}
+
+// Specialized WelcomeDialog
+function WelcomeDialog() {
+  return (
+    <Dialog 
+      title="Welcome!" 
+      message="Thanks for joining us."
+    >
+      <button>Get Started</button>
+    </Dialog>
+  );
+}
+```
+
+<ReactPlayground
+  initialCode={`// Composition with children
+function Panel({ title, children, variant = "default" }) {
+  const styles = {
+    default: { background: '#f8fafc', border: '1px solid #e2e8f0' },
+    success: { background: '#dcfce7', border: '1px solid #86efac' },
+    warning: { background: '#fef3c7', border: '1px solid #fcd34d' },
+  };
+  
+  return (
+    <div style={{
+      padding: '16px',
+      borderRadius: '12px',
+      marginBottom: '12px',
+      ...styles[variant]
+    }}>
+      {title && <h3 style={{ margin: '0 0 8px 0' }}>{title}</h3>}
+      {children}
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <div>
+      <Panel title="Default Panel">
+        <p>This is regular content.</p>
+      </Panel>
+      
+      <Panel title="Success!" variant="success">
+        <p>Your changes have been saved.</p>
+      </Panel>
+      
+      <Panel variant="warning">
+        <strong>Warning:</strong> Please review before continuing.
+      </Panel>
+    </div>
+  );
+}
+
+render(<App />);`}
+  height={350}
+/>
+
+<ProgressCheckpoint section="what-are-components" xpReward={20} />
+
+## Conditional Rendering
+
+React lets you render different content based on conditions. There are several patterns to choose from.
+
+### Using && (Logical AND)
+
+Render something only if a condition is true:
+
+```jsx
+function Notification({ count }) {
+  return (
+    <div>
+      {count > 0 && <span className="badge">{count}</span>}
+    </div>
+  );
+}
+```
+
+<InfoBox type="warning" title="Watch Out for 0!">
+`{count && <span>{count}</span>}` will render `0` if count is 0, because `0` is falsy but still a valid React child. Use `{count > 0 && ...}` instead.
+</InfoBox>
+
+### Using Ternary Operator
+
+Choose between two options:
+
+```jsx
+function LoginButton({ isLoggedIn }) {
+  return (
+    <button>
+      {isLoggedIn ? 'Logout' : 'Login'}
+    </button>
+  );
+}
+```
+
+### Using if Statements
+
+For complex conditions, use regular if statements:
+
+```jsx
+function StatusMessage({ status }) {
+  if (status === 'loading') {
+    return <Spinner />;
+  }
+  
+  if (status === 'error') {
+    return <ErrorMessage />;
+  }
+  
+  return <SuccessMessage />;
+}
+```
+
+<ReactPlayground
+  initialCode={`function UserStatus({ user, isOnline, notifications }) {
+  // Early return for no user
+  if (!user) {
+    return <p>Please log in</p>;
+  }
+  
+  return (
+    <div style={{
+      padding: '16px',
+      background: '#f8fafc',
+      borderRadius: '12px'
+    }}>
+      {/* Conditional class/style */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px'
+      }}>
+        <span style={{
+          width: '10px',
+          height: '10px',
+          borderRadius: '50%',
+          background: isOnline ? '#22c55e' : '#94a3b8'
+        }} />
+        <strong>{user.name}</strong>
+        
+        {/* && for optional content */}
+        {notifications > 0 && (
+          <span style={{
+            background: '#ef4444',
+            color: 'white',
+            padding: '2px 8px',
+            borderRadius: '12px',
+            fontSize: '12px'
+          }}>
+            {notifications}
+          </span>
+        )}
+      </div>
+      
+      {/* Ternary for either/or */}
+      <p style={{ color: '#64748b', margin: '8px 0 0' }}>
+        {isOnline ? '🟢 Online now' : '⚫ Last seen 2h ago'}
+      </p>
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+      <UserStatus user={{ name: 'Alice' }} isOnline={true} notifications={3} />
+      <UserStatus user={{ name: 'Bob' }} isOnline={false} notifications={0} />
+      <UserStatus user={null} />
+    </div>
+  );
+}
+
+render(<App />);`}
+  height={320}
+/>
+
+<ProgressCheckpoint section="jsx-basics" xpReward={20} />
+
+## Rendering Lists
+
+To display a list of items, use JavaScript's `map()` function:
+
+```jsx
+function TodoList({ items }) {
+  return (
+    <ul>
+      {items.map(item => (
+        <li key={item.id}>{item.text}</li>
+      ))}
+    </ul>
+  );
+}
+```
+
+### The Key Prop
+
+Every item in a list needs a unique `key` prop. This helps React identify which items changed, were added, or removed.
+
+```jsx
+// ✅ Good - unique, stable ID
+{users.map(user => (
+  <UserCard key={user.id} user={user} />
+))}
+
+// ❌ Bad - index can change when items are reordered
+{users.map((user, index) => (
+  <UserCard key={index} user={user} />
+))}
+```
+
+<KeyConcept title="Keys Must Be Unique Among Siblings">
+Keys only need to be unique among siblings, not globally. Two different lists can use the same keys.
+</KeyConcept>
+
+<ReactPlayground
+  initialCode={`function TaskList({ tasks }) {
+  if (tasks.length === 0) {
+    return <p style={{ color: '#94a3b8' }}>No tasks yet!</p>;
+  }
+  
+  return (
+    <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+      {tasks.map(task => (
+        <li 
+          key={task.id}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            padding: '12px',
+            background: task.completed ? '#dcfce7' : '#f8fafc',
+            borderRadius: '8px',
+            marginBottom: '8px'
+          }}
+        >
+          <span style={{ fontSize: '20px' }}>
+            {task.completed ? '✅' : '⬜'}
+          </span>
+          <span style={{
+            textDecoration: task.completed ? 'line-through' : 'none',
+            color: task.completed ? '#64748b' : 'inherit'
+          }}>
+            {task.text}
+          </span>
+          <span style={{
+            marginLeft: 'auto',
+            fontSize: '12px',
+            color: '#94a3b8'
+          }}>
+            {task.priority}
+          </span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function App() {
+  const tasks = [
+    { id: 1, text: 'Learn React basics', completed: true, priority: 'high' },
+    { id: 2, text: 'Build a project', completed: false, priority: 'high' },
+    { id: 3, text: 'Practice daily', completed: false, priority: 'medium' },
+    { id: 4, text: 'Read documentation', completed: true, priority: 'low' },
+  ];
+  
+  return (
+    <div>
+      <h3>My Tasks</h3>
+      <TaskList tasks={tasks} />
+    </div>
+  );
+}
+
+render(<App />);`}
+  height={380}
+/>
+
+<ProgressCheckpoint section="component-composition" xpReward={20} />
+
+## Fragments
+
+Sometimes you need to return multiple elements without adding an extra wrapper div. Use **Fragments**:
+
+```jsx
+// Long syntax
+import { Fragment } from 'react';
+
+function Columns() {
+  return (
+    <Fragment>
+      <td>Column 1</td>
+      <td>Column 2</td>
+    </Fragment>
+  );
+}
+
+// Short syntax (most common)
+function Columns() {
+  return (
+    <>
+      <td>Column 1</td>
+      <td>Column 2</td>
+    </>
+  );
+}
+```
+
+### When to Use Fragments
+
+- When a wrapper div would break your layout (like in tables)
+- When you want to avoid unnecessary DOM nodes
+- When returning multiple elements from a component
+
+<ReactPlayground
+  initialCode={`// Fragments avoid unnecessary wrapper divs
+function TableRow({ data }) {
+  return (
+    <>
+      <td style={{ padding: '8px', border: '1px solid #e2e8f0' }}>{data.name}</td>
+      <td style={{ padding: '8px', border: '1px solid #e2e8f0' }}>{data.role}</td>
+      <td style={{ padding: '8px', border: '1px solid #e2e8f0' }}>{data.status}</td>
+    </>
+  );
+}
+
+function App() {
+  const team = [
+    { id: 1, name: 'Alice', role: 'Developer', status: 'Active' },
+    { id: 2, name: 'Bob', role: 'Designer', status: 'Active' },
+    { id: 3, name: 'Charlie', role: 'Manager', status: 'Away' },
+  ];
+  
+  return (
+    <table style={{ borderCollapse: 'collapse', width: '100%' }}>
+      <thead>
+        <tr style={{ background: '#f1f5f9' }}>
+          <th style={{ padding: '8px', border: '1px solid #e2e8f0', textAlign: 'left' }}>Name</th>
+          <th style={{ padding: '8px', border: '1px solid #e2e8f0', textAlign: 'left' }}>Role</th>
+          <th style={{ padding: '8px', border: '1px solid #e2e8f0', textAlign: 'left' }}>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {team.map(person => (
+          <tr key={person.id}>
+            <TableRow data={person} />
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+}
+
+render(<App />);`}
+  height={280}
+/>
+
+<ProgressCheckpoint section="conditional-rendering" xpReward={20} />
+
+## Handling Events
+
+React events are similar to DOM events but with some differences:
+
+```jsx
+function Button() {
+  function handleClick(event) {
+    console.log('Button clicked!');
+    console.log('Event:', event);
+  }
+  
+  return <button onClick={handleClick}>Click me</button>;
+}
+```
+
+### Event Handler Patterns
+
+```jsx
+// Inline arrow function (useful for passing arguments)
+<button onClick={() => handleDelete(item.id)}>Delete</button>
+
+// Named function (better for performance)
+<button onClick={handleClick}>Click</button>
+
+// Preventing default behavior
+function handleSubmit(event) {
+  event.preventDefault();
+  // form won't reload the page
+}
+```
+
+<KeyConcept title="Don't Call the Function!">
+Pass the function reference, don't call it: `onClick={handleClick}` not `onClick={handleClick()}`. The second would run immediately on render!
+</KeyConcept>
+
+<ReactPlayground
+  initialCode={`function Counter() {
+  const [count, setCount] = React.useState(0);
+  
+  function handleIncrement() {
+    setCount(count + 1);
+  }
+  
+  function handleDecrement() {
+    setCount(count - 1);
+  }
+  
+  function handleReset() {
+    setCount(0);
+  }
+  
+  return (
+    <div style={{ textAlign: 'center' }}>
+      <h2 style={{ fontSize: '48px', margin: '0' }}>{count}</h2>
+      
+      <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', marginTop: '16px' }}>
+        <button 
+          onClick={handleDecrement}
+          style={{
+            padding: '8px 16px',
+            fontSize: '18px',
+            cursor: 'pointer'
+          }}
+        >
+          -
+        </button>
+        
+        <button 
+          onClick={handleReset}
+          style={{
+            padding: '8px 16px',
+            cursor: 'pointer'
+          }}
+        >
+          Reset
+        </button>
+        
+        <button 
+          onClick={handleIncrement}
+          style={{
+            padding: '8px 16px',
+            fontSize: '18px',
+            cursor: 'pointer'
+          }}
+        >
+          +
+        </button>
+      </div>
+    </div>
+  );
+}
+
+render(<Counter />);`}
+  height={220}
+/>
+
+<ProgressCheckpoint section="lists-and-keys" xpReward={15} />
+
+## Component Organization Best Practices
+
+### Keep Components Small and Focused
+
+Each component should do one thing well:
+
+```jsx
+// ❌ Too much in one component
+function UserDashboard() {
+  return (
+    <div>
+      {/* Header logic */}
+      {/* User profile logic */}
+      {/* Activity feed logic */}
+      {/* Settings logic */}
+    </div>
+  );
+}
+
+// ✅ Split into focused components
+function UserDashboard() {
+  return (
+    <div>
+      <DashboardHeader />
+      <UserProfile />
+      <ActivityFeed />
+      <QuickSettings />
+    </div>
+  );
+}
+```
+
+### Props Destructuring
+
+Always destructure props for clarity:
+
+```jsx
+// ❌ Less clear
+function UserCard(props) {
+  return <h1>{props.user.name}</h1>;
+}
+
+// ✅ Clear what props are expected
+function UserCard({ user, showAvatar = true, onEdit }) {
+  return (
+    <div>
+      {showAvatar && <Avatar user={user} />}
+      <h1>{user.name}</h1>
+      <button onClick={onEdit}>Edit</button>
+    </div>
+  );
+}
+```
+
+<ComponentTreeVisualizer 
+  code={`function App() {
+  return (
+    <Dashboard>
+      <Sidebar>
+        <Navigation />
+        <UserMenu />
+      </Sidebar>
+      <MainContent>
+        <Header title="Dashboard" />
+        <StatsGrid>
+          <StatCard label="Users" value={1234} />
+          <StatCard label="Revenue" value={5678} />
+        </StatsGrid>
+      </MainContent>
+    </Dashboard>
+  );
+}
+
+function Dashboard({ children }) {
+  return <div>{children}</div>;
+}
+
+function Sidebar({ children }) {
+  return <aside>{children}</aside>;
+}
+
+function Navigation() {
+  return <nav>Nav</nav>;
+}
+
+function UserMenu() {
+  return <div>Menu</div>;
+}
+
+function MainContent({ children }) {
+  return <main>{children}</main>;
+}
+
+function Header({ title }) {
+  return <header><h1>{title}</h1></header>;
+}
+
+function StatsGrid({ children }) {
+  return <div>{children}</div>;
+}
+
+function StatCard({ label, value }) {
+  return <div>{label}: {value}</div>;
+}`}
+  showProps={true}
+/>
+
+<ProgressCheckpoint section="summary" xpReward={10} />
+
+## Key Takeaways
+
+<KeyConcept title="Composition Over Inheritance">
+Use the children prop and composition patterns to build flexible, reusable components.
+</KeyConcept>
+
+<KeyConcept title="Conditional Rendering">
+Use `&&` for optional content, ternary for either/or, and early returns for complex conditions.
+</KeyConcept>
+
+<KeyConcept title="Lists Need Keys">
+Always provide a unique, stable key when rendering lists. Avoid using array indices as keys.
+</KeyConcept>
+
+## Quick Quiz
+
+<Quiz>
+  <Question text="What is the special prop that contains nested elements?">
+    <Answer>content</Answer>
+    <Answer correct>children</Answer>
+    <Answer>nested</Answer>
+    <Answer>inner</Answer>
+  </Question>
+  
+  <Question text="Why should you avoid using array index as a key?">
+    <Answer>It's not allowed in React</Answer>
+    <Answer>It causes syntax errors</Answer>
+    <Answer correct>It can cause issues when items are reordered or removed</Answer>
+    <Answer>It makes the code harder to read</Answer>
+  </Question>
+  
+  <Question text="What does {count > 0 && <Badge />} render when count is 0?">
+    <Answer>The Badge component</Answer>
+    <Answer>The number 0</Answer>
+    <Answer correct>Nothing (null)</Answer>
+    <Answer>An error</Answer>
+  </Question>
+  
+  <Question text="What's the short syntax for React Fragments?">
+    <Answer>&lt;Fragment&gt;&lt;/Fragment&gt;</Answer>
+    <Answer>&lt;React.Fragment&gt;&lt;/React.Fragment&gt;</Answer>
+    <Answer correct>&lt;&gt;&lt;/&gt;</Answer>
+    <Answer>&lt;Frag&gt;&lt;/Frag&gt;</Answer>
+  </Question>
+</Quiz>
+
+---
+
+**Excellent progress!** 🎉 You now understand component composition, conditional rendering, and list handling. In the advanced level, we'll explore JSX compilation internals, Higher-Order Components, and render props patterns.

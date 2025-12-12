@@ -1,0 +1,288 @@
+# Performance Optimization
+
+Welcome back! Now that you understand re-renders and `React.memo`, let's dive deeper into React's optimization hooks and learn how to use the DevTools Profiler to find real performance issues.
+
+<InfoBox type="info" title="The Caching Kitchen">
+Think of `useMemo` and `useCallback` like a smart kitchen. Instead of cooking the same dish from scratch every time someone orders it, you keep prepared ingredients ready. You only cook fresh when the recipe changes!
+</InfoBox>
+
+<ProgressCheckpoint section="introduction" xpReward={15} />
+
+## The Problem with Object and Function Props
+
+Remember `React.memo`? It compares props to decide if a re-render is needed. But there's a catch - it uses **shallow comparison**:
+
+```jsx
+// This breaks React.memo!
+function Parent() {
+  const [count, setCount] = useState(0);
+  
+  // ❌ New object created every render
+  const style = { color: 'blue' };
+  
+  // ❌ New function created every render
+  const handleClick = () => console.log('clicked');
+  
+  return (
+    <MemoizedChild 
+      style={style}        // Always "new" to React.memo
+      onClick={handleClick} // Always "new" to React.memo
+    />
+  );
+}
+```
+
+Even though the values are the same, React sees new object/function references each render!
+
+<KeyConcept title="Reference vs Value Equality">
+`{ color: 'blue' } === { color: 'blue' }` is `false` in JavaScript! Objects and functions are compared by reference, not value. This is why `React.memo` can't help with inline objects/functions.
+</KeyConcept>
+
+<ProgressCheckpoint section="re-renders" xpReward={15} />
+
+## useMemo: Caching Computed Values
+
+`useMemo` remembers the result of a calculation and only recalculates when dependencies change:
+
+```jsx
+function ProductList({ products, filter }) {
+  // ❌ Without useMemo - filters on every render
+  const filteredProducts = products.filter(p => p.category === filter);
+  
+  // ✅ With useMemo - only filters when products or filter change
+  const filteredProducts = useMemo(
+    () => products.filter(p => p.category === filter),
+    [products, filter]
+  );
+  
+  return <List items={filteredProducts} />;
+}
+```
+
+### When to Use useMemo
+
+```jsx
+// ✅ Good: Expensive calculation
+const sortedItems = useMemo(
+  () => items.sort((a, b) => a.price - b.price),
+  [items]
+);
+
+// ✅ Good: Object passed to memoized child
+const config = useMemo(
+  () => ({ theme: 'dark', size: 'large' }),
+  [] // Empty deps = never changes
+);
+
+// ❌ Bad: Simple calculation (overhead not worth it)
+const doubled = useMemo(() => count * 2, [count]);
+```
+
+<ProgressCheckpoint section="react-memo" xpReward={15} />
+
+## useCallback: Caching Functions
+
+`useCallback` is like `useMemo` but specifically for functions:
+
+```jsx
+function SearchForm({ onSearch }) {
+  const [query, setQuery] = useState('');
+  
+  // ❌ New function every render
+  const handleSubmit = () => onSearch(query);
+  
+  // ✅ Same function unless query changes
+  const handleSubmit = useCallback(
+    () => onSearch(query),
+    [query, onSearch]
+  );
+  
+  return (
+    <form onSubmit={handleSubmit}>
+      <input value={query} onChange={e => setQuery(e.target.value)} />
+      <MemoizedButton onClick={handleSubmit}>Search</MemoizedButton>
+    </form>
+  );
+}
+```
+
+<ReactPlayground
+  initialCode={`// useMemo and useCallback Demo
+const ExpensiveChild = React.memo(function ExpensiveChild({ items, onItemClick }) {
+  console.log('ExpensiveChild rendered!');
+  
+  return (
+    <ul style={{ listStyle: 'none', padding: 0 }}>
+      {items.map((item, i) => (
+        <li 
+          key={i}
+          onClick={() => onItemClick(item)}
+          style={{ 
+            padding: '8px', 
+            margin: '4px 0',
+            background: '#f5f5f5',
+            borderRadius: '4px',
+            cursor: 'pointer'
+          }}
+        >
+          {item}
+        </li>
+      ))}
+    </ul>
+  );
+});
+
+function App() {
+  const [count, setCount] = React.useState(0);
+  const [filter, setFilter] = React.useState('');
+  
+  const allItems = ['Apple', 'Banana', 'Cherry', 'Date', 'Elderberry'];
+  
+  // useMemo: Only recalculate when filter changes
+  const filteredItems = React.useMemo(
+    () => allItems.filter(item => 
+      item.toLowerCase().includes(filter.toLowerCase())
+    ),
+    [filter]
+  );
+  
+  // useCallback: Same function reference unless dependencies change
+  const handleItemClick = React.useCallback((item) => {
+    alert('Clicked: ' + item);
+  }, []);
+  
+  return (
+    <div style={{ padding: '20px' }}>
+      <h3>useMemo & useCallback Demo</h3>
+      
+      <div style={{ marginBottom: '15px' }}>
+        <button 
+          onClick={() => setCount(c => c + 1)}
+          style={{ marginRight: '10px', padding: '8px 16px' }}
+        >
+          Count: {count} (doesn't affect list)
+        </button>
+      </div>
+      
+      <input
+        value={filter}
+        onChange={e => setFilter(e.target.value)}
+        placeholder="Filter items..."
+        style={{ padding: '8px', marginBottom: '10px', width: '200px' }}
+      />
+      
+      <ExpensiveChild 
+        items={filteredItems} 
+        onItemClick={handleItemClick}
+      />
+      
+      <p style={{ fontSize: '12px', color: '#666' }}>
+        Check console: Child only re-renders when filter changes!
+      </p>
+    </div>
+  );
+}
+
+render(<App />);`}
+  height={400}
+/>
+
+<ProgressCheckpoint section="usememo-usecallback" xpReward={15} />
+
+## The Importance of Keys
+
+Keys help React identify which items changed in a list. Bad keys cause unnecessary re-renders:
+
+```jsx
+// ❌ Bad: Using index as key
+{items.map((item, index) => (
+  <Item key={index} data={item} />
+))}
+
+// ✅ Good: Using unique, stable ID
+{items.map(item => (
+  <Item key={item.id} data={item} />
+))}
+```
+
+<KeyConcept title="Why Index Keys Are Bad">
+When you add/remove items, indexes shift. React thinks items changed when they didn't, causing unnecessary re-renders and potential bugs with component state.
+</KeyConcept>
+
+<ProgressCheckpoint section="profiler" xpReward={15} />
+
+## Using React DevTools Profiler
+
+The Profiler helps you find performance bottlenecks. Here's a simulated view:
+
+<PerformanceProfiler 
+  showFlameGraph={true}
+  showOptimizationTips={true}
+/>
+
+### How to Use the Real Profiler
+
+1. Install React DevTools browser extension
+2. Open DevTools → Profiler tab
+3. Click "Record" and interact with your app
+4. Click "Stop" and analyze the flame graph
+5. Look for:
+   - Components that render often
+   - Components with long render times
+   - Unnecessary re-renders (same props, still rendered)
+
+<ProgressCheckpoint section="code-splitting" xpReward={15} />
+
+## Optimization Checklist
+
+Before optimizing, ask yourself:
+
+| Question | If Yes... |
+|----------|-----------|
+| Is there a measurable performance problem? | Continue optimizing |
+| Does the component render with same props often? | Try `React.memo` |
+| Are you passing new objects/functions as props? | Use `useMemo`/`useCallback` |
+| Is there an expensive calculation? | Use `useMemo` |
+| Are list keys stable and unique? | Good! If not, fix them |
+
+<InfoBox type="warning" title="Don't Over-Optimize">
+Adding `useMemo` and `useCallback` everywhere can actually hurt performance! They have overhead. Only use them when you've measured a real problem.
+</InfoBox>
+
+## Quick Quiz
+
+<Quiz>
+  <Question text="Why doesn't React.memo work with inline objects?">
+    <Answer>React.memo is broken</Answer>
+    <Answer correct>Objects are compared by reference, and new objects are created each render</Answer>
+    <Answer>Objects can't be props</Answer>
+    <Answer>React.memo only works with strings</Answer>
+  </Question>
+  
+  <Question text="What's the difference between useMemo and useCallback?">
+    <Answer>useMemo is faster</Answer>
+    <Answer>useCallback works with classes</Answer>
+    <Answer correct>useMemo caches any value, useCallback specifically caches functions</Answer>
+    <Answer>There is no difference</Answer>
+  </Question>
+  
+  <Question text="Why are index keys problematic in lists?">
+    <Answer>Indexes are too slow</Answer>
+    <Answer correct>When items are added/removed, indexes shift causing unnecessary re-renders</Answer>
+    <Answer>React doesn't support index keys</Answer>
+    <Answer>Indexes take too much memory</Answer>
+  </Question>
+  
+  <Question text="What should you do BEFORE adding optimization hooks?">
+    <Answer>Add them to every component</Answer>
+    <Answer>Rewrite the component</Answer>
+    <Answer correct>Measure with the Profiler to confirm there's a real problem</Answer>
+    <Answer>Remove all state</Answer>
+  </Question>
+</Quiz>
+
+<ProgressCheckpoint section="summary" xpReward={10} />
+
+---
+
+**Excellent work!** 🎉 You now know how to use `useMemo`, `useCallback`, and the DevTools Profiler. In the advanced level, we'll explore virtualization, code splitting, and how React's reconciliation algorithm works under the hood.

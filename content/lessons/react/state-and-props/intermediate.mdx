@@ -1,0 +1,414 @@
+# State and Props - Intermediate
+
+Now that you understand the basics of props and state, let's dive deeper into patterns that help you manage data effectively in larger applications.
+
+<InfoBox type="info" title="What You'll Learn">
+- Prop drilling and its challenges
+- Lifting state up to share data
+- Controlled vs uncontrolled components
+- Immutable state updates
+</InfoBox>
+
+<ProgressCheckpoint section="introduction" xpReward={20} />
+
+## The Prop Drilling Problem
+
+As your app grows, you might need to pass data through many layers of components. This is called **prop drilling** - and it can get messy!
+
+```jsx
+// Data needs to go from App → Layout → Sidebar → UserInfo
+function App() {
+  const [user, setUser] = useState({ name: 'Alice' });
+  return <Layout user={user} />;  // Pass down
+}
+
+function Layout({ user }) {
+  return <Sidebar user={user} />;  // Pass down again
+}
+
+function Sidebar({ user }) {
+  return <UserInfo user={user} />;  // Pass down again!
+}
+
+function UserInfo({ user }) {
+  return <p>Hello, {user.name}</p>;  // Finally use it
+}
+```
+
+<DataFlowDiagram 
+  components={[
+    {
+      id: 'app',
+      name: 'App',
+      props: { user: { name: 'Alice' } },
+      children: [
+        {
+          id: 'layout',
+          name: 'Layout',
+          props: { user: '...' },
+          children: [
+            {
+              id: 'sidebar',
+              name: 'Sidebar',
+              props: { user: '...' },
+              children: [
+                {
+                  id: 'userinfo',
+                  name: 'UserInfo',
+                  props: { user: '...' },
+                  children: []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]}
+  showPropsFlow={true}
+  showEventsFlow={false}
+/>
+
+### Problems with Prop Drilling
+
+1. **Verbose** - Components pass props they don't use
+2. **Fragile** - Adding a prop means updating many components
+3. **Hard to refactor** - Moving components breaks the chain
+
+<KeyConcept title="When Prop Drilling Becomes a Problem">
+If you're passing props through 3+ levels of components that don't use them, consider alternatives like Context API (covered in a later lesson) or restructuring your components.
+</KeyConcept>
+
+<ProgressCheckpoint section="understanding-props" xpReward={20} />
+
+## Lifting State Up
+
+When multiple components need to share the same data, **lift the state up** to their closest common ancestor.
+
+### The Pattern
+
+1. Find the closest common parent of components that need the data
+2. Move the state to that parent
+3. Pass the state down as props
+4. Pass setter functions for children to update the state
+
+<ReactPlayground
+  initialCode={`// Two inputs that need to stay in sync
+function TemperatureConverter() {
+  // State lifted to parent - single source of truth
+  const [celsius, setCelsius] = React.useState(0);
+  
+  const fahrenheit = (celsius * 9/5) + 32;
+  
+  const handleCelsiusChange = (value) => {
+    setCelsius(Number(value));
+  };
+  
+  const handleFahrenheitChange = (value) => {
+    setCelsius((Number(value) - 32) * 5/9);
+  };
+  
+  return (
+    <div style={{ padding: '20px', maxWidth: '400px' }}>
+      <h3>Temperature Converter</h3>
+      
+      <TemperatureInput
+        label="Celsius"
+        value={celsius.toFixed(1)}
+        onChange={handleCelsiusChange}
+      />
+      
+      <TemperatureInput
+        label="Fahrenheit"
+        value={fahrenheit.toFixed(1)}
+        onChange={handleFahrenheitChange}
+      />
+      
+      <p style={{ marginTop: '20px', color: '#666' }}>
+        {celsius.toFixed(1)}°C = {fahrenheit.toFixed(1)}°F
+      </p>
+    </div>
+  );
+}
+
+function TemperatureInput({ label, value, onChange }) {
+  return (
+    <div style={{ marginBottom: '15px' }}>
+      <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
+        {label}
+      </label>
+      <input
+        type="number"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        style={{ 
+          padding: '10px', 
+          fontSize: '16px', 
+          width: '100%',
+          borderRadius: '8px',
+          border: '1px solid #ddd'
+        }}
+      />
+    </div>
+  );
+}
+
+render(<TemperatureConverter />);`}
+  height={350}
+/>
+
+<ProgressCheckpoint section="understanding-state" xpReward={20} />
+
+## Controlled Components
+
+A **controlled component** is a form element whose value is controlled by React state. This gives you full control over the input.
+
+```jsx
+function ControlledInput() {
+  const [value, setValue] = useState('');
+  
+  return (
+    <input
+      value={value}                    // React controls the value
+      onChange={(e) => setValue(e.target.value)}  // Updates go through React
+    />
+  );
+}
+```
+
+### Benefits of Controlled Components
+
+- **Single source of truth** - State is the authority
+- **Instant validation** - Check input as user types
+- **Conditional disabling** - Disable submit until valid
+- **Formatting** - Transform input on the fly
+
+<ReactPlayground
+  initialCode={`function SignupForm() {
+  const [formData, setFormData] = React.useState({
+    username: '',
+    email: '',
+    password: ''
+  });
+  const [errors, setErrors] = React.useState({});
+  
+  const validate = (name, value) => {
+    switch (name) {
+      case 'username':
+        return value.length < 3 ? 'Username must be 3+ characters' : '';
+      case 'email':
+        return !value.includes('@') ? 'Invalid email address' : '';
+      case 'password':
+        return value.length < 6 ? 'Password must be 6+ characters' : '';
+      default:
+        return '';
+    }
+  };
+  
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+    setErrors(prev => ({ ...prev, [name]: validate(name, value) }));
+  };
+  
+  const isValid = Object.values(errors).every(e => !e) && 
+                  Object.values(formData).every(v => v);
+  
+  return (
+    <form style={{ padding: '20px', maxWidth: '300px' }}>
+      <h3>Sign Up</h3>
+      
+      <FormField
+        label="Username"
+        name="username"
+        value={formData.username}
+        error={errors.username}
+        onChange={handleChange}
+      />
+      
+      <FormField
+        label="Email"
+        name="email"
+        type="email"
+        value={formData.email}
+        error={errors.email}
+        onChange={handleChange}
+      />
+      
+      <FormField
+        label="Password"
+        name="password"
+        type="password"
+        value={formData.password}
+        error={errors.password}
+        onChange={handleChange}
+      />
+      
+      <button
+        type="submit"
+        disabled={!isValid}
+        style={{
+          width: '100%',
+          padding: '12px',
+          background: isValid ? '#4CAF50' : '#ccc',
+          color: 'white',
+          border: 'none',
+          borderRadius: '8px',
+          cursor: isValid ? 'pointer' : 'not-allowed',
+          marginTop: '10px'
+        }}
+      >
+        {isValid ? 'Create Account' : 'Fill all fields'}
+      </button>
+    </form>
+  );
+}
+
+function FormField({ label, name, type = 'text', value, error, onChange }) {
+  return (
+    <div style={{ marginBottom: '15px' }}>
+      <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>
+        {label}
+      </label>
+      <input
+        type={type}
+        name={name}
+        value={value}
+        onChange={onChange}
+        style={{
+          width: '100%',
+          padding: '10px',
+          borderRadius: '6px',
+          border: error ? '2px solid #f44336' : '1px solid #ddd'
+        }}
+      />
+      {error && (
+        <p style={{ color: '#f44336', fontSize: '12px', marginTop: '4px' }}>
+          {error}
+        </p>
+      )}
+    </div>
+  );
+}
+
+render(<SignupForm />);`}
+  height={450}
+/>
+
+<ProgressCheckpoint section="data-flow" xpReward={20} />
+
+## Immutable State Updates
+
+In React, you should **never mutate state directly**. Always create new objects/arrays.
+
+```jsx
+// ❌ WRONG - Mutating state directly
+const [user, setUser] = useState({ name: 'Alice', age: 25 });
+user.age = 26;  // Don't do this!
+setUser(user);  // React won't detect the change
+
+// ✅ CORRECT - Create a new object
+setUser({ ...user, age: 26 });  // Spread and override
+```
+
+### Common Immutable Patterns
+
+```jsx
+// Adding to an array
+setItems([...items, newItem]);
+
+// Removing from an array
+setItems(items.filter(item => item.id !== idToRemove));
+
+// Updating an item in an array
+setItems(items.map(item => 
+  item.id === idToUpdate 
+    ? { ...item, completed: true }
+    : item
+));
+
+// Updating nested objects
+setUser({
+  ...user,
+  address: {
+    ...user.address,
+    city: 'New York'
+  }
+});
+```
+
+<StateTimeline 
+  showDiff={true}
+  allowTimeTravel={true}
+/>
+
+<ProgressCheckpoint section="lifting-state" xpReward={20} />
+
+## Derived State
+
+Sometimes you don't need state - you can **derive** values from existing state or props.
+
+```jsx
+// ❌ Unnecessary state
+const [items, setItems] = useState([...]);
+const [itemCount, setItemCount] = useState(0);  // Don't do this!
+
+// Every time items changes, you'd need to update itemCount too
+
+// ✅ Derive it instead
+const [items, setItems] = useState([...]);
+const itemCount = items.length;  // Calculated on every render
+const completedCount = items.filter(i => i.completed).length;
+```
+
+<KeyConcept title="When to Use State vs Derived Values">
+Use state when: The value can change independently and needs to persist.
+Derive when: The value can be calculated from existing state/props.
+</KeyConcept>
+
+<ProgressCheckpoint section="controlled-components" xpReward={15} />
+
+## Quick Quiz
+
+<Quiz>
+  <Question text="What is prop drilling?">
+    <Answer>A way to optimize React performance</Answer>
+    <Answer correct>Passing props through multiple component layers</Answer>
+    <Answer>A method to create new props</Answer>
+    <Answer>A debugging technique</Answer>
+  </Question>
+  
+  <Question text="When should you lift state up?">
+    <Answer>When state is too large</Answer>
+    <Answer>When you want better performance</Answer>
+    <Answer correct>When multiple components need to share the same data</Answer>
+    <Answer>When using class components</Answer>
+  </Question>
+  
+  <Question text="What makes a component 'controlled'?">
+    <Answer>It has no state</Answer>
+    <Answer correct>Its value is controlled by React state</Answer>
+    <Answer>It uses useEffect</Answer>
+    <Answer>It has no props</Answer>
+  </Question>
+  
+  <Question text="Why should you avoid mutating state directly?">
+    <Answer>It's slower</Answer>
+    <Answer>It uses more memory</Answer>
+    <Answer correct>React won't detect the change and re-render</Answer>
+    <Answer>It causes syntax errors</Answer>
+  </Question>
+  
+  <Question text="When should you derive a value instead of storing it in state?">
+    <Answer>Never, always use state</Answer>
+    <Answer>When the value is a string</Answer>
+    <Answer correct>When the value can be calculated from existing state/props</Answer>
+    <Answer>When using TypeScript</Answer>
+  </Question>
+</Quiz>
+
+<ProgressCheckpoint section="summary" xpReward={15} />
+
+---
+
+**Great progress!** 🚀 You've learned important patterns for managing state in React applications. In the advanced level, we'll explore state batching, the reconciliation algorithm, and performance optimization techniques.

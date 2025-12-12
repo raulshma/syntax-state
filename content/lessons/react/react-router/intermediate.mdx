@@ -1,0 +1,414 @@
+# React Router (Navigation) - Intermediate
+
+Now that you understand the basics, let's dive deeper into React Router's powerful features: nested routes, programmatic navigation, and URL parameters.
+
+<InfoBox type="info" title="Building on the Basics">
+This lesson assumes you're comfortable with `BrowserRouter`, `Routes`, `Route`, and `Link`. We'll explore how to build more complex navigation patterns.
+</InfoBox>
+
+<ProgressCheckpoint section="introduction" xpReward={15} />
+
+## Nested Routes: Layouts Within Layouts
+
+Real apps often have shared layouts. For example, a dashboard might have a sidebar that stays visible while the main content changes.
+
+```jsx
+// Nested routes create a layout hierarchy
+<Routes>
+  <Route path="/dashboard" element={<DashboardLayout />}>
+    <Route index element={<DashboardHome />} />
+    <Route path="settings" element={<Settings />} />
+    <Route path="profile" element={<Profile />} />
+  </Route>
+</Routes>
+```
+
+The parent route (`DashboardLayout`) renders an `<Outlet />` where child routes appear:
+
+```jsx
+import { Outlet, Link } from 'react-router-dom';
+
+function DashboardLayout() {
+  return (
+    <div className="dashboard">
+      <aside className="sidebar">
+        <Link to="/dashboard">Home</Link>
+        <Link to="/dashboard/settings">Settings</Link>
+        <Link to="/dashboard/profile">Profile</Link>
+      </aside>
+      
+      <main className="content">
+        {/* Child routes render here */}
+        <Outlet />
+      </main>
+    </div>
+  );
+}
+```
+
+<KeyConcept title="The Outlet Component">
+`<Outlet />` is a placeholder that renders the matching child route. It's like `{children}` but for routes!
+</KeyConcept>
+
+<RouteVisualizer 
+  routes={[
+    {
+      path: '/',
+      component: 'RootLayout',
+      children: [
+        { path: '', component: 'Home', index: true },
+        {
+          path: 'dashboard',
+          component: 'DashboardLayout',
+          children: [
+            { path: '', component: 'DashboardHome', index: true },
+            { path: 'settings', component: 'Settings' },
+            { path: 'profile', component: 'Profile' },
+            { path: 'users/:userId', component: 'UserDetail' }
+          ]
+        },
+        { path: 'about', component: 'About' }
+      ]
+    }
+  ]}
+  currentPath="/dashboard/users/42"
+  interactive={true}
+/>
+
+<ProgressCheckpoint section="basic-routing" xpReward={15} />
+
+## Index Routes
+
+An index route is the "default" child route when the parent path matches exactly:
+
+```jsx
+<Route path="/dashboard" element={<DashboardLayout />}>
+  {/* Renders at /dashboard */}
+  <Route index element={<DashboardHome />} />
+  
+  {/* Renders at /dashboard/settings */}
+  <Route path="settings" element={<Settings />} />
+</Route>
+```
+
+<KeyConcept title="Index vs Path Routes">
+- **Index route**: Renders when the URL matches the parent exactly (`/dashboard`)
+- **Path route**: Renders when the URL includes the path (`/dashboard/settings`)
+</KeyConcept>
+
+<ProgressCheckpoint section="route-parameters" xpReward={15} />
+
+## URL Parameters and useParams
+
+Dynamic segments capture values from the URL:
+
+```jsx
+// Route definition
+<Route path="/users/:userId/posts/:postId" element={<PostDetail />} />
+
+// Component
+function PostDetail() {
+  const { userId, postId } = useParams();
+  
+  return (
+    <div>
+      <h1>User {userId}'s Post #{postId}</h1>
+    </div>
+  );
+}
+```
+
+<RouteMatcher 
+  patterns={[
+    { pattern: '/users/:userId', description: 'User profile' },
+    { pattern: '/users/:userId/posts', description: 'User posts list' },
+    { pattern: '/users/:userId/posts/:postId', description: 'Single post' },
+    { pattern: '/users/:userId/posts/:postId/comments', description: 'Post comments' },
+    { pattern: '/search', description: 'Search page' },
+    { pattern: '/search/:query', description: 'Search with query' }
+  ]}
+  initialUrl="/users/42/posts/123"
+  showExplanations={true}
+/>
+
+<ProgressCheckpoint section="nested-routes" xpReward={15} />
+
+## Query Parameters with useSearchParams
+
+Query parameters (`?key=value`) are handled separately from route params:
+
+```jsx
+import { useSearchParams } from 'react-router-dom';
+
+function SearchResults() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  
+  // Read params: /search?q=react&sort=date
+  const query = searchParams.get('q');      // "react"
+  const sort = searchParams.get('sort');    // "date"
+  
+  // Update params
+  const handleSortChange = (newSort) => {
+    setSearchParams({ q: query, sort: newSort });
+  };
+  
+  return (
+    <div>
+      <h1>Results for: {query}</h1>
+      <select value={sort} onChange={(e) => handleSortChange(e.target.value)}>
+        <option value="relevance">Relevance</option>
+        <option value="date">Date</option>
+      </select>
+    </div>
+  );
+}
+```
+
+<ProgressCheckpoint section="navigation" xpReward={15} />
+
+## Programmatic Navigation with useNavigate
+
+Sometimes you need to navigate in response to events, not just link clicks:
+
+```jsx
+import { useNavigate } from 'react-router-dom';
+
+function LoginForm() {
+  const navigate = useNavigate();
+  
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const success = await login(credentials);
+    
+    if (success) {
+      // Navigate to dashboard after login
+      navigate('/dashboard');
+      
+      // Or replace history (can't go back)
+      navigate('/dashboard', { replace: true });
+      
+      // Or go back
+      navigate(-1);
+    }
+  };
+  
+  return <form onSubmit={handleSubmit}>...</form>;
+}
+```
+
+<NavigationSimulator 
+  routes={[
+    { path: '/', component: 'Home', title: 'Home' },
+    { path: '/login', component: 'Login', title: 'Login' },
+    { path: '/dashboard', component: 'Dashboard', title: 'Dashboard' },
+    { path: '/dashboard/settings', component: 'Settings', title: 'Settings' },
+    { path: '/dashboard/profile', component: 'Profile', title: 'Profile' },
+    { path: '/products', component: 'Products', title: 'Products' },
+    { path: '/products/1', component: 'ProductDetail', title: 'Product #1' }
+  ]}
+  initialPath="/login"
+  showUrlBar={true}
+  showHistory={true}
+/>
+
+<ProgressCheckpoint section="route-guards" xpReward={15} />
+
+## NavLink for Active Styling
+
+`NavLink` is like `Link` but knows when it's active:
+
+```jsx
+import { NavLink } from 'react-router-dom';
+
+function Navigation() {
+  return (
+    <nav>
+      <NavLink 
+        to="/dashboard"
+        className={({ isActive }) => 
+          isActive ? 'nav-link active' : 'nav-link'
+        }
+      >
+        Dashboard
+      </NavLink>
+      
+      {/* Or use style prop */}
+      <NavLink 
+        to="/settings"
+        style={({ isActive }) => ({
+          fontWeight: isActive ? 'bold' : 'normal',
+          color: isActive ? 'blue' : 'gray'
+        })}
+      >
+        Settings
+      </NavLink>
+    </nav>
+  );
+}
+```
+
+## Handling 404 Pages
+
+Use a catch-all route (`*`) to handle unmatched URLs:
+
+```jsx
+<Routes>
+  <Route path="/" element={<Home />} />
+  <Route path="/about" element={<About />} />
+  
+  {/* Catch all unmatched routes */}
+  <Route path="*" element={<NotFound />} />
+</Routes>
+```
+
+<ReactPlayground
+  initialCode={`// Nested Routes with Outlet
+const { BrowserRouter, Routes, Route, Link, Outlet, useParams, NavLink } = ReactRouterDOM;
+
+function Layout() {
+  return (
+    <div>
+      <nav style={{
+        padding: '15px',
+        background: '#1a1a2e',
+        display: 'flex',
+        gap: '15px'
+      }}>
+        <NavLink 
+          to="/" 
+          style={({ isActive }) => ({
+            color: isActive ? '#4ade80' : '#fff',
+            textDecoration: 'none',
+            fontWeight: isActive ? 'bold' : 'normal'
+          })}
+        >
+          Home
+        </NavLink>
+        <NavLink 
+          to="/dashboard" 
+          style={({ isActive }) => ({
+            color: isActive ? '#4ade80' : '#fff',
+            textDecoration: 'none',
+            fontWeight: isActive ? 'bold' : 'normal'
+          })}
+        >
+          Dashboard
+        </NavLink>
+      </nav>
+      <main style={{ padding: '20px' }}>
+        <Outlet />
+      </main>
+    </div>
+  );
+}
+
+function Home() {
+  return <h2>🏠 Welcome Home!</h2>;
+}
+
+function DashboardLayout() {
+  return (
+    <div style={{ display: 'flex', gap: '20px' }}>
+      <aside style={{
+        width: '150px',
+        padding: '15px',
+        background: '#f0f0f0',
+        borderRadius: '8px'
+      }}>
+        <h4>Dashboard</h4>
+        <nav style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <Link to="/dashboard">Overview</Link>
+          <Link to="/dashboard/stats">Stats</Link>
+          <Link to="/dashboard/users/42">User 42</Link>
+        </nav>
+      </aside>
+      <div style={{ flex: 1 }}>
+        <Outlet />
+      </div>
+    </div>
+  );
+}
+
+function DashboardHome() {
+  return <h3>📊 Dashboard Overview</h3>;
+}
+
+function Stats() {
+  return <h3>📈 Statistics</h3>;
+}
+
+function UserDetail() {
+  const { userId } = useParams();
+  return <h3>👤 User #{userId}</h3>;
+}
+
+function NotFound() {
+  return <h2>404 - Page Not Found</h2>;
+}
+
+function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Layout />}>
+          <Route index element={<Home />} />
+          <Route path="dashboard" element={<DashboardLayout />}>
+            <Route index element={<DashboardHome />} />
+            <Route path="stats" element={<Stats />} />
+            <Route path="users/:userId" element={<UserDetail />} />
+          </Route>
+          <Route path="*" element={<NotFound />} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
+  );
+}
+
+render(<App />);`}
+  height={400}
+/>
+
+<ProgressCheckpoint section="summary" xpReward={10} />
+
+## Quick Quiz
+
+<Quiz>
+  <Question text="What component renders child routes in a nested layout?">
+    <Answer>Children</Answer>
+    <Answer correct>Outlet</Answer>
+    <Answer>Route</Answer>
+    <Answer>Switch</Answer>
+  </Question>
+  
+  <Question text="What is an index route?">
+    <Answer>The first route in the list</Answer>
+    <Answer>A route that indexes the database</Answer>
+    <Answer correct>The default child route when parent path matches exactly</Answer>
+    <Answer>A route with no path</Answer>
+  </Question>
+  
+  <Question text="Which hook do you use for programmatic navigation?">
+    <Answer>useRouter</Answer>
+    <Answer>useHistory</Answer>
+    <Answer correct>useNavigate</Answer>
+    <Answer>useLocation</Answer>
+  </Question>
+  
+  <Question text="How do you handle query parameters like ?search=react?">
+    <Answer>useParams</Answer>
+    <Answer correct>useSearchParams</Answer>
+    <Answer>useQuery</Answer>
+    <Answer>useLocation only</Answer>
+  </Question>
+  
+  <Question text="What's the difference between Link and NavLink?">
+    <Answer>NavLink is faster</Answer>
+    <Answer>Link doesn't work with nested routes</Answer>
+    <Answer correct>NavLink knows when it's active and can style accordingly</Answer>
+    <Answer>There is no difference</Answer>
+  </Question>
+</Quiz>
+
+---
+
+**Excellent progress!** 🚀 You now understand nested routes, dynamic parameters, and programmatic navigation. In the advanced level, we'll cover route guards, lazy loading, and data loaders!

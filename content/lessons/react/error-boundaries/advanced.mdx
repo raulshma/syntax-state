@@ -1,0 +1,443 @@
+# Error Boundaries
+
+Welcome to the advanced level! Let's explore sophisticated error handling patterns, error recovery strategies, integration with monitoring services, and the limitations you need to work around. 🚀
+
+<ProgressCheckpoint section="introduction" xpReward={15} />
+
+## Advanced Error Boundary Patterns
+
+### Pattern 1: Error Boundary with Reset Keys
+
+Reset the boundary when certain props change, allowing automatic recovery:
+
+```jsx
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+
+  static getDerivedStateFromProps(props, state) {
+    // Reset error state when resetKeys change
+    if (state.hasError && props.resetKeys) {
+      const hasResetKeyChanged = props.resetKeys.some(
+        (key, index) => key !== state.prevResetKeys?.[index]
+      );
+      if (hasResetKeyChanged) {
+        return { hasError: false, error: null, prevResetKeys: props.resetKeys };
+      }
+    }
+    return { prevResetKeys: props.resetKeys };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    this.props.onError?.(error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return this.props.fallback?.({
+        error: this.state.error,
+        resetErrorBoundary: () => this.setState({ hasError: false }),
+      }) ?? <DefaultFallback />;
+    }
+    return this.props.children;
+  }
+}
+
+// Usage: Error boundary resets when userId changes
+function UserProfile({ userId }) {
+  return (
+    <ErrorBoundary resetKeys={[userId]}>
+      <UserData userId={userId} />
+    </ErrorBoundary>
+  );
+}
+```
+
+<KeyConcept title="Reset Keys Pattern">
+Reset keys allow automatic error recovery when relevant data changes. This is especially useful for data-driven components where new data might not trigger the same error.
+</KeyConcept>
+
+<ProgressCheckpoint section="error-boundary-concept" xpReward={15} />
+
+### Pattern 2: Error Boundary with Retry Logic
+
+Implement automatic retry with exponential backoff:
+
+```jsx
+class RetryErrorBoundary extends React.Component {
+  state = { 
+    hasError: false, 
+    error: null,
+    retryCount: 0,
+    isRetrying: false 
+  };
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    const { maxRetries = 3, onError } = this.props;
+    
+    if (this.state.retryCount < maxRetries) {
+      // Exponential backoff: 1s, 2s, 4s...
+      const delay = Math.pow(2, this.state.retryCount) * 1000;
+      
+      this.setState({ isRetrying: true });
+      
+      setTimeout(() => {
+        this.setState(prev => ({
+          hasError: false,
+          error: null,
+          retryCount: prev.retryCount + 1,
+          isRetrying: false,
+        }));
+      }, delay);
+    } else {
+      onError?.(error, errorInfo);
+    }
+  }
+
+  render() {
+    const { hasError, isRetrying, retryCount } = this.state;
+    const { maxRetries = 3 } = this.props;
+
+    if (isRetrying) {
+      return <div>Retrying... (Attempt {retryCount + 1}/{maxRetries})</div>;
+    }
+
+    if (hasError && retryCount >= maxRetries) {
+      return this.props.fallback ?? <div>Failed after {maxRetries} attempts</div>;
+    }
+
+    return this.props.children;
+  }
+}
+```
+
+<ErrorBoundarySimulator 
+  showErrorInfo={true}
+  showFallback={true}
+/>
+
+<ProgressCheckpoint section="creating-boundaries" xpReward={15} />
+
+## Integration with Error Monitoring Services
+
+### Sentry Integration
+
+```jsx
+import * as Sentry from '@sentry/react';
+
+class MonitoredErrorBoundary extends React.Component {
+  state = { hasError: false, eventId: null };
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    // Capture error with full context
+    const eventId = Sentry.captureException(error, {
+      contexts: {
+        react: {
+          componentStack: errorInfo.componentStack,
+        },
+      },
+      tags: {
+        boundary: this.props.boundaryName || 'unknown',
+        feature: this.props.feature,
+      },
+      extra: {
+        props: this.props.debugProps,
+      },
+    });
+
+    this.setState({ eventId });
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="error-fallback">
+          <h2>Something went wrong</h2>
+          <p>Our team has been notified.</p>
+          
+          {/* Allow users to provide feedback */}
+          <button onClick={() => {
+            Sentry.showReportDialog({ eventId: this.state.eventId });
+          }}>
+            Report feedback
+          </button>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+```
+
+### Custom Error Logging
+
+```jsx
+class LoggingErrorBoundary extends React.Component {
+  componentDidCatch(error, errorInfo) {
+    // Structured logging for your backend
+    fetch('/api/errors', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        message: error.message,
+        stack: error.stack,
+        componentStack: errorInfo.componentStack,
+        timestamp: new Date().toISOString(),
+        url: window.location.href,
+        userAgent: navigator.userAgent,
+        // Add user context if available
+        userId: getCurrentUserId(),
+        sessionId: getSessionId(),
+      }),
+    }).catch(console.error);
+  }
+  
+  // ... rest of implementation
+}
+```
+
+<ProgressCheckpoint section="error-handling-methods" xpReward={15} />
+
+## Handling Async Errors
+
+Error boundaries don't catch async errors, but you can work around this:
+
+### Pattern 1: Error State Propagation
+
+```jsx
+function useAsyncError() {
+  const [, setError] = useState();
+  
+  return useCallback((error) => {
+    // This will trigger the error boundary!
+    setError(() => {
+      throw error;
+    });
+  }, []);
+}
+
+function DataFetcher() {
+  const throwError = useAsyncError();
+  const [data, setData] = useState(null);
+
+  useEffect(() => {
+    fetchData()
+      .then(setData)
+      .catch(throwError); // Propagates to error boundary
+  }, [throwError]);
+
+  return data ? <DataDisplay data={data} /> : <Loading />;
+}
+```
+
+### Pattern 2: Suspense + Error Boundaries
+
+```jsx
+// With React 18+ and Suspense for data fetching
+function App() {
+  return (
+    <ErrorBoundary fallback={<ErrorFallback />}>
+      <Suspense fallback={<Loading />}>
+        <DataComponent />
+      </Suspense>
+    </ErrorBoundary>
+  );
+}
+
+// The resource throws a promise for Suspense
+// and throws an error for the error boundary
+const resource = createResource(fetchData);
+
+function DataComponent() {
+  const data = resource.read(); // Throws promise or error
+  return <Display data={data} />;
+}
+```
+
+<ErrorPropagationVisualizer 
+  showBoundaries={true}
+  speed="normal"
+/>
+
+<ProgressCheckpoint section="fallback-ui" xpReward={15} />
+
+## Error Recovery Patterns
+
+### Pattern 1: Graceful Degradation
+
+```jsx
+function FeatureWithFallback() {
+  return (
+    <ErrorBoundary
+      fallback={({ error }) => (
+        <SimplifiedFeature 
+          reason={`Advanced feature unavailable: ${error.message}`}
+        />
+      )}
+    >
+      <AdvancedFeature />
+    </ErrorBoundary>
+  );
+}
+```
+
+### Pattern 2: Cached Data Fallback
+
+```jsx
+class CachedErrorBoundary extends React.Component {
+  state = { hasError: false };
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  render() {
+    if (this.state.hasError) {
+      // Try to show cached data
+      const cachedData = localStorage.getItem(this.props.cacheKey);
+      
+      if (cachedData) {
+        return (
+          <div>
+            <Banner type="warning">
+              Showing cached data. Some information may be outdated.
+            </Banner>
+            {this.props.renderCached(JSON.parse(cachedData))}
+          </div>
+        );
+      }
+      
+      return this.props.fallback;
+    }
+
+    return this.props.children;
+  }
+}
+```
+
+### Pattern 3: Progressive Enhancement
+
+```jsx
+function RobustChart({ data }) {
+  return (
+    <ErrorBoundary
+      fallback={
+        // Fallback to simpler visualization
+        <ErrorBoundary fallback={<DataTable data={data} />}>
+          <SimpleChart data={data} />
+        </ErrorBoundary>
+      }
+    >
+      <InteractiveChart data={data} />
+    </ErrorBoundary>
+  );
+}
+```
+
+<FallbackUIBuilder 
+  showCode={true}
+  showPreview={true}
+/>
+
+<ProgressCheckpoint section="error-reporting" xpReward={15} />
+
+## Best Practices Summary
+
+### Do's ✅
+- Place boundaries at feature/route level
+- Log errors to monitoring services
+- Provide helpful fallback UIs with recovery options
+- Use reset keys for data-driven components
+- Test error boundaries with intentional errors
+
+### Don'ts ❌
+- Don't wrap every component (too granular)
+- Don't swallow errors silently
+- Don't show technical details to end users
+- Don't forget to handle async errors separately
+- Don't use error boundaries for expected errors (validation, etc.)
+
+```jsx
+// Production-ready error boundary setup
+function App() {
+  return (
+    <Sentry.ErrorBoundary
+      fallback={<AppCrashFallback />}
+      showDialog
+    >
+      <Router>
+        <ErrorBoundary fallback={<LayoutFallback />}>
+          <Layout>
+            <Routes>
+              <Route path="/dashboard" element={
+                <ErrorBoundary 
+                  fallback={<DashboardFallback />}
+                  resetKeys={[userId]}
+                >
+                  <Dashboard />
+                </ErrorBoundary>
+              } />
+              {/* More routes... */}
+            </Routes>
+          </Layout>
+        </ErrorBoundary>
+      </Router>
+    </Sentry.ErrorBoundary>
+  );
+}
+```
+
+<ProgressCheckpoint section="summary" xpReward={15} />
+
+## Quick Quiz
+
+<Quiz>
+  <Question text="What is the purpose of reset keys in error boundaries?">
+    <Answer>To prevent errors from occurring</Answer>
+    <Answer correct>To automatically reset the boundary when certain props change</Answer>
+    <Answer>To encrypt error messages</Answer>
+    <Answer>To limit the number of errors</Answer>
+  </Question>
+  
+  <Question text="How can you make async errors trigger an error boundary?">
+    <Answer>Async errors automatically trigger boundaries</Answer>
+    <Answer>Use a special async error boundary</Answer>
+    <Answer correct>Throw the error during render using setState</Answer>
+    <Answer>Wrap the promise in try/catch</Answer>
+  </Question>
+  
+  <Question text="What's the benefit of integrating with Sentry or similar services?">
+    <Answer>It prevents errors from occurring</Answer>
+    <Answer>It makes the app faster</Answer>
+    <Answer correct>It provides error tracking, alerting, and user feedback collection</Answer>
+    <Answer>It automatically fixes bugs</Answer>
+  </Question>
+  
+  <Question text="What is graceful degradation in error handling?">
+    <Answer>Slowly crashing the app</Answer>
+    <Answer correct>Falling back to simpler functionality when advanced features fail</Answer>
+    <Answer>Hiding all errors from users</Answer>
+    <Answer>Logging errors to the console</Answer>
+  </Question>
+</Quiz>
+
+<ProgressCheckpoint section="summary" xpReward={10} />
+
+---
+
+**Congratulations!** 🎉 You've mastered error boundaries in React! You now know how to build robust, production-ready error handling with recovery patterns, monitoring integration, and graceful degradation. Your apps will be much more resilient to unexpected errors.

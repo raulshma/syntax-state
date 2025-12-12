@@ -1,0 +1,594 @@
+# Hooks: useState and useEffect - Advanced
+
+Welcome to the advanced hooks lesson! Here we'll explore custom hooks, memoization hooks, refs, and the internals of how hooks work.
+
+<InfoBox type="info" title="What You'll Learn">
+- Creating custom hooks for reusable logic
+- useCallback and useMemo for optimization
+- useRef for mutable values and DOM access
+- How hooks work under the hood
+</InfoBox>
+
+<ProgressCheckpoint section="introduction" xpReward={25} />
+
+## Custom Hooks
+
+Custom hooks let you extract component logic into reusable functions. They're just JavaScript functions that use other hooks!
+
+### The Rules
+
+1. Name must start with "use" (e.g., `useCounter`, `useLocalStorage`)
+2. Can call other hooks inside
+3. Each component using the hook gets its own state
+
+<CustomHookBuilder />
+
+### Building a useLocalStorage Hook
+
+<ReactPlayground
+  initialCode={`// Custom hook for localStorage
+function useLocalStorage(key, initialValue) {
+  // Get initial value from localStorage or use provided initial
+  const [storedValue, setStoredValue] = React.useState(() => {
+    try {
+      const item = window.localStorage.getItem(key);
+      return item ? JSON.parse(item) : initialValue;
+    } catch (error) {
+      console.error(error);
+      return initialValue;
+    }
+  });
+  
+  // Update localStorage when value changes
+  const setValue = (value) => {
+    try {
+      const valueToStore = value instanceof Function ? value(storedValue) : value;
+      setStoredValue(valueToStore);
+      window.localStorage.setItem(key, JSON.stringify(valueToStore));
+    } catch (error) {
+      console.error(error);
+    }
+  };
+  
+  return [storedValue, setValue];
+}
+
+// Using the custom hook
+function ThemeToggle() {
+  const [theme, setTheme] = useLocalStorage('theme', 'light');
+  
+  const toggleTheme = () => {
+    setTheme(t => t === 'light' ? 'dark' : 'light');
+  };
+  
+  return (
+    <div style={{ 
+      padding: '30px',
+      background: theme === 'dark' ? '#1a202c' : '#f7fafc',
+      color: theme === 'dark' ? '#f7fafc' : '#1a202c',
+      borderRadius: '12px',
+      textAlign: 'center',
+      transition: 'all 0.3s ease'
+    }}>
+      <h3>Theme: {theme}</h3>
+      <button 
+        onClick={toggleTheme}
+        style={{
+          padding: '12px 24px',
+          fontSize: '16px',
+          cursor: 'pointer',
+          borderRadius: '8px',
+          border: 'none',
+          background: theme === 'dark' ? '#4299e1' : '#2d3748',
+          color: 'white'
+        }}
+      >
+        Toggle Theme
+      </button>
+      <p style={{ marginTop: '15px', fontSize: '12px', opacity: 0.7 }}>
+        This preference is saved to localStorage!
+      </p>
+    </div>
+  );
+}
+
+render(<ThemeToggle />);`}
+  height={280}
+/>
+
+<ProgressCheckpoint section="usestate-basics" xpReward={25} />
+
+## useCallback: Memoizing Functions
+
+**useCallback** returns a memoized version of a callback that only changes when dependencies change. This is useful for:
+
+- Preventing unnecessary re-renders of child components
+- Stable function references for useEffect dependencies
+
+```jsx
+// Without useCallback - new function every render
+const handleClick = () => {
+  console.log(count);
+};
+
+// With useCallback - same function unless count changes
+const handleClick = useCallback(() => {
+  console.log(count);
+}, [count]);
+```
+
+### When to Use useCallback
+
+<ReactPlayground
+  initialCode={`// Child component that receives a callback
+const ExpensiveChild = React.memo(function ExpensiveChild({ onClick, label }) {
+  console.log(\`Rendering: \${label}\`);
+  
+  return (
+    <button 
+      onClick={onClick}
+      style={{
+        padding: '10px 20px',
+        margin: '5px',
+        borderRadius: '6px',
+        border: '1px solid #ddd',
+        cursor: 'pointer'
+      }}
+    >
+      {label}
+    </button>
+  );
+});
+
+function Parent() {
+  const [count, setCount] = React.useState(0);
+  const [name, setName] = React.useState('Alice');
+  
+  // ❌ Without useCallback - creates new function every render
+  // This causes ExpensiveChild to re-render unnecessarily
+  const handleClickBad = () => {
+    console.log('Clicked!');
+  };
+  
+  // ✅ With useCallback - stable function reference
+  const handleClickGood = React.useCallback(() => {
+    console.log('Clicked!');
+  }, []); // No dependencies, never changes
+  
+  return (
+    <div style={{ padding: '20px' }}>
+      <h3>useCallback Demo</h3>
+      <p>Count: {count}</p>
+      
+      <button 
+        onClick={() => setCount(c => c + 1)}
+        style={{ marginBottom: '15px', padding: '8px 16px' }}
+      >
+        Increment Count
+      </button>
+      
+      <div style={{ 
+        padding: '15px', 
+        background: '#fff3cd', 
+        borderRadius: '8px',
+        marginBottom: '10px'
+      }}>
+        <p style={{ margin: '0 0 10px 0', fontWeight: 'bold' }}>
+          Without useCallback (re-renders on count change):
+        </p>
+        <ExpensiveChild onClick={handleClickBad} label="Bad Button" />
+      </div>
+      
+      <div style={{ 
+        padding: '15px', 
+        background: '#d4edda', 
+        borderRadius: '8px' 
+      }}>
+        <p style={{ margin: '0 0 10px 0', fontWeight: 'bold' }}>
+          With useCallback (stable reference):
+        </p>
+        <ExpensiveChild onClick={handleClickGood} label="Good Button" />
+      </div>
+      
+      <p style={{ fontSize: '12px', color: '#666', marginTop: '15px' }}>
+        Check the console to see which buttons re-render!
+      </p>
+    </div>
+  );
+}
+
+render(<Parent />);`}
+  height={400}
+/>
+
+<ProgressCheckpoint section="useeffect-basics" xpReward={25} />
+
+## useMemo: Memoizing Values
+
+**useMemo** memoizes the result of a computation. It only recalculates when dependencies change.
+
+```jsx
+// Without useMemo - recalculates every render
+const sortedItems = items.sort((a, b) => a.name.localeCompare(b.name));
+
+// With useMemo - only recalculates when items changes
+const sortedItems = useMemo(() => {
+  return items.sort((a, b) => a.name.localeCompare(b.name));
+}, [items]);
+```
+
+### When to Use useMemo
+
+- Expensive calculations (sorting, filtering large arrays)
+- Creating objects/arrays passed to memoized children
+- Referential equality for useEffect dependencies
+
+<ReactPlayground
+  initialCode={`function FilteredList() {
+  const [filter, setFilter] = React.useState('');
+  const [count, setCount] = React.useState(0);
+  
+  // Large list of items
+  const items = React.useMemo(() => 
+    Array.from({ length: 1000 }, (_, i) => ({
+      id: i,
+      name: \`Item \${i}\`,
+      category: ['Electronics', 'Books', 'Clothing'][i % 3]
+    }))
+  , []);
+  
+  // ✅ Memoized filtering - only runs when filter or items change
+  const filteredItems = React.useMemo(() => {
+    console.log('Filtering items...');
+    return items.filter(item => 
+      item.name.toLowerCase().includes(filter.toLowerCase())
+    );
+  }, [items, filter]);
+  
+  return (
+    <div style={{ padding: '20px' }}>
+      <h3>useMemo Demo</h3>
+      
+      <div style={{ marginBottom: '15px' }}>
+        <input
+          type="text"
+          value={filter}
+          onChange={(e) => setFilter(e.target.value)}
+          placeholder="Filter items..."
+          style={{
+            padding: '10px',
+            width: '200px',
+            borderRadius: '6px',
+            border: '1px solid #ddd'
+          }}
+        />
+        <button 
+          onClick={() => setCount(c => c + 1)}
+          style={{ marginLeft: '10px', padding: '10px 20px' }}
+        >
+          Other State: {count}
+        </button>
+      </div>
+      
+      <p style={{ color: '#666' }}>
+        Showing {filteredItems.length} of {items.length} items
+      </p>
+      
+      <div style={{ 
+        maxHeight: '200px', 
+        overflow: 'auto',
+        border: '1px solid #ddd',
+        borderRadius: '8px'
+      }}>
+        {filteredItems.slice(0, 20).map(item => (
+          <div 
+            key={item.id}
+            style={{ 
+              padding: '8px 12px',
+              borderBottom: '1px solid #eee'
+            }}
+          >
+            {item.name} - {item.category}
+          </div>
+        ))}
+        {filteredItems.length > 20 && (
+          <div style={{ padding: '8px 12px', color: '#666' }}>
+            ...and {filteredItems.length - 20} more
+          </div>
+        )}
+      </div>
+      
+      <p style={{ fontSize: '12px', color: '#888', marginTop: '10px' }}>
+        💡 Check console - filtering only runs when filter changes, not when count changes!
+      </p>
+    </div>
+  );
+}
+
+render(<FilteredList />);`}
+  height={400}
+/>
+
+<ProgressCheckpoint section="dependency-arrays" xpReward={25} />
+
+## useRef: Mutable Values and DOM Access
+
+**useRef** creates a mutable object that persists across renders. Unlike state, changing a ref doesn't trigger a re-render.
+
+### Two Main Uses
+
+1. **Accessing DOM elements**
+2. **Storing mutable values that don't need re-renders**
+
+```jsx
+// DOM access
+function TextInput() {
+  const inputRef = useRef(null);
+  
+  const focusInput = () => {
+    inputRef.current.focus();
+  };
+  
+  return (
+    <>
+      <input ref={inputRef} />
+      <button onClick={focusInput}>Focus</button>
+    </>
+  );
+}
+
+// Mutable value (like instance variable)
+function Timer() {
+  const intervalRef = useRef(null);
+  
+  const start = () => {
+    intervalRef.current = setInterval(() => {
+      // ...
+    }, 1000);
+  };
+  
+  const stop = () => {
+    clearInterval(intervalRef.current);
+  };
+}
+```
+
+<ReactPlayground
+  initialCode={`function StopwatchWithRef() {
+  const [time, setTime] = React.useState(0);
+  const [isRunning, setIsRunning] = React.useState(false);
+  const intervalRef = React.useRef(null);
+  const inputRef = React.useRef(null);
+  
+  const start = () => {
+    if (isRunning) return;
+    setIsRunning(true);
+    intervalRef.current = setInterval(() => {
+      setTime(t => t + 10);
+    }, 10);
+  };
+  
+  const stop = () => {
+    setIsRunning(false);
+    clearInterval(intervalRef.current);
+  };
+  
+  const reset = () => {
+    stop();
+    setTime(0);
+  };
+  
+  const focusInput = () => {
+    inputRef.current?.focus();
+  };
+  
+  const formatTime = (ms) => {
+    const minutes = Math.floor(ms / 60000);
+    const seconds = Math.floor((ms % 60000) / 1000);
+    const centiseconds = Math.floor((ms % 1000) / 10);
+    return \`\${minutes.toString().padStart(2, '0')}:\${seconds.toString().padStart(2, '0')}.\${centiseconds.toString().padStart(2, '0')}\`;
+  };
+  
+  return (
+    <div style={{ padding: '20px', textAlign: 'center' }}>
+      <h3>useRef Demo</h3>
+      
+      <div style={{ 
+        fontSize: '48px', 
+        fontFamily: 'monospace',
+        margin: '20px 0',
+        color: isRunning ? '#48bb78' : '#4a5568'
+      }}>
+        {formatTime(time)}
+      </div>
+      
+      <div style={{ marginBottom: '20px' }}>
+        <button onClick={start} disabled={isRunning} style={{ margin: '0 5px', padding: '10px 20px' }}>
+          Start
+        </button>
+        <button onClick={stop} disabled={!isRunning} style={{ margin: '0 5px', padding: '10px 20px' }}>
+          Stop
+        </button>
+        <button onClick={reset} style={{ margin: '0 5px', padding: '10px 20px' }}>
+          Reset
+        </button>
+      </div>
+      
+      <div style={{ 
+        padding: '15px', 
+        background: '#f7fafc', 
+        borderRadius: '8px',
+        marginTop: '20px'
+      }}>
+        <p style={{ marginBottom: '10px' }}>DOM ref example:</p>
+        <input 
+          ref={inputRef}
+          placeholder="Click button to focus me"
+          style={{ padding: '8px', marginRight: '10px' }}
+        />
+        <button onClick={focusInput}>Focus Input</button>
+      </div>
+    </div>
+  );
+}
+
+render(<StopwatchWithRef />);`}
+  height={350}
+/>
+
+<ProgressCheckpoint section="cleanup-functions" xpReward={25} />
+
+## How Hooks Work Under the Hood
+
+React maintains a list of hooks for each component. On every render, it goes through this list in order.
+
+```jsx
+// React internally tracks hooks like this:
+// Component: MyComponent
+// Hooks: [
+//   { type: 'useState', value: 0 },
+//   { type: 'useEffect', deps: [count], cleanup: fn },
+//   { type: 'useCallback', value: fn, deps: [] }
+// ]
+```
+
+### Why Order Matters
+
+```jsx
+function Component({ condition }) {
+  // Render 1: hooks = [useState, useEffect]
+  // Render 2 (condition changed): hooks = [useEffect] ← BROKEN!
+  
+  if (condition) {
+    const [value, setValue] = useState(0); // Hook 1
+  }
+  
+  useEffect(() => {}, []); // Hook 2 (or Hook 1 if condition is false!)
+}
+```
+
+<HookLifecycleVisualizer 
+  showMountUnmount={true}
+  showDependencies={true}
+/>
+
+<ProgressCheckpoint section="custom-hooks" xpReward={20} />
+
+## Advanced Patterns
+
+### Pattern 1: Previous Value Hook
+
+```jsx
+function usePrevious(value) {
+  const ref = useRef();
+  
+  useEffect(() => {
+    ref.current = value;
+  }, [value]);
+  
+  return ref.current;
+}
+
+// Usage
+function Counter() {
+  const [count, setCount] = useState(0);
+  const prevCount = usePrevious(count);
+  
+  return (
+    <p>
+      Current: {count}, Previous: {prevCount}
+    </p>
+  );
+}
+```
+
+### Pattern 2: Debounce Hook
+
+```jsx
+function useDebounce(value, delay) {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+  
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+    
+    return () => clearTimeout(timer);
+  }, [value, delay]);
+  
+  return debouncedValue;
+}
+```
+
+### Pattern 3: Media Query Hook
+
+```jsx
+function useMediaQuery(query) {
+  const [matches, setMatches] = useState(false);
+  
+  useEffect(() => {
+    const media = window.matchMedia(query);
+    setMatches(media.matches);
+    
+    const listener = (e) => setMatches(e.matches);
+    media.addEventListener('change', listener);
+    
+    return () => media.removeEventListener('change', listener);
+  }, [query]);
+  
+  return matches;
+}
+
+// Usage
+function ResponsiveComponent() {
+  const isMobile = useMediaQuery('(max-width: 768px)');
+  return isMobile ? <MobileView /> : <DesktopView />;
+}
+```
+
+<ProgressCheckpoint section="summary" xpReward={20} />
+
+## Quick Quiz
+
+<Quiz>
+  <Question text="What must a custom hook's name start with?">
+    <Answer>hook</Answer>
+    <Answer correct>use</Answer>
+    <Answer>custom</Answer>
+    <Answer>react</Answer>
+  </Question>
+  
+  <Question text="When should you use useCallback?">
+    <Answer>For all functions</Answer>
+    <Answer correct>When passing callbacks to memoized children or as effect dependencies</Answer>
+    <Answer>Only for async functions</Answer>
+    <Answer>Never, it's deprecated</Answer>
+  </Question>
+  
+  <Question text="What's the difference between useRef and useState?">
+    <Answer>useRef is faster</Answer>
+    <Answer>useState can't hold objects</Answer>
+    <Answer correct>Changing useRef doesn't trigger a re-render</Answer>
+    <Answer>useRef can only hold DOM elements</Answer>
+  </Question>
+  
+  <Question text="Why does React require hooks to be called in the same order?">
+    <Answer>For better performance</Answer>
+    <Answer correct>React uses call order to track which hook is which</Answer>
+    <Answer>It's a JavaScript requirement</Answer>
+    <Answer>To prevent memory leaks</Answer>
+  </Question>
+  
+  <Question text="When should you use useMemo?">
+    <Answer>For all variables</Answer>
+    <Answer>Only for strings</Answer>
+    <Answer correct>For expensive calculations or referential equality</Answer>
+    <Answer>Never, it's an anti-pattern</Answer>
+  </Question>
+</Quiz>
+
+<ProgressCheckpoint section="summary" xpReward={20} />
+
+---
+
+**Congratulations!** 🎓 You've mastered React Hooks! You now understand useState, useEffect, useCallback, useMemo, useRef, and how to create custom hooks. These tools will help you build efficient, maintainable React applications.

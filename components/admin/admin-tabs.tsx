@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { motion } from "framer-motion";
 import {
   Card,
@@ -29,6 +30,7 @@ import {
   Cpu,
   BarChart3,
   Layers,
+  Settings,
 } from "lucide-react";
 import { AIMonitoringDashboard } from "@/components/admin/ai-monitoring-dashboard";
 import { TieredModelConfig } from "@/components/admin/tiered-model-config";
@@ -139,6 +141,15 @@ export function AdminTabs({
                   <span>Analytics</span>
                 </div>
               </TabsTrigger>
+              <TabsTrigger
+                value="configuration"
+                className="rounded-full px-6 py-2.5 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all duration-300"
+              >
+                <div className="flex items-center gap-2">
+                  <Settings className="w-4 h-4" />
+                  <span>Configuration</span>
+                </div>
+              </TabsTrigger>
             </TabsList>
           </div>
         </div>
@@ -182,6 +193,11 @@ export function AdminTabs({
             topCompanies={topCompanies}
             modelUsage={modelUsage}
           />
+        </TabsContent>
+
+        {/* Configuration Tab */}
+        <TabsContent value="configuration" className="mt-0 focus-visible:outline-none">
+          <ConfigurationTab />
         </TabsContent>
       </Tabs>
     </motion.div>
@@ -366,5 +382,91 @@ function PromptsTab() {
         </div>
       </CardContent>
     </Card>
+  );
+}
+
+function ConfigurationTab() {
+  const [isReseeding, setIsReseeding] = useState(false);
+  const [reseedResult, setReseedResult] = useState<{ success: boolean; message: string } | null>(null);
+
+  const handleReseedRoadmaps = async () => {
+    setIsReseeding(true);
+    setReseedResult(null);
+    
+    try {
+      const response = await fetch('/api/admin/reseed-roadmaps', { method: 'POST' });
+      const data = await response.json();
+      
+      if (response.ok) {
+        setReseedResult({ success: true, message: data.message });
+      } else {
+        setReseedResult({ success: false, message: data.error || 'Failed to reseed roadmaps' });
+      }
+    } catch (error) {
+      setReseedResult({ success: false, message: 'Network error occurred' });
+    } finally {
+      setIsReseeding(false);
+    }
+  };
+
+  return (
+    <div className="space-y-8">
+      <Card className="border-0 shadow-xl shadow-black/5 dark:shadow-black/20 bg-card/80 rounded-3xl overflow-hidden">
+        <CardHeader className="border-b border-border/50 p-6 md:p-8">
+          <div className="flex items-center gap-3 mb-1">
+            <div className="p-2 rounded-xl bg-primary/10">
+              <Settings className="w-5 h-5 text-primary" />
+            </div>
+            <CardTitle className="text-xl font-bold">Data Configuration</CardTitle>
+          </div>
+          <CardDescription>
+            Manage roadmaps, lessons, and other platform data
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="p-6 md:p-8 space-y-6">
+          {/* Roadmaps Section */}
+          <div className="p-6 rounded-2xl bg-secondary/30 border border-border/50">
+            <div className="flex items-start justify-between gap-4">
+              <div className="space-y-1">
+                <h3 className="font-semibold text-foreground">Reseed Roadmaps</h3>
+                <p className="text-sm text-muted-foreground">
+                  Update the database with the latest roadmap data from the codebase. 
+                  This will sync all milestones, objectives, and lesson mappings.
+                </p>
+              </div>
+              <Button
+                onClick={handleReseedRoadmaps}
+                disabled={isReseeding}
+                variant="outline"
+                className="rounded-full px-6 shrink-0"
+              >
+                {isReseeding ? (
+                  <>
+                    <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin mr-2" />
+                    Reseeding...
+                  </>
+                ) : (
+                  'Reseed Roadmaps'
+                )}
+              </Button>
+            </div>
+            
+            {reseedResult && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className={`mt-4 p-3 rounded-xl text-sm ${
+                  reseedResult.success 
+                    ? 'bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20' 
+                    : 'bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20'
+                }`}
+              >
+                {reseedResult.message}
+              </motion.div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

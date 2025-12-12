@@ -1,0 +1,195 @@
+# Error Boundaries
+
+Welcome to Error Boundaries! Have you ever seen an app suddenly crash and show a blank white screen? That's what happens when React encounters an error it can't handle. Let's learn how to prevent that! 🛡️
+
+<InfoBox type="tip" title="The Safety Net Analogy">
+Think of error boundaries like a **safety net under a trapeze artist**. If the artist (your component) falls (crashes), the safety net (error boundary) catches them and prevents the whole circus (your app) from shutting down. The show can go on!
+</InfoBox>
+
+<ProgressCheckpoint section="introduction" xpReward={15} />
+
+## What Happens When Components Crash?
+
+When a React component throws an error during rendering, by default, React will:
+1. Remove the entire component tree from the screen
+2. Show a blank white page
+3. Leave users confused and frustrated
+
+```jsx
+// This component will crash!
+function BuggyComponent() {
+  // Oops! users is undefined
+  const users = undefined;
+  
+  return (
+    <ul>
+      {users.map(user => (  // 💥 CRASH! Can't call .map on undefined
+        <li key={user.id}>{user.name}</li>
+      ))}
+    </ul>
+  );
+}
+```
+
+<KeyConcept title="Errors Crash Everything">
+Without error boundaries, a single bug in one small component can take down your entire application. That's not a great user experience!
+</KeyConcept>
+
+<ProgressCheckpoint section="error-boundary-concept" xpReward={15} />
+
+## Enter Error Boundaries
+
+An **error boundary** is a special React component that catches errors in its child components and displays a fallback UI instead of crashing.
+
+<ErrorBoundarySimulator 
+  showErrorInfo={true}
+  showFallback={true}
+/>
+
+<KeyConcept title="Error Boundaries = Try/Catch for Components">
+Just like `try/catch` catches errors in regular JavaScript, error boundaries catch errors in React components. They're your app's safety net!
+</KeyConcept>
+
+<ProgressCheckpoint section="creating-boundaries" xpReward={15} />
+
+## Creating a Simple Error Boundary
+
+Error boundaries are class components that use special lifecycle methods. Here's the simplest one:
+
+```jsx
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  // This runs when a child component throws an error
+  static getDerivedStateFromError(error) {
+    // Update state so next render shows fallback UI
+    return { hasError: true };
+  }
+
+  render() {
+    if (this.state.hasError) {
+      // Show fallback UI
+      return (
+        <div className="error-fallback">
+          <h2>😅 Oops! Something went wrong.</h2>
+          <p>We're working on fixing this.</p>
+        </div>
+      );
+    }
+
+    // No error? Render children normally
+    return this.props.children;
+  }
+}
+```
+
+<InfoBox type="info" title="Why Class Components?">
+Error boundaries must be class components because they use `getDerivedStateFromError` and `componentDidCatch` - lifecycle methods that don't have hooks equivalents yet. But don't worry, you only need one or two error boundary components in your whole app!
+</InfoBox>
+
+<ProgressCheckpoint section="error-handling-methods" xpReward={15} />
+
+## Using Error Boundaries
+
+Wrap any component that might crash with your error boundary:
+
+```jsx
+function App() {
+  return (
+    <div>
+      <Header />
+      
+      {/* Wrap risky components with error boundary */}
+      <ErrorBoundary>
+        <UserProfile />
+        <UserPosts />
+      </ErrorBoundary>
+      
+      <Footer />
+    </div>
+  );
+}
+```
+
+Now if `UserProfile` or `UserPosts` crashes, only that section shows the fallback UI. The `Header` and `Footer` keep working!
+
+<ErrorPropagationVisualizer 
+  showBoundaries={true}
+  speed="normal"
+/>
+
+<ProgressCheckpoint section="fallback-ui" xpReward={15} />
+
+## What Error Boundaries DON'T Catch
+
+Error boundaries are powerful, but they have limits. They do NOT catch errors in:
+
+| ❌ Not Caught | ✅ Caught |
+|--------------|-----------|
+| Event handlers (onClick, etc.) | Rendering errors |
+| Async code (setTimeout, promises) | Lifecycle methods |
+| Server-side rendering | Constructors |
+| Errors in the boundary itself | Child component errors |
+
+```jsx
+function MyComponent() {
+  const handleClick = () => {
+    // ❌ Error boundary WON'T catch this!
+    throw new Error('Click handler error');
+  };
+
+  // ✅ Error boundary WILL catch this!
+  if (someCondition) {
+    throw new Error('Render error');
+  }
+
+  return <button onClick={handleClick}>Click me</button>;
+}
+```
+
+<KeyConcept title="Use Try/Catch for Event Handlers">
+For errors in event handlers and async code, use regular JavaScript `try/catch` blocks. Error boundaries are only for rendering errors.
+</KeyConcept>
+
+<ProgressCheckpoint section="error-reporting" xpReward={15} />
+
+## Quick Quiz
+
+<Quiz>
+  <Question text="What is an error boundary?">
+    <Answer>A CSS border around error messages</Answer>
+    <Answer correct>A component that catches errors in child components</Answer>
+    <Answer>A JavaScript try/catch block</Answer>
+    <Answer>A browser feature for handling errors</Answer>
+  </Question>
+  
+  <Question text="What happens without error boundaries when a component crashes?">
+    <Answer>The component shows a warning</Answer>
+    <Answer>Only that component disappears</Answer>
+    <Answer correct>The entire app crashes and shows a blank screen</Answer>
+    <Answer>React automatically fixes the error</Answer>
+  </Question>
+  
+  <Question text="Which type of error will an error boundary catch?">
+    <Answer>Errors in onClick handlers</Answer>
+    <Answer>Errors in setTimeout callbacks</Answer>
+    <Answer correct>Errors during component rendering</Answer>
+    <Answer>Network request errors</Answer>
+  </Question>
+  
+  <Question text="Why must error boundaries be class components?">
+    <Answer>Class components are faster</Answer>
+    <Answer correct>They need lifecycle methods that don't have hook equivalents</Answer>
+    <Answer>Functional components can't have state</Answer>
+    <Answer>It's just a convention</Answer>
+  </Question>
+</Quiz>
+
+<ProgressCheckpoint section="summary" xpReward={10} />
+
+---
+
+**Great job!** 🎉 You now understand the basics of error boundaries. In the intermediate level, we'll dive deeper into `getDerivedStateFromError`, `componentDidCatch`, and how to create better fallback UIs.

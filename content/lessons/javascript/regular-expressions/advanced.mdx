@@ -1,0 +1,437 @@
+# Regular Expressions: Advanced
+
+Welcome to advanced regex! In this lesson, we'll explore performance optimization, Unicode support, named groups, atomic patterns, and techniques for building maintainable regular expressions.
+
+<InfoBox type="tip" title="Mastery Level">
+This lesson covers advanced topics including regex engine internals, performance pitfalls, and complex pattern construction. Understanding these concepts will help you write efficient, robust patterns.
+</InfoBox>
+
+<ProgressCheckpoint section="introduction" xpReward={30} />
+
+## Regex Engine Internals
+
+Understanding how regex engines work helps you write better patterns.
+
+### Backtracking
+
+Most regex engines use backtracking — they try different paths through the pattern until they find a match or exhaust all possibilities.
+
+```javascript
+// Pattern: /a+b/ against "aaaac"
+// Engine tries:
+// 1. Match all 'a's (aaaa), then look for 'b' - fails
+// 2. Backtrack: match 3 'a's (aaa), look for 'b' - fails
+// 3. Backtrack: match 2 'a's (aa), look for 'b' - fails
+// 4. Continue until all possibilities exhausted
+
+// This is why some patterns can be slow!
+```
+
+### Greedy vs Lazy Quantifiers
+
+By default, quantifiers are **greedy** — they match as much as possible. Add `?` to make them **lazy** (match as little as possible).
+
+```javascript
+const html = "<div>Hello</div><div>World</div>";
+
+// Greedy: matches everything between first < and last >
+html.match(/<.+>/);
+// ["<div>Hello</div><div>World</div>"]
+
+// Lazy: matches as little as possible
+html.match(/<.+?>/g);
+// ["<div>", "</div>", "<div>", "</div>"]
+```
+
+<KeyConcept title="Lazy Quantifiers">
+- `*?` — Zero or more (lazy)
+- `+?` — One or more (lazy)
+- `??` — Zero or one (lazy)
+- `{n,m}?` — Between n and m (lazy)
+</KeyConcept>
+
+<ProgressCheckpoint section="basic-patterns" xpReward={30} />
+
+## Performance Optimization
+
+### Catastrophic Backtracking
+
+Some patterns can cause exponential backtracking, freezing your application:
+
+```javascript
+// DANGEROUS: Nested quantifiers
+const badPattern = /^(a+)+$/;
+
+// Against "aaaaaaaaaaaaaaaaaaaaaaaaaaab"
+// This can take SECONDS or crash the browser!
+
+// SAFE: Flatten the pattern
+const goodPattern = /^a+$/;
+```
+
+### Possessive Quantifiers (Atomic Groups)
+
+JavaScript doesn't have native possessive quantifiers, but you can simulate them:
+
+```javascript
+// Possessive-like behavior using lookahead
+// Instead of: /a++b/ (not valid JS)
+// Use atomic group simulation:
+const atomicLike = /(?=(a+))\1b/;
+
+// This prevents backtracking into the 'a+' match
+```
+
+### Optimization Techniques
+
+```javascript
+// 1. Anchor when possible
+/^https?:\/\//  // Better than /https?:\/\//
+
+// 2. Use character classes instead of alternation
+/[aeiou]/       // Better than /a|e|i|o|u/
+
+// 3. Put common alternatives first
+/the|a|an/      // 'the' is most common
+
+// 4. Avoid capturing when not needed
+/(?:https?):\/\//  // Non-capturing is faster
+
+// 5. Be specific
+/\d{4}-\d{2}-\d{2}/  // Better than /\d+-\d+-\d+/
+```
+
+<InfoBox type="warning" title="ReDoS Attacks">
+Regular Expression Denial of Service (ReDoS) attacks exploit catastrophic backtracking. Always validate user-provided patterns and set timeouts for regex operations on untrusted input.
+</InfoBox>
+
+<RegexTester 
+  initialPattern="^(?:(?!ab).)*$"
+  initialText="This string does not contain the forbidden sequence."
+/>
+
+<ProgressCheckpoint section="character-classes" xpReward={30} />
+
+## Unicode Support
+
+JavaScript regex has powerful Unicode support with the `u` flag.
+
+### Unicode Flag Basics
+
+```javascript
+// Without 'u' flag - treats as two code units
+/^.$/.test("😀");  // false (emoji is 2 code units)
+
+// With 'u' flag - treats as one code point
+/^.$/u.test("😀"); // true
+
+// Unicode property escapes (requires 'u' flag)
+/\p{Emoji}/u.test("😀");     // true
+/\p{Letter}/u.test("日");    // true
+/\p{Script=Greek}/u.test("α"); // true
+```
+
+### Unicode Property Escapes
+
+```javascript
+// Match any letter from any language
+const anyLetter = /\p{Letter}+/gu;
+"Hello 世界 مرحبا".match(anyLetter);
+// ["Hello", "世界", "مرحبا"]
+
+// Match any number (including other scripts)
+const anyNumber = /\p{Number}+/gu;
+"123 ١٢٣ 一二三".match(anyNumber);
+// ["123", "١٢٣"]
+
+// Common Unicode categories
+// \p{L} or \p{Letter} - any letter
+// \p{N} or \p{Number} - any number
+// \p{P} or \p{Punctuation} - any punctuation
+// \p{S} or \p{Symbol} - any symbol
+// \p{Z} or \p{Separator} - any separator
+```
+
+### Unicode-Aware Word Boundaries
+
+```javascript
+// Standard \b doesn't work well with Unicode
+/\bкот\b/.test("кот");  // false (Cyrillic)
+
+// Use Unicode-aware approach
+/(?<=^|\P{L})кот(?=$|\P{L})/u.test("кот"); // true
+```
+
+<ProgressCheckpoint section="quantifiers" xpReward={30} />
+
+## Advanced Named Groups
+
+### Named Groups with Destructuring
+
+```javascript
+const logPattern = /(?<timestamp>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}) \[(?<level>\w+)\] (?<message>.+)/;
+
+const log = "2024-03-15 10:30:45 [ERROR] Connection failed";
+const { groups: { timestamp, level, message } } = log.match(logPattern);
+
+console.log(timestamp); // "2024-03-15 10:30:45"
+console.log(level);     // "ERROR"
+console.log(message);   // "Connection failed"
+```
+
+### Named Backreferences
+
+```javascript
+// Reference named groups with \k<name>
+const duplicateWord = /\b(?<word>\w+)\s+\k<word>\b/gi;
+
+"The the quick brown fox".match(duplicateWord);
+// ["The the"]
+
+// In replacement strings, use $<name>
+"John Smith".replace(/(?<first>\w+) (?<last>\w+)/, "$<last>, $<first>");
+// "Smith, John"
+```
+
+### Conditional Patterns
+
+While JavaScript doesn't have native conditional patterns, you can simulate them:
+
+```javascript
+// Match optional area code in phone numbers
+// If area code exists, it must be in parentheses
+const phonePattern = /^(?:(\(\d{3}\))\s?|\d{3}[-.]?)?\d{3}[-.]?\d{4}$/;
+
+phonePattern.test("(555) 123-4567"); // true
+phonePattern.test("555-123-4567");   // true
+phonePattern.test("123-4567");       // true
+phonePattern.test("(555 123-4567");  // false (unmatched paren)
+```
+
+<PatternBuilder 
+  testString="Log: 2024-03-15 10:30:45 [ERROR] Database connection timeout after 30s"
+/>
+
+<ProgressCheckpoint section="groups" xpReward={30} />
+
+## Building Maintainable Patterns
+
+### Pattern Composition
+
+Break complex patterns into readable parts:
+
+```javascript
+// Instead of one massive pattern:
+// /^(?:(?:https?|ftp):\/\/)?(?:[\w-]+\.)+[a-z]{2,}(?:\/[^\s]*)?$/i
+
+// Compose from parts:
+const protocol = '(?:(?:https?|ftp):\\/\\/)?';
+const domain = '(?:[\\w-]+\\.)+[a-z]{2,}';
+const path = '(?:\\/[^\\s]*)?';
+
+const urlPattern = new RegExp(`^${protocol}${domain}${path}$`, 'i');
+```
+
+### Verbose Patterns with Comments
+
+Use template literals for self-documenting patterns:
+
+```javascript
+const emailPattern = new RegExp([
+  '^',
+  '[a-zA-Z0-9._%+-]+',  // Local part
+  '@',
+  '[a-zA-Z0-9.-]+',     // Domain
+  '\\.',
+  '[a-zA-Z]{2,}',       // TLD
+  '$'
+].join(''), 'i');
+
+// Or with a helper function
+function verboseRegex(parts, flags = '') {
+  const pattern = parts
+    .map(p => p.replace(/\s*#.*$/, '').trim())  // Remove comments
+    .filter(Boolean)
+    .join('');
+  return new RegExp(pattern, flags);
+}
+
+const datePattern = verboseRegex([
+  '^',
+  '(?<year>\\d{4})',   // Year: 4 digits
+  '-',
+  '(?<month>\\d{2})',  // Month: 2 digits
+  '-',
+  '(?<day>\\d{2})',    // Day: 2 digits
+  '$'
+]);
+```
+
+### Testing Regex Patterns
+
+```javascript
+// Create a test suite for your patterns
+function testPattern(pattern, cases) {
+  const results = cases.map(({ input, expected, description }) => {
+    const actual = pattern.test(input);
+    const passed = actual === expected;
+    return { input, expected, actual, passed, description };
+  });
+  
+  const failed = results.filter(r => !r.passed);
+  if (failed.length > 0) {
+    console.error('Failed cases:', failed);
+  }
+  return failed.length === 0;
+}
+
+// Usage
+testPattern(/^\d{4}-\d{2}-\d{2}$/, [
+  { input: '2024-03-15', expected: true, description: 'Valid date' },
+  { input: '24-03-15', expected: false, description: 'Short year' },
+  { input: '2024/03/15', expected: false, description: 'Wrong separator' },
+]);
+```
+
+<ProgressCheckpoint section="regex-methods" xpReward={30} />
+
+## Advanced Use Cases
+
+### Recursive-Like Patterns
+
+JavaScript regex doesn't support true recursion, but you can handle nested structures to a fixed depth:
+
+```javascript
+// Match balanced parentheses (up to 3 levels deep)
+const balanced = /\([^()]*(?:\([^()]*(?:\([^()]*\)[^()]*)*\)[^()]*)*\)/g;
+
+"(a(b(c)d)e) and (x(y)z)".match(balanced);
+// ["(a(b(c)d)e)", "(x(y)z)"]
+```
+
+### Parsing with Multiple Patterns
+
+```javascript
+// Tokenizer for a simple expression language
+const tokenPatterns = [
+  { type: 'NUMBER', pattern: /\d+(?:\.\d+)?/ },
+  { type: 'OPERATOR', pattern: /[+\-*/]/ },
+  { type: 'PAREN', pattern: /[()]/ },
+  { type: 'WHITESPACE', pattern: /\s+/ },
+];
+
+function tokenize(input) {
+  const tokens = [];
+  let remaining = input;
+  
+  while (remaining.length > 0) {
+    let matched = false;
+    
+    for (const { type, pattern } of tokenPatterns) {
+      const match = remaining.match(new RegExp(`^${pattern.source}`));
+      if (match) {
+        if (type !== 'WHITESPACE') {
+          tokens.push({ type, value: match[0] });
+        }
+        remaining = remaining.slice(match[0].length);
+        matched = true;
+        break;
+      }
+    }
+    
+    if (!matched) {
+      throw new Error(`Unexpected character: ${remaining[0]}`);
+    }
+  }
+  
+  return tokens;
+}
+
+tokenize("3.14 + (2 * 5)");
+// [
+//   { type: 'NUMBER', value: '3.14' },
+//   { type: 'OPERATOR', value: '+' },
+//   { type: 'PAREN', value: '(' },
+//   { type: 'NUMBER', value: '2' },
+//   { type: 'OPERATOR', value: '*' },
+//   { type: 'NUMBER', value: '5' },
+//   { type: 'PAREN', value: ')' }
+// ]
+```
+
+### Streaming Regex with matchAll
+
+```javascript
+// matchAll returns an iterator - memory efficient for large strings
+const pattern = /(?<word>\w+)/g;
+const text = "Hello World from JavaScript";
+
+for (const match of text.matchAll(pattern)) {
+  console.log(`${match.groups.word} at index ${match.index}`);
+}
+// Hello at index 0
+// World at index 6
+// from at index 12
+// JavaScript at index 17
+```
+
+<ProgressCheckpoint section="summary" xpReward={25} />
+
+## Quick Reference
+
+<KeyConcept title="Performance">
+- Avoid nested quantifiers: `(a+)+`
+- Use non-capturing groups: `(?:...)`
+- Anchor patterns when possible: `^...$`
+- Be specific with character classes
+- Put common alternatives first
+</KeyConcept>
+
+<KeyConcept title="Unicode">
+- `u` flag for Unicode support
+- `\p{Property}` for Unicode properties
+- `\P{Property}` for negated properties
+- Common: `\p{Letter}`, `\p{Number}`, `\p{Emoji}`
+</KeyConcept>
+
+<KeyConcept title="Advanced Groups">
+- `(?<name>...)` — Named capturing group
+- `\k<name>` — Named backreference
+- `$<name>` — Named replacement
+</KeyConcept>
+
+## Quick Quiz
+
+<Quiz>
+  <Question text="What makes a quantifier 'lazy' instead of 'greedy'?">
+    <Answer>Using curly braces {}</Answer>
+    <Answer correct>Adding ? after the quantifier</Answer>
+    <Answer>Using the 'g' flag</Answer>
+    <Answer>Putting it in parentheses</Answer>
+  </Question>
+  
+  <Question text="What does /\p{Emoji}/u match?">
+    <Answer>The letter 'p' followed by 'Emoji'</Answer>
+    <Answer>Any character in the pattern 'Emoji'</Answer>
+    <Answer correct>Any emoji character</Answer>
+    <Answer>Nothing - it's invalid syntax</Answer>
+  </Question>
+  
+  <Question text="What is 'catastrophic backtracking'?">
+    <Answer>When a regex doesn't match anything</Answer>
+    <Answer correct>When a regex causes exponential time complexity</Answer>
+    <Answer>When you use too many capture groups</Answer>
+    <Answer>When the 'g' flag is missing</Answer>
+  </Question>
+  
+  <Question text="How do you reference a named group 'word' in a replacement string?">
+    <Answer>\k&lt;word&gt;</Answer>
+    <Answer>$word</Answer>
+    <Answer correct>$&lt;word&gt;</Answer>
+    <Answer>#{word}</Answer>
+  </Question>
+</Quiz>
+
+---
+
+**Congratulations!** 🎉 You've mastered advanced regular expressions. You now have the knowledge to write efficient, maintainable patterns for complex text processing tasks. Remember: with great regex power comes great responsibility — always test your patterns thoroughly!

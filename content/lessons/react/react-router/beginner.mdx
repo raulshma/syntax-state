@@ -1,0 +1,286 @@
+# React Router (Navigation)
+
+Welcome to React Router! Have you ever wondered how websites show different pages without actually reloading? That's the magic of client-side routing, and React Router makes it easy!
+
+<InfoBox type="tip" title="The Book Chapters Analogy">
+Think of your React app like a book. Each **route** is a chapter, and React Router is like the table of contents. When you click a chapter link, you don't get a whole new book - you just flip to that chapter. The URL is like a bookmark that remembers which chapter you're on!
+</InfoBox>
+
+<ProgressCheckpoint section="introduction" xpReward={15} />
+
+## The Problem: Single Page Apps Need Navigation
+
+In a traditional website, clicking a link loads an entirely new page from the server. But React apps are "Single Page Applications" (SPAs) - there's only one HTML page!
+
+So how do we show different content for different URLs?
+
+```jsx
+// Without React Router - Manual and messy! 😫
+function App() {
+  const [page, setPage] = useState('home');
+  
+  return (
+    <div>
+      <nav>
+        <button onClick={() => setPage('home')}>Home</button>
+        <button onClick={() => setPage('about')}>About</button>
+      </nav>
+      
+      {page === 'home' && <Home />}
+      {page === 'about' && <About />}
+      {/* URL doesn't change, can't bookmark, back button doesn't work! */}
+    </div>
+  );
+}
+```
+
+<KeyConcept title="What is Client-Side Routing?">
+Client-side routing lets you change what's displayed based on the URL, without requesting a new page from the server. The URL updates, the browser history works, and only the necessary components re-render!
+</KeyConcept>
+
+<ProgressCheckpoint section="basic-routing" xpReward={15} />
+
+## The Solution: React Router
+
+React Router handles all the URL magic for you:
+
+```jsx
+// With React Router - Clean and powerful! 🎉
+import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
+
+function App() {
+  return (
+    <BrowserRouter>
+      <nav>
+        <Link to="/">Home</Link>
+        <Link to="/about">About</Link>
+      </nav>
+      
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/about" element={<About />} />
+      </Routes>
+    </BrowserRouter>
+  );
+}
+```
+
+<RouteVisualizer 
+  interactive={true}
+  showParams={true}
+/>
+
+<ProgressCheckpoint section="route-parameters" xpReward={15} />
+
+## The Core Components
+
+### 1. BrowserRouter - The Container
+
+Wrap your entire app with `BrowserRouter`. It enables routing throughout your application:
+
+```jsx
+import { BrowserRouter } from 'react-router-dom';
+
+function App() {
+  return (
+    <BrowserRouter>
+      {/* Your app goes here */}
+    </BrowserRouter>
+  );
+}
+```
+
+### 2. Routes and Route - The Map
+
+`Routes` is like a switch statement for URLs. It looks at the current URL and renders the matching `Route`:
+
+```jsx
+import { Routes, Route } from 'react-router-dom';
+
+function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/contact" element={<Contact />} />
+      </Routes>
+    </BrowserRouter>
+  );
+}
+```
+
+### 3. Link - The Navigation
+
+Use `Link` instead of `<a>` tags for navigation. It prevents full page reloads:
+
+```jsx
+import { Link } from 'react-router-dom';
+
+function Navigation() {
+  return (
+    <nav>
+      {/* ✅ Use Link for internal navigation */}
+      <Link to="/">Home</Link>
+      <Link to="/about">About</Link>
+      
+      {/* ❌ Don't use <a> for internal links */}
+      {/* <a href="/about">About</a> - This causes a full reload! */}
+    </nav>
+  );
+}
+```
+
+<ProgressCheckpoint section="nested-routes" xpReward={15} />
+
+## Try It: Navigation in Action
+
+Click the links below to see how React Router handles navigation. Notice how the URL changes but the page doesn't fully reload!
+
+<NavigationSimulator 
+  showUrlBar={true}
+  showHistory={true}
+/>
+
+<ProgressCheckpoint section="navigation" xpReward={15} />
+
+## Dynamic Routes: URLs with Variables
+
+Sometimes you need URLs like `/products/123` or `/users/alice`. The number or name changes, but the page structure is the same.
+
+React Router uses `:paramName` to capture these dynamic parts:
+
+```jsx
+// Route definition
+<Route path="/products/:productId" element={<ProductDetail />} />
+
+// This matches:
+// /products/1
+// /products/42
+// /products/awesome-widget
+```
+
+Inside your component, use `useParams` to get the value:
+
+```jsx
+import { useParams } from 'react-router-dom';
+
+function ProductDetail() {
+  const { productId } = useParams();
+  
+  return <h1>Product #{productId}</h1>;
+}
+```
+
+<RouteMatcher 
+  showExplanations={true}
+/>
+
+<ProgressCheckpoint section="route-guards" xpReward={15} />
+
+## Putting It All Together
+
+Here's a complete example of a simple app with React Router:
+
+<ReactPlayground
+  initialCode={`// Complete React Router Example
+const { BrowserRouter, Routes, Route, Link, useParams } = ReactRouterDOM;
+
+function Home() {
+  return (
+    <div style={{ padding: '20px' }}>
+      <h2>🏠 Home Page</h2>
+      <p>Welcome to our app!</p>
+    </div>
+  );
+}
+
+function About() {
+  return (
+    <div style={{ padding: '20px' }}>
+      <h2>ℹ️ About Page</h2>
+      <p>Learn more about us here.</p>
+    </div>
+  );
+}
+
+function Product() {
+  const { id } = useParams();
+  return (
+    <div style={{ padding: '20px' }}>
+      <h2>📦 Product #{id}</h2>
+      <p>Viewing details for product {id}</p>
+    </div>
+  );
+}
+
+function Navigation() {
+  return (
+    <nav style={{
+      padding: '15px',
+      background: '#f0f0f0',
+      display: 'flex',
+      gap: '15px'
+    }}>
+      <Link to="/">Home</Link>
+      <Link to="/about">About</Link>
+      <Link to="/products/1">Product 1</Link>
+      <Link to="/products/42">Product 42</Link>
+    </nav>
+  );
+}
+
+function App() {
+  return (
+    <BrowserRouter>
+      <Navigation />
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/products/:id" element={<Product />} />
+      </Routes>
+    </BrowserRouter>
+  );
+}
+
+render(<App />);`}
+  height={400}
+/>
+
+<ProgressCheckpoint section="summary" xpReward={10} />
+
+## Quick Quiz
+
+<Quiz>
+  <Question text="What component should you use instead of <a> tags for navigation in React Router?">
+    <Answer>NavLink only</Answer>
+    <Answer correct>Link</Answer>
+    <Answer>Router</Answer>
+    <Answer>Navigate</Answer>
+  </Question>
+  
+  <Question text="What does BrowserRouter do?">
+    <Answer>Renders the navigation menu</Answer>
+    <Answer>Fetches data from the server</Answer>
+    <Answer correct>Enables routing throughout your application</Answer>
+    <Answer>Styles your components</Answer>
+  </Question>
+  
+  <Question text="How do you capture a dynamic value from the URL like /users/123?">
+    <Answer>Use /users/123 exactly</Answer>
+    <Answer correct>Use :paramName like /users/:userId</Answer>
+    <Answer>Use * wildcard</Answer>
+    <Answer>Use {userId} syntax</Answer>
+  </Question>
+  
+  <Question text="What hook do you use to access URL parameters in a component?">
+    <Answer>useState</Answer>
+    <Answer>useEffect</Answer>
+    <Answer correct>useParams</Answer>
+    <Answer>useRouter</Answer>
+  </Question>
+</Quiz>
+
+---
+
+**Awesome work!** 🎉 You now understand the basics of React Router. In the intermediate level, we'll explore nested routes, programmatic navigation, and more advanced patterns!

@@ -1,0 +1,407 @@
+# State and Props - Advanced
+
+Let's explore the internals of how React handles state and props, including state batching, the reconciliation algorithm, and advanced patterns for optimal performance.
+
+<InfoBox type="warning" title="Advanced Concepts">
+This lesson covers React internals and optimization techniques. Understanding these concepts will help you write more performant applications and debug complex issues.
+</InfoBox>
+
+<ProgressCheckpoint section="introduction" xpReward={30} />
+
+## State Batching
+
+React **batches** multiple state updates into a single re-render for performance. In React 18+, this happens automatically in all contexts.
+
+```jsx
+function Counter() {
+  const [count, setCount] = useState(0);
+  const [flag, setFlag] = useState(false);
+  
+  const handleClick = () => {
+    // These are batched - only ONE re-render!
+    setCount(c => c + 1);
+    setFlag(f => !f);
+    setCount(c => c + 1);
+    // Result: count increases by 2, flag toggles, ONE render
+  };
+}
+```
+
+### Understanding the Batching Behavior
+
+<ReactPlayground
+  initialCode={`function BatchingDemo() {
+  const [count, setCount] = React.useState(0);
+  const [renderCount, setRenderCount] = React.useState(0);
+  
+  // Track renders
+  React.useEffect(() => {
+    setRenderCount(r => r + 1);
+  });
+  
+  const handleBatchedClick = () => {
+    // All batched into ONE render
+    setCount(c => c + 1);
+    setCount(c => c + 1);
+    setCount(c => c + 1);
+  };
+  
+  const handleUnbatchedClick = async () => {
+    // In older React, these would cause 3 renders
+    // In React 18+, still batched!
+    await Promise.resolve();
+    setCount(c => c + 1);
+    setCount(c => c + 1);
+    setCount(c => c + 1);
+  };
+  
+  return (
+    <div style={{ padding: '20px' }}>
+      <h3>State Batching Demo</h3>
+      <p>Count: <strong>{count}</strong></p>
+      <p>Render count: <strong>{renderCount}</strong></p>
+      
+      <div style={{ display: 'flex', gap: '10px', marginTop: '15px' }}>
+        <button onClick={handleBatchedClick}>
+          +3 (Batched)
+        </button>
+        <button onClick={handleUnbatchedClick}>
+          +3 (Async)
+        </button>
+        <button onClick={() => setCount(0)}>
+          Reset
+        </button>
+      </div>
+      
+      <p style={{ fontSize: '12px', color: '#666', marginTop: '15px' }}>
+        Notice: Both buttons increment by 3 but only trigger one render each!
+      </p>
+    </div>
+  );
+}
+
+render(<BatchingDemo />);`}
+  height={300}
+/>
+
+### Functional Updates
+
+When your new state depends on the previous state, use the **functional update** form:
+
+```jsx
+// ❌ May not work as expected with batching
+setCount(count + 1);
+setCount(count + 1);  // Still uses the old 'count' value!
+
+// ✅ Always gets the latest state
+setCount(c => c + 1);
+setCount(c => c + 1);  // Correctly increments twice
+```
+
+<KeyConcept title="When to Use Functional Updates">
+Always use functional updates (`setState(prev => ...)`) when the new state depends on the previous state. This ensures correctness even with batching and concurrent features.
+</KeyConcept>
+
+<ProgressCheckpoint section="understanding-props" xpReward={30} />
+
+## The Reconciliation Algorithm
+
+When state changes, React doesn't rebuild the entire DOM. Instead, it uses a **reconciliation** algorithm to efficiently update only what changed.
+
+### How Reconciliation Works
+
+1. **Virtual DOM Diff** - React compares the new virtual DOM with the previous one
+2. **Minimal Updates** - Only the differences are applied to the real DOM
+3. **Key-based Matching** - Keys help React identify which items changed in lists
+
+```jsx
+// Without keys - React can't track items efficiently
+{items.map(item => <Item data={item} />)}  // ❌
+
+// With keys - React knows exactly what changed
+{items.map(item => <Item key={item.id} data={item} />)}  // ✅
+```
+
+### The Importance of Keys
+
+<ReactPlayground
+  initialCode={`function KeyDemo() {
+  const [items, setItems] = React.useState([
+    { id: 1, text: 'First' },
+    { id: 2, text: 'Second' },
+    { id: 3, text: 'Third' },
+  ]);
+  
+  const addToStart = () => {
+    const newId = Math.max(...items.map(i => i.id)) + 1;
+    setItems([{ id: newId, text: 'New Item ' + newId }, ...items]);
+  };
+  
+  const removeFirst = () => {
+    setItems(items.slice(1));
+  };
+  
+  const shuffle = () => {
+    setItems([...items].sort(() => Math.random() - 0.5));
+  };
+  
+  return (
+    <div style={{ padding: '20px' }}>
+      <h3>Key-based Reconciliation</h3>
+      
+      <div style={{ display: 'flex', gap: '10px', marginBottom: '15px' }}>
+        <button onClick={addToStart}>Add to Start</button>
+        <button onClick={removeFirst}>Remove First</button>
+        <button onClick={shuffle}>Shuffle</button>
+      </div>
+      
+      <div>
+        {items.map(item => (
+          <ItemWithInput key={item.id} item={item} />
+        ))}
+      </div>
+      
+      <p style={{ fontSize: '12px', color: '#666', marginTop: '15px' }}>
+        Type in the inputs, then shuffle. Keys preserve input state correctly!
+      </p>
+    </div>
+  );
+}
+
+function ItemWithInput({ item }) {
+  return (
+    <div style={{ 
+      display: 'flex', 
+      gap: '10px', 
+      alignItems: 'center',
+      padding: '8px',
+      margin: '4px 0',
+      background: '#f5f5f5',
+      borderRadius: '6px'
+    }}>
+      <span style={{ fontWeight: 'bold' }}>#{item.id}</span>
+      <span>{item.text}</span>
+      <input 
+        placeholder="Type here..."
+        style={{ marginLeft: 'auto', padding: '4px 8px' }}
+      />
+    </div>
+  );
+}
+
+render(<KeyDemo />);`}
+  height={350}
+/>
+
+<ProgressCheckpoint section="understanding-state" xpReward={30} />
+
+## State Colocation
+
+**Colocation** means keeping state as close as possible to where it's used. This improves performance and maintainability.
+
+### The Principle
+
+```jsx
+// ❌ State too high - entire app re-renders on input change
+function App() {
+  const [searchQuery, setSearchQuery] = useState('');
+  return (
+    <>
+      <Header />
+      <SearchBar query={searchQuery} onChange={setSearchQuery} />
+      <Results query={searchQuery} />
+      <Footer />  {/* Re-renders unnecessarily! */}
+    </>
+  );
+}
+
+// ✅ State colocated - only SearchSection re-renders
+function App() {
+  return (
+    <>
+      <Header />
+      <SearchSection />  {/* Contains its own state */}
+      <Footer />
+    </>
+  );
+}
+
+function SearchSection() {
+  const [searchQuery, setSearchQuery] = useState('');
+  return (
+    <>
+      <SearchBar query={searchQuery} onChange={setSearchQuery} />
+      <Results query={searchQuery} />
+    </>
+  );
+}
+```
+
+<StateTimeline 
+  showDiff={true}
+  allowTimeTravel={true}
+  maxSnapshots={30}
+/>
+
+<ProgressCheckpoint section="data-flow" xpReward={30} />
+
+## When State Updates Don't Trigger Re-renders
+
+React uses **Object.is** comparison to determine if state changed. Understanding this helps avoid bugs:
+
+```jsx
+// ❌ Same reference - no re-render!
+const [user, setUser] = useState({ name: 'Alice' });
+user.name = 'Bob';
+setUser(user);  // Same object reference, React skips update
+
+// ✅ New reference - triggers re-render
+setUser({ ...user, name: 'Bob' });
+
+// ❌ Same array reference
+const [items, setItems] = useState([1, 2, 3]);
+items.push(4);
+setItems(items);  // Same array reference, no update
+
+// ✅ New array reference
+setItems([...items, 4]);
+```
+
+### Debugging State Updates
+
+<ReactPlayground
+  initialCode={`function StateDebugDemo() {
+  const [user, setUser] = React.useState({ name: 'Alice', count: 0 });
+  const [renderCount, setRenderCount] = React.useState(0);
+  
+  React.useEffect(() => {
+    setRenderCount(r => r + 1);
+  });
+  
+  const mutateWrong = () => {
+    // ❌ This won't trigger a re-render!
+    user.count += 1;
+    setUser(user);
+    console.log('Mutated (wrong):', user.count);
+  };
+  
+  const updateCorrect = () => {
+    // ✅ This creates a new object
+    setUser(prev => ({ ...prev, count: prev.count + 1 }));
+  };
+  
+  return (
+    <div style={{ padding: '20px' }}>
+      <h3>State Update Comparison</h3>
+      <p>User count: <strong>{user.count}</strong></p>
+      <p>Render count: <strong>{renderCount}</strong></p>
+      
+      <div style={{ display: 'flex', gap: '10px', marginTop: '15px' }}>
+        <button 
+          onClick={mutateWrong}
+          style={{ background: '#ffcdd2' }}
+        >
+          Mutate (Wrong) ❌
+        </button>
+        <button 
+          onClick={updateCorrect}
+          style={{ background: '#c8e6c9' }}
+        >
+          Update (Correct) ✅
+        </button>
+      </div>
+      
+      <p style={{ fontSize: '12px', color: '#666', marginTop: '15px' }}>
+        Click "Mutate" multiple times - the UI won't update!
+        Then click "Update" to see the accumulated changes.
+      </p>
+    </div>
+  );
+}
+
+render(<StateDebugDemo />);`}
+  height={300}
+/>
+
+<ProgressCheckpoint section="lifting-state" xpReward={25} />
+
+## Computed State vs Stored State
+
+A common mistake is storing values that could be computed:
+
+```jsx
+// ❌ Storing computed values
+const [items, setItems] = useState([...]);
+const [total, setTotal] = useState(0);
+const [average, setAverage] = useState(0);
+
+// Now you must keep them in sync manually!
+const addItem = (item) => {
+  const newItems = [...items, item];
+  setItems(newItems);
+  setTotal(newItems.reduce((a, b) => a + b, 0));
+  setAverage(total / newItems.length);  // Bug: uses old total!
+};
+
+// ✅ Compute derived values
+const [items, setItems] = useState([...]);
+const total = items.reduce((a, b) => a + b, 0);
+const average = items.length ? total / items.length : 0;
+
+// Only one state to manage!
+const addItem = (item) => {
+  setItems([...items, item]);
+  // total and average update automatically
+};
+```
+
+<KeyConcept title="Single Source of Truth">
+Store the minimal state needed. Derive everything else. This eliminates sync bugs and simplifies your code.
+</KeyConcept>
+
+<ProgressCheckpoint section="controlled-components" xpReward={25} />
+
+## Quick Quiz
+
+<Quiz>
+  <Question text="What is state batching in React?">
+    <Answer>Storing multiple states in one variable</Answer>
+    <Answer correct>Combining multiple state updates into a single re-render</Answer>
+    <Answer>Splitting state across components</Answer>
+    <Answer>Caching state values</Answer>
+  </Question>
+  
+  <Question text="Why are keys important in lists?">
+    <Answer>They make the code look cleaner</Answer>
+    <Answer>They are required by JavaScript</Answer>
+    <Answer correct>They help React efficiently track and update list items</Answer>
+    <Answer>They improve SEO</Answer>
+  </Question>
+  
+  <Question text="When should you use functional state updates?">
+    <Answer>Always, for every state update</Answer>
+    <Answer>Only with arrays</Answer>
+    <Answer correct>When the new state depends on the previous state</Answer>
+    <Answer>Only in class components</Answer>
+  </Question>
+  
+  <Question text="Why doesn't mutating state directly trigger a re-render?">
+    <Answer>It's a React bug</Answer>
+    <Answer correct>React uses reference comparison (Object.is) to detect changes</Answer>
+    <Answer>Mutations are slower</Answer>
+    <Answer>It only works in development mode</Answer>
+  </Question>
+  
+  <Question text="What is state colocation?">
+    <Answer>Storing all state in one place</Answer>
+    <Answer>Using global state management</Answer>
+    <Answer correct>Keeping state as close as possible to where it's used</Answer>
+    <Answer>Sharing state between apps</Answer>
+  </Question>
+</Quiz>
+
+<ProgressCheckpoint section="summary" xpReward={20} />
+
+---
+
+**Outstanding!** 🏆 You've mastered advanced state and props concepts in React. You now understand how React optimizes updates, why immutability matters, and how to structure state for optimal performance. Next, explore Hooks to learn about useEffect, custom hooks, and more!

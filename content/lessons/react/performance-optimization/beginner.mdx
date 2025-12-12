@@ -1,0 +1,200 @@
+# Performance Optimization
+
+Welcome to React Performance! Have you ever noticed an app feeling slow or laggy? Often, the culprit is unnecessary re-renders. Let's learn how to make your React apps lightning fast! ⚡
+
+<InfoBox type="tip" title="The Traffic Light Analogy">
+Think of React components like cars at traffic lights. Every time a light changes (state updates), ALL cars in that lane start moving, even if they don't need to. **React.memo** is like giving some cars a "fast pass" - they only move when they actually need to!
+</InfoBox>
+
+<ProgressCheckpoint section="introduction" xpReward={15} />
+
+## What Are Re-renders?
+
+When React updates your UI, it "re-renders" components. This means React runs your component function again to see if anything changed.
+
+```jsx
+function Counter() {
+  const [count, setCount] = useState(0);
+  
+  // This entire function runs again every time count changes!
+  console.log('Counter rendered!');
+  
+  return (
+    <button onClick={() => setCount(count + 1)}>
+      Count: {count}
+    </button>
+  );
+}
+```
+
+<KeyConcept title="Re-render = Function Call">
+Every time a component re-renders, React calls your component function again. This is usually fast, but can become slow with complex components or large lists.
+</KeyConcept>
+
+<ProgressCheckpoint section="re-renders" xpReward={15} />
+
+## The Problem: Unnecessary Re-renders
+
+Here's the tricky part: when a parent component re-renders, **all its children re-render too**, even if their props haven't changed!
+
+<RerenderVisualizer 
+  showOptimizationTips={true}
+/>
+
+<KeyConcept title="Parent Re-render = Children Re-render">
+By default, when a parent's state changes, React re-renders all children. This can cause performance issues if children are expensive to render.
+</KeyConcept>
+
+<ProgressCheckpoint section="react-memo" xpReward={15} />
+
+## The Solution: React.memo
+
+`React.memo` is a special wrapper that tells React: "Only re-render this component if its props actually changed."
+
+```jsx
+// Without memo - re-renders every time parent updates
+function ExpensiveList({ items }) {
+  console.log('ExpensiveList rendered!');
+  return (
+    <ul>
+      {items.map(item => <li key={item.id}>{item.name}</li>)}
+    </ul>
+  );
+}
+
+// With memo - only re-renders when items change
+const ExpensiveList = React.memo(function ExpensiveList({ items }) {
+  console.log('ExpensiveList rendered!');
+  return (
+    <ul>
+      {items.map(item => <li key={item.id}>{item.name}</li>)}
+    </ul>
+  );
+});
+```
+
+<MemoComparisonDemo 
+  showTimings={true}
+  showCode={true}
+/>
+
+<ProgressCheckpoint section="usememo-usecallback" xpReward={15} />
+
+## When to Use React.memo
+
+Use `React.memo` when:
+- ✅ A component renders often with the same props
+- ✅ A component is expensive to render (complex calculations, large lists)
+- ✅ A component is deep in the tree but doesn't need parent's state
+
+Don't use `React.memo` when:
+- ❌ Props change frequently anyway
+- ❌ The component is simple and fast to render
+- ❌ You're not sure if it helps (measure first!)
+
+<ReactPlayground
+  initialCode={`// Try React.memo!
+const ExpensiveChild = React.memo(function ExpensiveChild({ name }) {
+  // Simulate expensive render
+  console.log('ExpensiveChild rendered with:', name);
+  
+  return (
+    <div style={{ 
+      padding: '10px', 
+      margin: '10px 0',
+      background: '#f0f0f0',
+      borderRadius: '8px'
+    }}>
+      Hello, {name}!
+    </div>
+  );
+});
+
+function App() {
+  const [count, setCount] = React.useState(0);
+  const [name, setName] = React.useState('World');
+  
+  return (
+    <div style={{ padding: '20px' }}>
+      <h3>React.memo Demo</h3>
+      
+      <button 
+        onClick={() => setCount(c => c + 1)}
+        style={{ marginRight: '10px', padding: '8px 16px' }}
+      >
+        Count: {count}
+      </button>
+      
+      <button 
+        onClick={() => setName(n => n === 'World' ? 'React' : 'World')}
+        style={{ padding: '8px 16px' }}
+      >
+        Toggle Name
+      </button>
+      
+      <ExpensiveChild name={name} />
+      
+      <p style={{ fontSize: '12px', color: '#666' }}>
+        Open console to see when ExpensiveChild renders.
+        Notice it only renders when name changes, not count!
+      </p>
+    </div>
+  );
+}
+
+render(<App />);`}
+  height={350}
+/>
+
+<ProgressCheckpoint section="profiler" xpReward={15} />
+
+## Quick Performance Tips
+
+1. **Start without optimization** - React is fast by default!
+2. **Measure first** - Don't guess, use React DevTools Profiler
+3. **Optimize bottlenecks** - Focus on components that render often
+4. **Use keys properly** - Always use unique, stable keys in lists
+
+<KeyConcept title="Premature Optimization">
+Don't add React.memo everywhere "just in case." It adds complexity and can sometimes make things slower! Only optimize when you've measured a real problem.
+</KeyConcept>
+
+<ProgressCheckpoint section="code-splitting" xpReward={15} />
+
+## Quick Quiz
+
+<Quiz>
+  <Question text="What happens when a parent component re-renders?">
+    <Answer>Only the parent re-renders</Answer>
+    <Answer correct>All children re-render by default</Answer>
+    <Answer>Nothing happens to children</Answer>
+    <Answer>Only children with changed props re-render</Answer>
+  </Question>
+  
+  <Question text="What does React.memo do?">
+    <Answer>Makes components faster automatically</Answer>
+    <Answer>Removes unused components</Answer>
+    <Answer correct>Prevents re-renders when props haven't changed</Answer>
+    <Answer>Caches all component data</Answer>
+  </Question>
+  
+  <Question text="When should you use React.memo?">
+    <Answer>On every component</Answer>
+    <Answer>Only on class components</Answer>
+    <Answer correct>On expensive components that render often with same props</Answer>
+    <Answer>Never, it's deprecated</Answer>
+  </Question>
+  
+  <Question text="What's the first step in performance optimization?">
+    <Answer>Add React.memo to everything</Answer>
+    <Answer correct>Measure to find the actual problem</Answer>
+    <Answer>Rewrite all components</Answer>
+    <Answer>Remove all state</Answer>
+  </Question>
+</Quiz>
+
+<ProgressCheckpoint section="summary" xpReward={10} />
+
+---
+
+**Great job!** 🎉 You now understand the basics of React performance. In the intermediate level, we'll explore `useMemo`, `useCallback`, and how to use the React DevTools Profiler to find performance issues.

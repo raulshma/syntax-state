@@ -1,0 +1,389 @@
+# Performance Optimization
+
+Welcome to advanced React performance! You've mastered the basics of memoization. Now let's explore virtualization, code splitting, and understand how React's reconciliation algorithm decides what to update.
+
+<InfoBox type="info" title="Performance at Scale">
+At scale, milliseconds matter. A 100ms delay in rendering can feel sluggish. Understanding React's internals helps you make informed optimization decisions.
+</InfoBox>
+
+<ProgressCheckpoint section="introduction" xpReward={15} />
+
+## Understanding Reconciliation
+
+React's reconciliation algorithm (the "diffing" algorithm) determines what changed between renders. Understanding it helps you write more efficient code.
+
+### The Diffing Heuristics
+
+React makes two assumptions to achieve O(n) complexity:
+
+1. **Different element types produce different trees** - If a `<div>` becomes a `<span>`, React rebuilds the entire subtree
+2. **Keys identify stable elements** - Elements with the same key are assumed to be the same element
+
+```jsx
+// ❌ This destroys and recreates the entire subtree
+{isCard ? <Card><Content /></Card> : <div><Content /></div>}
+
+// ✅ This preserves the subtree (same element type)
+<div className={isCard ? 'card' : 'plain'}><Content /></div>
+```
+
+<KeyConcept title="Element Type Changes Are Expensive">
+Changing element types (div → span, ComponentA → ComponentB) unmounts the old tree and mounts a new one. All state in that subtree is lost.
+</KeyConcept>
+
+<ProgressCheckpoint section="re-renders" xpReward={15} />
+
+## Virtualization for Large Lists
+
+Rendering thousands of items is slow. Virtualization only renders items currently visible in the viewport:
+
+```jsx
+// ❌ Renders all 10,000 items
+function SlowList({ items }) {
+  return (
+    <div style={{ height: '400px', overflow: 'auto' }}>
+      {items.map(item => <Row key={item.id} data={item} />)}
+    </div>
+  );
+}
+
+// ✅ Only renders ~20 visible items
+import { FixedSizeList } from 'react-window';
+
+function FastList({ items }) {
+  return (
+    <FixedSizeList
+      height={400}
+      itemCount={items.length}
+      itemSize={50}
+      width="100%"
+    >
+      {({ index, style }) => (
+        <Row style={style} data={items[index]} />
+      )}
+    </FixedSizeList>
+  );
+}
+```
+
+### Popular Virtualization Libraries
+
+| Library | Best For |
+|---------|----------|
+| `react-window` | Simple lists, lightweight |
+| `react-virtualized` | Complex grids, more features |
+| `@tanstack/react-virtual` | Headless, maximum flexibility |
+
+<ProgressCheckpoint section="react-memo" xpReward={15} />
+
+## Code Splitting with React.lazy
+
+Don't load code users don't need yet. Split your bundle by route or feature:
+
+```jsx
+import { lazy, Suspense } from 'react';
+
+// ❌ Loads immediately, even if user never visits
+import AdminDashboard from './AdminDashboard';
+
+// ✅ Loads only when rendered
+const AdminDashboard = lazy(() => import('./AdminDashboard'));
+
+function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<Home />} />
+      <Route 
+        path="/admin" 
+        element={
+          <Suspense fallback={<Loading />}>
+            <AdminDashboard />
+          </Suspense>
+        } 
+      />
+    </Routes>
+  );
+}
+```
+
+### Advanced Splitting Patterns
+
+```jsx
+// Named exports with lazy
+const Chart = lazy(() => 
+  import('./analytics').then(module => ({ default: module.Chart }))
+);
+
+// Preload on hover
+const Settings = lazy(() => import('./Settings'));
+
+function NavLink() {
+  const preload = () => import('./Settings');
+  
+  return (
+    <Link 
+      to="/settings" 
+      onMouseEnter={preload}
+      onFocus={preload}
+    >
+      Settings
+    </Link>
+  );
+}
+```
+
+<ProgressCheckpoint section="usememo-usecallback" xpReward={15} />
+
+## Advanced Memoization Patterns
+
+### Custom Comparison with React.memo
+
+```jsx
+const ExpensiveChart = React.memo(
+  function ExpensiveChart({ data, config }) {
+    // Expensive rendering...
+  },
+  // Custom comparison function
+  (prevProps, nextProps) => {
+    // Return true if props are equal (skip re-render)
+    return (
+      prevProps.data.length === nextProps.data.length &&
+      prevProps.config.type === nextProps.config.type
+    );
+  }
+);
+```
+
+### Memoizing Selectors
+
+```jsx
+// ❌ Creates new filtered array every render
+function ProductList({ products, category }) {
+  const filtered = products.filter(p => p.category === category);
+  return <List items={filtered} />;
+}
+
+// ✅ Memoized selector pattern
+const selectFilteredProducts = (products, category) =>
+  products.filter(p => p.category === category);
+
+function ProductList({ products, category }) {
+  const filtered = useMemo(
+    () => selectFilteredProducts(products, category),
+    [products, category]
+  );
+  return <List items={filtered} />;
+}
+```
+
+<ProgressCheckpoint section="profiler" xpReward={15} />
+
+## Profiling in Production
+
+Development builds include extra checks that slow things down. For accurate measurements:
+
+```jsx
+// In your build config, create a "profiling" build
+// webpack.config.js
+module.exports = {
+  resolve: {
+    alias: {
+      'react-dom$': 'react-dom/profiling',
+      'scheduler/tracing': 'scheduler/tracing-profiling',
+    },
+  },
+};
+```
+
+### Using the Profiler API
+
+```jsx
+import { Profiler } from 'react';
+
+function onRenderCallback(
+  id,           // Profiler tree id
+  phase,        // "mount" or "update"
+  actualDuration,   // Time spent rendering
+  baseDuration,     // Estimated time without memoization
+  startTime,        // When React started rendering
+  commitTime,       // When React committed
+) {
+  // Log to analytics
+  analytics.track('render', { id, phase, actualDuration });
+}
+
+function App() {
+  return (
+    <Profiler id="App" onRender={onRenderCallback}>
+      <MainContent />
+    </Profiler>
+  );
+}
+```
+
+<RerenderVisualizer 
+  showOptimizationTips={true}
+/>
+
+<ProgressCheckpoint section="code-splitting" xpReward={15} />
+
+## State Colocation
+
+Keep state as close to where it's used as possible:
+
+```jsx
+// ❌ State too high - entire app re-renders on input
+function App() {
+  const [searchQuery, setSearchQuery] = useState('');
+  
+  return (
+    <div>
+      <Header />
+      <SearchInput value={searchQuery} onChange={setSearchQuery} />
+      <ProductList />
+      <Footer />
+    </div>
+  );
+}
+
+// ✅ State colocated - only SearchInput re-renders
+function App() {
+  return (
+    <div>
+      <Header />
+      <SearchSection /> {/* State lives here */}
+      <ProductList />
+      <Footer />
+    </div>
+  );
+}
+
+function SearchSection() {
+  const [searchQuery, setSearchQuery] = useState('');
+  return <SearchInput value={searchQuery} onChange={setSearchQuery} />;
+}
+```
+
+<MemoComparisonDemo 
+  showTimings={true}
+  showCode={true}
+/>
+
+## Performance Profiler Deep Dive
+
+<PerformanceProfiler 
+  showFlameGraph={true}
+  showOptimizationTips={true}
+/>
+
+## Advanced Optimization Techniques
+
+### 1. Debouncing Expensive Updates
+
+```jsx
+function SearchResults({ query }) {
+  const [results, setResults] = useState([]);
+  
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      // Only search after user stops typing
+      fetchResults(query).then(setResults);
+    }, 300);
+    
+    return () => clearTimeout(timeoutId);
+  }, [query]);
+  
+  return <ResultsList items={results} />;
+}
+```
+
+### 2. Transition API (React 18+)
+
+```jsx
+import { useTransition, useDeferredValue } from 'react';
+
+function SearchPage() {
+  const [query, setQuery] = useState('');
+  const [isPending, startTransition] = useTransition();
+  
+  const handleChange = (e) => {
+    // Urgent: Update input immediately
+    setQuery(e.target.value);
+    
+    // Non-urgent: Can be interrupted
+    startTransition(() => {
+      setSearchResults(filterResults(e.target.value));
+    });
+  };
+  
+  return (
+    <div>
+      <input value={query} onChange={handleChange} />
+      {isPending && <Spinner />}
+      <Results />
+    </div>
+  );
+}
+```
+
+### 3. Web Workers for Heavy Computation
+
+```jsx
+// worker.js
+self.onmessage = (e) => {
+  const result = heavyComputation(e.data);
+  self.postMessage(result);
+};
+
+// Component
+function DataProcessor({ data }) {
+  const [result, setResult] = useState(null);
+  
+  useEffect(() => {
+    const worker = new Worker('./worker.js');
+    worker.postMessage(data);
+    worker.onmessage = (e) => setResult(e.data);
+    return () => worker.terminate();
+  }, [data]);
+  
+  return result ? <Display data={result} /> : <Loading />;
+}
+```
+
+## Quick Quiz
+
+<Quiz>
+  <Question text="What happens when you change an element's type (div → span)?">
+    <Answer>React updates the element in place</Answer>
+    <Answer correct>React unmounts the old tree and mounts a new one</Answer>
+    <Answer>Nothing, React ignores type changes</Answer>
+    <Answer>React throws an error</Answer>
+  </Question>
+  
+  <Question text="What does virtualization do for large lists?">
+    <Answer>Makes items smaller</Answer>
+    <Answer>Caches all items in memory</Answer>
+    <Answer correct>Only renders items currently visible in the viewport</Answer>
+    <Answer>Removes items from the DOM permanently</Answer>
+  </Question>
+  
+  <Question text="What's the benefit of code splitting with React.lazy?">
+    <Answer>Makes code run faster</Answer>
+    <Answer correct>Reduces initial bundle size by loading code on demand</Answer>
+    <Answer>Improves SEO</Answer>
+    <Answer>Enables server-side rendering</Answer>
+  </Question>
+  
+  <Question text="What does 'state colocation' mean?">
+    <Answer>Putting all state in a global store</Answer>
+    <Answer correct>Keeping state as close as possible to where it's used</Answer>
+    <Answer>Using only local storage</Answer>
+    <Answer>Sharing state between all components</Answer>
+  </Question>
+</Quiz>
+
+<ProgressCheckpoint section="summary" xpReward={10} />
+
+---
+
+**Outstanding work!** 🎉 You've mastered advanced React performance optimization. You now understand reconciliation, virtualization, code splitting, and advanced profiling techniques. Use these tools wisely - measure first, optimize second!

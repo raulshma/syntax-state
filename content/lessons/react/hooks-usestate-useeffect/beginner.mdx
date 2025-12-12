@@ -1,0 +1,408 @@
+# Hooks: useState and useEffect
+
+Welcome to React Hooks! Hooks are special functions that let you "hook into" React features from functional components. Think of them as superpowers for your components!
+
+<InfoBox type="tip" title="Why Hooks?">
+Before hooks, you needed class components to use state and lifecycle methods. Hooks let you do everything in simpler functional components!
+</InfoBox>
+
+<ProgressCheckpoint section="introduction" xpReward={15} />
+
+## What Are Hooks?
+
+Hooks are functions that start with "use" and let you use React features:
+
+- **useState** - Gives your component memory (state)
+- **useEffect** - Lets your component do things after rendering (side effects)
+
+Think of hooks like tools in a toolbox - each one has a specific job!
+
+```jsx
+import { useState, useEffect } from 'react';
+
+function MyComponent() {
+  // Now you can use hooks here!
+  const [count, setCount] = useState(0);
+  
+  useEffect(() => {
+    document.title = `Count: ${count}`;
+  }, [count]);
+  
+  return <button onClick={() => setCount(count + 1)}>Count: {count}</button>;
+}
+```
+
+<ProgressCheckpoint section="usestate-basics" xpReward={15} />
+
+## useState: Your Component's Memory
+
+**useState** gives your component a piece of memory that persists between renders. When this memory changes, React re-renders your component.
+
+### The Syntax
+
+```jsx
+const [value, setValue] = useState(initialValue);
+//     ↑        ↑                    ↑
+//  current   function to        starting
+//   value    update it           value
+```
+
+### A Simple Counter
+
+<ReactPlayground
+  initialCode={`function Counter() {
+  // Create a piece of state called "count" starting at 0
+  const [count, setCount] = React.useState(0);
+  
+  return (
+    <div style={{ 
+      padding: '30px', 
+      textAlign: 'center',
+      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      borderRadius: '16px',
+      color: 'white'
+    }}>
+      <h2 style={{ fontSize: '48px', margin: '0 0 20px 0' }}>{count}</h2>
+      
+      <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
+        <button 
+          onClick={() => setCount(count - 1)}
+          style={{ 
+            padding: '12px 24px', 
+            fontSize: '20px', 
+            cursor: 'pointer',
+            borderRadius: '8px',
+            border: 'none'
+          }}
+        >
+          -1
+        </button>
+        <button 
+          onClick={() => setCount(count + 1)}
+          style={{ 
+            padding: '12px 24px', 
+            fontSize: '20px', 
+            cursor: 'pointer',
+            borderRadius: '8px',
+            border: 'none'
+          }}
+        >
+          +1
+        </button>
+      </div>
+      
+      <button 
+        onClick={() => setCount(0)}
+        style={{ 
+          marginTop: '15px',
+          padding: '8px 16px',
+          cursor: 'pointer',
+          borderRadius: '6px',
+          border: 'none',
+          background: 'rgba(255,255,255,0.2)',
+          color: 'white'
+        }}
+      >
+        Reset
+      </button>
+    </div>
+  );
+}
+
+render(<Counter />);`}
+  height={280}
+/>
+
+<KeyConcept title="How useState Works">
+1. **Initial render**: React creates the state with your initial value
+2. **User interaction**: You call the setter function (like setCount)
+3. **Re-render**: React updates the state and re-renders your component
+4. **Display**: Your component shows the new value
+</KeyConcept>
+
+<ProgressCheckpoint section="useeffect-basics" xpReward={15} />
+
+## useEffect: Doing Things After Render
+
+**useEffect** lets your component perform "side effects" - things that happen outside of rendering, like:
+
+- Fetching data from an API
+- Updating the document title
+- Setting up timers
+- Subscribing to events
+
+### The Syntax
+
+```jsx
+useEffect(() => {
+  // This code runs after the component renders
+  console.log('Component rendered!');
+}, [dependencies]);
+//  ↑
+// When these values change, the effect runs again
+```
+
+### Updating the Document Title
+
+<ReactPlayground
+  initialCode={`function TitleUpdater() {
+  const [name, setName] = React.useState('World');
+  
+  // This effect runs whenever 'name' changes
+  React.useEffect(() => {
+    document.title = \`Hello, \${name}!\`;
+    console.log('Title updated to:', \`Hello, \${name}!\`);
+  }, [name]); // <-- dependency array
+  
+  return (
+    <div style={{ padding: '20px', maxWidth: '400px' }}>
+      <h3>Document Title Updater</h3>
+      <p style={{ color: '#666', marginBottom: '15px' }}>
+        Type your name and watch the browser tab title change!
+      </p>
+      
+      <input
+        type="text"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        placeholder="Enter your name"
+        style={{
+          width: '100%',
+          padding: '12px',
+          fontSize: '16px',
+          borderRadius: '8px',
+          border: '2px solid #ddd'
+        }}
+      />
+      
+      <p style={{ marginTop: '15px', fontWeight: 'bold' }}>
+        Current title: "Hello, {name}!"
+      </p>
+      
+      <p style={{ fontSize: '12px', color: '#888', marginTop: '10px' }}>
+        💡 Check your browser tab to see the title change!
+      </p>
+    </div>
+  );
+}
+
+render(<TitleUpdater />);`}
+  height={300}
+/>
+
+<ProgressCheckpoint section="dependency-arrays" xpReward={15} />
+
+## The Dependency Array
+
+The dependency array tells React when to run your effect:
+
+```jsx
+// Runs after EVERY render
+useEffect(() => {
+  console.log('I run every time!');
+});
+
+// Runs only on MOUNT (first render)
+useEffect(() => {
+  console.log('I run once when component mounts!');
+}, []); // Empty array = no dependencies
+
+// Runs when 'count' changes
+useEffect(() => {
+  console.log('Count changed to:', count);
+}, [count]); // Runs when count changes
+```
+
+<HookLifecycleVisualizer 
+  showMountUnmount={true}
+  showDependencies={true}
+/>
+
+<KeyConcept title="Dependency Array Rules">
+- **No array**: Effect runs after every render (rarely what you want)
+- **Empty array []**: Effect runs only once when component mounts
+- **With values [a, b]**: Effect runs when any listed value changes
+</KeyConcept>
+
+<ProgressCheckpoint section="cleanup-functions" xpReward={15} />
+
+## Combining useState and useEffect
+
+Let's build something that uses both hooks together - a simple timer!
+
+<ReactPlayground
+  initialCode={`function Timer() {
+  const [seconds, setSeconds] = React.useState(0);
+  const [isRunning, setIsRunning] = React.useState(false);
+  
+  React.useEffect(() => {
+    let interval = null;
+    
+    if (isRunning) {
+      // Start the timer
+      interval = setInterval(() => {
+        setSeconds(s => s + 1);
+      }, 1000);
+    }
+    
+    // Cleanup: stop the timer when effect re-runs or component unmounts
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [isRunning]); // Re-run when isRunning changes
+  
+  const formatTime = (totalSeconds) => {
+    const mins = Math.floor(totalSeconds / 60);
+    const secs = totalSeconds % 60;
+    return \`\${mins.toString().padStart(2, '0')}:\${secs.toString().padStart(2, '0')}\`;
+  };
+  
+  return (
+    <div style={{ 
+      padding: '30px', 
+      textAlign: 'center',
+      background: '#1a1a2e',
+      borderRadius: '16px',
+      color: 'white'
+    }}>
+      <h2 style={{ 
+        fontSize: '64px', 
+        fontFamily: 'monospace',
+        margin: '0 0 20px 0',
+        color: '#00ff88'
+      }}>
+        {formatTime(seconds)}
+      </h2>
+      
+      <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
+        <button 
+          onClick={() => setIsRunning(!isRunning)}
+          style={{ 
+            padding: '12px 30px', 
+            fontSize: '16px', 
+            cursor: 'pointer',
+            borderRadius: '8px',
+            border: 'none',
+            background: isRunning ? '#ff6b6b' : '#4ecdc4',
+            color: 'white',
+            fontWeight: 'bold'
+          }}
+        >
+          {isRunning ? 'Pause' : 'Start'}
+        </button>
+        <button 
+          onClick={() => { setIsRunning(false); setSeconds(0); }}
+          style={{ 
+            padding: '12px 30px', 
+            fontSize: '16px', 
+            cursor: 'pointer',
+            borderRadius: '8px',
+            border: 'none',
+            background: '#666',
+            color: 'white'
+          }}
+        >
+          Reset
+        </button>
+      </div>
+    </div>
+  );
+}
+
+render(<Timer />);`}
+  height={280}
+/>
+
+<InfoBox type="info" title="Cleanup Functions">
+The function you return from useEffect is called a "cleanup" function. It runs before the effect runs again and when the component unmounts. Use it to clean up timers, subscriptions, etc.
+</InfoBox>
+
+<ProgressCheckpoint section="custom-hooks" xpReward={15} />
+
+## Rules of Hooks
+
+There are two important rules to follow:
+
+### 1. Only Call Hooks at the Top Level
+
+```jsx
+// ✅ CORRECT - At the top of your component
+function MyComponent() {
+  const [count, setCount] = useState(0);
+  
+  // ...
+}
+
+// ❌ WRONG - Inside a condition
+function MyComponent() {
+  if (someCondition) {
+    const [count, setCount] = useState(0); // Don't do this!
+  }
+}
+
+// ❌ WRONG - Inside a loop
+function MyComponent() {
+  for (let i = 0; i < 5; i++) {
+    const [value, setValue] = useState(i); // Don't do this!
+  }
+}
+```
+
+### 2. Only Call Hooks from React Functions
+
+```jsx
+// ✅ CORRECT - In a React component
+function MyComponent() {
+  const [count, setCount] = useState(0);
+}
+
+// ✅ CORRECT - In a custom hook
+function useMyHook() {
+  const [value, setValue] = useState(0);
+}
+
+// ❌ WRONG - In a regular function
+function regularFunction() {
+  const [count, setCount] = useState(0); // Don't do this!
+}
+```
+
+<ProgressCheckpoint section="summary" xpReward={10} />
+
+## Quick Quiz
+
+<Quiz>
+  <Question text="What does useState return?">
+    <Answer>Just the current value</Answer>
+    <Answer>Just a function to update the value</Answer>
+    <Answer correct>An array with the current value and a function to update it</Answer>
+    <Answer>An object with value and setValue properties</Answer>
+  </Question>
+  
+  <Question text="When does useEffect with an empty dependency array [] run?">
+    <Answer>After every render</Answer>
+    <Answer correct>Only once when the component mounts</Answer>
+    <Answer>Never</Answer>
+    <Answer>When any state changes</Answer>
+  </Question>
+  
+  <Question text="What is the cleanup function in useEffect used for?">
+    <Answer>To reset state</Answer>
+    <Answer correct>To clean up resources like timers or subscriptions</Answer>
+    <Answer>To handle errors</Answer>
+    <Answer>To update the DOM</Answer>
+  </Question>
+  
+  <Question text="Where should you call hooks?">
+    <Answer>Inside loops</Answer>
+    <Answer>Inside conditions</Answer>
+    <Answer correct>At the top level of your component</Answer>
+    <Answer>Inside event handlers</Answer>
+  </Question>
+</Quiz>
+
+<ProgressCheckpoint section="summary" xpReward={10} />
+
+---
+
+**Awesome work!** 🎉 You've learned the two most important React hooks. In the intermediate level, we'll explore dependency arrays in depth, cleanup functions, and the rules of hooks in more detail.

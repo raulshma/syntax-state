@@ -1,0 +1,194 @@
+# Server Components Basics
+
+Welcome to React Server Components! This is one of the most exciting features in modern React. Let's learn how it works using a simple analogy. 🍳
+
+<InfoBox type="tip" title="The Kitchen & Dining Room Analogy">
+Think of your app like a **restaurant**. The **kitchen** (server) is where the chef prepares the food. The **dining room** (browser) is where customers eat. Server Components are like dishes prepared entirely in the kitchen - customers just receive the finished meal. Client Components are like tableside preparations - some cooking happens right at the table!
+</InfoBox>
+
+<ProgressCheckpoint section="introduction" xpReward={15} />
+
+## What Are Server Components?
+
+In traditional React, ALL your components run in the browser. The browser downloads JavaScript, runs it, and builds the page. But what if some components could run on the server instead?
+
+**Server Components** run on the server and send finished HTML to the browser. No JavaScript needed on the client for these components!
+
+```jsx
+// This is a Server Component (the default in Next.js App Router)
+// It runs on the server, not in the browser
+async function BlogPost({ id }) {
+  // We can fetch data directly - no useEffect needed!
+  const post = await db.posts.findOne({ id });
+  
+  return (
+    <article>
+      <h1>{post.title}</h1>
+      <p>{post.content}</p>
+    </article>
+  );
+}
+```
+
+<KeyConcept title="Server = Kitchen, Client = Dining Room">
+Server Components are like dishes prepared in the kitchen. The customer (browser) receives the finished dish (HTML) without seeing how it was made. This keeps the kitchen's secrets (database passwords, API keys) safe!
+</KeyConcept>
+
+<ProgressCheckpoint section="server-vs-client" xpReward={15} />
+
+## Server vs Client Components
+
+Let's see the difference between where each type runs:
+
+<ServerClientBoundaryVisualizer 
+  showDataFlow={true}
+  animated={true}
+/>
+
+### Server Components (Default)
+- ✅ Run on the server
+- ✅ Can access databases directly
+- ✅ Can use secrets and API keys safely
+- ✅ Send zero JavaScript to the browser
+- ❌ Cannot use onClick, onChange, etc.
+- ❌ Cannot use useState, useEffect
+
+### Client Components
+- ✅ Run in the browser
+- ✅ Can use interactivity (clicks, typing)
+- ✅ Can use React hooks (useState, useEffect)
+- ✅ Can access browser APIs (localStorage)
+- ❌ Cannot access server-only resources
+- ❌ Add JavaScript to the bundle
+
+<ProgressCheckpoint section="use-client-directive" xpReward={15} />
+
+## The 'use client' Directive
+
+How do you tell React a component should run in the browser? Add `'use client'` at the very top of the file!
+
+```jsx
+'use client';  // 👈 This makes it a Client Component
+
+import { useState } from 'react';
+
+function LikeButton() {
+  const [likes, setLikes] = useState(0);
+  
+  return (
+    <button onClick={() => setLikes(likes + 1)}>
+      ❤️ {likes} likes
+    </button>
+  );
+}
+```
+
+<InfoBox type="info" title="Default is Server">
+In Next.js App Router, components are Server Components by default. You only add `'use client'` when you need interactivity or browser features.
+</InfoBox>
+
+<ComponentTypeSelector showExplanations={true} />
+
+<ProgressCheckpoint section="data-fetching" xpReward={15} />
+
+## Data Fetching Made Simple
+
+One of the best things about Server Components is how easy data fetching becomes. No more useEffect + useState dance!
+
+```jsx
+// ❌ Old way (Client Component)
+'use client';
+function OldWay() {
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  
+  useEffect(() => {
+    fetch('/api/posts')
+      .then(res => res.json())
+      .then(data => {
+        setPosts(data);
+        setLoading(false);
+      });
+  }, []);
+  
+  if (loading) return <p>Loading...</p>;
+  return <PostList posts={posts} />;
+}
+
+// ✅ New way (Server Component)
+async function NewWay() {
+  const posts = await db.posts.findMany();
+  return <PostList posts={posts} />;
+}
+```
+
+<KeyConcept title="No Loading States Needed">
+Server Components fetch data before sending HTML to the browser. The user sees the content immediately - no loading spinners for the initial render!
+</KeyConcept>
+
+<ProgressCheckpoint section="streaming" xpReward={15} />
+
+## How Data Flows
+
+Watch how data flows from the server to your browser:
+
+<ServerDataFlowDiagram 
+  showStreaming={true}
+  showSuspense={true}
+  animated={true}
+/>
+
+The server:
+1. Receives your request
+2. Runs Server Components
+3. Fetches any needed data
+4. Generates HTML
+5. Streams it to your browser
+
+Your browser:
+1. Receives HTML progressively
+2. Shows content as it arrives
+3. Hydrates Client Components
+4. Page becomes interactive
+
+<ProgressCheckpoint section="server-actions" xpReward={15} />
+
+## Quick Quiz
+
+<Quiz>
+  <Question text="What is a Server Component?">
+    <Answer>A component that only works on servers</Answer>
+    <Answer correct>A component that runs on the server and sends HTML to the browser</Answer>
+    <Answer>A component that manages server state</Answer>
+    <Answer>A special type of API endpoint</Answer>
+  </Question>
+  
+  <Question text="How do you make a component run in the browser (Client Component)?">
+    <Answer>Add 'use server' at the top</Answer>
+    <Answer>Use the useState hook</Answer>
+    <Answer correct>Add 'use client' at the top of the file</Answer>
+    <Answer>Export it as default</Answer>
+  </Question>
+  
+  <Question text="Which can a Server Component do that a Client Component cannot?">
+    <Answer>Use onClick handlers</Answer>
+    <Answer>Use useState</Answer>
+    <Answer correct>Access the database directly</Answer>
+    <Answer>Render JSX</Answer>
+  </Question>
+  
+  <Question text="In Next.js App Router, what type are components by default?">
+    <Answer>Client Components</Answer>
+    <Answer correct>Server Components</Answer>
+    <Answer>Hybrid Components</Answer>
+    <Answer>Static Components</Answer>
+  </Question>
+</Quiz>
+
+<ProgressCheckpoint section="summary" xpReward={10} />
+
+---
+
+**Awesome work!** 🎉 You now understand the basics of React Server Components. Think of it like a restaurant: the kitchen (server) prepares most of the meal, and only special tableside preparations (client components) happen in the dining room (browser).
+
+In the intermediate level, we'll explore more patterns for mixing server and client components effectively!

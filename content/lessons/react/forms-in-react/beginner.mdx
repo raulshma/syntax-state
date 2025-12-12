@@ -1,0 +1,450 @@
+# Forms in React
+
+Welcome to forms! Forms are how users interact with your application - signing up, logging in, searching, and more. In React, we handle forms a bit differently than regular HTML.
+
+<InfoBox type="tip" title="The React Way">
+In React, we use "controlled components" where form inputs are controlled by React state. This gives us full control over the form data!
+</InfoBox>
+
+<ProgressCheckpoint section="introduction" xpReward={15} />
+
+## What Are Controlled Components?
+
+In regular HTML, form inputs manage their own state internally. In React, we take control by:
+
+1. Storing the input value in React state
+2. Updating state when the input changes
+3. Setting the input's value from state
+
+This creates a "single source of truth" - React state is always the authority on what the input contains.
+
+```jsx
+// The controlled component pattern
+function NameInput() {
+  const [name, setName] = useState('');  // 1. State holds the value
+  
+  return (
+    <input
+      value={name}                        // 3. Input shows state
+      onChange={(e) => setName(e.target.value)}  // 2. Changes update state
+    />
+  );
+}
+```
+
+<ControlledVsUncontrolledDemo 
+  showCode={true}
+/>
+
+<ProgressCheckpoint section="controlled-components" xpReward={15} />
+
+## Your First Controlled Input
+
+Let's build a simple controlled input step by step:
+
+```jsx
+import { useState } from 'react';
+
+function GreetingForm() {
+  // Step 1: Create state for the input value
+  const [name, setName] = useState('');
+  
+  // Step 2: Create a handler for changes
+  const handleChange = (event) => {
+    setName(event.target.value);
+  };
+  
+  return (
+    <div>
+      {/* Step 3: Connect input to state */}
+      <input
+        type="text"
+        value={name}
+        onChange={handleChange}
+        placeholder="Enter your name"
+      />
+      
+      {/* The greeting updates automatically! */}
+      <p>Hello, {name || 'stranger'}!</p>
+    </div>
+  );
+}
+```
+
+<ReactPlayground
+  initialCode={`function GreetingForm() {
+  const [name, setName] = React.useState('');
+  
+  return (
+    <div style={{ padding: '20px', maxWidth: '300px' }}>
+      <h3>Greeting Form</h3>
+      
+      <input
+        type="text"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        placeholder="Enter your name"
+        style={{
+          width: '100%',
+          padding: '10px',
+          fontSize: '16px',
+          borderRadius: '8px',
+          border: '1px solid #ddd',
+          marginBottom: '15px'
+        }}
+      />
+      
+      <p style={{ 
+        fontSize: '18px',
+        padding: '15px',
+        background: '#f0f9ff',
+        borderRadius: '8px'
+      }}>
+        Hello, {name || 'stranger'}! 👋
+      </p>
+    </div>
+  );
+}
+
+render(<GreetingForm />);`}
+  height={280}
+/>
+
+<ProgressCheckpoint section="form-inputs" xpReward={15} />
+
+## Handling Different Input Types
+
+React handles different input types similarly, with a few small differences:
+
+### Text Inputs
+
+```jsx
+<input
+  type="text"
+  value={text}
+  onChange={(e) => setText(e.target.value)}
+/>
+```
+
+### Number Inputs
+
+```jsx
+<input
+  type="number"
+  value={age}
+  onChange={(e) => setAge(Number(e.target.value))}
+/>
+```
+
+### Checkboxes (use `checked` instead of `value`)
+
+```jsx
+<input
+  type="checkbox"
+  checked={isSubscribed}
+  onChange={(e) => setIsSubscribed(e.target.checked)}
+/>
+```
+
+### Select Dropdowns
+
+```jsx
+<select value={color} onChange={(e) => setColor(e.target.value)}>
+  <option value="red">Red</option>
+  <option value="blue">Blue</option>
+  <option value="green">Green</option>
+</select>
+```
+
+<ReactPlayground
+  initialCode={`function MultiInputForm() {
+  const [formData, setFormData] = React.useState({
+    name: '',
+    age: 18,
+    color: 'blue',
+    subscribe: false
+  });
+  
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value
+    }));
+  };
+  
+  return (
+    <div style={{ padding: '20px', maxWidth: '300px' }}>
+      <h3>Profile Form</h3>
+      
+      <div style={{ marginBottom: '15px' }}>
+        <label style={{ display: 'block', marginBottom: '5px' }}>Name</label>
+        <input
+          type="text"
+          name="name"
+          value={formData.name}
+          onChange={handleChange}
+          style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ddd' }}
+        />
+      </div>
+      
+      <div style={{ marginBottom: '15px' }}>
+        <label style={{ display: 'block', marginBottom: '5px' }}>Age</label>
+        <input
+          type="number"
+          name="age"
+          value={formData.age}
+          onChange={handleChange}
+          style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ddd' }}
+        />
+      </div>
+      
+      <div style={{ marginBottom: '15px' }}>
+        <label style={{ display: 'block', marginBottom: '5px' }}>Favorite Color</label>
+        <select
+          name="color"
+          value={formData.color}
+          onChange={handleChange}
+          style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ddd' }}
+        >
+          <option value="red">Red</option>
+          <option value="blue">Blue</option>
+          <option value="green">Green</option>
+        </select>
+      </div>
+      
+      <div style={{ marginBottom: '15px' }}>
+        <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <input
+            type="checkbox"
+            name="subscribe"
+            checked={formData.subscribe}
+            onChange={handleChange}
+          />
+          Subscribe to newsletter
+        </label>
+      </div>
+      
+      <pre style={{ 
+        padding: '10px', 
+        background: '#1e1e1e', 
+        color: '#d4d4d4',
+        borderRadius: '8px',
+        fontSize: '12px'
+      }}>
+        {JSON.stringify(formData, null, 2)}
+      </pre>
+    </div>
+  );
+}
+
+render(<MultiInputForm />);`}
+  height={500}
+/>
+
+<ProgressCheckpoint section="validation" xpReward={15} />
+
+## Handling Form Submission
+
+When a form is submitted, we need to:
+1. Prevent the default browser behavior (page reload)
+2. Process the form data
+
+```jsx
+function LoginForm() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  
+  const handleSubmit = (event) => {
+    event.preventDefault();  // Stop page reload!
+    
+    // Now do something with the data
+    console.log('Logging in with:', email, password);
+  };
+  
+  return (
+    <form onSubmit={handleSubmit}>
+      <input
+        type="email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+      />
+      <input
+        type="password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+      />
+      <button type="submit">Log In</button>
+    </form>
+  );
+}
+```
+
+<KeyConcept title="Always Prevent Default!">
+Without `event.preventDefault()`, the browser will reload the page when the form submits - losing all your React state!
+</KeyConcept>
+
+<ReactPlayground
+  initialCode={`function ContactForm() {
+  const [formData, setFormData] = React.useState({
+    name: '',
+    email: '',
+    message: ''
+  });
+  const [submitted, setSubmitted] = React.useState(false);
+  
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+  
+  const handleSubmit = (e) => {
+    e.preventDefault();  // Prevent page reload
+    console.log('Form submitted:', formData);
+    setSubmitted(true);
+  };
+  
+  if (submitted) {
+    return (
+      <div style={{ padding: '20px', textAlign: 'center' }}>
+        <h3 style={{ color: '#22c55e' }}>✅ Message Sent!</h3>
+        <p>Thanks, {formData.name}!</p>
+        <button 
+          onClick={() => {
+            setSubmitted(false);
+            setFormData({ name: '', email: '', message: '' });
+          }}
+          style={{ padding: '10px 20px', cursor: 'pointer' }}
+        >
+          Send Another
+        </button>
+      </div>
+    );
+  }
+  
+  return (
+    <form onSubmit={handleSubmit} style={{ padding: '20px', maxWidth: '300px' }}>
+      <h3>Contact Us</h3>
+      
+      <div style={{ marginBottom: '15px' }}>
+        <label style={{ display: 'block', marginBottom: '5px' }}>Name</label>
+        <input
+          type="text"
+          name="name"
+          value={formData.name}
+          onChange={handleChange}
+          required
+          style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ddd' }}
+        />
+      </div>
+      
+      <div style={{ marginBottom: '15px' }}>
+        <label style={{ display: 'block', marginBottom: '5px' }}>Email</label>
+        <input
+          type="email"
+          name="email"
+          value={formData.email}
+          onChange={handleChange}
+          required
+          style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ddd' }}
+        />
+      </div>
+      
+      <div style={{ marginBottom: '15px' }}>
+        <label style={{ display: 'block', marginBottom: '5px' }}>Message</label>
+        <textarea
+          name="message"
+          value={formData.message}
+          onChange={handleChange}
+          required
+          rows={4}
+          style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ddd', resize: 'none' }}
+        />
+      </div>
+      
+      <button 
+        type="submit"
+        style={{ 
+          width: '100%', 
+          padding: '12px', 
+          background: '#3b82f6', 
+          color: 'white',
+          border: 'none',
+          borderRadius: '8px',
+          cursor: 'pointer',
+          fontSize: '16px'
+        }}
+      >
+        Send Message
+      </button>
+    </form>
+  );
+}
+
+render(<ContactForm />);`}
+  height={450}
+/>
+
+<ProgressCheckpoint section="form-submission" xpReward={15} />
+
+## Building Forms with the Form Builder
+
+Try building your own form and see the React code generated:
+
+<ReactFormBuilder 
+  showControlledPattern={true}
+/>
+
+<ProgressCheckpoint section="form-libraries" xpReward={10} />
+
+## Key Takeaways
+
+<KeyConcept title="Controlled Components">
+In React, form inputs should be "controlled" - their value comes from state, and changes update state.
+</KeyConcept>
+
+<KeyConcept title="The onChange Handler">
+Every controlled input needs an onChange handler that updates state with the new value.
+</KeyConcept>
+
+<KeyConcept title="Prevent Default on Submit">
+Always call `event.preventDefault()` in your form's onSubmit handler to prevent page reloads.
+</KeyConcept>
+
+<ProgressCheckpoint section="summary" xpReward={10} />
+
+## Quick Quiz
+
+<Quiz>
+  <Question text="What makes a form input 'controlled' in React?">
+    <Answer>It has a name attribute</Answer>
+    <Answer correct>Its value is controlled by React state</Answer>
+    <Answer>It uses the required attribute</Answer>
+    <Answer>It has an id attribute</Answer>
+  </Question>
+  
+  <Question text="Which property do you use for checkbox inputs instead of 'value'?">
+    <Answer>selected</Answer>
+    <Answer>active</Answer>
+    <Answer correct>checked</Answer>
+    <Answer>enabled</Answer>
+  </Question>
+  
+  <Question text="Why do we call event.preventDefault() in form submission?">
+    <Answer>To validate the form</Answer>
+    <Answer>To clear the form</Answer>
+    <Answer correct>To prevent the page from reloading</Answer>
+    <Answer>To submit the form faster</Answer>
+  </Question>
+  
+  <Question text="What event handler do you use to track input changes?">
+    <Answer>onInput</Answer>
+    <Answer>onUpdate</Answer>
+    <Answer correct>onChange</Answer>
+    <Answer>onModify</Answer>
+  </Question>
+</Quiz>
+
+---
+
+**Great job!** 🎉 You now understand the basics of forms in React. In the intermediate level, we'll explore validation, handling multiple inputs efficiently, and form libraries.

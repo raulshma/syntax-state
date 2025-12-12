@@ -1,0 +1,274 @@
+# Context API
+
+Welcome to React Context! Have you ever had to pass props through many layers of components just to get data to a deeply nested child? That's called "prop drilling," and Context is here to save the day!
+
+<InfoBox type="tip" title="The Broadcasting Analogy">
+Think of Context like a radio station. The **Provider** is the radio tower broadcasting a signal, and **Consumers** are radios tuned to that station. Any radio in range can receive the signal directly - no need to pass it through intermediaries!
+</InfoBox>
+
+<ProgressCheckpoint section="introduction" xpReward={15} />
+
+## The Problem: Prop Drilling
+
+Imagine you have a theme setting at the top of your app, but you need it in a deeply nested component:
+
+```jsx
+// Without Context - Prop Drilling 😫
+function App() {
+  const [theme, setTheme] = useState('dark');
+  return <Layout theme={theme} />;
+}
+
+function Layout({ theme }) {
+  return <Sidebar theme={theme} />;
+}
+
+function Sidebar({ theme }) {
+  return <Menu theme={theme} />;
+}
+
+function Menu({ theme }) {
+  return <MenuItem theme={theme} />;  // Finally using it!
+}
+```
+
+Every component in the chain needs to pass `theme` down, even if they don't use it themselves. This is tedious and error-prone!
+
+<KeyConcept title="What is Prop Drilling?">
+Prop drilling is when you pass props through multiple layers of components that don't need them, just to get data to a deeply nested component.
+</KeyConcept>
+
+<ProgressCheckpoint section="creating-context" xpReward={15} />
+
+## The Solution: React Context
+
+Context lets you "broadcast" data to any component in the tree, no matter how deep:
+
+```jsx
+// With Context - Clean and Simple! 🎉
+import { createContext, useContext, useState } from 'react';
+
+// 1. Create a Context
+const ThemeContext = createContext();
+
+// 2. Wrap your app with a Provider
+function App() {
+  const [theme, setTheme] = useState('dark');
+  return (
+    <ThemeContext.Provider value={{ theme, setTheme }}>
+      <Layout />
+    </ThemeContext.Provider>
+  );
+}
+
+// 3. Use the context anywhere!
+function MenuItem() {
+  const { theme } = useContext(ThemeContext);
+  return <div className={theme}>Menu Item</div>;
+}
+```
+
+<ContextFlowDiagram 
+  animated={true}
+  autoPlay={false}
+/>
+
+<ProgressCheckpoint section="provider-consumer" xpReward={15} />
+
+## Three Steps to Use Context
+
+### Step 1: Create the Context
+
+```jsx
+import { createContext } from 'react';
+
+// Create a context with an optional default value
+const ThemeContext = createContext('light');
+```
+
+### Step 2: Provide the Context
+
+Wrap the part of your app that needs access to the context:
+
+```jsx
+function App() {
+  const [theme, setTheme] = useState('dark');
+  
+  return (
+    <ThemeContext.Provider value={theme}>
+      {/* All children can now access theme */}
+      <Header />
+      <Main />
+      <Footer />
+    </ThemeContext.Provider>
+  );
+}
+```
+
+### Step 3: Consume the Context
+
+Use `useContext` to read the value anywhere in the tree:
+
+```jsx
+function Header() {
+  const theme = useContext(ThemeContext);
+  
+  return (
+    <header className={theme === 'dark' ? 'bg-black' : 'bg-white'}>
+      Current theme: {theme}
+    </header>
+  );
+}
+```
+
+<ProgressCheckpoint section="usecontext-hook" xpReward={15} />
+
+## Interactive Demo
+
+Try changing the context values and watch how all consumers update instantly:
+
+<ContextProviderSimulator 
+  initialTheme="light"
+  initialUser="Alice"
+/>
+
+<ProgressCheckpoint section="context-patterns" xpReward={15} />
+
+## Common Use Cases
+
+Context is perfect for:
+
+1. **Themes** - Light/dark mode across your app
+2. **User Authentication** - Current user info everywhere
+3. **Language/Locale** - Internationalization settings
+4. **UI State** - Sidebar open/closed, modal visibility
+
+<ReactPlayground
+  initialCode={`// Theme Context Example
+const ThemeContext = React.createContext();
+
+function ThemeProvider({ children }) {
+  const [theme, setTheme] = React.useState('light');
+  
+  const toggleTheme = () => {
+    setTheme(t => t === 'light' ? 'dark' : 'light');
+  };
+  
+  return (
+    <ThemeContext.Provider value={{ theme, toggleTheme }}>
+      {children}
+    </ThemeContext.Provider>
+  );
+}
+
+function ThemedButton() {
+  const { theme, toggleTheme } = React.useContext(ThemeContext);
+  
+  return (
+    <button
+      onClick={toggleTheme}
+      style={{
+        padding: '12px 24px',
+        fontSize: '16px',
+        cursor: 'pointer',
+        borderRadius: '8px',
+        border: 'none',
+        background: theme === 'dark' ? '#333' : '#fff',
+        color: theme === 'dark' ? '#fff' : '#333',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+      }}
+    >
+      Current: {theme} (Click to toggle)
+    </button>
+  );
+}
+
+function ThemedCard() {
+  const { theme } = React.useContext(ThemeContext);
+  
+  return (
+    <div style={{
+      padding: '20px',
+      marginTop: '15px',
+      borderRadius: '12px',
+      background: theme === 'dark' ? '#1a1a2e' : '#f8f9fa',
+      color: theme === 'dark' ? '#fff' : '#333',
+      border: '1px solid ' + (theme === 'dark' ? '#333' : '#ddd')
+    }}>
+      <h3>Themed Card</h3>
+      <p>This card automatically uses the theme from context!</p>
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <ThemeProvider>
+      <div style={{ padding: '20px' }}>
+        <h2>Theme Context Demo</h2>
+        <ThemedButton />
+        <ThemedCard />
+      </div>
+    </ThemeProvider>
+  );
+}
+
+render(<App />);`}
+  height={350}
+/>
+
+<ProgressCheckpoint section="performance" xpReward={15} />
+
+## Key Rules to Remember
+
+<KeyConcept title="Provider Must Wrap Consumers">
+Components can only access context if they're inside the Provider. If you try to use context outside a Provider, you'll get the default value (or undefined).
+</KeyConcept>
+
+<KeyConcept title="Nearest Provider Wins">
+If you have nested Providers, a component uses the value from the nearest Provider above it in the tree.
+</KeyConcept>
+
+<KeyConcept title="Updates Propagate Automatically">
+When the Provider's value changes, all consumers automatically re-render with the new value.
+</KeyConcept>
+
+<ProgressCheckpoint section="summary" xpReward={10} />
+
+## Quick Quiz
+
+<Quiz>
+  <Question text="What problem does React Context solve?">
+    <Answer>Making components faster</Answer>
+    <Answer correct>Avoiding prop drilling through many component layers</Answer>
+    <Answer>Replacing useState</Answer>
+    <Answer>Handling form submissions</Answer>
+  </Question>
+  
+  <Question text="What are the three main parts of using Context?">
+    <Answer>useState, useEffect, useContext</Answer>
+    <Answer correct>createContext, Provider, useContext</Answer>
+    <Answer>import, export, render</Answer>
+    <Answer>state, props, children</Answer>
+  </Question>
+  
+  <Question text="Where must consumer components be located?">
+    <Answer>At the top of the component tree</Answer>
+    <Answer>In a separate file</Answer>
+    <Answer correct>Inside (below) the Provider in the component tree</Answer>
+    <Answer>Anywhere in the application</Answer>
+  </Question>
+  
+  <Question text="What happens when a Provider's value changes?">
+    <Answer>Nothing, you must manually refresh</Answer>
+    <Answer>Only the Provider re-renders</Answer>
+    <Answer correct>All consuming components automatically re-render</Answer>
+    <Answer>The app crashes</Answer>
+  </Question>
+</Quiz>
+
+<ProgressCheckpoint section="summary" xpReward={10} />
+
+---
+
+**Great job!** 🎉 You now understand the basics of React Context. In the intermediate level, we'll explore context composition, performance considerations, and common patterns like theme and auth contexts.

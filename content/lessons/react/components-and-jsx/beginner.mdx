@@ -1,0 +1,424 @@
+# Components and JSX
+
+Welcome to React! React is a powerful library for building user interfaces. Think of it as a way to create interactive, dynamic web pages by breaking them down into smaller, reusable pieces called **components**.
+
+Imagine you're building with LEGO blocks. Each block is a small, self-contained piece that you can combine with other blocks to create something amazing. That's exactly how React components work!
+
+<InfoBox type="tip" title="Why React?">
+React makes it easy to build complex user interfaces by breaking them into small, manageable pieces. Each piece (component) handles its own logic and appearance, making your code easier to understand and maintain.
+</InfoBox>
+
+<ProgressCheckpoint section="introduction" xpReward={15} />
+
+## What Are Components?
+
+A **component** is like a LEGO block for your website. Just like LEGO blocks:
+
+- Each component is a **self-contained piece** with its own look and behavior
+- Components can be **combined** to build bigger things
+- You can **reuse** the same component multiple times
+- Components can **contain other components** (nesting)
+
+### Real-World Example
+
+Think about a social media feed. It's made up of many components:
+
+```
+Feed Page
+├── Header (logo, navigation, search)
+├── Post (repeated many times)
+│   ├── UserAvatar
+│   ├── PostContent
+│   ├── LikeButton
+│   └── CommentSection
+└── Footer
+```
+
+Each of these is a separate component that can be built and tested independently!
+
+<ComponentTreeVisualizer 
+  code={`function App() {
+  return (
+    <div className="app">
+      <Header />
+      <PostList>
+        <Post />
+        <Post />
+      </PostList>
+      <Footer />
+    </div>
+  );
+}
+
+function Header() {
+  return <header><h1>My App</h1></header>;
+}
+
+function PostList({ children }) {
+  return <main>{children}</main>;
+}
+
+function Post() {
+  return <article>Post content</article>;
+}
+
+function Footer() {
+  return <footer>© 2024</footer>;
+}`}
+  showProps={false}
+/>
+
+<ProgressCheckpoint section="what-are-components" xpReward={15} />
+
+## Creating Your First Component
+
+In React, a component is just a **JavaScript function** that returns what should appear on screen. Here's the simplest component:
+
+```jsx
+function Greeting() {
+  return <h1>Hello, World!</h1>;
+}
+```
+
+That's it! A function that returns some HTML-like code. Let's break it down:
+
+1. **Function name starts with a capital letter** - This tells React it's a component
+2. **Returns JSX** - The HTML-like syntax inside the return statement
+3. **Can be used like an HTML tag** - `<Greeting />`
+
+<KeyConcept title="Component Names Must Start with a Capital Letter">
+React uses the capital letter to distinguish between components (`<Greeting />`) and regular HTML elements (`<div>`). Always capitalize your component names!
+</KeyConcept>
+
+### Try It Yourself!
+
+<ReactPlayground
+  initialCode={`// Your first React component!
+function Greeting() {
+  return <h1>Hello, World!</h1>;
+}
+
+// Render it to see the result
+render(<Greeting />);`}
+  height={200}
+/>
+
+<ProgressCheckpoint section="jsx-basics" xpReward={15} />
+
+## What is JSX?
+
+JSX stands for **JavaScript XML**. It's a special syntax that lets you write HTML-like code inside JavaScript. It looks like HTML, but it's actually JavaScript!
+
+```jsx
+// This is JSX
+const element = <h1>Hello, World!</h1>;
+
+// It gets transformed into this JavaScript
+const element = React.createElement('h1', null, 'Hello, World!');
+```
+
+### JSX Rules to Remember
+
+1. **Return a single parent element**
+```jsx
+// ❌ Wrong - multiple elements
+return (
+  <h1>Title</h1>
+  <p>Paragraph</p>
+);
+
+// ✅ Correct - wrapped in a parent
+return (
+  <div>
+    <h1>Title</h1>
+    <p>Paragraph</p>
+  </div>
+);
+```
+
+2. **Close all tags** (even self-closing ones)
+```jsx
+// ❌ Wrong
+<img src="photo.jpg">
+<input type="text">
+
+// ✅ Correct
+<img src="photo.jpg" />
+<input type="text" />
+```
+
+3. **Use `className` instead of `class`**
+```jsx
+// ❌ Wrong (class is a reserved word in JavaScript)
+<div class="container">
+
+// ✅ Correct
+<div className="container">
+```
+
+<JsxTransformer 
+  jsx={`<div className="card">
+  <h2>Welcome!</h2>
+  <p>This is JSX</p>
+</div>`}
+  animated={true}
+/>
+
+<ProgressCheckpoint section="component-composition" xpReward={15} />
+
+## Using JavaScript in JSX
+
+One of the coolest things about JSX is that you can put JavaScript expressions inside it using **curly braces** `{}`.
+
+```jsx
+function UserGreeting() {
+  const name = "Alice";
+  const age = 25;
+  
+  return (
+    <div>
+      <h1>Hello, {name}!</h1>
+      <p>You are {age} years old.</p>
+      <p>Next year you'll be {age + 1}!</p>
+    </div>
+  );
+}
+```
+
+### What Can Go Inside `{}`?
+
+- **Variables**: `{name}`
+- **Math**: `{2 + 2}`
+- **Function calls**: `{getName()}`
+- **Ternary expressions**: `{isLoggedIn ? "Welcome" : "Please log in"}`
+
+<ReactPlayground
+  initialCode={`function UserCard() {
+  const name = "React Learner";
+  const level = "Beginner";
+  const xp = 150;
+  
+  return (
+    <div style={{ 
+      padding: '20px', 
+      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      borderRadius: '12px',
+      color: 'white'
+    }}>
+      <h2>👋 Hello, {name}!</h2>
+      <p>Level: {level}</p>
+      <p>XP: {xp} points</p>
+      <p>Progress: {Math.round(xp / 10)}%</p>
+    </div>
+  );
+}
+
+render(<UserCard />);`}
+  height={280}
+/>
+
+<ProgressCheckpoint section="conditional-rendering" xpReward={15} />
+
+## Props: Passing Data to Components
+
+**Props** (short for "properties") are how you pass data from a parent component to a child component. Think of them like function arguments!
+
+```jsx
+// Parent passes data via props
+<Greeting name="Alice" />
+
+// Child receives props
+function Greeting(props) {
+  return <h1>Hello, {props.name}!</h1>;
+}
+
+// Or use destructuring (cleaner!)
+function Greeting({ name }) {
+  return <h1>Hello, {name}!</h1>;
+}
+```
+
+### Props Make Components Reusable
+
+Instead of creating separate components for each user, you create ONE component and pass different data:
+
+```jsx
+<UserCard name="Alice" role="Developer" />
+<UserCard name="Bob" role="Designer" />
+<UserCard name="Charlie" role="Manager" />
+```
+
+<ReactPlayground
+  initialCode={`// A reusable Button component
+function Button({ text, color }) {
+  return (
+    <button style={{
+      padding: '10px 20px',
+      backgroundColor: color,
+      color: 'white',
+      border: 'none',
+      borderRadius: '8px',
+      cursor: 'pointer',
+      margin: '5px'
+    }}>
+      {text}
+    </button>
+  );
+}
+
+// Use the same component with different props!
+function App() {
+  return (
+    <div>
+      <Button text="Save" color="#22c55e" />
+      <Button text="Cancel" color="#ef4444" />
+      <Button text="Edit" color="#3b82f6" />
+    </div>
+  );
+}
+
+render(<App />);`}
+  height={200}
+/>
+
+<ProgressCheckpoint section="lists-and-keys" xpReward={15} />
+
+## Nesting Components
+
+Components can contain other components, just like HTML elements can contain other elements. This is called **composition**.
+
+```jsx
+function App() {
+  return (
+    <div>
+      <Header />
+      <MainContent />
+      <Footer />
+    </div>
+  );
+}
+
+function Header() {
+  return (
+    <header>
+      <Logo />
+      <Navigation />
+    </header>
+  );
+}
+```
+
+### Building a Complete Example
+
+<ReactPlayground
+  initialCode={`// Small, focused components
+function Avatar({ name }) {
+  const initial = name.charAt(0).toUpperCase();
+  return (
+    <div style={{
+      width: '40px',
+      height: '40px',
+      borderRadius: '50%',
+      background: '#8b5cf6',
+      color: 'white',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      fontWeight: 'bold'
+    }}>
+      {initial}
+    </div>
+  );
+}
+
+function UserInfo({ name, role }) {
+  return (
+    <div>
+      <strong>{name}</strong>
+      <p style={{ margin: 0, color: '#666', fontSize: '14px' }}>{role}</p>
+    </div>
+  );
+}
+
+// Compose them together!
+function UserCard({ name, role }) {
+  return (
+    <div style={{
+      display: 'flex',
+      alignItems: 'center',
+      gap: '12px',
+      padding: '16px',
+      background: '#f8fafc',
+      borderRadius: '12px',
+      border: '1px solid #e2e8f0'
+    }}>
+      <Avatar name={name} />
+      <UserInfo name={name} role={role} />
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+      <UserCard name="Alice" role="Frontend Developer" />
+      <UserCard name="Bob" role="UX Designer" />
+    </div>
+  );
+}
+
+render(<App />);`}
+  height={320}
+/>
+
+<ProgressCheckpoint section="summary" xpReward={10} />
+
+## Key Takeaways
+
+<KeyConcept title="Components = LEGO Blocks">
+Components are reusable pieces of UI. Build small components and combine them to create complex interfaces.
+</KeyConcept>
+
+<KeyConcept title="JSX = HTML in JavaScript">
+JSX lets you write HTML-like code in JavaScript. Use `{}` to embed JavaScript expressions.
+</KeyConcept>
+
+<KeyConcept title="Props = Component Arguments">
+Props let you pass data to components, making them reusable with different content.
+</KeyConcept>
+
+## Quick Quiz
+
+<Quiz>
+  <Question text="What must a React component name start with?">
+    <Answer>A lowercase letter</Answer>
+    <Answer correct>A capital letter</Answer>
+    <Answer>An underscore</Answer>
+    <Answer>A number</Answer>
+  </Question>
+  
+  <Question text="How do you embed JavaScript in JSX?">
+    <Answer>Using parentheses ()</Answer>
+    <Answer>Using square brackets []</Answer>
+    <Answer correct>Using curly braces {}</Answer>
+    <Answer>Using angle brackets <></Answer>
+  </Question>
+  
+  <Question text="What attribute do you use for CSS classes in JSX?">
+    <Answer>class</Answer>
+    <Answer correct>className</Answer>
+    <Answer>cssClass</Answer>
+    <Answer>style</Answer>
+  </Question>
+  
+  <Question text="What are props in React?">
+    <Answer>CSS properties</Answer>
+    <Answer>HTML attributes only</Answer>
+    <Answer correct>Data passed from parent to child components</Answer>
+    <Answer>Internal component state</Answer>
+  </Question>
+</Quiz>
+
+---
+
+**Great job!** 🎉 You've learned the fundamentals of React components and JSX. In the intermediate level, we'll explore component composition patterns, conditional rendering, and working with lists.

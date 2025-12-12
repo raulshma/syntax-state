@@ -1,0 +1,579 @@
+# React Router (Navigation) - Advanced
+
+Let's explore advanced React Router patterns: route guards for authentication, lazy loading for performance, data loaders, and error handling.
+
+<InfoBox type="warning" title="Prerequisites">
+This lesson covers advanced patterns. Make sure you're comfortable with nested routes, `useNavigate`, `useParams`, and `useSearchParams` before continuing.
+</InfoBox>
+
+<ProgressCheckpoint section="introduction" xpReward={15} />
+
+## Route Guards: Protecting Routes
+
+Many apps need to restrict access to certain routes. Here's how to implement authentication guards:
+
+### Basic Protected Route Pattern
+
+```jsx
+import { Navigate, useLocation } from 'react-router-dom';
+
+function ProtectedRoute({ children }) {
+  const { user } = useAuth(); // Your auth hook
+  const location = useLocation();
+  
+  if (!user) {
+    // Redirect to login, saving the attempted URL
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+  
+  return children;
+}
+
+// Usage
+<Route 
+  path="/dashboard" 
+  element={
+    <ProtectedRoute>
+      <Dashboard />
+    </ProtectedRoute>
+  } 
+/>
+```
+
+### Role-Based Access Control
+
+```jsx
+function RequireRole({ children, allowedRoles }) {
+  const { user } = useAuth();
+  const location = useLocation();
+  
+  if (!user) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+  
+  if (!allowedRoles.includes(user.role)) {
+    return <Navigate to="/unauthorized" replace />;
+  }
+  
+  return children;
+}
+
+// Usage
+<Route 
+  path="/admin" 
+  element={
+    <RequireRole allowedRoles={['admin', 'superadmin']}>
+      <AdminPanel />
+    </RequireRole>
+  } 
+/>
+```
+
+### Redirect After Login
+
+```jsx
+function LoginPage() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  
+  // Get the page they tried to visit
+  const from = location.state?.from?.pathname || '/dashboard';
+  
+  const handleLogin = async (credentials) => {
+    await login(credentials);
+    // Send them back to where they came from
+    navigate(from, { replace: true });
+  };
+  
+  return <LoginForm onSubmit={handleLogin} />;
+}
+```
+
+<KeyConcept title="The Navigate Component">
+`<Navigate>` is the component version of `useNavigate()`. Use it for declarative redirects in JSX. The `replace` prop prevents adding to history.
+</KeyConcept>
+
+<ProgressCheckpoint section="basic-routing" xpReward={15} />
+
+## Lazy Loading Routes
+
+Large apps benefit from code splitting. Load route components only when needed:
+
+```jsx
+import { lazy, Suspense } from 'react';
+
+// Lazy load components
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const Settings = lazy(() => import('./pages/Settings'));
+const Analytics = lazy(() => import('./pages/Analytics'));
+
+function App() {
+  return (
+    <BrowserRouter>
+      <Suspense fallback={<LoadingSpinner />}>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="/analytics" element={<Analytics />} />
+        </Routes>
+      </Suspense>
+    </BrowserRouter>
+  );
+}
+```
+
+### Route-Level Suspense
+
+For more granular loading states:
+
+```jsx
+function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route 
+          path="/dashboard" 
+          element={
+            <Suspense fallback={<DashboardSkeleton />}>
+              <Dashboard />
+            </Suspense>
+          } 
+        />
+        <Route 
+          path="/analytics" 
+          element={
+            <Suspense fallback={<AnalyticsSkeleton />}>
+              <Analytics />
+            </Suspense>
+          } 
+        />
+      </Routes>
+    </BrowserRouter>
+  );
+}
+```
+
+<ProgressCheckpoint section="route-parameters" xpReward={15} />
+
+## Data Loading with Loaders (React Router 6.4+)
+
+React Router 6.4 introduced data APIs for loading data before rendering:
+
+```jsx
+import { 
+  createBrowserRouter, 
+  RouterProvider,
+  useLoaderData 
+} from 'react-router-dom';
+
+// Define loader function
+async function productLoader({ params }) {
+  const response = await fetch(`/api/products/${params.productId}`);
+  if (!response.ok) {
+    throw new Response('Product not found', { status: 404 });
+  }
+  return response.json();
+}
+
+// Use in component
+function ProductDetail() {
+  const product = useLoaderData();
+  
+  return (
+    <div>
+      <h1>{product.name}</h1>
+      <p>{product.description}</p>
+      <span>${product.price}</span>
+    </div>
+  );
+}
+
+// Create router with loaders
+const router = createBrowserRouter([
+  {
+    path: '/',
+    element: <Layout />,
+    children: [
+      { path: '/', element: <Home /> },
+      { 
+        path: 'products/:productId', 
+        element: <ProductDetail />,
+        loader: productLoader,
+        errorElement: <ProductError />
+      }
+    ]
+  }
+]);
+
+function App() {
+  return <RouterProvider router={router} />;
+}
+```
+
+### Parallel Data Loading
+
+Loaders run in parallel for nested routes:
+
+```jsx
+const router = createBrowserRouter([
+  {
+    path: '/dashboard',
+    element: <DashboardLayout />,
+    loader: dashboardLoader, // Loads user data
+    children: [
+      {
+        path: 'analytics',
+        element: <Analytics />,
+        loader: analyticsLoader // Runs in parallel!
+      }
+    ]
+  }
+]);
+```
+
+<ProgressCheckpoint section="nested-routes" xpReward={15} />
+
+## Actions for Mutations
+
+Handle form submissions and mutations with actions:
+
+```jsx
+import { Form, useActionData, redirect } from 'react-router-dom';
+
+// Action function
+async function createProductAction({ request }) {
+  const formData = await request.formData();
+  const product = Object.fromEntries(formData);
+  
+  const response = await fetch('/api/products', {
+    method: 'POST',
+    body: JSON.stringify(product)
+  });
+  
+  if (!response.ok) {
+    return { error: 'Failed to create product' };
+  }
+  
+  return redirect('/products');
+}
+
+// Component with Form
+function NewProduct() {
+  const actionData = useActionData();
+  
+  return (
+    <Form method="post">
+      {actionData?.error && <p className="error">{actionData.error}</p>}
+      
+      <input name="name" placeholder="Product name" required />
+      <textarea name="description" placeholder="Description" />
+      <input name="price" type="number" step="0.01" required />
+      
+      <button type="submit">Create Product</button>
+    </Form>
+  );
+}
+
+// Router config
+{
+  path: 'products/new',
+  element: <NewProduct />,
+  action: createProductAction
+}
+```
+
+<KeyConcept title="Form vs form">
+React Router's `<Form>` component intercepts submissions and calls your action. Regular `<form>` causes a full page reload.
+</KeyConcept>
+
+<ProgressCheckpoint section="navigation" xpReward={15} />
+
+## Error Handling
+
+Handle errors gracefully with error boundaries:
+
+```jsx
+import { useRouteError, isRouteErrorResponse } from 'react-router-dom';
+
+function ErrorBoundary() {
+  const error = useRouteError();
+  
+  if (isRouteErrorResponse(error)) {
+    // Handle HTTP errors from loaders
+    if (error.status === 404) {
+      return <NotFoundPage />;
+    }
+    if (error.status === 401) {
+      return <UnauthorizedPage />;
+    }
+    return <ErrorPage message={error.statusText} />;
+  }
+  
+  // Handle unexpected errors
+  return <ErrorPage message="Something went wrong" />;
+}
+
+// Router config
+const router = createBrowserRouter([
+  {
+    path: '/',
+    element: <Layout />,
+    errorElement: <ErrorBoundary />,
+    children: [
+      {
+        path: 'products/:id',
+        element: <ProductDetail />,
+        loader: productLoader,
+        errorElement: <ProductError /> // Route-specific error
+      }
+    ]
+  }
+]);
+```
+
+<ProgressCheckpoint section="route-guards" xpReward={15} />
+
+## Advanced Patterns
+
+### Scroll Restoration
+
+```jsx
+import { ScrollRestoration } from 'react-router-dom';
+
+function Root() {
+  return (
+    <>
+      <Outlet />
+      <ScrollRestoration />
+    </>
+  );
+}
+```
+
+### Pending UI with useNavigation
+
+```jsx
+import { useNavigation } from 'react-router-dom';
+
+function Layout() {
+  const navigation = useNavigation();
+  const isLoading = navigation.state === 'loading';
+  
+  return (
+    <div className={isLoading ? 'loading' : ''}>
+      {isLoading && <LoadingBar />}
+      <Outlet />
+    </div>
+  );
+}
+```
+
+### Optimistic UI with useFetcher
+
+```jsx
+import { useFetcher } from 'react-router-dom';
+
+function LikeButton({ postId, initialLikes }) {
+  const fetcher = useFetcher();
+  
+  // Optimistic update
+  const likes = fetcher.formData 
+    ? initialLikes + 1 
+    : initialLikes;
+  
+  return (
+    <fetcher.Form method="post" action={`/posts/${postId}/like`}>
+      <button type="submit">
+        ❤️ {likes}
+      </button>
+    </fetcher.Form>
+  );
+}
+```
+
+<ReactPlayground
+  initialCode={`// Protected Routes Example
+const { BrowserRouter, Routes, Route, Link, Navigate, useLocation, useNavigate } = ReactRouterDOM;
+
+// Simulated auth context
+const AuthContext = React.createContext(null);
+
+function AuthProvider({ children }) {
+  const [user, setUser] = React.useState(null);
+  
+  const login = (username) => {
+    setUser({ name: username, role: 'user' });
+  };
+  
+  const logout = () => setUser(null);
+  
+  return (
+    <AuthContext.Provider value={{ user, login, logout }}>
+      {children}
+    </AuthContext.Provider>
+  );
+}
+
+function useAuth() {
+  return React.useContext(AuthContext);
+}
+
+// Protected Route Component
+function ProtectedRoute({ children }) {
+  const { user } = useAuth();
+  const location = useLocation();
+  
+  if (!user) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+  
+  return children;
+}
+
+// Pages
+function Home() {
+  return (
+    <div style={{ padding: '20px' }}>
+      <h2>🏠 Home (Public)</h2>
+      <p>Anyone can see this page.</p>
+    </div>
+  );
+}
+
+function Login() {
+  const { login } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const from = location.state?.from?.pathname || '/dashboard';
+  
+  const handleLogin = () => {
+    login('Demo User');
+    navigate(from, { replace: true });
+  };
+  
+  return (
+    <div style={{ padding: '20px' }}>
+      <h2>🔐 Login</h2>
+      <p>You need to log in to access the dashboard.</p>
+      <button onClick={handleLogin} style={{ padding: '10px 20px', cursor: 'pointer' }}>
+        Log In as Demo User
+      </button>
+    </div>
+  );
+}
+
+function Dashboard() {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
+  
+  return (
+    <div style={{ padding: '20px' }}>
+      <h2>📊 Dashboard (Protected)</h2>
+      <p>Welcome, {user?.name}!</p>
+      <p>This page is only visible to logged-in users.</p>
+      <button onClick={handleLogout} style={{ padding: '10px 20px', cursor: 'pointer' }}>
+        Log Out
+      </button>
+    </div>
+  );
+}
+
+function Navigation() {
+  const { user } = useAuth();
+  
+  return (
+    <nav style={{
+      padding: '15px',
+      background: '#1a1a2e',
+      display: 'flex',
+      gap: '15px',
+      alignItems: 'center'
+    }}>
+      <Link to="/" style={{ color: '#fff' }}>Home</Link>
+      <Link to="/dashboard" style={{ color: '#fff' }}>Dashboard</Link>
+      {user && (
+        <span style={{ marginLeft: 'auto', color: '#4ade80' }}>
+          ✓ Logged in as {user.name}
+        </span>
+      )}
+    </nav>
+  );
+}
+
+function App() {
+  return (
+    <AuthProvider>
+      <BrowserRouter>
+        <Navigation />
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route 
+            path="/dashboard" 
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            } 
+          />
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
+  );
+}
+
+render(<App />);`}
+  height={450}
+/>
+
+<ProgressCheckpoint section="summary" xpReward={10} />
+
+## Quick Quiz
+
+<Quiz>
+  <Question text="What component do you use for declarative redirects in JSX?">
+    <Answer>Redirect</Answer>
+    <Answer correct>Navigate</Answer>
+    <Answer>useNavigate</Answer>
+    <Answer>Router</Answer>
+  </Question>
+  
+  <Question text="How do you implement lazy loading for route components?">
+    <Answer>Use the lazy prop on Route</Answer>
+    <Answer correct>Use React.lazy() with Suspense</Answer>
+    <Answer>Use dynamic imports in the path</Answer>
+    <Answer>Lazy loading isn't supported</Answer>
+  </Question>
+  
+  <Question text="What hook provides data loaded by a route's loader function?">
+    <Answer>useLoader</Answer>
+    <Answer>useData</Answer>
+    <Answer correct>useLoaderData</Answer>
+    <Answer>useRouteData</Answer>
+  </Question>
+  
+  <Question text="What's the purpose of the replace prop on Navigate?">
+    <Answer>Replaces the component</Answer>
+    <Answer correct>Replaces the current history entry instead of adding a new one</Answer>
+    <Answer>Replaces all routes</Answer>
+    <Answer>Replaces the URL parameters</Answer>
+  </Question>
+  
+  <Question text="Which hook helps show loading states during navigation?">
+    <Answer>useLoading</Answer>
+    <Answer>useTransition</Answer>
+    <Answer correct>useNavigation</Answer>
+    <Answer>usePending</Answer>
+  </Question>
+</Quiz>
+
+---
+
+**Outstanding work!** 🏆 You've mastered advanced React Router patterns including route guards, lazy loading, data loaders, and error handling. You're now equipped to build complex, production-ready navigation systems!

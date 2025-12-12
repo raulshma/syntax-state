@@ -1,0 +1,275 @@
+# Regular Expressions
+
+Welcome to the world of pattern matching! Regular expressions (regex) are like a superpower for finding and manipulating text. Think of them as a special search language that lets you find patterns, not just exact words.
+
+<InfoBox type="tip" title="Why Learn Regex?">
+Regular expressions are used everywhere — validating emails, searching through logs, finding and replacing text, and parsing data. Once you learn them, you'll wonder how you ever lived without them!
+</InfoBox>
+
+<ProgressCheckpoint section="introduction" xpReward={15} />
+
+## What is a Regular Expression?
+
+A **regular expression** is a sequence of characters that defines a search pattern. Instead of searching for exact text like "hello", you can search for patterns like "any word that starts with 'h' and ends with 'o'".
+
+```javascript
+// Simple string search - finds exact match
+const text = "Hello World";
+text.includes("Hello"); // true
+
+// Regex search - finds patterns
+const pattern = /Hello/;
+pattern.test(text); // true
+```
+
+<KeyConcept title="Regex Syntax">
+Regular expressions are written between forward slashes: `/pattern/`
+
+This is different from strings which use quotes: `"string"`
+</KeyConcept>
+
+<ProgressCheckpoint section="basic-patterns" xpReward={15} />
+
+## Your First Patterns
+
+### Literal Characters
+
+The simplest regex is just the text you want to find:
+
+```javascript
+const text = "The cat sat on the mat";
+
+// Find "cat"
+const pattern = /cat/;
+console.log(pattern.test(text)); // true
+
+// Find all matches with 'g' flag (global)
+const matches = text.match(/at/g);
+console.log(matches); // ['at', 'at', 'at']
+```
+
+### The Dot: Match Any Character
+
+The dot `.` matches any single character (except newline):
+
+```javascript
+const pattern = /c.t/;
+
+pattern.test("cat");  // true - c + a + t
+pattern.test("cut");  // true - c + u + t
+pattern.test("cot");  // true - c + o + t
+pattern.test("ct");   // false - needs a character between c and t
+```
+
+<InfoBox type="info" title="Special Characters">
+Some characters have special meaning in regex: `. * + ? ^ $ { } [ ] \ | ( )`
+
+To match these literally, escape them with a backslash: `\.` matches an actual dot.
+</InfoBox>
+
+<ProgressCheckpoint section="character-classes" xpReward={15} />
+
+## Character Classes
+
+Character classes let you match specific types of characters.
+
+### Built-in Character Classes
+
+```javascript
+// \d - any digit (0-9)
+/\d/.test("abc123");     // true
+/\d\d\d/.test("123");    // true (three digits)
+
+// \w - any word character (letters, digits, underscore)
+/\w/.test("hello");      // true
+/\w/.test("123");        // true
+/\w/.test("_");          // true
+
+// \s - any whitespace (space, tab, newline)
+/\s/.test("hello world"); // true (has a space)
+```
+
+### Custom Character Classes with [ ]
+
+Create your own character classes using square brackets:
+
+```javascript
+// Match any vowel
+const vowels = /[aeiou]/;
+vowels.test("hello");    // true (has 'e' and 'o')
+
+// Match any digit from 1-5
+const digits = /[1-5]/;
+digits.test("3");        // true
+digits.test("7");        // false
+
+// Match any lowercase letter
+const lowercase = /[a-z]/;
+lowercase.test("Hello"); // true (has lowercase letters)
+```
+
+<KeyConcept title="Negated Character Classes">
+Add `^` at the start of a character class to match anything EXCEPT those characters:
+
+`[^0-9]` matches any character that is NOT a digit
+</KeyConcept>
+
+<RegexTester 
+  initialPattern="[aeiou]"
+  initialText="The quick brown fox jumps over the lazy dog."
+/>
+
+<ProgressCheckpoint section="quantifiers" xpReward={15} />
+
+## Quantifiers: How Many?
+
+Quantifiers specify how many times a character or group should appear.
+
+### Basic Quantifiers
+
+```javascript
+// * - zero or more
+/ab*c/.test("ac");      // true (zero b's)
+/ab*c/.test("abc");     // true (one b)
+/ab*c/.test("abbbc");   // true (three b's)
+
+// + - one or more
+/ab+c/.test("ac");      // false (needs at least one b)
+/ab+c/.test("abc");     // true
+/ab+c/.test("abbbc");   // true
+
+// ? - zero or one (optional)
+/colou?r/.test("color");  // true (American spelling)
+/colou?r/.test("colour"); // true (British spelling)
+```
+
+### Practical Examples
+
+```javascript
+// Match a phone number pattern: 123-456-7890
+const phone = /\d\d\d-\d\d\d-\d\d\d\d/;
+phone.test("123-456-7890"); // true
+
+// Match one or more digits
+const numbers = /\d+/;
+"Price: $42".match(numbers); // ["42"]
+```
+
+<PatternBuilder 
+  testString="My phone is 555-123-4567 and email is test@example.com"
+/>
+
+<ProgressCheckpoint section="groups" xpReward={15} />
+
+## Anchors: Where to Match
+
+Anchors don't match characters — they match positions.
+
+```javascript
+// ^ - start of string
+/^Hello/.test("Hello World"); // true
+/^Hello/.test("Say Hello");   // false (Hello not at start)
+
+// $ - end of string
+/World$/.test("Hello World"); // true
+/World$/.test("World Cup");   // false (World not at end)
+
+// Combine for exact match
+/^Hello$/.test("Hello");      // true
+/^Hello$/.test("Hello World"); // false
+```
+
+<ProgressCheckpoint section="regex-methods" xpReward={15} />
+
+## JavaScript Regex Methods
+
+### Testing for a Match
+
+```javascript
+const pattern = /\d+/;
+const text = "I have 3 cats";
+
+// test() - returns true/false
+pattern.test(text); // true
+
+// match() - returns array of matches
+text.match(pattern); // ["3"]
+
+// With global flag, get all matches
+"1 cat, 2 dogs, 3 birds".match(/\d+/g); // ["1", "2", "3"]
+```
+
+### Search and Replace
+
+```javascript
+const text = "Hello World";
+
+// search() - returns index of first match
+text.search(/World/); // 6
+
+// replace() - replace matches
+text.replace(/World/, "JavaScript"); // "Hello JavaScript"
+
+// Replace all with global flag
+"cat cat cat".replace(/cat/g, "dog"); // "dog dog dog"
+```
+
+<ProgressCheckpoint section="summary" xpReward={10} />
+
+## Quick Reference
+
+<KeyConcept title="Character Classes">
+- `.` — Any character (except newline)
+- `\d` — Any digit (0-9)
+- `\w` — Any word character (a-z, A-Z, 0-9, _)
+- `\s` — Any whitespace
+- `[abc]` — Any of a, b, or c
+- `[^abc]` — NOT a, b, or c
+</KeyConcept>
+
+<KeyConcept title="Quantifiers">
+- `*` — Zero or more
+- `+` — One or more
+- `?` — Zero or one (optional)
+</KeyConcept>
+
+<KeyConcept title="Anchors">
+- `^` — Start of string
+- `$` — End of string
+</KeyConcept>
+
+## Quick Quiz
+
+<Quiz>
+  <Question text="What does the regex /\d+/ match?">
+    <Answer>Exactly one digit</Answer>
+    <Answer correct>One or more digits</Answer>
+    <Answer>Zero or more digits</Answer>
+    <Answer>The letter 'd'</Answer>
+  </Question>
+  
+  <Question text="What does the dot (.) match in a regex?">
+    <Answer>Only a literal dot</Answer>
+    <Answer>Only letters</Answer>
+    <Answer correct>Any single character except newline</Answer>
+    <Answer>Nothing - it's just a separator</Answer>
+  </Question>
+  
+  <Question text="Which regex matches 'color' and 'colour'?">
+    <Answer>/color|colour/</Answer>
+    <Answer>/colo*r/</Answer>
+    <Answer correct>/colou?r/</Answer>
+    <Answer>/colo+r/</Answer>
+  </Question>
+  
+  <Question text="What does [^0-9] match?">
+    <Answer>Any digit from 0 to 9</Answer>
+    <Answer correct>Any character that is NOT a digit</Answer>
+    <Answer>The caret symbol followed by digits</Answer>
+    <Answer>Nothing - it's invalid syntax</Answer>
+  </Question>
+</Quiz>
+
+---
+
+**Excellent work!** 🎉 You've learned the basics of regular expressions. In the intermediate level, we'll explore groups, lookahead/lookbehind, and more powerful pattern matching techniques!

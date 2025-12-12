@@ -1,0 +1,446 @@
+# Working with Arrays and Objects
+
+Welcome to the advanced level! Here we'll explore immutable data patterns, specialized collections like WeakMap and WeakSet, and functional programming techniques that will make your code more robust and maintainable.
+
+<InfoBox type="tip" title="Production-Ready Patterns">
+The patterns in this lesson are used in production codebases at companies like Facebook, Netflix, and Airbnb. They help prevent bugs and make code easier to reason about.
+</InfoBox>
+
+<ProgressCheckpoint section="introduction" xpReward={30} />
+
+## Immutable Update Patterns
+
+Immutability means never modifying existing data — instead, you create new copies with changes. This prevents bugs and makes state changes predictable.
+
+### Why Immutability Matters
+
+```javascript
+// ❌ Mutable approach - can cause bugs
+const user = { name: 'Alice', age: 25 };
+user.age = 26; // Mutates original
+
+// ✅ Immutable approach - creates new object
+const updatedUser = { ...user, age: 26 };
+// user is unchanged, updatedUser has new age
+```
+
+<KeyConcept title="Benefits of Immutability">
+- Predictable state changes
+- Easier debugging (can compare old vs new)
+- Required for React state updates
+- Enables time-travel debugging
+- Thread-safe in concurrent environments
+</KeyConcept>
+
+
+### Immutable Array Operations
+
+```javascript
+const items = [1, 2, 3, 4, 5];
+
+// ✅ Add item (immutable)
+const withNew = [...items, 6];
+
+// ✅ Remove item at index (immutable)
+const index = 2;
+const withoutThird = [
+  ...items.slice(0, index),
+  ...items.slice(index + 1)
+];
+
+// ✅ Update item at index (immutable)
+const updated = items.map((item, i) => 
+  i === index ? item * 10 : item
+);
+
+// ✅ Insert at index (immutable)
+const withInserted = [
+  ...items.slice(0, index),
+  99,
+  ...items.slice(index)
+];
+```
+
+### Immutable Nested Updates
+
+```javascript
+const state = {
+  user: {
+    name: 'Alice',
+    address: {
+      city: 'NYC',
+      zip: '10001'
+    }
+  },
+  settings: { theme: 'dark' }
+};
+
+// ✅ Update nested property immutably
+const newState = {
+  ...state,
+  user: {
+    ...state.user,
+    address: {
+      ...state.user.address,
+      city: 'LA'
+    }
+  }
+};
+```
+
+<InfoBox type="warning" title="Deep Nesting Gets Verbose">
+For deeply nested updates, consider using libraries like Immer or Immutable.js that provide cleaner syntax.
+</InfoBox>
+
+<ArrayMethodVisualizer />
+
+<ProgressCheckpoint section="array-basics" xpReward={30} />
+
+## WeakMap and WeakSet
+
+These specialized collections hold "weak" references to objects, allowing garbage collection when no other references exist.
+
+### WeakMap
+
+```javascript
+// WeakMap keys must be objects
+const cache = new WeakMap();
+
+let user = { id: 1, name: 'Alice' };
+
+// Store data associated with the object
+cache.set(user, { lastAccess: Date.now() });
+
+// Retrieve data
+console.log(cache.get(user)); // { lastAccess: ... }
+
+// When user is set to null, the entry can be garbage collected
+user = null;
+// The WeakMap entry is automatically removed!
+```
+
+### WeakMap Use Cases
+
+```javascript
+// Private data storage
+const privateData = new WeakMap();
+
+class User {
+  constructor(name, password) {
+    this.name = name;
+    // Store password privately
+    privateData.set(this, { password });
+  }
+  
+  checkPassword(input) {
+    return privateData.get(this).password === input;
+  }
+}
+
+// DOM element metadata
+const elementData = new WeakMap();
+
+function trackElement(element) {
+  elementData.set(element, {
+    clicks: 0,
+    created: Date.now()
+  });
+}
+```
+
+### WeakSet
+
+```javascript
+// Track which objects have been processed
+const processed = new WeakSet();
+
+function processOnce(obj) {
+  if (processed.has(obj)) {
+    console.log('Already processed');
+    return;
+  }
+  
+  // Process the object
+  console.log('Processing:', obj);
+  processed.add(obj);
+}
+
+const item = { id: 1 };
+processOnce(item); // Processing: { id: 1 }
+processOnce(item); // Already processed
+```
+
+<KeyConcept title="WeakMap vs Map">
+- **Map**: Keys can be any value, entries persist until deleted
+- **WeakMap**: Keys must be objects, entries auto-removed when key is garbage collected
+- Use WeakMap when you want data to be cleaned up automatically
+</KeyConcept>
+
+<ProgressCheckpoint section="array-methods" xpReward={30} />
+
+## Functional Programming Patterns
+
+### Pure Functions
+
+A pure function always returns the same output for the same input and has no side effects.
+
+```javascript
+// ✅ Pure function
+function double(x) {
+  return x * 2;
+}
+
+// ❌ Impure - modifies external state
+let total = 0;
+function addToTotal(x) {
+  total += x; // Side effect!
+  return total;
+}
+
+// ❌ Impure - depends on external state
+function getDiscount(price) {
+  return price * globalDiscountRate; // Depends on external variable
+}
+```
+
+### Function Composition
+
+```javascript
+// Small, focused functions
+const double = x => x * 2;
+const addOne = x => x + 1;
+const square = x => x * x;
+
+// Compose them together
+const compose = (...fns) => x => 
+  fns.reduceRight((acc, fn) => fn(acc), x);
+
+const transform = compose(square, addOne, double);
+// Reads right-to-left: double, then addOne, then square
+
+console.log(transform(3)); // ((3 * 2) + 1)² = 49
+```
+
+### Pipe (Left-to-Right Composition)
+
+```javascript
+const pipe = (...fns) => x => 
+  fns.reduce((acc, fn) => fn(acc), x);
+
+const process = pipe(double, addOne, square);
+// Reads left-to-right: double, then addOne, then square
+
+console.log(process(3)); // ((3 * 2) + 1)² = 49
+```
+
+<MethodChainingPlayground />
+
+<ProgressCheckpoint section="method-chaining" xpReward={30} />
+
+## Advanced Object Techniques
+
+### Object.freeze() and Object.seal()
+
+```javascript
+// Object.freeze() - completely immutable
+const frozen = Object.freeze({
+  name: 'Alice',
+  nested: { value: 1 }
+});
+
+frozen.name = 'Bob';        // Silently fails (or throws in strict mode)
+frozen.newProp = 'test';    // Silently fails
+frozen.nested.value = 2;    // ⚠️ Works! Freeze is shallow
+
+// Object.seal() - can modify, but not add/delete
+const sealed = Object.seal({ name: 'Alice' });
+sealed.name = 'Bob';        // ✅ Works
+sealed.age = 25;            // ❌ Fails
+delete sealed.name;         // ❌ Fails
+```
+
+### Property Descriptors
+
+```javascript
+const obj = {};
+
+Object.defineProperty(obj, 'id', {
+  value: 123,
+  writable: false,      // Can't change value
+  enumerable: true,     // Shows in for...in
+  configurable: false   // Can't delete or reconfigure
+});
+
+obj.id = 456;           // Silently fails
+console.log(obj.id);    // 123
+
+// Get descriptor
+console.log(Object.getOwnPropertyDescriptor(obj, 'id'));
+// { value: 123, writable: false, enumerable: true, configurable: false }
+```
+
+### Getters and Setters
+
+```javascript
+const user = {
+  firstName: 'Alice',
+  lastName: 'Smith',
+  
+  // Getter - computed property
+  get fullName() {
+    return `${this.firstName} ${this.lastName}`;
+  },
+  
+  // Setter - with validation
+  set fullName(value) {
+    const [first, last] = value.split(' ');
+    this.firstName = first;
+    this.lastName = last;
+  }
+};
+
+console.log(user.fullName);     // 'Alice Smith'
+user.fullName = 'Bob Jones';
+console.log(user.firstName);    // 'Bob'
+```
+
+<ObjectExplorer />
+
+<ProgressCheckpoint section="object-basics" xpReward={30} />
+
+## Performance Considerations
+
+### Array Method Performance
+
+```javascript
+// ❌ Multiple passes - less efficient
+const result = data
+  .filter(x => x > 0)
+  .map(x => x * 2)
+  .filter(x => x < 100);
+
+// ✅ Single pass with reduce - more efficient for large arrays
+const result = data.reduce((acc, x) => {
+  if (x > 0) {
+    const doubled = x * 2;
+    if (doubled < 100) {
+      acc.push(doubled);
+    }
+  }
+  return acc;
+}, []);
+```
+
+### Object vs Map for Lookups
+
+```javascript
+// Object - good for string keys
+const objLookup = { a: 1, b: 2, c: 3 };
+console.log(objLookup['a']); // O(1) lookup
+
+// Map - better for frequent additions/deletions
+const mapLookup = new Map([['a', 1], ['b', 2], ['c', 3]]);
+console.log(mapLookup.get('a')); // O(1) lookup
+
+// Map advantages:
+// - Any key type (objects, functions, etc.)
+// - Maintains insertion order
+// - Has .size property
+// - Better performance for frequent add/delete
+```
+
+<ProgressCheckpoint section="object-methods" xpReward={30} />
+
+## Real-World Patterns
+
+### Memoization
+
+```javascript
+function memoize(fn) {
+  const cache = new Map();
+  
+  return function(...args) {
+    const key = JSON.stringify(args);
+    
+    if (cache.has(key)) {
+      return cache.get(key);
+    }
+    
+    const result = fn.apply(this, args);
+    cache.set(key, result);
+    return result;
+  };
+}
+
+// Usage
+const expensiveCalc = memoize((n) => {
+  console.log('Computing...');
+  return n * n;
+});
+
+expensiveCalc(5); // Computing... 25
+expensiveCalc(5); // 25 (cached, no log)
+```
+
+### Deep Clone
+
+```javascript
+// Simple deep clone (works for JSON-serializable data)
+const deepClone = obj => JSON.parse(JSON.stringify(obj));
+
+// Better deep clone with structuredClone (modern browsers)
+const clone = structuredClone(originalObject);
+
+// Custom deep clone for complex objects
+function deepCloneCustom(obj, seen = new WeakMap()) {
+  if (obj === null || typeof obj !== 'object') return obj;
+  if (seen.has(obj)) return seen.get(obj); // Handle circular refs
+  
+  const clone = Array.isArray(obj) ? [] : {};
+  seen.set(obj, clone);
+  
+  for (const key of Object.keys(obj)) {
+    clone[key] = deepCloneCustom(obj[key], seen);
+  }
+  
+  return clone;
+}
+```
+
+<ProgressCheckpoint section="summary" xpReward={20} />
+
+## Quick Quiz
+
+<Quiz>
+  <Question text="What happens to WeakMap entries when their key object is garbage collected?">
+    <Answer>They remain in the WeakMap</Answer>
+    <Answer correct>They are automatically removed</Answer>
+    <Answer>They throw an error</Answer>
+    <Answer>They become null</Answer>
+  </Question>
+  
+  <Question text="What does Object.freeze() do?">
+    <Answer>Deletes all properties</Answer>
+    <Answer>Makes object deeply immutable</Answer>
+    <Answer correct>Makes object shallowly immutable</Answer>
+    <Answer>Converts object to array</Answer>
+  </Question>
+  
+  <Question text="What is a pure function?">
+    <Answer>A function with no parameters</Answer>
+    <Answer>A function that returns undefined</Answer>
+    <Answer correct>A function with no side effects that returns same output for same input</Answer>
+    <Answer>A function defined with arrow syntax</Answer>
+  </Question>
+  
+  <Question text="When should you use Map instead of a plain object?">
+    <Answer>Never, objects are always better</Answer>
+    <Answer>Only for small datasets</Answer>
+    <Answer correct>When you need non-string keys or frequent add/delete operations</Answer>
+    <Answer>Only in Node.js</Answer>
+  </Question>
+</Quiz>
+
+---
+
+**Congratulations!** 🎉 You've mastered advanced array and object techniques. These patterns will help you write more robust, maintainable, and performant JavaScript code!

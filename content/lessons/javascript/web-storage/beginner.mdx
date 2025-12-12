@@ -1,0 +1,266 @@
+# Web Storage
+
+Welcome to the world of browser storage! Have you ever wondered how websites remember your preferences, keep you logged in, or save your shopping cart? That's all thanks to web storage — your browser's built-in memory system.
+
+<InfoBox type="tip" title="Why Learn Web Storage?">
+Web storage lets you save data directly in the user's browser. This means your app can remember things even after the page refreshes, work offline, and provide a faster, more personalized experience!
+</InfoBox>
+
+<ProgressCheckpoint section="introduction" xpReward={15} />
+
+## What is Web Storage?
+
+Think of web storage like a **notebook** that your browser keeps for each website. When you visit a site, it can write notes in this notebook, and those notes stay there until someone erases them.
+
+There are two main types of web storage:
+
+1. **localStorage** — A permanent notebook (stays forever until cleared)
+2. **sessionStorage** — A temporary sticky note (disappears when you close the tab)
+
+```javascript
+// Writing to localStorage (permanent)
+localStorage.setItem('username', 'Alex');
+
+// Writing to sessionStorage (temporary)
+sessionStorage.setItem('currentPage', 'home');
+```
+
+<KeyConcept title="Key Difference">
+**localStorage** = Data stays even after closing the browser  
+**sessionStorage** = Data disappears when you close the tab
+</KeyConcept>
+
+<ProgressCheckpoint section="local-storage" xpReward={15} />
+
+## localStorage: Your Permanent Notebook
+
+localStorage is perfect for saving things you want to remember forever (or until the user clears their browser data).
+
+### Saving Data
+
+```javascript
+// Save a simple value
+localStorage.setItem('theme', 'dark');
+
+// Save a number (stored as string)
+localStorage.setItem('fontSize', '16');
+
+// Save your name
+localStorage.setItem('nickname', 'CodeMaster');
+```
+
+### Reading Data
+
+```javascript
+// Get a value back
+const theme = localStorage.getItem('theme');
+console.log(theme); // 'dark'
+
+// If the key doesn't exist, you get null
+const missing = localStorage.getItem('nonexistent');
+console.log(missing); // null
+```
+
+### Removing Data
+
+```javascript
+// Remove one item
+localStorage.removeItem('theme');
+
+// Remove EVERYTHING (be careful!)
+localStorage.clear();
+```
+
+<InfoBox type="warning" title="Strings Only!">
+localStorage can only store strings. If you try to save a number, it becomes a string. We'll learn how to save complex data later!
+</InfoBox>
+
+<CodePlayground
+  initialCode={`// Try it yourself!
+// Save your favorite color
+localStorage.setItem('favoriteColor', 'blue');
+
+// Read it back
+const color = localStorage.getItem('favoriteColor');
+console.log('Your favorite color is:', color);
+
+// Check how many items are stored
+console.log('Items in storage:', localStorage.length);`}
+  language="javascript"
+/>
+
+<ProgressCheckpoint section="session-storage" xpReward={15} />
+
+## sessionStorage: Your Temporary Sticky Note
+
+sessionStorage works exactly like localStorage, but with one big difference: it only lasts for the current browser tab session.
+
+### When to Use sessionStorage
+
+- **Form wizards** — Save progress through a multi-step form
+- **Temporary data** — Store something just for this visit
+- **Tab-specific state** — Each tab gets its own storage
+
+```javascript
+// Save the current step in a form wizard
+sessionStorage.setItem('formStep', '2');
+
+// Save temporary search results
+sessionStorage.setItem('lastSearch', 'javascript tutorials');
+
+// Read it back
+const step = sessionStorage.getItem('formStep');
+console.log('You are on step:', step);
+```
+
+<KeyConcept title="Session = Tab">
+Each browser tab has its own sessionStorage. Opening the same page in two tabs means two separate storage spaces!
+</KeyConcept>
+
+<CodePlayground
+  initialCode={`// sessionStorage demo
+// This data will disappear when you close the tab
+
+sessionStorage.setItem('visitTime', new Date().toLocaleTimeString());
+sessionStorage.setItem('pageViews', '1');
+
+console.log('You visited at:', sessionStorage.getItem('visitTime'));
+console.log('Page views:', sessionStorage.getItem('pageViews'));
+
+// In a real app, you might increment pageViews each time
+const views = parseInt(sessionStorage.getItem('pageViews')) + 1;
+sessionStorage.setItem('pageViews', views.toString());
+console.log('Updated page views:', sessionStorage.getItem('pageViews'));`}
+  language="javascript"
+/>
+
+<ProgressCheckpoint section="cookies" xpReward={15} />
+
+## A Quick Word About Cookies
+
+You might have heard of **cookies** — they're another way to store data, but they work differently:
+
+| Feature | localStorage | sessionStorage | Cookies |
+|---------|-------------|----------------|---------|
+| Size Limit | ~5MB | ~5MB | ~4KB |
+| Sent to Server | No | No | Yes, every request |
+| Expires | Never | Tab close | Configurable |
+
+<InfoBox type="info" title="When to Use Cookies">
+Cookies are mainly used for authentication (keeping you logged in) because they're automatically sent to the server with every request. For most client-side storage needs, localStorage or sessionStorage is better!
+</InfoBox>
+
+<ProgressCheckpoint section="indexed-db" xpReward={15} />
+
+## Storing Complex Data
+
+Remember how localStorage only stores strings? Here's how to save objects and arrays using JSON:
+
+```javascript
+// Saving an object
+const user = {
+  name: 'Alex',
+  age: 25,
+  hobbies: ['coding', 'gaming', 'reading']
+};
+
+// Convert to string with JSON.stringify
+localStorage.setItem('user', JSON.stringify(user));
+
+// Reading it back
+const savedUser = localStorage.getItem('user');
+const userObject = JSON.parse(savedUser);
+
+console.log(userObject.name);    // 'Alex'
+console.log(userObject.hobbies); // ['coding', 'gaming', 'reading']
+```
+
+<KeyConcept title="JSON Round-Trip">
+**Saving:** Object → JSON.stringify() → String → localStorage  
+**Loading:** localStorage → String → JSON.parse() → Object
+</KeyConcept>
+
+<CodePlayground
+  initialCode={`// Storing complex data
+const settings = {
+  theme: 'dark',
+  fontSize: 16,
+  notifications: true,
+  favoriteColors: ['blue', 'green', 'purple']
+};
+
+// Save it
+localStorage.setItem('settings', JSON.stringify(settings));
+console.log('Settings saved!');
+
+// Load it back
+const loaded = JSON.parse(localStorage.getItem('settings'));
+console.log('Theme:', loaded.theme);
+console.log('Font size:', loaded.fontSize);
+console.log('Colors:', loaded.favoriteColors.join(', '));`}
+  language="javascript"
+/>
+
+<ProgressCheckpoint section="storage-comparison" xpReward={15} />
+
+## Try It: Storage Inspector
+
+Use this interactive tool to explore what's in your browser's storage:
+
+<StorageInspector storageType="localStorage" />
+
+<StorageComparison showDetails={false} />
+
+<ProgressCheckpoint section="summary" xpReward={10} />
+
+## Quick Reference
+
+<KeyConcept title="localStorage Methods">
+- `setItem(key, value)` — Save data
+- `getItem(key)` — Read data (returns null if not found)
+- `removeItem(key)` — Delete one item
+- `clear()` — Delete everything
+- `length` — Number of items stored
+</KeyConcept>
+
+<KeyConcept title="When to Use What">
+- **localStorage** — User preferences, settings, persistent data
+- **sessionStorage** — Temporary form data, single-session state
+- **Cookies** — Authentication, server-side needs
+</KeyConcept>
+
+## Quick Quiz
+
+<Quiz>
+  <Question text="What happens to localStorage data when you close the browser?">
+    <Answer>It gets deleted</Answer>
+    <Answer correct>It stays saved</Answer>
+    <Answer>It moves to sessionStorage</Answer>
+    <Answer>It gets sent to the server</Answer>
+  </Question>
+  
+  <Question text="What data type does localStorage store?">
+    <Answer>Numbers</Answer>
+    <Answer>Objects</Answer>
+    <Answer correct>Strings</Answer>
+    <Answer>Any type</Answer>
+  </Question>
+  
+  <Question text="How do you save an object to localStorage?">
+    <Answer>localStorage.setItem('key', object)</Answer>
+    <Answer correct>localStorage.setItem('key', JSON.stringify(object))</Answer>
+    <Answer>localStorage.saveObject('key', object)</Answer>
+    <Answer>localStorage.setObject('key', object)</Answer>
+  </Question>
+  
+  <Question text="What's the main difference between localStorage and sessionStorage?">
+    <Answer>localStorage is faster</Answer>
+    <Answer>sessionStorage can store more data</Answer>
+    <Answer correct>sessionStorage clears when the tab closes</Answer>
+    <Answer>localStorage is sent to the server</Answer>
+  </Question>
+</Quiz>
+
+---
+
+**Great job!** 🎉 You've learned the basics of web storage. In the intermediate level, we'll explore storage events, cookies in detail, and more advanced patterns!
