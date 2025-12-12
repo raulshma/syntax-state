@@ -6,7 +6,8 @@ import { serialize } from 'next-mdx-remote/serialize';
 import remarkGfm from 'remark-gfm';
 import rehypeSlug from 'rehype-slug';
 import type { ExperienceLevel } from '@/lib/db/schemas/lesson-progress';
-import { objectiveToLessonSlug } from '@/lib/utils/lesson-utils';
+import type { LearningObjective } from '@/lib/db/schemas/roadmap';
+import { objectiveToLessonSlug, getObjectiveTitle, getObjectiveLessonId } from '@/lib/utils/lesson-utils';
 
 const CONTENT_DIR = path.join(process.cwd(), 'content', 'lessons');
 
@@ -106,10 +107,14 @@ export async function getLessonsForMilestone(milestoneId: string) {
 
 /**
  * Find lesson path from milestone and objective
+ * Supports both string objectives and object objectives with lessonId
  */
-export async function findLessonPath(milestoneId: string, objectiveTitle: string): Promise<string | null> {
-  const slug = objectiveToLessonSlug(objectiveTitle);
-  const possiblePath = `${milestoneId}/${slug}`;
+export async function findLessonPath(milestoneId: string, objective: LearningObjective): Promise<string | null> {
+  const objectiveTitle = getObjectiveTitle(objective);
+  const lessonId = getObjectiveLessonId(objective);
+  
+  // First try with explicit lessonId
+  const possiblePath = `${milestoneId}/${lessonId}`;
   
   if (await lessonExists(possiblePath)) {
     return possiblePath;
@@ -119,7 +124,7 @@ export async function findLessonPath(milestoneId: string, objectiveTitle: string
   const lessons = await getLessonsForMilestone(milestoneId);
   const matchingLesson = lessons.find(l => 
     l.title.toLowerCase() === objectiveTitle.toLowerCase() ||
-    l.id === slug
+    l.id === lessonId
   );
   
   return matchingLesson?.path || null;
@@ -127,6 +132,7 @@ export async function findLessonPath(milestoneId: string, objectiveTitle: string
 
 export interface ObjectiveLessonInfo {
   objective: string;
+  lessonId: string;
   hasLesson: boolean;
   lessonPath?: string;
   xpRewards?: {
@@ -143,14 +149,17 @@ export interface ObjectiveLessonInfo {
 
 /**
  * Get lesson availability info for a list of objectives
+ * Supports both string objectives and object objectives with lessonId
  */
 export async function getObjectivesWithLessons(
   milestoneId: string, 
-  objectives: string[]
+  objectives: LearningObjective[]
 ): Promise<ObjectiveLessonInfo[]> {
   const results: ObjectiveLessonInfo[] = [];
   
   for (const objective of objectives) {
+    const objectiveTitle = getObjectiveTitle(objective);
+    const lessonId = getObjectiveLessonId(objective);
     const lessonPath = await findLessonPath(milestoneId, objective);
     
     if (lessonPath) {
@@ -158,7 +167,8 @@ export async function getObjectivesWithLessons(
       
       if (metadata) {
         results.push({
-          objective,
+          objective: objectiveTitle,
+          lessonId,
           hasLesson: true,
           lessonPath,
           xpRewards: {
@@ -177,7 +187,8 @@ export async function getObjectivesWithLessons(
     }
     
     results.push({
-      objective,
+      objective: objectiveTitle,
+      lessonId,
       hasLesson: false,
     });
   }
@@ -190,7 +201,7 @@ export async function getObjectivesWithLessons(
  * Optimized to reduce file system operations
  */
 export async function getRoadmapLessonAvailability(
-  roadmap: { nodes: { id: string; learningObjectives?: string[] }[] }
+  roadmap: { nodes: { id: string; learningObjectives?: LearningObjective[] }[] }
 ): Promise<Record<string, ObjectiveLessonInfo[]>> {
   const results: Record<string, ObjectiveLessonInfo[]> = {};
   

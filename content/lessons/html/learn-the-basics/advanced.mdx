@@ -1,0 +1,281 @@
+# HTML Deep Dive: Parsing and Specification
+
+Let's explore how browsers actually parse HTML and understand the nuances of the HTML5 specification. This knowledge will help you write more robust markup and debug tricky issues.
+
+<LiveHtmlEditor />
+
+## How Browsers Parse HTML
+
+When a browser receives an HTML document, it goes through a sophisticated parsing process. Understanding this helps explain why HTML is so forgiving of errors.
+
+### The Parsing Pipeline
+
+1. **Tokenization** — The raw HTML string is converted into tokens (start tags, end tags, text, comments)
+2. **Tree Construction** — Tokens are assembled into the DOM (Document Object Model)
+3. **Error Handling** — Invalid markup is corrected using well-defined rules
+
+```
+HTML String → Tokenizer → Tokens → Tree Builder → DOM Tree
+```
+
+<DomInspector />
+
+### The Tokenizer State Machine
+
+The HTML tokenizer is a state machine with over 80 states! Here's a simplified view:
+
+```
+Data State → Tag Open State → Tag Name State → ...
+     ↓              ↓
+  Text Token    Start/End Tag Token
+```
+
+<InfoBox type="info" title="Why State Machines?">
+HTML parsing uses a state machine because the meaning of characters depends on context. A `<` in text is different from `<` starting a tag.
+</InfoBox>
+
+<ProgressCheckpoint section="introduction" xpReward={30} />
+
+## HTML Error Recovery
+
+Unlike XML, HTML parsers **never fail**. They use sophisticated error recovery algorithms defined in the specification.
+
+### Common Error Corrections
+
+**Missing closing tags:**
+```html
+<!-- Input -->
+<p>First paragraph
+<p>Second paragraph
+
+<!-- Browser interprets as -->
+<p>First paragraph</p>
+<p>Second paragraph</p>
+```
+
+**Misnested tags:**
+```html
+<!-- Input -->
+<b><i>Bold and italic</b></i>
+
+<!-- Browser interprets as -->
+<b><i>Bold and italic</i></b>
+```
+
+**Invalid nesting:**
+```html
+<!-- Input -->
+<p>Text<div>Block</div>More text</p>
+
+<!-- Browser interprets as -->
+<p>Text</p><div>Block</div>More text<p></p>
+```
+
+### The Adoption Agency Algorithm
+
+One of the most complex parts of HTML parsing handles misnested formatting elements:
+
+```html
+<p>One <b>Two <i>Three</b> Four</i> Five</p>
+```
+
+The browser uses the "adoption agency algorithm" to properly close and reopen tags, maintaining the intended formatting while creating a valid tree.
+
+<KeyConcept title="HTML is Forgiving">
+HTML parsers are designed to handle malformed markup gracefully. This is why "broken" HTML still renders — but don't rely on it!
+</KeyConcept>
+
+<ProgressCheckpoint section="building-blocks" xpReward={30} />
+
+## The HTML5 Specification
+
+The HTML5 specification (now called the HTML Living Standard) is maintained by WHATWG and defines:
+
+- **Elements and attributes** — What they mean and how they behave
+- **Parsing algorithm** — Exactly how browsers should parse HTML
+- **DOM interfaces** — JavaScript APIs for interacting with elements
+- **Rendering hints** — Default styles and behaviors
+
+### Content Categories
+
+HTML5 organizes elements into content categories:
+
+| Category | Description | Examples |
+|----------|-------------|----------|
+| **Flow** | Most elements | `<div>`, `<p>`, `<a>` |
+| **Phrasing** | Text-level | `<span>`, `<em>`, `<strong>` |
+| **Embedded** | External content | `<img>`, `<video>`, `<iframe>` |
+| **Interactive** | User interaction | `<a>`, `<button>`, `<input>` |
+| **Heading** | Section headings | `<h1>`-`<h6>`, `<hgroup>` |
+| **Sectioning** | Document outline | `<article>`, `<section>`, `<nav>` |
+| **Metadata** | Document info | `<meta>`, `<link>`, `<title>` |
+
+### Content Model Rules
+
+Each element has a **content model** that defines what it can contain:
+
+```
+<p> content model: Phrasing content
+<div> content model: Flow content
+<ul> content model: Zero or more <li> elements
+```
+
+<ElementExplorer />
+
+<ProgressCheckpoint section="document-structure" xpReward={30} />
+
+## Advanced Element Behaviors
+
+### Void Elements
+
+Some elements cannot have content and don't need closing tags:
+
+```html
+<br>
+<hr>
+<img src="photo.jpg" alt="Photo">
+<input type="text">
+<meta charset="UTF-8">
+<link rel="stylesheet" href="styles.css">
+```
+
+In XHTML/XML mode, these require self-closing syntax: `<br />`. In HTML5, both forms are valid.
+
+### Raw Text Elements
+
+`<script>` and `<style>` contain raw text — HTML entities aren't parsed:
+
+```html
+<script>
+  // This < is not a tag start
+  if (x < 5) { console.log('Less than 5'); }
+</script>
+```
+
+### Escapable Raw Text Elements
+
+`<textarea>` and `<title>` are similar but do parse character references:
+
+```html
+<textarea>&lt;p&gt;This shows as: <p></textarea>
+```
+
+<ProgressCheckpoint section="common-elements" xpReward={25} />
+
+## The Document Outline Algorithm
+
+HTML5 introduced sectioning elements that create an implicit document outline:
+
+```html
+<body>
+  <h1>Site Title</h1>           <!-- Level 1 -->
+  <article>
+    <h1>Article Title</h1>      <!-- Level 2 (inside article) -->
+    <section>
+      <h1>Section Title</h1>    <!-- Level 3 (inside section) -->
+    </section>
+  </article>
+</body>
+```
+
+<InfoBox type="warning" title="Outline Algorithm Deprecated">
+While the outline algorithm was part of the HTML5 spec, browsers never implemented it. Best practice: use explicit heading levels (h1 → h2 → h3) rather than relying on sectioning.
+</InfoBox>
+
+### Recommended Heading Structure
+
+```html
+<body>
+  <h1>Site Title</h1>
+  <article>
+    <h2>Article Title</h2>
+    <section>
+      <h3>Section Title</h3>
+    </section>
+  </article>
+</body>
+```
+
+<ProgressCheckpoint section="nesting-rules" xpReward={25} />
+
+## Performance Considerations
+
+### Parser-Blocking Scripts
+
+Scripts without `async` or `defer` block HTML parsing:
+
+```html
+<!-- Blocks parsing until loaded and executed -->
+<script src="app.js"></script>
+
+<!-- Downloads in parallel, executes after parsing -->
+<script src="app.js" defer></script>
+
+<!-- Downloads in parallel, executes when ready -->
+<script src="app.js" async></script>
+```
+
+### Speculative Parsing
+
+Modern browsers use **speculative parsing** — while waiting for a blocking script, they scan ahead for resources to preload:
+
+```html
+<script src="blocking.js"></script>
+<!-- Browser speculatively loads these while waiting -->
+<img src="image.jpg">
+<link rel="stylesheet" href="styles.css">
+```
+
+### Preload Hints
+
+Help the browser discover critical resources early:
+
+```html
+<head>
+  <link rel="preload" href="critical.css" as="style">
+  <link rel="preload" href="hero.jpg" as="image">
+  <link rel="preconnect" href="https://api.example.com">
+</head>
+```
+
+<KeyConcept title="Optimize Loading">
+Use defer for scripts, preload for critical resources, and place scripts at the end of body when possible.
+</KeyConcept>
+
+<ProgressCheckpoint section="summary" xpReward={20} />
+
+## Quick Quiz
+
+<Quiz>
+  <Question text="What happens when a browser encounters invalid HTML?">
+    <Answer>It throws an error and stops</Answer>
+    <Answer>It ignores the invalid parts</Answer>
+    <Answer correct>It uses error recovery to fix it</Answer>
+    <Answer>It asks the user what to do</Answer>
+  </Question>
+  
+  <Question text="Which element is a void element (no closing tag)?">
+    <Answer>div</Answer>
+    <Answer>span</Answer>
+    <Answer correct>img</Answer>
+    <Answer>p</Answer>
+  </Question>
+  
+  <Question text="What does the 'defer' attribute do on a script tag?">
+    <Answer>Prevents the script from running</Answer>
+    <Answer>Makes the script run immediately</Answer>
+    <Answer correct>Executes the script after HTML parsing completes</Answer>
+    <Answer>Downloads the script synchronously</Answer>
+  </Question>
+  
+  <Question text="Which content category includes elements like &lt;span&gt; and &lt;em&gt;?">
+    <Answer>Flow content</Answer>
+    <Answer correct>Phrasing content</Answer>
+    <Answer>Sectioning content</Answer>
+    <Answer>Embedded content</Answer>
+  </Question>
+</Quiz>
+
+---
+
+**Outstanding work!** 🏆 You now have a deep understanding of HTML parsing and the specification. This knowledge will help you write cleaner markup and debug complex issues. Next, explore semantic HTML to make your pages more accessible and SEO-friendly!

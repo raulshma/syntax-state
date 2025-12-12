@@ -1,0 +1,209 @@
+# SEO Basics - Intermediate
+
+Now that you understand the fundamentals, let's dive deeper into meta tags, Open Graph protocol, and how to optimize your pages for social sharing.
+
+<MetaTagEditor showPreview={true} />
+
+## Advanced Meta Tags
+
+Beyond title and description, there are many meta tags that help search engines and browsers understand your content.
+
+### Viewport Meta Tag
+
+Essential for mobile-friendly pages:
+
+```html
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+```
+
+This tells browsers how to scale your page on different devices. Without it, mobile users see a tiny desktop version.
+
+### Robots Meta Tag
+
+Control how search engines interact with your page:
+
+```html
+<!-- Allow indexing (default) -->
+<meta name="robots" content="index, follow">
+
+<!-- Prevent indexing -->
+<meta name="robots" content="noindex, nofollow">
+
+<!-- Index but don't follow links -->
+<meta name="robots" content="index, nofollow">
+```
+
+<InfoBox type="warning" title="Use noindex Carefully">
+Adding `noindex` removes your page from search results entirely. Use it only for pages you don't want found, like thank-you pages or admin areas.
+</InfoBox>
+
+<ProgressCheckpoint section="introduction" xpReward={20} />
+
+## Open Graph Protocol
+
+Open Graph (OG) tags control how your page appears when shared on Facebook, LinkedIn, and other platforms.
+
+```html
+<meta property="og:title" content="Learn Web Development">
+<meta property="og:description" content="Master coding with interactive lessons">
+<meta property="og:image" content="https://example.com/og-image.png">
+<meta property="og:url" content="https://example.com/learn">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="SyntaxState">
+```
+
+### Essential Open Graph Tags
+
+| Tag | Purpose | Best Practice |
+|-----|---------|---------------|
+| `og:title` | Share title | 60-90 characters |
+| `og:description` | Share description | 200 characters max |
+| `og:image` | Preview image | 1200x630 pixels |
+| `og:url` | Canonical URL | Full absolute URL |
+| `og:type` | Content type | website, article, product |
+
+<KeyConcept title="Images Make Shares Stand Out">
+Posts with images get significantly more engagement. Always include an og:image that's visually appealing and represents your content.
+</KeyConcept>
+
+<ProgressCheckpoint section="meta-tags" xpReward={20} />
+
+## Twitter Card Tags
+
+Twitter has its own meta tags for controlling how links appear in tweets:
+
+```html
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@yourusername">
+<meta name="twitter:title" content="Learn Web Development">
+<meta name="twitter:description" content="Master coding with interactive lessons">
+<meta name="twitter:image" content="https://example.com/twitter-image.png">
+```
+
+### Card Types
+
+| Type | Description | Image Size |
+|------|-------------|------------|
+| `summary` | Small square image | 144x144 min |
+| `summary_large_image` | Large rectangular image | 300x157 min |
+
+<InfoBox type="tip" title="Fallback Behavior">
+If Twitter tags aren't set, Twitter will use your Open Graph tags. You only need Twitter-specific tags if you want different content for Twitter.
+</InfoBox>
+
+<ProgressCheckpoint section="heading-hierarchy" xpReward={20} />
+
+## Canonical URLs
+
+When the same content exists at multiple URLs, use the canonical tag to tell search engines which version is the "official" one:
+
+```html
+<link rel="canonical" href="https://example.com/original-page">
+```
+
+### When to Use Canonical Tags
+
+- **URL parameters**: `?ref=twitter` vs `?ref=facebook`
+- **HTTP vs HTTPS**: Always point to HTTPS
+- **WWW vs non-WWW**: Pick one and stick with it
+- **Duplicate content**: Product pages accessible via multiple categories
+
+```html
+<!-- On https://example.com/products?category=shoes&color=red -->
+<link rel="canonical" href="https://example.com/products/red-shoes">
+```
+
+<KeyConcept title="Canonicals Prevent Duplicate Content Penalties">
+Without canonical tags, search engines might see your content as duplicated across multiple URLs, which can hurt your rankings.
+</KeyConcept>
+
+<ProgressCheckpoint section="structured-data" xpReward={20} />
+
+## Complete Head Section Example
+
+Here's a well-optimized `<head>` section:
+
+```html
+<head>
+  <!-- Basic Meta -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Learn Web Development | SyntaxState</title>
+  <meta name="description" content="Master web development with interactive lessons and AI-powered learning paths.">
+  
+  <!-- Canonical -->
+  <link rel="canonical" href="https://syntaxstate.com/learn">
+  
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://syntaxstate.com/learn">
+  <meta property="og:title" content="Learn Web Development | SyntaxState">
+  <meta property="og:description" content="Master web development with interactive lessons.">
+  <meta property="og:image" content="https://syntaxstate.com/og-image.png">
+  <meta property="og:site_name" content="SyntaxState">
+  
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:url" content="https://syntaxstate.com/learn">
+  <meta name="twitter:title" content="Learn Web Development | SyntaxState">
+  <meta name="twitter:description" content="Master web development with interactive lessons.">
+  <meta name="twitter:image" content="https://syntaxstate.com/og-image.png">
+  
+  <!-- Favicon -->
+  <link rel="icon" href="/favicon.ico">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+</head>
+```
+
+<ProgressCheckpoint section="technical-seo" xpReward={10} />
+
+## Testing Your Meta Tags
+
+### Tools to Validate
+
+1. **Facebook Sharing Debugger** - Debug Open Graph tags
+2. **Twitter Card Validator** - Test Twitter cards
+3. **Google Rich Results Test** - Check structured data
+4. **LinkedIn Post Inspector** - Preview LinkedIn shares
+
+<InfoBox type="info" title="Cache Clearing">
+Social platforms cache your meta tags. After making changes, use their debugging tools to force a refresh of the cached data.
+</InfoBox>
+
+<ProgressCheckpoint section="summary" xpReward={10} />
+
+## Quick Quiz
+
+<Quiz>
+  <Question text="What is the recommended image size for og:image?">
+    <Answer>800x600 pixels</Answer>
+    <Answer correct>1200x630 pixels</Answer>
+    <Answer>500x500 pixels</Answer>
+    <Answer>1920x1080 pixels</Answer>
+  </Question>
+  
+  <Question text="What does the canonical tag do?">
+    <Answer>Improves page loading speed</Answer>
+    <Answer>Adds social sharing buttons</Answer>
+    <Answer correct>Tells search engines which URL is the official version</Answer>
+    <Answer>Prevents users from copying content</Answer>
+  </Question>
+  
+  <Question text="Which Twitter card type shows a large image?">
+    <Answer>summary</Answer>
+    <Answer correct>summary_large_image</Answer>
+    <Answer>large_card</Answer>
+    <Answer>photo</Answer>
+  </Question>
+  
+  <Question text="What happens if you don't set Twitter-specific meta tags?">
+    <Answer>Twitter won't show any preview</Answer>
+    <Answer>Your page won't be shareable</Answer>
+    <Answer correct>Twitter falls back to Open Graph tags</Answer>
+    <Answer>You get an error</Answer>
+  </Question>
+</Quiz>
+
+---
+
+**Excellent progress!** 🎉 You now understand Open Graph, Twitter Cards, and canonical URLs. In the advanced level, we'll explore JSON-LD structured data and technical SEO considerations.

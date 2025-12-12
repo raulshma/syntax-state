@@ -1,0 +1,261 @@
+# DNS and How It Works
+
+Now that you understand the basics of DNS, let's dive deeper into how it actually works and explore the different record types that power the Internet.
+
+## DNS Architecture Overview
+
+DNS is a **distributed hierarchical database**. Instead of one giant phone book, it's split across millions of servers worldwide, organized in a tree structure.
+
+<DnsResolutionSimulator domain="www.example.com" showTiming={true} interactive={true} />
+
+### The DNS Hierarchy
+
+```
+                    Root (.)
+                       │
+        ┌──────────────┼──────────────┐
+        │              │              │
+      .com           .org           .net
+        │              │              │
+    ┌───┴───┐      ┌───┴───┐     ┌───┴───┐
+ google  amazon  wikipedia  ...  cloudflare
+```
+
+Each level knows about the level below it, creating a chain of referrals until the answer is found.
+
+<ProgressCheckpoint section="introduction" xpReward={20} />
+
+## DNS Record Types In-Depth
+
+DNS records are the actual data stored in DNS servers. Each record type serves a specific purpose.
+
+<DnsRecordExplorer domain="mycompany.com" showAllTypes={true} />
+
+### A Record (Address Record)
+
+The most fundamental record type. Maps a domain directly to an IPv4 address.
+
+```dns
+example.com.    IN    A    93.184.216.34
+www.example.com. IN   A    93.184.216.34
+```
+
+**Use cases:**
+- Pointing your domain to your web server
+- Setting up subdomains (blog.example.com, shop.example.com)
+
+### AAAA Record (IPv6 Address)
+
+Same as A record, but for IPv6 addresses. As IPv4 addresses run out, AAAA records become essential.
+
+```dns
+example.com.    IN    AAAA    2606:2800:220:1:248:1893:25c8:1946
+```
+
+<InfoBox type="info" title="IPv4 vs IPv6">
+IPv4 addresses look like `192.168.1.1` (4 billion possible). IPv6 addresses look like `2606:2800:220:1:248:1893:25c8:1946` (340 undecillion possible!).
+</InfoBox>
+
+### CNAME Record (Canonical Name)
+
+Creates an alias from one domain to another. The target must be a domain name, not an IP.
+
+```dns
+www.example.com.    IN    CNAME    example.com.
+blog.example.com.   IN    CNAME    mycompany.ghost.io.
+```
+
+**Use cases:**
+- Pointing `www` to your root domain
+- Using third-party services (like a hosted blog)
+- Load balancing across multiple servers
+
+<InfoBox type="warning" title="CNAME Restrictions">
+You cannot use a CNAME at the root domain (example.com). It must be a subdomain. For root domains, use A or AAAA records, or special ALIAS/ANAME records if your DNS provider supports them.
+</InfoBox>
+
+<ProgressCheckpoint section="dns-basics" xpReward={20} />
+
+### MX Record (Mail Exchange)
+
+Specifies which servers handle email for your domain. Includes a priority number (lower = higher priority).
+
+```dns
+example.com.    IN    MX    10    mail1.example.com.
+example.com.    IN    MX    20    mail2.example.com.
+```
+
+**How priority works:**
+- Email servers try the lowest priority first (10)
+- If that fails, they try the next priority (20)
+- This provides redundancy for email delivery
+
+### TXT Record (Text)
+
+Stores arbitrary text data. Used for verification and security.
+
+```dns
+example.com.    IN    TXT    "v=spf1 include:_spf.google.com ~all"
+example.com.    IN    TXT    "google-site-verification=abc123..."
+```
+
+**Common uses:**
+- **SPF**: Specifies which servers can send email for your domain
+- **DKIM**: Email authentication signatures
+- **DMARC**: Email policy enforcement
+- **Domain verification**: Proving you own a domain to services like Google
+
+### NS Record (Name Server)
+
+Specifies which DNS servers are authoritative for your domain.
+
+```dns
+example.com.    IN    NS    ns1.exampledns.com.
+example.com.    IN    NS    ns2.exampledns.com.
+```
+
+These are typically set at your domain registrar and point to your DNS provider.
+
+<ProgressCheckpoint section="dns-records" xpReward={20} />
+
+## The DNS Resolution Process
+
+Let's trace a complete DNS lookup for `www.example.com`:
+
+### 1. Local Caches (1-2ms)
+
+```
+Browser Cache → OS Cache → Router Cache
+```
+
+If any cache has a valid (non-expired) answer, the lookup ends here.
+
+### 2. Recursive Resolver (5-10ms)
+
+Your configured DNS resolver (ISP, Google 8.8.8.8, Cloudflare 1.1.1.1) receives the query.
+
+### 3. Root Server Query (20-30ms)
+
+```
+Resolver: "Where is .com?"
+Root: "Ask the .com TLD servers at these addresses..."
+```
+
+There are 13 root server clusters (a.root-servers.net through m.root-servers.net) distributed globally.
+
+### 4. TLD Server Query (20-30ms)
+
+```
+Resolver: "Where is example.com?"
+.com TLD: "Ask the authoritative servers at ns1.example.com..."
+```
+
+### 5. Authoritative Server Query (10-20ms)
+
+```
+Resolver: "What is the A record for www.example.com?"
+Authoritative: "93.184.216.34, TTL 3600"
+```
+
+### 6. Response Cached and Returned
+
+The resolver caches the answer and returns it to your browser.
+
+<KeyConcept title="Total Time: 50-100ms (uncached)">
+A full DNS resolution takes about 50-100ms. With caching, subsequent lookups take 1-5ms. This is why caching is so important!
+</KeyConcept>
+
+<ProgressCheckpoint section="resolution-process" xpReward={20} />
+
+## TTL and Caching Strategies
+
+**TTL (Time To Live)** determines how long a DNS record can be cached.
+
+### Common TTL Values
+
+| TTL | Duration | Use Case |
+|-----|----------|----------|
+| 300 | 5 minutes | Frequently changing records |
+| 3600 | 1 hour | Standard websites |
+| 86400 | 24 hours | Stable infrastructure |
+| 604800 | 1 week | Rarely changing records |
+
+### TTL Best Practices
+
+**Before making changes:**
+1. Lower TTL to 300 seconds (5 minutes)
+2. Wait for old TTL to expire
+3. Make your DNS changes
+4. Verify everything works
+5. Raise TTL back to normal
+
+<InfoBox type="tip" title="DNS Propagation">
+"DNS propagation" is the time it takes for DNS changes to spread across all caches worldwide. With proper TTL management, this can be as fast as your TTL value.
+</InfoBox>
+
+<ProgressCheckpoint section="caching-ttl" xpReward={10} />
+
+## Practical Examples
+
+### Setting Up a Website
+
+```dns
+# Root domain
+example.com.        A       93.184.216.34
+
+# WWW subdomain (alias to root)
+www.example.com.    CNAME   example.com.
+
+# API subdomain
+api.example.com.    A       93.184.216.35
+```
+
+### Setting Up Email (Google Workspace)
+
+```dns
+# MX records for email routing
+example.com.    MX    1     aspmx.l.google.com.
+example.com.    MX    5     alt1.aspmx.l.google.com.
+example.com.    MX    10    alt2.aspmx.l.google.com.
+
+# SPF record for email authentication
+example.com.    TXT   "v=spf1 include:_spf.google.com ~all"
+```
+
+<ProgressCheckpoint section="summary" xpReward={10} />
+
+## Quiz
+
+<Quiz>
+  <Question text="Which record type creates an alias from one domain to another?">
+    <Answer>A Record</Answer>
+    <Answer correct>CNAME Record</Answer>
+    <Answer>MX Record</Answer>
+    <Answer>TXT Record</Answer>
+  </Question>
+  
+  <Question text="What does TTL stand for in DNS?">
+    <Answer>Total Transfer Length</Answer>
+    <Answer>Top-Level Type</Answer>
+    <Answer correct>Time To Live</Answer>
+    <Answer>Text Transfer Layer</Answer>
+  </Question>
+  
+  <Question text="Which record type is used for email server configuration?">
+    <Answer>A Record</Answer>
+    <Answer>CNAME Record</Answer>
+    <Answer correct>MX Record</Answer>
+    <Answer>NS Record</Answer>
+  </Question>
+  
+  <Question text="Why can't you use a CNAME at the root domain?">
+    <Answer>It's too slow</Answer>
+    <Answer correct>DNS specification doesn't allow it</Answer>
+    <Answer>It costs extra money</Answer>
+    <Answer>It's a security risk</Answer>
+  </Question>
+</Quiz>
+
+---
+
+**Excellent work!** 🎉 You now have a solid understanding of DNS record types and the resolution process. In the advanced level, we'll explore DNS security (DNSSEC), advanced caching strategies, and troubleshooting techniques.

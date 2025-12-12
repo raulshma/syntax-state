@@ -1,0 +1,202 @@
+# Learn the Basics of HTML
+
+Welcome to HTML! HTML stands for **HyperText Markup Language**, and it's the foundation of every website you've ever visited. Don't worry if that sounds complicated — we'll break it down together.
+
+Think of HTML as **building blocks** for web pages. Just like LEGO bricks snap together to create amazing structures, HTML elements combine to create websites!
+
+<LiveHtmlEditor />
+
+## The Building Blocks Analogy
+
+Imagine you're building a house with LEGO:
+
+- **Bricks** are the basic pieces (like HTML elements)
+- **Instructions** tell you how to arrange them (like HTML structure)
+- **The finished house** is what people see (like a web page)
+
+HTML works the same way! You use different "pieces" (called **elements**) and arrange them to create web pages.
+
+<InfoBox type="tip" title="What Makes HTML Special?">
+HTML isn't a programming language — it's a markup language. This means it describes the structure and content of a page, not how it behaves. Think of it as the skeleton of a website!
+</InfoBox>
+
+<ProgressCheckpoint section="introduction" xpReward={15} />
+
+## What Are HTML Elements?
+
+An HTML element is like a labeled container. It has:
+
+1. **An opening tag** — tells the browser "start here"
+2. **Content** — what goes inside
+3. **A closing tag** — tells the browser "end here"
+
+Here's what it looks like:
+
+```html
+<p>Hello, World!</p>
+```
+
+- `<p>` is the opening tag (p stands for "paragraph")
+- `Hello, World!` is the content
+- `</p>` is the closing tag (notice the `/`)
+
+<KeyConcept title="Tags vs Elements">
+A **tag** is the code in angle brackets like `<p>`. An **element** is the complete package: opening tag + content + closing tag.
+</KeyConcept>
+
+<ProgressCheckpoint section="building-blocks" xpReward={15} />
+
+## The Basic Structure of a Web Page
+
+Every HTML page follows the same basic structure. Think of it like a letter with specific parts:
+
+```html
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>My Page</title>
+  </head>
+  <body>
+    <h1>Hello!</h1>
+    <p>Welcome to my website.</p>
+  </body>
+</html>
+```
+
+Let's break this down:
+
+### 1. `<!DOCTYPE html>`
+This tells the browser "Hey, this is an HTML5 document!" Always put this first.
+
+### 2. `<html>`
+The root element that contains everything else. It's like the outer box that holds all your LEGO pieces.
+
+### 3. `<head>`
+Contains information *about* the page (like the title), but nothing you see on the page itself.
+
+### 4. `<body>`
+Contains everything you *see* on the page — text, images, buttons, everything!
+
+<InfoBox type="info" title="The Head vs Body">
+Think of `<head>` as the backstage area (metadata, settings) and `<body>` as the stage (what the audience sees).
+</InfoBox>
+
+<ProgressCheckpoint section="document-structure" xpReward={15} />
+
+## Common HTML Elements
+
+Let's learn some elements you'll use all the time:
+
+### Headings (h1 to h6)
+
+Headings create titles and subtitles. `<h1>` is the biggest, `<h6>` is the smallest.
+
+```html
+<h1>Main Title</h1>
+<h2>Section Title</h2>
+<h3>Subsection Title</h3>
+```
+
+### Paragraphs
+
+The `<p>` element creates paragraphs of text.
+
+```html
+<p>This is a paragraph. It can contain lots of text.</p>
+```
+
+### Links
+
+The `<a>` element creates clickable links.
+
+```html
+<a href="https://example.com">Click me!</a>
+```
+
+### Images
+
+The `<img>` element displays images. It's special — it doesn't need a closing tag!
+
+```html
+<img src="photo.jpg" alt="A cute cat">
+```
+
+<ElementExplorer initialCategory="text" />
+
+<ProgressCheckpoint section="common-elements" xpReward={15} />
+
+## Nesting Elements
+
+Elements can go inside other elements — this is called **nesting**. It's like putting smaller LEGO pieces inside bigger ones.
+
+```html
+<div>
+  <h1>Welcome</h1>
+  <p>This paragraph is <strong>inside</strong> the div.</p>
+</div>
+```
+
+### The Golden Rule of Nesting
+
+Always close tags in the **reverse order** you opened them:
+
+✅ Correct:
+```html
+<p>This is <strong>bold</strong> text.</p>
+```
+
+❌ Wrong:
+```html
+<p>This is <strong>bold</p></strong>
+```
+
+<KeyConcept title="Proper Nesting">
+Think of nesting like Russian dolls — the last one you open should be the first one you close!
+</KeyConcept>
+
+<ProgressCheckpoint section="nesting-rules" xpReward={10} />
+
+## Key Takeaways
+
+<KeyConcept title="HTML = Building Blocks">
+HTML elements are like LEGO bricks that snap together to create web pages.
+</KeyConcept>
+
+<KeyConcept title="Every Page Has Structure">
+All HTML pages have the same basic structure: DOCTYPE, html, head, and body.
+</KeyConcept>
+
+<KeyConcept title="Elements Have Tags">
+Most elements have an opening tag, content, and a closing tag.
+</KeyConcept>
+
+<ProgressCheckpoint section="summary" xpReward={10} />
+
+## Quick Quiz
+
+<Quiz>
+  <Question text="What does HTML stand for?">
+    <Answer>Hyper Text Making Language</Answer>
+    <Answer correct>HyperText Markup Language</Answer>
+    <Answer>High Tech Modern Language</Answer>
+    <Answer>Home Tool Markup Language</Answer>
+  </Question>
+  
+  <Question text="Which element contains the visible content of a web page?">
+    <Answer>head</Answer>
+    <Answer>html</Answer>
+    <Answer correct>body</Answer>
+    <Answer>title</Answer>
+  </Question>
+  
+  <Question text="What is the correct way to close a paragraph tag?">
+    <Answer>&lt;p/&gt;</Answer>
+    <Answer>&lt;/paragraph&gt;</Answer>
+    <Answer correct>&lt;/p&gt;</Answer>
+    <Answer>&lt;p&gt;</Answer>
+  </Question>
+</Quiz>
+
+---
+
+**Great job!** 🎉 You now understand the basics of HTML. In the intermediate level, we'll explore attributes, more elements, and the difference between block and inline elements.

@@ -1,0 +1,333 @@
+# SEO Basics - Advanced
+
+Let's explore structured data with JSON-LD, technical SEO considerations, and advanced optimization techniques that can give your pages rich results in search.
+
+<MetaTagEditor showPreview={true} />
+
+## JSON-LD Structured Data
+
+JSON-LD (JavaScript Object Notation for Linked Data) helps search engines understand your content in a machine-readable format. This enables rich results like star ratings, recipe cards, and FAQ dropdowns.
+
+```html
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "Learn Web Development",
+  "author": {
+    "@type": "Person",
+    "name": "John Doe"
+  },
+  "datePublished": "2024-01-15",
+  "dateModified": "2024-03-20",
+  "publisher": {
+    "@type": "Organization",
+    "name": "SyntaxState",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://syntaxstate.com/logo.png"
+    }
+  }
+}
+</script>
+```
+
+<InfoBox type="tip" title="JSON-LD is Google's Preferred Format">
+While microdata and RDFa also work, Google recommends JSON-LD because it's easier to implement and doesn't mix with your HTML structure.
+</InfoBox>
+
+<ProgressCheckpoint section="introduction" xpReward={30} />
+
+## Common Schema Types
+
+### Organization
+
+```json
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "SyntaxState",
+  "url": "https://syntaxstate.com",
+  "logo": "https://syntaxstate.com/logo.png",
+  "sameAs": [
+    "https://twitter.com/syntaxstate",
+    "https://github.com/syntaxstate"
+  ],
+  "contactPoint": {
+    "@type": "ContactPoint",
+    "email": "support@syntaxstate.com",
+    "contactType": "customer support"
+  }
+}
+```
+
+### BreadcrumbList
+
+```json
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https://syntaxstate.com"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Learn",
+      "item": "https://syntaxstate.com/learn"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "HTML",
+      "item": "https://syntaxstate.com/learn/html"
+    }
+  ]
+}
+```
+
+### FAQPage
+
+```json
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "What is SEO?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "SEO stands for Search Engine Optimization..."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How long does SEO take?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "SEO results typically take 3-6 months..."
+      }
+    }
+  ]
+}
+```
+
+<KeyConcept title="Rich Results = Higher CTR">
+Pages with rich results (stars, FAQs, breadcrumbs) get significantly higher click-through rates than plain results.
+</KeyConcept>
+
+<ProgressCheckpoint section="meta-tags" xpReward={30} />
+
+## Technical SEO Considerations
+
+### Robots.txt
+
+The `robots.txt` file tells search engine crawlers which pages they can access:
+
+```txt
+# Allow all crawlers
+User-agent: *
+Allow: /
+
+# Block specific paths
+Disallow: /admin/
+Disallow: /api/
+Disallow: /private/
+
+# Point to sitemap
+Sitemap: https://example.com/sitemap.xml
+```
+
+<InfoBox type="warning" title="robots.txt is Public">
+Anyone can view your robots.txt file. Don't use it to hide sensitive URLs—use authentication instead.
+</InfoBox>
+
+### XML Sitemap
+
+A sitemap helps search engines discover all your pages:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://example.com/</loc>
+    <lastmod>2024-03-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://example.com/learn</loc>
+    <lastmod>2024-03-18</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+</urlset>
+```
+
+<ProgressCheckpoint section="heading-hierarchy" xpReward={30} />
+
+## Core Web Vitals
+
+Google uses Core Web Vitals as ranking factors. These measure real-world user experience:
+
+### LCP (Largest Contentful Paint)
+How long until the main content is visible.
+- **Good**: < 2.5 seconds
+- **Needs Improvement**: 2.5-4 seconds
+- **Poor**: > 4 seconds
+
+### FID (First Input Delay)
+How long until the page responds to user interaction.
+- **Good**: < 100ms
+- **Needs Improvement**: 100-300ms
+- **Poor**: > 300ms
+
+### CLS (Cumulative Layout Shift)
+How much the page layout shifts during loading.
+- **Good**: < 0.1
+- **Needs Improvement**: 0.1-0.25
+- **Poor**: > 0.25
+
+```html
+<!-- Prevent CLS by specifying image dimensions -->
+<img src="hero.jpg" width="1200" height="630" alt="Hero image">
+
+<!-- Preload critical resources for better LCP -->
+<link rel="preload" href="/fonts/main.woff2" as="font" crossorigin>
+<link rel="preload" href="/hero.jpg" as="image">
+```
+
+<KeyConcept title="Performance is SEO">
+Fast, stable pages rank better. Optimize images, minimize JavaScript, and use efficient loading strategies.
+</KeyConcept>
+
+<ProgressCheckpoint section="structured-data" xpReward={30} />
+
+## Advanced Meta Tags
+
+### Hreflang for International Sites
+
+Tell search engines about language/region variations:
+
+```html
+<link rel="alternate" hreflang="en" href="https://example.com/page">
+<link rel="alternate" hreflang="es" href="https://example.com/es/page">
+<link rel="alternate" hreflang="fr" href="https://example.com/fr/page">
+<link rel="alternate" hreflang="x-default" href="https://example.com/page">
+```
+
+### Preconnect and DNS Prefetch
+
+Improve performance by establishing early connections:
+
+```html
+<!-- Preconnect to critical third-party origins -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://cdn.example.com" crossorigin>
+
+<!-- DNS prefetch for less critical resources -->
+<link rel="dns-prefetch" href="https://analytics.example.com">
+```
+
+### Security Headers via Meta
+
+```html
+<!-- Content Security Policy -->
+<meta http-equiv="Content-Security-Policy" 
+      content="default-src 'self'; img-src 'self' https:;">
+
+<!-- Prevent clickjacking -->
+<meta http-equiv="X-Frame-Options" content="DENY">
+```
+
+<ProgressCheckpoint section="technical-seo" xpReward={20} />
+
+## Complete Advanced Example
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Essential Meta -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Learn Web Development | SyntaxState</title>
+  <meta name="description" content="Master web development with interactive lessons.">
+  
+  <!-- Canonical & Alternate -->
+  <link rel="canonical" href="https://syntaxstate.com/learn">
+  <link rel="alternate" hreflang="en" href="https://syntaxstate.com/learn">
+  <link rel="alternate" hreflang="es" href="https://syntaxstate.com/es/learn">
+  
+  <!-- Performance -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preload" href="/hero.webp" as="image">
+  
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://syntaxstate.com/learn">
+  <meta property="og:title" content="Learn Web Development">
+  <meta property="og:description" content="Master web development with interactive lessons.">
+  <meta property="og:image" content="https://syntaxstate.com/og.png">
+  
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  
+  <!-- Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "Learn Web Development",
+    "description": "Master web development with interactive lessons.",
+    "publisher": {
+      "@type": "Organization",
+      "name": "SyntaxState"
+    }
+  }
+  </script>
+</head>
+```
+
+<ProgressCheckpoint section="summary" xpReward={10} />
+
+## Quick Quiz
+
+<Quiz>
+  <Question text="What format does Google recommend for structured data?">
+    <Answer>Microdata</Answer>
+    <Answer>RDFa</Answer>
+    <Answer correct>JSON-LD</Answer>
+    <Answer>XML</Answer>
+  </Question>
+  
+  <Question text="What is a good LCP (Largest Contentful Paint) score?">
+    <Answer>Less than 5 seconds</Answer>
+    <Answer correct>Less than 2.5 seconds</Answer>
+    <Answer>Less than 10 seconds</Answer>
+    <Answer>Less than 1 second</Answer>
+  </Question>
+  
+  <Question text="What does the hreflang attribute specify?">
+    <Answer>The page's loading priority</Answer>
+    <Answer>The author's language preference</Answer>
+    <Answer correct>Language and regional targeting for international pages</Answer>
+    <Answer>The encoding format</Answer>
+  </Question>
+  
+  <Question text="Which Core Web Vital measures layout stability?">
+    <Answer>LCP</Answer>
+    <Answer>FID</Answer>
+    <Answer correct>CLS</Answer>
+    <Answer>TTFB</Answer>
+  </Question>
+</Quiz>
+
+---
+
+**Congratulations!** 🎉 You've mastered SEO from basics to advanced techniques. You now understand structured data, technical SEO, and performance optimization. Apply these concepts to make your websites more discoverable and user-friendly!

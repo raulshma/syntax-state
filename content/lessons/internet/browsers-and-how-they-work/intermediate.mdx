@@ -1,0 +1,230 @@
+# Browsers and How They Work
+
+Web browsers are sophisticated pieces of software that transform raw code into the rich, interactive experiences we use daily. Understanding how they work helps you write better, faster websites.
+
+In this lesson, we'll explore the **rendering pipeline** — the step-by-step process browsers use to turn HTML, CSS, and JavaScript into pixels on your screen.
+
+<RenderingPipelineSimulator showMetrics={true} />
+
+## Browser Architecture Overview
+
+Modern browsers have several key components:
+
+| Component | Purpose |
+|-----------|---------|
+| **User Interface** | Address bar, buttons, tabs |
+| **Browser Engine** | Coordinates between UI and rendering |
+| **Rendering Engine** | Parses HTML/CSS, builds trees, paints |
+| **JavaScript Engine** | Executes JavaScript code |
+| **Networking** | Handles HTTP requests |
+| **Data Storage** | Cookies, localStorage, IndexedDB |
+
+<InfoBox type="info" title="Different Engines">
+Chrome uses Blink (rendering) and V8 (JavaScript). Firefox uses Gecko and SpiderMonkey. Safari uses WebKit and JavaScriptCore. Despite differences, they all follow similar rendering principles.
+</InfoBox>
+
+<ProgressCheckpoint section="introduction" xpReward={20} />
+
+## The Critical Rendering Path
+
+The **Critical Rendering Path** is the sequence of steps the browser takes to convert code into pixels. Understanding this helps you optimize page load performance.
+
+### Step 1: HTML Parsing → DOM
+
+The browser parses HTML and constructs the **Document Object Model (DOM)** — a tree structure representing every element on the page.
+
+<DomInspector />
+
+```html
+<html>
+  <body>
+    <header>
+      <h1>Title</h1>
+    </header>
+    <main>
+      <p>Content</p>
+    </main>
+  </body>
+</html>
+```
+
+This becomes a tree where `<html>` is the root, `<body>` is its child, and so on.
+
+<KeyConcept title="DOM = Document Tree">
+The DOM is a tree representation of your HTML. Each element becomes a node, and the browser can traverse and manipulate this tree.
+</KeyConcept>
+
+<ProgressCheckpoint section="browser-architecture" xpReward={20} />
+
+### Step 2: CSS Parsing → CSSOM
+
+While building the DOM, the browser also parses CSS and builds the **CSS Object Model (CSSOM)** — a tree of styles.
+
+```css
+body { font-family: sans-serif; }
+header { background: blue; }
+h1 { color: white; font-size: 2rem; }
+```
+
+The CSSOM captures:
+- Which styles apply to which elements
+- Computed values (resolving `em`, `%`, `inherit`)
+- Specificity and cascade resolution
+
+<InfoBox type="warning" title="CSS Blocks Rendering">
+The browser won't render anything until the CSSOM is complete. This is why CSS should be loaded early and kept efficient.
+</InfoBox>
+
+### Step 3: Render Tree Construction
+
+The browser combines DOM and CSSOM to create the **Render Tree** — only visible elements with their computed styles.
+
+**What's NOT in the Render Tree:**
+- Elements with `display: none`
+- `<head>`, `<script>`, `<meta>` tags
+- Hidden elements
+
+**What IS in the Render Tree:**
+- Visible elements with computed styles
+- Pseudo-elements (`::before`, `::after`)
+
+<ProgressCheckpoint section="rendering-pipeline" xpReward={25} />
+
+### Step 4: Layout (Reflow)
+
+The browser calculates the **exact position and size** of every element in the render tree.
+
+This involves:
+- Box model calculations (margin, border, padding, content)
+- Viewport-relative sizing (`vh`, `vw`, `%`)
+- Flexbox and Grid layout algorithms
+- Text wrapping and line breaking
+
+<InfoBox type="tip" title="Layout is Expensive">
+Changing element sizes or positions triggers layout recalculation. Batch your DOM changes to minimize reflows!
+</InfoBox>
+
+### Step 5: Paint
+
+The browser fills in pixels — drawing text, colors, images, borders, and shadows.
+
+Paint happens in layers:
+1. Background colors
+2. Background images
+3. Borders
+4. Children
+5. Outline
+
+### Step 6: Composite
+
+Finally, layers are combined and sent to the GPU for display. Elements with `transform`, `opacity`, or `will-change` get their own layers for efficient animation.
+
+<KeyConcept title="Layers Enable Smooth Animation">
+Elements on separate compositor layers can be animated by the GPU without triggering layout or paint — this is why `transform` animations are so smooth.
+</KeyConcept>
+
+<ProgressCheckpoint section="javascript-engine" xpReward={20} />
+
+## JavaScript and the Render Pipeline
+
+JavaScript can modify the DOM and CSSOM, which may trigger re-rendering:
+
+| Change Type | Triggers |
+|-------------|----------|
+| Content change | Layout → Paint → Composite |
+| Style change (geometry) | Layout → Paint → Composite |
+| Style change (visual only) | Paint → Composite |
+| Transform/opacity | Composite only |
+
+### The Event Loop
+
+JavaScript runs on a single thread. The **event loop** manages execution:
+
+1. **Call Stack**: Currently executing code
+2. **Task Queue**: Callbacks waiting to run (setTimeout, events)
+3. **Microtask Queue**: Promises, MutationObserver (higher priority)
+
+```javascript
+console.log('1'); // Runs immediately
+setTimeout(() => console.log('2'), 0); // Task queue
+Promise.resolve().then(() => console.log('3')); // Microtask queue
+console.log('4'); // Runs immediately
+
+// Output: 1, 4, 3, 2
+```
+
+<InfoBox type="info" title="requestAnimationFrame">
+Use `requestAnimationFrame` for animations — it syncs with the browser's refresh rate (usually 60fps) for smooth visuals.
+</InfoBox>
+
+<ProgressCheckpoint section="performance" xpReward={15} />
+
+## Performance Optimization Tips
+
+### 1. Minimize Critical Resources
+- Inline critical CSS
+- Defer non-essential JavaScript
+- Use `async` or `defer` on script tags
+
+### 2. Reduce Layout Thrashing
+```javascript
+// Bad: Forces layout between reads and writes
+element.style.width = '100px';
+const height = element.offsetHeight; // Forces layout
+element.style.height = height + 'px';
+
+// Good: Batch reads, then batch writes
+const height = element.offsetHeight;
+element.style.width = '100px';
+element.style.height = height + 'px';
+```
+
+### 3. Use Compositor-Only Properties
+For animations, prefer `transform` and `opacity` over `width`, `height`, `top`, `left`.
+
+### 4. Lazy Load Below-the-Fold Content
+```html
+<img src="image.jpg" loading="lazy" alt="...">
+```
+
+<KeyConcept title="Performance = User Experience">
+Faster rendering means happier users. Understanding the rendering pipeline helps you write code that browsers can process efficiently.
+</KeyConcept>
+
+<ProgressCheckpoint section="summary" xpReward={15} />
+
+## Quick Quiz
+
+<Quiz>
+  <Question text="What two trees combine to form the Render Tree?">
+    <Answer correct>DOM and CSSOM</Answer>
+    <Answer>HTML and CSS</Answer>
+    <Answer>JavaScript and DOM</Answer>
+    <Answer>Layout and Paint</Answer>
+  </Question>
+  
+  <Question text="Which CSS property change only triggers compositing (not layout or paint)?">
+    <Answer>width</Answer>
+    <Answer>background-color</Answer>
+    <Answer correct>transform</Answer>
+    <Answer>padding</Answer>
+  </Question>
+  
+  <Question text="What is 'layout thrashing'?">
+    <Answer>When CSS files are too large</Answer>
+    <Answer correct>Forcing multiple layout recalculations by interleaving reads and writes</Answer>
+    <Answer>When JavaScript crashes the browser</Answer>
+    <Answer>Loading too many images</Answer>
+  </Question>
+  
+  <Question text="In the event loop, which queue has higher priority?">
+    <Answer>Task Queue</Answer>
+    <Answer correct>Microtask Queue</Answer>
+    <Answer>They have equal priority</Answer>
+    <Answer>Call Stack</Answer>
+  </Question>
+</Quiz>
+
+---
+
+**Excellent progress!** 🎉 You now understand the rendering pipeline in detail. In the advanced level, we'll explore JavaScript engines, GPU acceleration, and browser security models.

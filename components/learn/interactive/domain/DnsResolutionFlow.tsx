@@ -91,10 +91,11 @@ export function DnsResolutionFlow() {
         setCurrentStep(prev => prev + 1);
       }, 2500);
     } else if (currentStep >= steps.length) {
-      setIsPlaying(false);
+      // Use setTimeout to avoid synchronous setState in effect
+      timer = setTimeout(() => setIsPlaying(false), 0);
     }
     return () => clearTimeout(timer);
-  }, [isPlaying, currentStep]);
+  }, [isPlaying, currentStep, steps.length]);
 
   const reset = () => {
     setCurrentStep(0);
@@ -219,7 +220,7 @@ export function DnsResolutionFlow() {
                     Step {currentStep + 1}: {steps[currentStep].source} → {steps[currentStep].target}
                  </div>
                  <div className="font-medium text-popover-foreground mb-1">
-                    "{steps[currentStep].message}"
+                    &ldquo;{steps[currentStep].message}&rdquo;
                  </div>
                  <div className="text-xs text-muted-foreground">
                     {steps[currentStep].subMessage}

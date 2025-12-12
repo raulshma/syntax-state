@@ -1,0 +1,267 @@
+# What is Hosting? — Advanced
+
+At the advanced level, we'll explore server architecture patterns, load balancing, CDNs, containerization, and modern deployment strategies used by high-scale applications.
+
+## Server Architecture Patterns
+
+Understanding architecture patterns helps you design systems that can handle growth and maintain reliability.
+
+<ServerArchitectureDiagram type="microservices" />
+
+<ProgressCheckpoint section="introduction" xpReward={30} />
+
+## Load Balancing
+
+When a single server can't handle all your traffic, you distribute requests across multiple servers.
+
+<ServerArchitectureDiagram type="load-balanced" />
+
+### Load Balancing Algorithms
+
+| Algorithm | How It Works | Best For |
+|-----------|--------------|----------|
+| **Round Robin** | Requests go to servers in rotation | Equal server capacity |
+| **Least Connections** | Routes to server with fewest active connections | Variable request duration |
+| **IP Hash** | Same client IP always goes to same server | Session persistence |
+| **Weighted** | More powerful servers get more traffic | Mixed server capacity |
+
+### Health Checks
+
+Load balancers continuously check server health:
+
+```
+Load Balancer
+     │
+     ├── Health Check → Server 1 ✓ (healthy)
+     ├── Health Check → Server 2 ✓ (healthy)
+     └── Health Check → Server 3 ✗ (unhealthy, removed from pool)
+```
+
+<InfoBox type="tip" title="Sticky Sessions">
+Some applications require users to stay on the same server (for session data). This is called "sticky sessions" or "session affinity." Modern approaches prefer stateless servers with external session storage (Redis, database).
+</InfoBox>
+
+<ProgressCheckpoint section="hosting-basics" xpReward={30} />
+
+## Content Delivery Networks (CDNs)
+
+A **CDN** caches your content at edge locations worldwide, serving users from the nearest point.
+
+<ServerArchitectureDiagram type="cdn" />
+
+### How CDNs Work
+
+1. **First request**: User in Tokyo requests your image
+2. **Cache miss**: CDN edge in Tokyo doesn't have it
+3. **Origin fetch**: Edge requests from your origin server
+4. **Cache store**: Edge caches the image
+5. **Subsequent requests**: Served directly from Tokyo edge
+
+### What to Cache
+
+| Content Type | Cache Duration | Notes |
+|--------------|----------------|-------|
+| Static assets (JS, CSS, images) | Long (1 year) | Use versioned filenames |
+| HTML pages | Short (minutes) or none | Depends on dynamism |
+| API responses | Varies | Consider cache invalidation |
+| User-specific content | Never | Must hit origin |
+
+### Popular CDN Providers
+- **Cloudflare**: Free tier, DDoS protection
+- **AWS CloudFront**: Integrates with AWS
+- **Fastly**: Real-time purging, edge compute
+- **Vercel/Netlify Edge**: Built into deployment platforms
+
+<CodeExample language="nginx" title="Nginx Cache Headers">
+{`location /static/ {
+    expires 1y;
+    add_header Cache-Control "public, immutable";
+}
+
+location /api/ {
+    add_header Cache-Control "no-cache, must-revalidate";
+}`}
+</CodeExample>
+
+<ProgressCheckpoint section="hosting-types" xpReward={35} />
+
+## Containerization & Orchestration
+
+Modern deployments often use containers for consistency and scalability.
+
+### Docker Basics
+
+Containers package your application with all its dependencies:
+
+```
+┌─────────────────────────────────────┐
+│           Docker Container          │
+├─────────────────────────────────────┤
+│  Your Application Code              │
+│  Runtime (Node.js, Python, etc.)    │
+│  System Libraries                   │
+│  Configuration                      │
+└─────────────────────────────────────┘
+```
+
+### Benefits
+- **Consistency**: Same environment everywhere
+- **Isolation**: Apps don't interfere with each other
+- **Portability**: Run anywhere Docker runs
+- **Scalability**: Spin up new instances quickly
+
+### Kubernetes (K8s)
+
+For managing many containers across many servers:
+
+```
+┌─────────────────────────────────────────────────┐
+│              Kubernetes Cluster                  │
+├─────────────────────────────────────────────────┤
+│  ┌─────────┐  ┌─────────┐  ┌─────────┐         │
+│  │ Node 1  │  │ Node 2  │  │ Node 3  │         │
+│  │ ┌─────┐ │  │ ┌─────┐ │  │ ┌─────┐ │         │
+│  │ │Pod A│ │  │ │Pod A│ │  │ │Pod B│ │         │
+│  │ │Pod B│ │  │ │Pod C│ │  │ │Pod C│ │         │
+│  │ └─────┘ │  │ └─────┘ │  │ └─────┘ │         │
+│  └─────────┘  └─────────┘  └─────────┘         │
+└─────────────────────────────────────────────────┘
+```
+
+<InfoBox type="info" title="When to Use Kubernetes">
+K8s adds complexity. Use it when you have multiple services, need auto-scaling, require zero-downtime deployments, or have a dedicated DevOps team. For simpler needs, managed platforms (Vercel, Railway, Render) are often better.
+</InfoBox>
+
+<ProgressCheckpoint section="server-architecture" xpReward={35} />
+
+## Deployment Strategies
+
+How you deploy updates affects availability and risk.
+
+### Blue-Green Deployment
+
+Run two identical environments, switch traffic instantly:
+
+```
+Before:  Traffic → [Blue Environment] (current)
+                   [Green Environment] (new version, testing)
+
+After:   Traffic → [Green Environment] (now current)
+                   [Blue Environment] (standby/rollback)
+```
+
+**Pros**: Instant rollback, zero downtime
+**Cons**: Requires double infrastructure
+
+### Canary Deployment
+
+Gradually shift traffic to the new version:
+
+```
+Stage 1:  95% → Old Version
+           5% → New Version (canary)
+
+Stage 2:  50% → Old Version
+          50% → New Version
+
+Stage 3: 100% → New Version
+```
+
+**Pros**: Catch issues early, gradual rollout
+**Cons**: More complex, need good monitoring
+
+### Rolling Deployment
+
+Update instances one at a time:
+
+```
+[v1] [v1] [v1] [v1]  → Start
+[v2] [v1] [v1] [v1]  → Update 1
+[v2] [v2] [v1] [v1]  → Update 2
+[v2] [v2] [v2] [v1]  → Update 3
+[v2] [v2] [v2] [v2]  → Complete
+```
+
+**Pros**: No extra infrastructure needed
+**Cons**: Mixed versions during deployment
+
+<ProgressCheckpoint section="deployment" xpReward={30} />
+
+## Serverless Architecture
+
+**Serverless** (Functions as a Service) abstracts away all server management:
+
+### How It Works
+
+```
+Event (HTTP request, schedule, queue message)
+         │
+         ▼
+┌─────────────────────┐
+│  Serverless Function │
+│  (Your code only)    │
+└─────────────────────┘
+         │
+         ▼
+    Response
+```
+
+### Characteristics
+- **No server management**: Provider handles everything
+- **Auto-scaling**: From 0 to millions of requests
+- **Pay per execution**: No idle costs
+- **Stateless**: Each invocation is independent
+
+### Limitations
+- **Cold starts**: First request after idle is slower
+- **Execution limits**: Usually 15-30 minute max
+- **Vendor lock-in**: Platform-specific APIs
+- **Debugging**: Harder to troubleshoot
+
+### Popular Platforms
+- AWS Lambda
+- Vercel Functions
+- Cloudflare Workers
+- Google Cloud Functions
+
+<InfoBox type="warning" title="Serverless Isn't Always Cheaper">
+For consistent, high-volume workloads, traditional servers or containers can be more cost-effective. Serverless shines for variable, event-driven workloads.
+</InfoBox>
+
+<ProgressCheckpoint section="summary" xpReward={20} />
+
+## Quiz
+
+<Quiz>
+  <Question text="What load balancing algorithm would you use if you need session persistence?">
+    <Answer>Round Robin</Answer>
+    <Answer>Least Connections</Answer>
+    <Answer correct>IP Hash</Answer>
+    <Answer>Random</Answer>
+  </Question>
+  
+  <Question text="What's the main benefit of a CDN?">
+    <Answer>It makes your server faster</Answer>
+    <Answer correct>It serves content from locations closer to users</Answer>
+    <Answer>It provides free hosting</Answer>
+    <Answer>It automatically scales your database</Answer>
+  </Question>
+  
+  <Question text="In a blue-green deployment, what happens if the new version has bugs?">
+    <Answer>You have to fix the bugs before users notice</Answer>
+    <Answer correct>You can instantly switch traffic back to the old version</Answer>
+    <Answer>The deployment automatically rolls back</Answer>
+    <Answer>Users see an error page</Answer>
+  </Question>
+  
+  <Question text="What's a 'cold start' in serverless computing?">
+    <Answer>When the server room temperature drops</Answer>
+    <Answer>When you first deploy your function</Answer>
+    <Answer correct>The delay when a function runs after being idle</Answer>
+    <Answer>When you restart your application</Answer>
+  </Question>
+</Quiz>
+
+---
+
+**Excellent work!** 🏆 You now have a comprehensive understanding of web hosting, from basic concepts to advanced architecture patterns. You're ready to design and deploy scalable, reliable web applications!

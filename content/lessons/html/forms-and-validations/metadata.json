@@ -1,0 +1,31 @@
+{
+  "id": "forms-and-validations",
+  "title": "Forms and Validations",
+  "description": "Master HTML forms, input types, and validation techniques",
+  "milestone": "html",
+  "order": 3,
+  "sections": [
+    "introduction",
+    "form-elements",
+    "input-types",
+    "validation-attributes",
+    "form-submission",
+    "summary"
+  ],
+  "levels": {
+    "beginner": {
+      "estimatedMinutes": 12,
+      "xpReward": 50
+    },
+    "intermediate": {
+      "estimatedMinutes": 18,
+      "xpReward": 100
+    },
+    "advanced": {
+      "estimatedMinutes": 25,
+      "xpReward": 200
+    }
+  },
+  "prerequisites": ["learn-the-basics"],
+  "tags": ["html", "forms", "validation", "inputs"]
+}

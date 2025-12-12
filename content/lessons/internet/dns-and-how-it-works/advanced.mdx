@@ -1,0 +1,346 @@
+# DNS and How It Works
+
+Welcome to the advanced DNS lesson. We'll explore the DNS hierarchy in depth, security mechanisms like DNSSEC, advanced caching strategies, and real-world troubleshooting techniques.
+
+## DNS Hierarchy Deep Dive
+
+The DNS namespace is organized as an inverted tree with the root at the top.
+
+<DnsResolutionSimulator domain="api.staging.example.com" showTiming={true} interactive={true} />
+
+### The Root Zone
+
+The root zone is managed by ICANN and contains pointers to all TLD servers. There are 13 root server identities (A through M), but each is actually a cluster of hundreds of servers distributed globally using **anycast routing**.
+
+```
+Root Server Operators:
+A - Verisign          H - US Army Research Lab
+B - USC-ISI           I - Netnod (Sweden)
+C - Cogent            J - Verisign
+D - University of MD  K - RIPE NCC
+E - NASA              L - ICANN
+F - ISC               M - WIDE Project (Japan)
+G - US DoD
+```
+
+### TLD Categories
+
+| Category | Examples | Management |
+|----------|----------|------------|
+| **gTLD** (Generic) | .com, .org, .net | ICANN-accredited registries |
+| **ccTLD** (Country Code) | .uk, .de, .jp | National authorities |
+| **sTLD** (Sponsored) | .edu, .gov, .mil | Specific organizations |
+| **New gTLDs** | .app, .dev, .io | Various registries |
+
+<ProgressCheckpoint section="introduction" xpReward={30} />
+
+## Recursive vs Iterative Queries
+
+DNS supports two query modes:
+
+### Recursive Query
+The resolver does all the work and returns the final answer.
+
+```
+Client → Resolver: "What is example.com?" (recursive)
+Resolver → Client: "93.184.216.34" (final answer)
+```
+
+### Iterative Query
+The server returns the best answer it has, which may be a referral.
+
+```
+Resolver → Root: "What is example.com?" (iterative)
+Root → Resolver: "I don't know, but ask .com servers"
+
+Resolver → .com: "What is example.com?" (iterative)
+.com → Resolver: "I don't know, but ask ns1.example.com"
+
+Resolver → ns1.example.com: "What is example.com?"
+ns1.example.com → Resolver: "93.184.216.34"
+```
+
+<InfoBox type="info" title="Query Flags">
+DNS queries include flags like RD (Recursion Desired) and RA (Recursion Available) to negotiate query behavior between client and server.
+</InfoBox>
+
+<ProgressCheckpoint section="dns-basics" xpReward={30} />
+
+## Advanced Record Types
+
+Beyond the common records, DNS supports specialized types:
+
+<DnsRecordExplorer domain="enterprise.example.com" showAllTypes={true} />
+
+### SOA Record (Start of Authority)
+
+Contains administrative information about the zone:
+
+```dns
+example.com.  IN  SOA  ns1.example.com. admin.example.com. (
+                      2024010101  ; Serial number
+                      7200        ; Refresh (2 hours)
+                      3600        ; Retry (1 hour)
+                      1209600     ; Expire (2 weeks)
+                      86400       ; Minimum TTL (1 day)
+                      )
+```
+
+**Fields explained:**
+- **Serial**: Version number (increment on changes)
+- **Refresh**: How often secondaries check for updates
+- **Retry**: Retry interval if refresh fails
+- **Expire**: When secondary data becomes invalid
+- **Minimum**: Default TTL for negative caching
+
+### SRV Record (Service)
+
+Specifies location of services:
+
+```dns
+_sip._tcp.example.com.  IN  SRV  10 60 5060 sipserver.example.com.
+;                            priority weight port target
+```
+
+Used by protocols like SIP, XMPP, and LDAP for service discovery.
+
+### CAA Record (Certificate Authority Authorization)
+
+Controls which CAs can issue certificates for your domain:
+
+```dns
+example.com.  IN  CAA  0 issue "letsencrypt.org"
+example.com.  IN  CAA  0 issuewild ";"  ; No wildcard certs
+example.com.  IN  CAA  0 iodef "mailto:security@example.com"
+```
+
+### PTR Record (Pointer)
+
+Reverse DNS - maps IP addresses to domain names:
+
+```dns
+34.216.184.93.in-addr.arpa.  IN  PTR  example.com.
+```
+
+Used for email server verification and security logging.
+
+<ProgressCheckpoint section="dns-records" xpReward={30} />
+
+## DNSSEC: DNS Security Extensions
+
+DNS was designed without security. DNSSEC adds cryptographic signatures to prevent:
+
+- **Cache poisoning**: Injecting false records into resolver caches
+- **Man-in-the-middle attacks**: Intercepting and modifying DNS responses
+- **DNS spoofing**: Returning fake IP addresses
+
+### How DNSSEC Works
+
+```
+Zone Signing:
+1. Generate key pair (KSK and ZSK)
+2. Sign all records with ZSK
+3. Sign ZSK with KSK
+4. Publish DS record in parent zone
+
+Validation Chain:
+Root (signed) → .com (signed) → example.com (signed) → Record
+     ↓              ↓                ↓
+   DS record    DS record        DNSKEY
+```
+
+### DNSSEC Record Types
+
+| Record | Purpose |
+|--------|---------|
+| **DNSKEY** | Public keys for the zone |
+| **RRSIG** | Signatures for record sets |
+| **DS** | Delegation Signer (hash of child's key) |
+| **NSEC/NSEC3** | Authenticated denial of existence |
+
+### DNSSEC Validation Example
+
+```bash
+# Check DNSSEC status
+dig +dnssec example.com
+
+# Verify chain of trust
+dig +trace +dnssec example.com
+```
+
+<InfoBox type="warning" title="DNSSEC Challenges">
+DNSSEC increases DNS response sizes (can cause UDP fragmentation), requires careful key management, and doesn't encrypt queries (use DoH/DoT for privacy).
+</InfoBox>
+
+<ProgressCheckpoint section="resolution-process" xpReward={30} />
+
+## DNS over HTTPS (DoH) and DNS over TLS (DoT)
+
+Traditional DNS queries are unencrypted. Modern alternatives:
+
+### DNS over TLS (DoT)
+- Port 853
+- Encrypts DNS traffic with TLS
+- Easy to block (dedicated port)
+
+### DNS over HTTPS (DoH)
+- Port 443 (same as HTTPS)
+- DNS queries look like regular web traffic
+- Harder to block or monitor
+
+```javascript
+// DoH query example
+const response = await fetch('https://cloudflare-dns.com/dns-query', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/dns-message',
+    'Accept': 'application/dns-message'
+  },
+  body: dnsQueryBuffer
+});
+```
+
+### Public DoH/DoT Providers
+
+| Provider | DoH URL | DoT Server |
+|----------|---------|------------|
+| Cloudflare | `https://cloudflare-dns.com/dns-query` | `1.1.1.1` |
+| Google | `https://dns.google/dns-query` | `dns.google` |
+| Quad9 | `https://dns.quad9.net/dns-query` | `dns.quad9.net` |
+
+<ProgressCheckpoint section="caching-ttl" xpReward={30} />
+
+## Advanced Caching and Performance
+
+### Negative Caching
+
+DNS caches "does not exist" responses too (NXDOMAIN). The SOA minimum TTL controls this.
+
+```dns
+; Query for nonexistent.example.com
+; Response: NXDOMAIN
+; Cached for: SOA minimum TTL (e.g., 86400 seconds)
+```
+
+### Prefetching and Preconnect
+
+Browsers can resolve DNS before users click links:
+
+```html
+<!-- DNS prefetch -->
+<link rel="dns-prefetch" href="//api.example.com">
+
+<!-- Preconnect (DNS + TCP + TLS) -->
+<link rel="preconnect" href="https://api.example.com">
+```
+
+### Anycast DNS
+
+Deploy DNS servers globally with the same IP address. Routing protocols direct queries to the nearest server.
+
+```
+User in Tokyo → Tokyo DNS Server (same IP)
+User in London → London DNS Server (same IP)
+```
+
+Benefits:
+- Lower latency
+- DDoS mitigation (attacks distributed)
+- Automatic failover
+
+## Troubleshooting DNS
+
+### Essential Commands
+
+```bash
+# Basic lookup
+dig example.com
+
+# Specific record type
+dig example.com MX
+
+# Trace full resolution path
+dig +trace example.com
+
+# Query specific server
+dig @8.8.8.8 example.com
+
+# Reverse lookup
+dig -x 93.184.216.34
+
+# Short output
+dig +short example.com
+
+# Check all records
+dig example.com ANY
+```
+
+### Common Issues and Solutions
+
+| Issue | Diagnosis | Solution |
+|-------|-----------|----------|
+| **Slow resolution** | `dig +stats` shows high query time | Check resolver, consider DoH |
+| **SERVFAIL** | `dig +trace` shows where it fails | Check DNSSEC, zone configuration |
+| **NXDOMAIN** | Record doesn't exist | Verify record exists, check TTL |
+| **Propagation delay** | Old record still returned | Wait for TTL, flush local cache |
+
+### Flushing DNS Cache
+
+```bash
+# Windows
+ipconfig /flushdns
+
+# macOS
+sudo dscacheutil -flushcache; sudo killall -HUP mDNSResponder
+
+# Linux (systemd-resolved)
+sudo systemd-resolve --flush-caches
+
+# Chrome browser
+chrome://net-internals/#dns → Clear host cache
+```
+
+<ProgressCheckpoint section="summary" xpReward={30} />
+
+## Quiz
+
+<Quiz>
+  <Question text="What does DNSSEC protect against?">
+    <Answer>Slow DNS queries</Answer>
+    <Answer correct>Cache poisoning and DNS spoofing</Answer>
+    <Answer>DDoS attacks</Answer>
+    <Answer>DNS query logging</Answer>
+  </Question>
+  
+  <Question text="What is the difference between DoH and DoT?">
+    <Answer>DoH is faster than DoT</Answer>
+    <Answer>DoT encrypts queries, DoH doesn't</Answer>
+    <Answer correct>DoH uses port 443, DoT uses port 853</Answer>
+    <Answer>They are the same thing</Answer>
+  </Question>
+  
+  <Question text="What does the SOA record's 'serial' field indicate?">
+    <Answer>The server's IP address</Answer>
+    <Answer correct>The zone's version number</Answer>
+    <Answer>The TTL for all records</Answer>
+    <Answer>The number of DNS servers</Answer>
+  </Question>
+  
+  <Question text="What is anycast DNS?">
+    <Answer>A type of DNS record</Answer>
+    <Answer>Encrypted DNS queries</Answer>
+    <Answer correct>Multiple servers sharing the same IP, routing to nearest</Answer>
+    <Answer>A DNS caching strategy</Answer>
+  </Question>
+  
+  <Question text="Which command traces the full DNS resolution path?">
+    <Answer>dig example.com</Answer>
+    <Answer>nslookup example.com</Answer>
+    <Answer correct>dig +trace example.com</Answer>
+    <Answer>ping example.com</Answer>
+  </Question>
+</Quiz>
+
+---
+
+**Outstanding!** 🎉 You've mastered advanced DNS concepts including DNSSEC, encrypted DNS protocols, and troubleshooting techniques. You're now equipped to manage and debug DNS for production systems.

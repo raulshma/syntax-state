@@ -1,0 +1,343 @@
+# Writing Semantic HTML
+
+You've learned the basics of semantic HTML — now let's dive deeper into all the semantic elements and when to use each one. Understanding these elements will help you create well-structured, accessible, and SEO-friendly web pages.
+
+<StructureComparison initialExample="article" />
+
+## The Complete Semantic Element Family
+
+HTML5 introduced several semantic elements. Let's explore each one in detail:
+
+### Document Structure Elements
+
+#### `<header>`
+The header element represents introductory content. It can be used for:
+- The page header (logo, navigation, search)
+- Section headers within articles
+
+```html
+<!-- Page header -->
+<header>
+  <h1>Company Name</h1>
+  <nav>...</nav>
+</header>
+
+<!-- Article header -->
+<article>
+  <header>
+    <h2>Article Title</h2>
+    <p>By Author Name</p>
+  </header>
+  <p>Article content...</p>
+</article>
+```
+
+#### `<nav>`
+Contains navigation links. Use it for major navigation blocks, not every group of links.
+
+```html
+<nav aria-label="Main navigation">
+  <ul>
+    <li><a href="/">Home</a></li>
+    <li><a href="/products">Products</a></li>
+    <li><a href="/about">About</a></li>
+  </ul>
+</nav>
+```
+
+<InfoBox type="tip" title="Multiple Nav Elements">
+A page can have multiple `<nav>` elements — for example, main navigation and footer navigation. Use `aria-label` to distinguish them for screen readers.
+</InfoBox>
+
+#### `<main>`
+The dominant content of the document. Must be unique — only one per page.
+
+```html
+<main>
+  <h1>Page Title</h1>
+  <article>...</article>
+  <article>...</article>
+</main>
+```
+
+#### `<footer>`
+Footer for its nearest sectioning content or the page. Contains information about the author, copyright, related links, etc.
+
+```html
+<footer>
+  <nav aria-label="Footer navigation">
+    <a href="/privacy">Privacy</a>
+    <a href="/terms">Terms</a>
+  </nav>
+  <p>© 2024 Company Name</p>
+</footer>
+```
+
+<ProgressCheckpoint section="introduction" xpReward={20} />
+
+## Content Sectioning Elements
+
+### `<article>`
+A self-contained composition that could be distributed independently. Think: blog posts, news articles, comments, forum posts.
+
+```html
+<article>
+  <header>
+    <h2>How to Learn JavaScript</h2>
+    <time datetime="2024-12-12">December 12, 2024</time>
+  </header>
+  <p>JavaScript is a versatile programming language...</p>
+  <footer>
+    <p>Written by Jane Developer</p>
+  </footer>
+</article>
+```
+
+<KeyConcept title="The Article Test">
+Ask yourself: "Could this content make sense on its own, outside this page?" If yes, use `<article>`.
+</KeyConcept>
+
+### `<section>`
+A thematic grouping of content, typically with a heading. Use for chapters, tabbed content, or numbered sections.
+
+```html
+<section>
+  <h2>Features</h2>
+  <ul>
+    <li>Fast performance</li>
+    <li>Easy to use</li>
+    <li>Great support</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Pricing</h2>
+  <p>Starting at $9.99/month</p>
+</section>
+```
+
+### `<aside>`
+Content tangentially related to the main content. Perfect for sidebars, pull quotes, advertising, or related links.
+
+```html
+<main>
+  <article>
+    <h1>Main Article</h1>
+    <p>Article content...</p>
+  </article>
+  
+  <aside>
+    <h2>Related Articles</h2>
+    <ul>
+      <li><a href="#">Article 1</a></li>
+      <li><a href="#">Article 2</a></li>
+    </ul>
+  </aside>
+</main>
+```
+
+<ProgressCheckpoint section="semantic-elements" xpReward={20} />
+
+## Article vs Section: When to Use Which?
+
+This is a common source of confusion. Here's a clear guide:
+
+| Use `<article>` when... | Use `<section>` when... |
+|------------------------|------------------------|
+| Content is self-contained | Content is part of something larger |
+| Could be syndicated (RSS) | Needs context from parent |
+| Has its own meaning | Groups related content |
+| Examples: blog post, comment | Examples: chapters, tabs |
+
+```html
+<!-- Blog page with articles -->
+<main>
+  <article>
+    <h2>First Blog Post</h2>
+    <p>Content...</p>
+  </article>
+  
+  <article>
+    <h2>Second Blog Post</h2>
+    <p>Content...</p>
+  </article>
+</main>
+
+<!-- Single article with sections -->
+<article>
+  <h1>Complete Guide to CSS</h1>
+  
+  <section>
+    <h2>Chapter 1: Basics</h2>
+    <p>Content...</p>
+  </section>
+  
+  <section>
+    <h2>Chapter 2: Layout</h2>
+    <p>Content...</p>
+  </section>
+</article>
+```
+
+<SemanticStructureBuilder />
+
+<ProgressCheckpoint section="page-structure" xpReward={20} />
+
+## Additional Semantic Elements
+
+### `<figure>` and `<figcaption>`
+For self-contained content like images, diagrams, or code snippets with captions.
+
+```html
+<figure>
+  <img src="chart.png" alt="Sales growth chart">
+  <figcaption>
+    Figure 1: Sales growth over the past year
+  </figcaption>
+</figure>
+```
+
+### `<time>`
+Represents a specific time or date. The `datetime` attribute provides a machine-readable format.
+
+```html
+<time datetime="2024-12-12">December 12, 2024</time>
+<time datetime="14:30">2:30 PM</time>
+<time datetime="PT2H30M">2 hours 30 minutes</time>
+```
+
+### `<address>`
+Contact information for the nearest `<article>` or `<body>`.
+
+```html
+<address>
+  <p>Contact us at:</p>
+  <a href="mailto:info@example.com">info@example.com</a>
+</address>
+```
+
+### `<mark>`
+Highlighted text for reference or notation.
+
+```html
+<p>Search results for "semantic": 
+  <mark>Semantic</mark> HTML is important.
+</p>
+```
+
+<ProgressCheckpoint section="accessibility-benefits" xpReward={15} />
+
+## Semantic HTML and Accessibility
+
+Screen readers use semantic elements to create a page outline. Users can:
+
+- Jump to `<main>` to skip navigation
+- List all `<nav>` elements
+- Navigate by headings within `<article>` elements
+- Understand content relationships
+
+<StructureComparison initialExample="navigation" />
+
+### Landmark Roles
+
+Semantic elements automatically have ARIA landmark roles:
+
+| Element | Landmark Role |
+|---------|--------------|
+| `<header>` | banner (when top-level) |
+| `<nav>` | navigation |
+| `<main>` | main |
+| `<aside>` | complementary |
+| `<footer>` | contentinfo (when top-level) |
+| `<section>` | region (with accessible name) |
+| `<article>` | article |
+
+<InfoBox type="info" title="Implicit vs Explicit Roles">
+Semantic elements have implicit ARIA roles. You don't need to add `role="navigation"` to a `<nav>` element — it's automatic!
+</InfoBox>
+
+<ProgressCheckpoint section="best-practices" xpReward={15} />
+
+## Best Practices
+
+### 1. Don't Overuse Sections
+Not everything needs to be in a `<section>`. Use it for thematic groupings with headings.
+
+```html
+<!-- ❌ Unnecessary -->
+<section>
+  <p>Just a paragraph</p>
+</section>
+
+<!-- ✅ Appropriate -->
+<section>
+  <h2>Our Services</h2>
+  <p>We offer...</p>
+</section>
+```
+
+### 2. Maintain Heading Hierarchy
+Each section should have a heading. Don't skip heading levels.
+
+```html
+<!-- ❌ Skipping levels -->
+<h1>Title</h1>
+<h4>Subtitle</h4>
+
+<!-- ✅ Proper hierarchy -->
+<h1>Title</h1>
+<h2>Subtitle</h2>
+```
+
+### 3. Use Divs for Styling Only
+When you need a container purely for CSS styling, use `<div>`. Don't force semantic elements.
+
+```html
+<!-- ✅ Div for layout wrapper -->
+<div class="container">
+  <main>...</main>
+  <aside>...</aside>
+</div>
+```
+
+<KeyConcept title="Semantic First, Div Second">
+Always ask: "Is there a semantic element for this?" If not, use `<div>`.
+</KeyConcept>
+
+<ProgressCheckpoint section="summary" xpReward={10} />
+
+## Quick Quiz
+
+<Quiz>
+  <Question text="When should you use <article> instead of <section>?">
+    <Answer>When content needs styling</Answer>
+    <Answer correct>When content is self-contained and could be distributed independently</Answer>
+    <Answer>When content has a heading</Answer>
+    <Answer>When content is in the sidebar</Answer>
+  </Question>
+  
+  <Question text="What landmark role does <nav> have?">
+    <Answer>banner</Answer>
+    <Answer correct>navigation</Answer>
+    <Answer>main</Answer>
+    <Answer>complementary</Answer>
+  </Question>
+  
+  <Question text="How many <main> elements should a page have?">
+    <Answer>As many as needed</Answer>
+    <Answer correct>Exactly one</Answer>
+    <Answer>One per section</Answer>
+    <Answer>None, use article instead</Answer>
+  </Question>
+  
+  <Question text="What is <aside> used for?">
+    <Answer>The main content</Answer>
+    <Answer>Navigation links</Answer>
+    <Answer correct>Content tangentially related to the main content</Answer>
+    <Answer>Footer information</Answer>
+  </Question>
+</Quiz>
+
+---
+
+**Excellent work!** 🎉 You now have a solid understanding of all semantic HTML elements. In the advanced level, we'll explore ARIA roles, how assistive technologies interpret semantic markup, and advanced accessibility patterns.

@@ -1,0 +1,150 @@
+# DNS and How It Works
+
+Imagine you want to call your friend, but you only know their name, not their phone number. What do you do? You look them up in a phone book! 
+
+**DNS (Domain Name System)** works exactly like a phone book for the Internet. It translates human-friendly names (like `google.com`) into computer-friendly numbers (like `142.250.80.46`).
+
+<DnsResolutionSimulator domain="google.com" />
+
+## The Phone Book Analogy
+
+Think of DNS like this:
+
+- **Domain names** (like `google.com`) are like people's names
+- **IP addresses** (like `142.250.80.46`) are like phone numbers
+- **DNS servers** are like phone books that know everyone's number
+- **Your browser** is like you, looking up a number to make a call
+
+Without DNS, you'd have to memorize long strings of numbers for every website you want to visit. Imagine typing `142.250.80.46` instead of `google.com`!
+
+<InfoBox type="tip" title="Fun Fact">
+DNS handles over 1 trillion queries every day! That's like the entire world looking up phone numbers simultaneously, all day long.
+</InfoBox>
+
+<ProgressCheckpoint section="introduction" xpReward={15} />
+
+## How DNS Works (Simplified)
+
+When you type a website address into your browser, here's what happens:
+
+### Step 1: You Ask
+You type `www.example.com` in your browser and press Enter.
+
+### Step 2: Check Local Memory
+Your computer first checks if it already knows the answer (like remembering a friend's number).
+
+### Step 3: Ask the DNS Server
+If your computer doesn't know, it asks a DNS server: "What's the IP address for example.com?"
+
+### Step 4: Get the Answer
+The DNS server responds: "The IP address is 93.184.216.34"
+
+### Step 5: Connect!
+Your browser now knows where to go and loads the website.
+
+<KeyConcept title="DNS = The Internet's Phone Book">
+DNS translates domain names (easy for humans) into IP addresses (needed by computers). Without it, the Internet would be nearly impossible to use!
+</KeyConcept>
+
+<ProgressCheckpoint section="dns-basics" xpReward={15} />
+
+## Types of DNS Records
+
+DNS doesn't just store IP addresses. It stores different types of information called **records**. Here are the most common ones:
+
+<DnsRecordExplorer domain="example.com" />
+
+### The Main Record Types:
+
+| Record | What It Does | Real-World Analogy |
+|--------|--------------|-------------------|
+| **A** | Points to an IP address | Your home address |
+| **CNAME** | Points to another domain | A forwarding address |
+| **MX** | Points to email servers | Your mailbox location |
+| **TXT** | Stores text information | Notes about you |
+
+<InfoBox type="info" title="Why So Many Record Types?">
+Different records serve different purposes. A records help find websites, MX records help deliver email, and TXT records can verify you own a domain. It's like having different sections in a phone book!
+</InfoBox>
+
+<ProgressCheckpoint section="dns-records" xpReward={10} />
+
+## The DNS Journey
+
+Let's follow a DNS request step by step:
+
+1. **Your Browser** → Checks its own memory (cache)
+2. **Your Computer** → Checks the operating system's memory
+3. **DNS Resolver** → Your ISP's DNS server starts looking
+4. **Root Server** → Points to the right category (.com, .org, etc.)
+5. **TLD Server** → Points to the specific domain's server
+6. **Authoritative Server** → Has the actual answer!
+
+The answer then travels back through all these steps to your browser. All of this happens in milliseconds!
+
+<KeyConcept title="DNS is Hierarchical">
+DNS works like a tree. Root servers at the top know where to find .com servers, which know where to find google.com servers, and so on.
+</KeyConcept>
+
+<ProgressCheckpoint section="resolution-process" xpReward={10} />
+
+## DNS Caching: Remembering Answers
+
+To speed things up, DNS answers are **cached** (saved) at multiple levels:
+
+- **Browser cache**: Your browser remembers recent lookups
+- **OS cache**: Your computer remembers too
+- **ISP cache**: Your internet provider saves popular lookups
+
+This is why the second time you visit a website, it often loads faster!
+
+<InfoBox type="tip" title="TTL: Time To Live">
+Each DNS record has a TTL that says how long it can be cached. After that time, a fresh lookup is needed. This ensures you get updated information if a website moves to a new server.
+</InfoBox>
+
+<ProgressCheckpoint section="caching-ttl" xpReward={10} />
+
+## Key Takeaways
+
+<KeyConcept title="DNS Translates Names to Numbers">
+DNS converts human-readable domain names into IP addresses that computers use to find each other.
+</KeyConcept>
+
+<KeyConcept title="It's Fast and Distributed">
+DNS servers are spread around the world and use caching to answer billions of queries in milliseconds.
+</KeyConcept>
+
+<KeyConcept title="Multiple Record Types">
+DNS stores different types of information: A records for websites, MX for email, and more.
+</KeyConcept>
+
+<ProgressCheckpoint section="summary" xpReward={10} />
+
+## Quick Quiz
+
+<Quiz>
+  <Question text="What does DNS stand for?">
+    <Answer correct>Domain Name System</Answer>
+    <Answer>Digital Network Service</Answer>
+    <Answer>Data Name Server</Answer>
+    <Answer>Domain Number System</Answer>
+  </Question>
+  
+  <Question text="What does DNS translate domain names into?">
+    <Answer>Website content</Answer>
+    <Answer>Email addresses</Answer>
+    <Answer correct>IP addresses</Answer>
+    <Answer>HTML code</Answer>
+  </Question>
+  
+  <Question text="Why is DNS caching useful?">
+    <Answer>It makes websites more secure</Answer>
+    <Answer correct>It speeds up repeated lookups</Answer>
+    <Answer>It stores website passwords</Answer>
+    <Answer>It blocks malicious websites</Answer>
+  </Question>
+</Quiz>
+
+---
+
+**Great job!** 🎉 You now understand the basics of DNS. In the intermediate level, we'll explore different DNS record types in detail and learn how to use them in practice.

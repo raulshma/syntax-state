@@ -1,0 +1,409 @@
+# Accessibility
+
+At the advanced level, we'll master WCAG 2.1 success criteria, professional testing methodologies, and build truly inclusive web experiences that meet legal and ethical standards.
+
+<AccessibilityChecker initialExample="color-contrast" />
+
+## WCAG 2.1 Deep Dive
+
+The Web Content Accessibility Guidelines (WCAG) 2.1 defines three conformance levels:
+
+| Level | Description | Target |
+|-------|-------------|--------|
+| **A** | Minimum accessibility | Basic requirements |
+| **AA** | Standard accessibility | Legal requirement in many jurisdictions |
+| **AAA** | Enhanced accessibility | Specialized audiences |
+
+Most organizations target **Level AA** compliance.
+
+<InfoBox type="info" title="Legal Requirements">
+Many countries require WCAG 2.1 AA compliance: ADA (US), EN 301 549 (EU), AODA (Canada), DDA (UK). Non-compliance can result in lawsuits and fines.
+</InfoBox>
+
+<ProgressCheckpoint section="introduction" xpReward={30} />
+
+## Critical WCAG Success Criteria
+
+### 1.4.3 Contrast (Minimum) - Level AA
+
+Text must have a contrast ratio of at least:
+- **4.5:1** for normal text
+- **3:1** for large text (18pt+ or 14pt+ bold)
+
+```css
+/* Good contrast */
+.text-good {
+  color: #333333;      /* Dark gray */
+  background: #ffffff; /* White */
+  /* Ratio: 12.63:1 ✓ */
+}
+
+/* Poor contrast */
+.text-bad {
+  color: #999999;      /* Light gray */
+  background: #ffffff; /* White */
+  /* Ratio: 2.85:1 ✗ */
+}
+```
+
+### 1.4.11 Non-text Contrast - Level AA
+
+UI components and graphics need **3:1** contrast:
+
+```css
+/* Form inputs need visible borders */
+input {
+  border: 2px solid #767676; /* 4.54:1 against white */
+}
+
+input:focus {
+  outline: 3px solid #0066cc; /* Visible focus indicator */
+}
+```
+
+### 2.4.7 Focus Visible - Level AA
+
+Focus indicators must be clearly visible:
+
+```css
+/* Never do this */
+*:focus {
+  outline: none; /* Removes focus indicator! */
+}
+
+/* Do this instead */
+:focus-visible {
+  outline: 3px solid #0066cc;
+  outline-offset: 2px;
+}
+
+/* Custom focus styles */
+button:focus-visible {
+  box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.5);
+}
+```
+
+<ScreenReaderSimulator initialExample="aria-live" />
+
+<ProgressCheckpoint section="accessibility-basics" xpReward={30} />
+
+## Advanced ARIA Patterns
+
+### Complex Widget: Combobox with Autocomplete
+
+```html
+<label for="city-input">City:</label>
+<div class="combobox-wrapper">
+  <input type="text"
+         id="city-input"
+         role="combobox"
+         aria-expanded="false"
+         aria-autocomplete="list"
+         aria-controls="city-listbox"
+         aria-activedescendant="">
+  
+  <ul id="city-listbox"
+      role="listbox"
+      aria-label="Cities"
+      hidden>
+    <li id="city-1" role="option">New York</li>
+    <li id="city-2" role="option">Los Angeles</li>
+    <li id="city-3" role="option">Chicago</li>
+  </ul>
+</div>
+```
+
+```javascript
+class AccessibleCombobox {
+  constructor(input, listbox) {
+    this.input = input;
+    this.listbox = listbox;
+    this.options = listbox.querySelectorAll('[role="option"]');
+    this.activeIndex = -1;
+    
+    this.input.addEventListener('keydown', this.handleKeydown.bind(this));
+    this.input.addEventListener('input', this.handleInput.bind(this));
+  }
+  
+  handleKeydown(e) {
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        this.moveSelection(1);
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        this.moveSelection(-1);
+        break;
+      case 'Enter':
+        e.preventDefault();
+        this.selectOption();
+        break;
+      case 'Escape':
+        this.close();
+        break;
+    }
+  }
+  
+  moveSelection(delta) {
+    const newIndex = Math.max(0, 
+      Math.min(this.options.length - 1, this.activeIndex + delta));
+    
+    if (this.activeIndex >= 0) {
+      this.options[this.activeIndex].removeAttribute('aria-selected');
+    }
+    
+    this.activeIndex = newIndex;
+    this.options[newIndex].setAttribute('aria-selected', 'true');
+    this.input.setAttribute('aria-activedescendant', 
+      this.options[newIndex].id);
+  }
+  
+  selectOption() {
+    if (this.activeIndex >= 0) {
+      this.input.value = this.options[this.activeIndex].textContent;
+      this.close();
+    }
+  }
+  
+  close() {
+    this.listbox.hidden = true;
+    this.input.setAttribute('aria-expanded', 'false');
+    this.input.removeAttribute('aria-activedescendant');
+  }
+}
+```
+
+### Live Region Best Practices
+
+```html
+<!-- Status messages -->
+<div role="status" aria-live="polite" aria-atomic="true">
+  <!-- Content updated dynamically -->
+</div>
+
+<!-- Error alerts -->
+<div role="alert" aria-live="assertive">
+  <!-- Critical errors only -->
+</div>
+
+<!-- Progress updates -->
+<div aria-live="polite" aria-busy="true">
+  Loading... 45% complete
+</div>
+```
+
+<KeyConcept title="aria-atomic">
+When `aria-atomic="true"`, the entire region is announced on any change. When `false`, only the changed content is announced.
+</KeyConcept>
+
+<ProgressCheckpoint section="aria-attributes" xpReward={30} />
+
+## Professional Testing Methodology
+
+### Automated Testing Tools
+
+| Tool | Type | Best For |
+|------|------|----------|
+| **axe-core** | Library | CI/CD integration |
+| **Lighthouse** | Browser | Quick audits |
+| **WAVE** | Extension | Visual feedback |
+| **Pa11y** | CLI | Automated testing |
+
+```javascript
+// axe-core integration example
+import { axe, toHaveNoViolations } from 'jest-axe';
+
+expect.extend(toHaveNoViolations);
+
+test('page has no accessibility violations', async () => {
+  const { container } = render(<MyComponent />);
+  const results = await axe(container);
+  expect(results).toHaveNoViolations();
+});
+```
+
+### Manual Testing Checklist
+
+1. **Keyboard Navigation**
+   - Tab through entire page
+   - Verify focus order is logical
+   - Check all interactive elements are reachable
+   - Test Escape key closes modals/menus
+
+2. **Screen Reader Testing**
+   - Test with NVDA (Windows, free)
+   - Test with VoiceOver (macOS/iOS, built-in)
+   - Test with JAWS (Windows, commercial)
+   - Verify all content is announced
+   - Check form labels and errors
+
+3. **Visual Testing**
+   - Test at 200% zoom
+   - Test with Windows High Contrast mode
+   - Verify color isn't the only indicator
+   - Check focus indicators are visible
+
+4. **Cognitive Testing**
+   - Verify error messages are clear
+   - Check form instructions are visible
+   - Test timeout warnings
+   - Verify consistent navigation
+
+<InfoBox type="tip" title="Screen Reader Commands">
+Learn basic screen reader commands: NVDA uses Insert key, VoiceOver uses VO (Ctrl+Option). Practice navigating by headings (H), landmarks (D), and forms (F).
+</InfoBox>
+
+<ProgressCheckpoint section="keyboard-navigation" xpReward={30} />
+
+## Accessibility in Modern Frameworks
+
+### React Accessibility
+
+```jsx
+// Accessible component example
+function Modal({ isOpen, onClose, title, children }) {
+  const titleId = useId();
+  const modalRef = useRef(null);
+  
+  useEffect(() => {
+    if (isOpen) {
+      // Save previous focus
+      const previousFocus = document.activeElement;
+      
+      // Focus modal
+      modalRef.current?.focus();
+      
+      // Restore focus on close
+      return () => previousFocus?.focus();
+    }
+  }, [isOpen]);
+  
+  if (!isOpen) return null;
+  
+  return (
+    <div
+      ref={modalRef}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby={titleId}
+      tabIndex={-1}
+      onKeyDown={(e) => e.key === 'Escape' && onClose()}
+    >
+      <h2 id={titleId}>{title}</h2>
+      {children}
+      <button onClick={onClose}>Close</button>
+    </div>
+  );
+}
+```
+
+### Accessible Routing
+
+```jsx
+// Announce route changes
+function RouteAnnouncer() {
+  const location = useLocation();
+  const [announcement, setAnnouncement] = useState('');
+  
+  useEffect(() => {
+    // Get page title or generate from route
+    const pageTitle = document.title || location.pathname;
+    setAnnouncement(`Navigated to ${pageTitle}`);
+  }, [location]);
+  
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      aria-atomic="true"
+      className="sr-only"
+    >
+      {announcement}
+    </div>
+  );
+}
+```
+
+### CSS for Accessibility
+
+```css
+/* Screen reader only content */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Respect user preferences */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media (prefers-contrast: high) {
+  :root {
+    --text-color: #000;
+    --bg-color: #fff;
+    --border-color: #000;
+  }
+}
+```
+
+<ProgressCheckpoint section="testing-tools" xpReward={20} />
+
+## Key Takeaways
+
+<KeyConcept title="WCAG AA is the Standard">
+Target WCAG 2.1 Level AA for legal compliance and good user experience. Document your conformance.
+</KeyConcept>
+
+<KeyConcept title="Automated + Manual Testing">
+Automated tools catch ~30% of issues. Manual testing with real assistive technology is essential.
+</KeyConcept>
+
+<KeyConcept title="Accessibility is Ongoing">
+Build accessibility into your development process. Test early, test often, and involve users with disabilities.
+</KeyConcept>
+
+<ProgressCheckpoint section="summary" xpReward={10} />
+
+## Quick Quiz
+
+<Quiz>
+  <Question text="What contrast ratio is required for normal text at WCAG AA?">
+    <Answer>3:1</Answer>
+    <Answer correct>4.5:1</Answer>
+    <Answer>7:1</Answer>
+    <Answer>2:1</Answer>
+  </Question>
+  
+  <Question text="What percentage of accessibility issues can automated tools typically catch?">
+    <Answer>90%</Answer>
+    <Answer>70%</Answer>
+    <Answer correct>30%</Answer>
+    <Answer>50%</Answer>
+  </Question>
+  
+  <Question text="Which WCAG level is typically required for legal compliance?">
+    <Answer>Level A</Answer>
+    <Answer correct>Level AA</Answer>
+    <Answer>Level AAA</Answer>
+    <Answer>All levels</Answer>
+  </Question>
+</Quiz>
+
+---
+
+**Outstanding work!** 🎉 You now have professional-level knowledge of web accessibility. Remember: accessibility is not a feature, it's a fundamental aspect of quality web development. Keep learning, keep testing, and keep making the web better for everyone!

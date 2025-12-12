@@ -1,0 +1,31 @@
+{
+  "id": "learn-the-basics",
+  "title": "Learn the Basics",
+  "description": "Master HTML fundamentals - elements, tags, and document structure",
+  "milestone": "html",
+  "order": 1,
+  "sections": [
+    "introduction",
+    "building-blocks",
+    "document-structure",
+    "common-elements",
+    "nesting-rules",
+    "summary"
+  ],
+  "levels": {
+    "beginner": {
+      "estimatedMinutes": 12,
+      "xpReward": 50
+    },
+    "intermediate": {
+      "estimatedMinutes": 18,
+      "xpReward": 100
+    },
+    "advanced": {
+      "estimatedMinutes": 25,
+      "xpReward": 200
+    }
+  },
+  "prerequisites": [],
+  "tags": ["html", "basics", "elements", "tags", "structure"]
+}

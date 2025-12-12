@@ -1,7 +1,7 @@
 import { ObjectId } from 'mongodb';
 import { cache } from 'react';
 import { getUsersCollection, type UserDocument } from '../collections';
-import { calculateLevel } from '@/lib/gamification';
+import { calculateLevel, checkInternetMilestoneBadge, checkNewBadges, TOTAL_INTERNET_LESSONS } from '@/lib/gamification';
 import { UserGamification } from '@/lib/db/schemas/user';
 
 /**
@@ -44,6 +44,7 @@ export async function ensureGamificationProfile(userId: string): Promise<UserGam
 }
 
 // Add lesson completion and award XP
+// Returns array of newly earned badge IDs
 export async function completeLesson(
   userId: string,
   lessonId: string,
@@ -51,13 +52,13 @@ export async function completeLesson(
   xpEarned: number,
   sections: string[],
   timeSpentSeconds: number
-): Promise<void> {
+): Promise<string[]> {
   const collection = await getUsersCollection();
   const now = new Date();
   
   // Ensure we have current data to calculate new level
   let user = await collection.findOne({ _id: userId });
-  if (!user) return; // Should not happen if authenticated
+  if (!user) return []; // Should not happen if authenticated
   
   const currentGamification = user.gamification || {
     totalXp: 0,
@@ -75,7 +76,7 @@ export async function completeLesson(
   );
 
   if (isAlreadyCompleted) {
-    return;
+    return [];
   }
   
   // Create lesson completion record
@@ -97,19 +98,52 @@ export async function completeLesson(
   const newTotalXp = currentGamification.totalXp + xpEarned;
   const newLevel = calculateLevel(newTotalXp);
   
+  // Check for new badges after this completion
+  const updatedCompletedLessons = [...currentGamification.completedLessons, completionRecord];
+  const existingBadgeIds = currentGamification.badges.map((b: { id: string }) => b.id);
+  
+  // Calculate stats for badge checking
+  const internetLessonsAtLevel = (targetLevel: string) => 
+    updatedCompletedLessons.filter(
+      (l: { lessonId: string; experienceLevel: string }) => 
+        l.lessonId.startsWith('internet/') && l.experienceLevel === targetLevel
+    ).length;
+  
+  const stats = {
+    completedLessons: updatedCompletedLessons.length,
+    currentStreak: currentGamification.currentStreak,
+    totalXp: newTotalXp,
+    level: newLevel,
+    perfectQuizzes: 0, // Would need to track this separately
+    lessonsToday: 1, // Simplified
+    internetLessonsBeginnerCompleted: internetLessonsAtLevel('beginner'),
+    internetLessonsIntermediateCompleted: internetLessonsAtLevel('intermediate'),
+    internetLessonsAdvancedCompleted: internetLessonsAtLevel('advanced'),
+    totalInternetLessons: TOTAL_INTERNET_LESSONS,
+  };
+  
+  const newBadgeIds = checkNewBadges(stats, existingBadgeIds);
+  const newBadges = newBadgeIds.map(id => ({ id, earnedAt: now }));
+  
   // Update operations
-  await collection.updateOne(
-    { _id: userId },
-    {
-      $inc: { 'gamification.totalXp': xpEarned },
-      $set: { 
-        'gamification.level': newLevel,
-        'gamification.lastActivityDate': now,
-        updatedAt: now,
-      },
-      $push: { 'gamification.completedLessons': completionRecord } as any,
-    }
-  );
+  const updateOps: any = {
+    $inc: { 'gamification.totalXp': xpEarned },
+    $set: { 
+      'gamification.level': newLevel,
+      'gamification.lastActivityDate': now,
+      updatedAt: now,
+    },
+    $push: { 'gamification.completedLessons': completionRecord },
+  };
+  
+  // Add new badges if any
+  if (newBadges.length > 0) {
+    updateOps.$push['gamification.badges'] = { $each: newBadges };
+  }
+  
+  await collection.updateOne({ _id: userId }, updateOps);
+  
+  return newBadgeIds;
 }
 
 // Reset lesson progress (remove XP and completion record)
@@ -145,6 +179,209 @@ export async function resetLesson(
       $pull: { 'gamification.completedLessons': { lessonId } } as any,
     }
   );
+}
+
+// Record a quiz answer and award XP
+export async function recordQuizAnswer(
+  userId: string,
+  lessonId: string,
+  questionId: string,
+  selectedAnswer: string,
+  isCorrect: boolean,
+  xpAwarded: number
+): Promise<void> {
+  const collection = await getUsersCollection();
+  const now = new Date();
+  
+  const quizAnswer = {
+    questionId,
+    selectedAnswer,
+    isCorrect,
+    answeredAt: now,
+  };
+  
+  // Find the lesson in completedLessons and add the quiz answer
+  // If lesson doesn't exist yet, we'll add to a pending quiz answers array
+  const user = await collection.findOne({ _id: userId });
+  if (!user) return;
+  
+  const gamification = user.gamification || {
+    totalXp: 0,
+    level: 1,
+    currentStreak: 0,
+    longestStreak: 0,
+    badges: [],
+    completedLessons: [],
+  };
+  
+  // Check if we have a lesson progress for this lesson
+  const lessonIndex = gamification.completedLessons.findIndex(
+    (l: { lessonId: string }) => l.lessonId === lessonId
+  );
+  
+  if (lessonIndex >= 0) {
+    // Add quiz answer to existing lesson progress
+    await collection.updateOne(
+      { _id: userId },
+      {
+        $push: {
+          [`gamification.completedLessons.${lessonIndex}.quizAnswers`]: quizAnswer,
+        } as any,
+        $inc: { 'gamification.totalXp': xpAwarded },
+        $set: {
+          'gamification.level': calculateLevel(gamification.totalXp + xpAwarded),
+          'gamification.lastActivityDate': now,
+          updatedAt: now,
+        },
+      }
+    );
+  } else {
+    // Create a new lesson progress entry with just the quiz answer
+    const newLessonProgress = {
+      lessonId,
+      experienceLevel: 'beginner', // Default, will be updated when lesson is completed
+      sectionsCompleted: [],
+      quizAnswers: [quizAnswer],
+      xpEarned: xpAwarded,
+      startedAt: now,
+      timeSpentSeconds: 0,
+    };
+    
+    await collection.updateOne(
+      { _id: userId },
+      {
+        $push: { 'gamification.completedLessons': newLessonProgress } as any,
+        $inc: { 'gamification.totalXp': xpAwarded },
+        $set: {
+          'gamification.level': calculateLevel(gamification.totalXp + xpAwarded),
+          'gamification.lastActivityDate': now,
+          updatedAt: now,
+        },
+      }
+    );
+  }
+}
+
+/**
+ * Mark a section as complete within a lesson
+ * Persists section completion with timestamp (Requirements 9.1)
+ */
+export async function markSectionComplete(
+  userId: string,
+  lessonId: string,
+  sectionId: string,
+  level: 'beginner' | 'intermediate' | 'advanced',
+  xpEarned: number = 10
+): Promise<{ success: boolean; timestamp: Date }> {
+  const collection = await getUsersCollection();
+  const now = new Date();
+  
+  const user = await collection.findOne({ _id: userId });
+  if (!user) {
+    return { success: false, timestamp: now };
+  }
+  
+  const gamification = user.gamification || {
+    totalXp: 0,
+    level: 1,
+    currentStreak: 0,
+    longestStreak: 0,
+    badges: [],
+    completedLessons: [],
+  };
+  
+  // Find existing lesson progress
+  const lessonIndex = gamification.completedLessons.findIndex(
+    (l: { lessonId: string; experienceLevel: string }) => 
+      l.lessonId === lessonId && l.experienceLevel === level
+  );
+  
+  const sectionCompletion = {
+    sectionId,
+    completedAt: now,
+    xpEarned,
+  };
+  
+  if (lessonIndex >= 0) {
+    // Check if section is already completed
+    const existingLesson = gamification.completedLessons[lessonIndex];
+    const sectionAlreadyCompleted = existingLesson.sectionsCompleted?.some(
+      (s: { sectionId: string }) => s.sectionId === sectionId
+    );
+    
+    if (sectionAlreadyCompleted) {
+      return { success: true, timestamp: now };
+    }
+    
+    // Add section to existing lesson progress
+    await collection.updateOne(
+      { _id: userId },
+      {
+        $push: {
+          [`gamification.completedLessons.${lessonIndex}.sectionsCompleted`]: sectionCompletion,
+        } as any,
+        $set: {
+          'gamification.lastActivityDate': now,
+          updatedAt: now,
+        },
+      }
+    );
+  } else {
+    // Create new lesson progress entry with this section
+    const newLessonProgress = {
+      lessonId,
+      experienceLevel: level,
+      sectionsCompleted: [sectionCompletion],
+      quizAnswers: [],
+      xpEarned: 0, // Will be set when lesson is fully completed
+      startedAt: now,
+      timeSpentSeconds: 0,
+    };
+    
+    await collection.updateOne(
+      { _id: userId },
+      {
+        $push: { 'gamification.completedLessons': newLessonProgress } as any,
+        $set: {
+          'gamification.lastActivityDate': now,
+          updatedAt: now,
+        },
+      }
+    );
+  }
+  
+  return { success: true, timestamp: now };
+}
+
+/**
+ * Get lesson progress for a specific lesson and level
+ */
+export async function getLessonProgress(
+  userId: string,
+  lessonId: string,
+  level: 'beginner' | 'intermediate' | 'advanced'
+): Promise<{
+  sectionsCompleted: Array<{ sectionId: string; completedAt: Date; xpEarned: number }>;
+  quizAnswers: Array<{ questionId: string; isCorrect: boolean }>;
+  isCompleted: boolean;
+} | null> {
+  const collection = await getUsersCollection();
+  const user = await collection.findOne({ _id: userId });
+  
+  if (!user?.gamification) return null;
+  
+  const lessonProgress = user.gamification.completedLessons.find(
+    (l: { lessonId: string; experienceLevel: string }) => 
+      l.lessonId === lessonId && l.experienceLevel === level
+  );
+  
+  if (!lessonProgress) return null;
+  
+  return {
+    sectionsCompleted: lessonProgress.sectionsCompleted || [],
+    quizAnswers: lessonProgress.quizAnswers || [],
+    isCompleted: !!lessonProgress.completedAt,
+  };
 }
 
 // Helper to bridge old 'findByUserId' if generic usage needed, but better to be explicit

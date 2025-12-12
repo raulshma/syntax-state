@@ -20,8 +20,8 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { getObjectivesWithLessons, type ObjectiveLessonInfo } from '@/lib/actions/lessons';
-import { objectiveToLessonSlug } from '@/lib/utils/lesson-utils';
-import type { Roadmap, RoadmapNode } from '@/lib/db/schemas/roadmap';
+import { getObjectiveTitle } from '@/lib/utils/lesson-utils';
+import type { Roadmap, RoadmapNode, LearningObjective } from '@/lib/db/schemas/roadmap';
 import type { UserRoadmapProgress, NodeProgressStatus } from '@/lib/db/schemas/user-roadmap-progress';
 
 interface RoadmapSidebarProps {
@@ -193,10 +193,10 @@ function NodeItem({
             className="overflow-hidden"
           >
             <ul className="ml-6 pl-3 border-l border-border/50 mt-1 mb-2 space-y-1">
-              {node.learningObjectives.map((objective, index) => {
-                const objectiveSlug = objectiveToLessonSlug(objective);
-                const info = objectivesInfo.find(o => o.objective === objective);
-                const hasLesson = info?.hasLesson;
+              {objectivesInfo.map((info, index) => {
+                const objectiveTitle = info.objective;
+                const objectiveSlug = info.lessonId;
+                const hasLesson = info.hasLesson;
                 
                 return (
                   <motion.li
@@ -211,8 +211,8 @@ function NodeItem({
                         className="flex items-center gap-2 py-1.5 px-2 rounded-lg text-xs text-muted-foreground hover:bg-primary/10 hover:text-primary transition-colors group"
                       >
                         <BookOpen className="w-3 h-3 text-green-500 shrink-0" />
-                        <span className="flex-1 line-clamp-2">{objective}</span>
-                        {info?.xpRewards && (
+                        <span className="flex-1 line-clamp-2">{objectiveTitle}</span>
+                        {info.xpRewards && (
                           <span className="text-[10px] text-yellow-500 flex items-center gap-0.5">
                             <Sparkles className="w-2.5 h-2.5" />
                             {info.xpRewards.beginner}
@@ -223,7 +223,7 @@ function NodeItem({
                     ) : (
                       <div className="flex items-center gap-2 py-1.5 px-2 rounded-lg text-xs text-muted-foreground/60">
                         <CircleDashed className="w-3 h-3 shrink-0" />
-                        <span className="flex-1 line-clamp-2">{objective}</span>
+                        <span className="flex-1 line-clamp-2">{objectiveTitle}</span>
                       </div>
                     )}
                   </motion.li>

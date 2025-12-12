@@ -2,9 +2,10 @@
 
 import { useState, createContext, useContext } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle2, XCircle, HelpCircle } from 'lucide-react';
+import { CheckCircle2, XCircle, HelpCircle, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { XP_REWARDS } from '@/lib/gamification';
 
 // Quiz Context for managing state
 interface QuizContextType {
@@ -28,17 +29,26 @@ function useQuiz() {
   return context;
 }
 
+interface QuizAnswer {
+  questionId: string;
+  selectedAnswer: string;
+  isCorrect: boolean;
+  answeredAt: Date;
+}
+
 interface QuizProps {
   id: string;
   children: React.ReactNode;
-  onComplete?: (isCorrect: boolean) => void;
+  onComplete?: (isCorrect: boolean, xpAwarded: number) => void;
+  onAnswerRecorded?: (answer: QuizAnswer) => void;
 }
 
-export function Quiz({ id, children, onComplete }: QuizProps) {
+export function Quiz({ id, children, onComplete, onAnswerRecorded }: QuizProps) {
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const [correctAnswer, setCorrectAnswer] = useState<string | null>(null);
+  const [xpAwarded, setXpAwarded] = useState<number>(0);
 
   const selectAnswer = (answer: string) => {
     if (!isSubmitted) {
@@ -51,7 +61,22 @@ export function Quiz({ id, children, onComplete }: QuizProps) {
       const correct = selectedAnswer === correctAnswer;
       setIsCorrect(correct);
       setIsSubmitted(true);
-      onComplete?.(correct);
+      
+      // Award 5 XP for correct answers (Requirements 9.6)
+      const xp = correct ? XP_REWARDS.QUIZ_CORRECT_ANSWER : 0;
+      setXpAwarded(xp);
+      
+      // Record answer for analytics
+      const answer: QuizAnswer = {
+        questionId: id,
+        selectedAnswer,
+        isCorrect: correct,
+        answeredAt: new Date(),
+      };
+      onAnswerRecorded?.(answer);
+      
+      // Notify completion with XP awarded
+      onComplete?.(correct, xp);
     }
   };
 
@@ -59,6 +84,7 @@ export function Quiz({ id, children, onComplete }: QuizProps) {
     setSelectedAnswer(null);
     setIsSubmitted(false);
     setIsCorrect(null);
+    setXpAwarded(0);
   };
 
   return (
@@ -117,7 +143,21 @@ export function Quiz({ id, children, onComplete }: QuizProps) {
                 {isCorrect ? (
                   <>
                     <CheckCircle2 className="w-4 h-4" />
-                    <span>Correct! +5 XP</span>
+                    <span>Correct!</span>
+                    {/* XP Award Animation */}
+                    <motion.span
+                      initial={{ opacity: 0, scale: 0.5, x: -5 }}
+                      animate={{ opacity: 1, scale: 1, x: 0 }}
+                      className="inline-flex items-center gap-1 text-yellow-500 ml-1"
+                    >
+                      <motion.span
+                        animate={{ rotate: [0, 15, -15, 0] }}
+                        transition={{ duration: 0.4 }}
+                      >
+                        <Sparkles className="w-3.5 h-3.5" />
+                      </motion.span>
+                      +{xpAwarded} XP
+                    </motion.span>
                   </>
                 ) : (
                   <>
@@ -155,12 +195,16 @@ export function Answer({ children, correct }: AnswerProps) {
   const { 
     selectedAnswer, 
     isSubmitted, 
+    isCorrect,
     selectAnswer, 
     setCorrectAnswer 
   } = useQuiz();
   
   const answerText = typeof children === 'string' ? children : String(children);
   const isSelected = selectedAnswer === answerText;
+  const showCorrectAnimation = isSubmitted && isSelected && correct;
+  const showIncorrectAnimation = isSubmitted && isSelected && !correct;
+  const showCorrectHighlight = isSubmitted && !isSelected && correct;
   
   // Register correct answer
   if (correct) {
@@ -177,34 +221,87 @@ export function Answer({ children, correct }: AnswerProps) {
       disabled={isSubmitted}
       whileHover={!isSubmitted ? { scale: 1.01 } : {}}
       whileTap={!isSubmitted ? { scale: 0.99 } : {}}
+      // Requirements 11.3: Immediate feedback with animations
+      animate={
+        showCorrectAnimation
+          ? { scale: [1, 1.02, 1], transition: { duration: 0.3 } }
+          : showIncorrectAnimation
+            ? { x: [0, -4, 4, -4, 4, 0], transition: { duration: 0.4 } }
+            : {}
+      }
       className={cn(
         'w-full text-left p-3 rounded-lg border transition-colors mb-2',
         'flex items-center gap-3',
         isSelected && !isSubmitted && 'border-primary bg-primary/10',
         !isSelected && !isSubmitted && 'border-border hover:border-muted-foreground/50',
-        isSubmitted && isSelected && correct && 'border-green-500 bg-green-500/10',
-        isSubmitted && isSelected && !correct && 'border-red-500 bg-red-500/10',
-        isSubmitted && !isSelected && correct && 'border-green-500/50 bg-green-500/5',
+        showCorrectAnimation && 'border-green-500 bg-green-500/10 ring-2 ring-green-500/30',
+        showIncorrectAnimation && 'border-red-500 bg-red-500/10 ring-2 ring-red-500/30',
+        showCorrectHighlight && 'border-green-500/50 bg-green-500/5',
         isSubmitted && 'cursor-not-allowed'
       )}
     >
       <div
         className={cn(
           'w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0',
-          isSelected ? 'border-primary' : 'border-muted-foreground/40'
+          isSelected && !isSubmitted && 'border-primary',
+          showCorrectAnimation && 'border-green-500 bg-green-500',
+          showIncorrectAnimation && 'border-red-500 bg-red-500',
+          !isSelected && !isSubmitted && 'border-muted-foreground/40'
         )}
       >
-        {isSelected && (
+        {isSelected && !isSubmitted && (
           <motion.div
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             className="w-2.5 h-2.5 rounded-full bg-primary"
           />
         )}
+        {showCorrectAnimation && (
+          <motion.div
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ type: 'spring', stiffness: 500, damping: 25 }}
+          >
+            <CheckCircle2 className="w-4 h-4 text-white" />
+          </motion.div>
+        )}
+        {showIncorrectAnimation && (
+          <motion.div
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ type: 'spring', stiffness: 500, damping: 25 }}
+          >
+            <XCircle className="w-4 h-4 text-white" />
+          </motion.div>
+        )}
       </div>
-      <span className="text-sm text-foreground">{children}</span>
-      {isSubmitted && correct && (
-        <CheckCircle2 className="w-4 h-4 text-green-500 ml-auto" />
+      <span className="text-sm text-foreground flex-1">{children}</span>
+      {showCorrectAnimation && (
+        <motion.div
+          initial={{ scale: 0, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ delay: 0.1, type: 'spring', stiffness: 500, damping: 25 }}
+        >
+          <CheckCircle2 className="w-5 h-5 text-green-500" />
+        </motion.div>
+      )}
+      {showIncorrectAnimation && (
+        <motion.div
+          initial={{ scale: 0, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ delay: 0.1, type: 'spring', stiffness: 500, damping: 25 }}
+        >
+          <XCircle className="w-5 h-5 text-red-500" />
+        </motion.div>
+      )}
+      {showCorrectHighlight && (
+        <motion.div
+          initial={{ scale: 0, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ delay: 0.2 }}
+        >
+          <CheckCircle2 className="w-4 h-4 text-green-500" />
+        </motion.div>
       )}
     </motion.button>
   );

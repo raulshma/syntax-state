@@ -1,0 +1,394 @@
+# Forms and Validations: Advanced
+
+Let's dive deep into the programmatic side of HTML forms. We'll explore the FormData API, Constraint Validation API, and techniques for building robust, accessible forms.
+
+<FormBuilder />
+
+## The FormData API
+
+The FormData API provides a way to construct key/value pairs representing form fields and their values.
+
+### Creating FormData
+
+```javascript
+// From a form element
+const form = document.querySelector('form');
+const formData = new FormData(form);
+
+// Manually
+const formData = new FormData();
+formData.append('username', 'john_doe');
+formData.append('email', 'john@example.com');
+```
+
+### Working with FormData
+
+```javascript
+// Get a value
+const email = formData.get('email');
+
+// Get all values for a field (useful for checkboxes)
+const interests = formData.getAll('interests');
+
+// Check if field exists
+const hasEmail = formData.has('email');
+
+// Set/overwrite a value
+formData.set('email', 'new@example.com');
+
+// Delete a field
+formData.delete('email');
+
+// Iterate over entries
+for (const [key, value] of formData.entries()) {
+  console.log(`${key}: ${value}`);
+}
+```
+
+### Sending FormData
+
+```javascript
+// With fetch API
+async function submitForm(form) {
+  const formData = new FormData(form);
+  
+  const response = await fetch('/api/submit', {
+    method: 'POST',
+    body: formData // Content-Type set automatically
+  });
+  
+  return response.json();
+}
+
+// As JSON
+async function submitAsJson(form) {
+  const formData = new FormData(form);
+  const data = Object.fromEntries(formData.entries());
+  
+  const response = await fetch('/api/submit', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  });
+  
+  return response.json();
+}
+```
+
+<InfoBox type="tip" title="File Uploads">
+FormData handles file uploads automatically. Just include a file input and the FormData will contain the File object.
+</InfoBox>
+
+<ProgressCheckpoint section="introduction" xpReward={30} />
+
+## Constraint Validation API
+
+The browser provides a powerful API for form validation that goes beyond HTML attributes.
+
+### ValidityState Object
+
+Every form element has a `validity` property with these boolean flags:
+
+```javascript
+const input = document.querySelector('input');
+const validity = input.validity;
+
+validity.valid          // true if all constraints pass
+validity.valueMissing   // true if required but empty
+validity.typeMismatch   // true if wrong type (e.g., invalid email)
+validity.patternMismatch // true if doesn't match pattern
+validity.tooLong        // true if exceeds maxlength
+validity.tooShort       // true if below minlength
+validity.rangeUnderflow // true if below min
+validity.rangeOverflow  // true if above max
+validity.stepMismatch   // true if doesn't match step
+validity.badInput       // true if browser can't parse
+validity.customError    // true if custom error set
+```
+
+<FormValidationTester showConstraintApi={true} />
+
+### Validation Methods
+
+```javascript
+const input = document.querySelector('input');
+
+// Check if valid
+if (input.checkValidity()) {
+  console.log('Input is valid');
+}
+
+// Check validity and show browser error UI
+if (!input.reportValidity()) {
+  console.log('Validation failed, error shown');
+}
+
+// Set custom error message
+input.setCustomValidity('Username already taken');
+
+// Clear custom error
+input.setCustomValidity('');
+```
+
+<ProgressCheckpoint section="form-elements" xpReward={30} />
+
+## Custom Validation
+
+### Real-time Validation
+
+```javascript
+const emailInput = document.querySelector('#email');
+
+emailInput.addEventListener('input', (e) => {
+  const email = e.target.value;
+  
+  if (email && !email.includes('@')) {
+    e.target.setCustomValidity('Please include an @ symbol');
+  } else if (email && !email.includes('.')) {
+    e.target.setCustomValidity('Please include a domain');
+  } else {
+    e.target.setCustomValidity(''); // Clear error
+  }
+});
+```
+
+### Cross-field Validation
+
+```javascript
+const form = document.querySelector('form');
+const password = document.querySelector('#password');
+const confirm = document.querySelector('#confirm-password');
+
+form.addEventListener('submit', (e) => {
+  if (password.value !== confirm.value) {
+    confirm.setCustomValidity('Passwords do not match');
+    e.preventDefault();
+  } else {
+    confirm.setCustomValidity('');
+  }
+});
+
+// Also validate on input
+confirm.addEventListener('input', () => {
+  if (password.value !== confirm.value) {
+    confirm.setCustomValidity('Passwords do not match');
+  } else {
+    confirm.setCustomValidity('');
+  }
+});
+```
+
+### Async Validation
+
+```javascript
+const usernameInput = document.querySelector('#username');
+let debounceTimer;
+
+usernameInput.addEventListener('input', (e) => {
+  clearTimeout(debounceTimer);
+  
+  debounceTimer = setTimeout(async () => {
+    const username = e.target.value;
+    if (username.length < 3) return;
+    
+    const response = await fetch(`/api/check-username?u=${username}`);
+    const { available } = await response.json();
+    
+    if (!available) {
+      e.target.setCustomValidity('Username already taken');
+    } else {
+      e.target.setCustomValidity('');
+    }
+    
+    // Update UI
+    e.target.reportValidity();
+  }, 300);
+});
+```
+
+<KeyConcept title="Always Clear Custom Errors">
+After setting a custom validity message, you must call `setCustomValidity('')` to clear it, or the field will always be invalid.
+</KeyConcept>
+
+<ProgressCheckpoint section="input-types" xpReward={25} />
+
+## Form Events
+
+### Event Types
+
+```javascript
+const form = document.querySelector('form');
+const input = document.querySelector('input');
+
+// Form submission
+form.addEventListener('submit', (e) => {
+  e.preventDefault(); // Prevent default submission
+  // Handle submission
+});
+
+// Form reset
+form.addEventListener('reset', (e) => {
+  // Clean up any custom state
+});
+
+// Input events
+input.addEventListener('input', (e) => {
+  // Fires on every change
+});
+
+input.addEventListener('change', (e) => {
+  // Fires when value committed (blur or enter)
+});
+
+input.addEventListener('invalid', (e) => {
+  // Fires when validation fails
+  e.preventDefault(); // Prevent default error UI
+  // Show custom error UI
+});
+```
+
+### Custom Error Display
+
+```javascript
+const form = document.querySelector('form');
+
+form.addEventListener('submit', (e) => {
+  e.preventDefault();
+  
+  // Clear previous errors
+  document.querySelectorAll('.error').forEach(el => el.remove());
+  
+  // Check each field
+  const inputs = form.querySelectorAll('input, textarea, select');
+  let isValid = true;
+  
+  inputs.forEach(input => {
+    if (!input.checkValidity()) {
+      isValid = false;
+      showError(input, input.validationMessage);
+    }
+  });
+  
+  if (isValid) {
+    // Submit form
+    const formData = new FormData(form);
+    submitForm(formData);
+  }
+});
+
+function showError(input, message) {
+  const error = document.createElement('span');
+  error.className = 'error';
+  error.textContent = message;
+  input.parentNode.appendChild(error);
+}
+```
+
+<ProgressCheckpoint section="validation-attributes" xpReward={25} />
+
+## Accessibility Best Practices
+
+### ARIA for Forms
+
+```html
+<form aria-labelledby="form-title">
+  <h2 id="form-title">Contact Us</h2>
+  
+  <div>
+    <label for="email">Email:</label>
+    <input type="email" id="email" 
+           aria-describedby="email-hint email-error"
+           aria-invalid="false">
+    <span id="email-hint" class="hint">We'll never share your email</span>
+    <span id="email-error" class="error" role="alert"></span>
+  </div>
+</form>
+```
+
+### Live Regions for Errors
+
+```javascript
+function showError(input, message) {
+  const errorEl = document.querySelector(`#${input.id}-error`);
+  errorEl.textContent = message;
+  input.setAttribute('aria-invalid', 'true');
+}
+
+function clearError(input) {
+  const errorEl = document.querySelector(`#${input.id}-error`);
+  errorEl.textContent = '';
+  input.setAttribute('aria-invalid', 'false');
+}
+```
+
+### Focus Management
+
+```javascript
+form.addEventListener('submit', (e) => {
+  e.preventDefault();
+  
+  const firstInvalid = form.querySelector(':invalid');
+  if (firstInvalid) {
+    firstInvalid.focus();
+    firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+});
+```
+
+<InfoBox type="info" title="Screen Reader Announcements">
+Use `role="alert"` on error messages so screen readers announce them immediately when they appear.
+</InfoBox>
+
+<ProgressCheckpoint section="form-submission" xpReward={20} />
+
+## Key Takeaways
+
+<KeyConcept title="FormData for Easy Handling">
+The FormData API simplifies collecting, manipulating, and sending form data, especially with file uploads.
+</KeyConcept>
+
+<KeyConcept title="Constraint Validation API">
+Use the ValidityState object and validation methods for programmatic control over form validation.
+</KeyConcept>
+
+<KeyConcept title="Accessibility is Essential">
+Use proper ARIA attributes, live regions for errors, and focus management for accessible forms.
+</KeyConcept>
+
+<ProgressCheckpoint section="summary" xpReward={10} />
+
+## Quick Quiz
+
+<Quiz>
+  <Question text="How do you get all values for a multi-select field from FormData?">
+    <Answer>formData.get('field')</Answer>
+    <Answer correct>formData.getAll('field')</Answer>
+    <Answer>formData.values('field')</Answer>
+    <Answer>formData.entries('field')</Answer>
+  </Question>
+  
+  <Question text="Which ValidityState property is true when a required field is empty?">
+    <Answer>empty</Answer>
+    <Answer>required</Answer>
+    <Answer correct>valueMissing</Answer>
+    <Answer>isEmpty</Answer>
+  </Question>
+  
+  <Question text="How do you clear a custom validation error?">
+    <Answer>input.clearValidity()</Answer>
+    <Answer>input.setCustomValidity(null)</Answer>
+    <Answer correct>input.setCustomValidity('')</Answer>
+    <Answer>input.validity.customError = false</Answer>
+  </Question>
+  
+  <Question text="Which ARIA attribute indicates a field has an error?">
+    <Answer>aria-error="true"</Answer>
+    <Answer correct>aria-invalid="true"</Answer>
+    <Answer>aria-valid="false"</Answer>
+    <Answer>aria-hasError="true"</Answer>
+  </Question>
+</Quiz>
+
+---
+
+**Outstanding work!** 🎉 You now have advanced knowledge of HTML forms, validation APIs, and accessibility. These skills are essential for building professional, user-friendly web applications.

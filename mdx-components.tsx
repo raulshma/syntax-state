@@ -18,7 +18,31 @@ import { PacketInspector } from '@/components/learn/interactive/http/PacketInspe
 
 import { AddressBarDeconstruction } from '@/components/learn/interactive/domain/AddressBarDeconstruction';
 import { DnsResolutionFlow } from '@/components/learn/interactive/domain/DnsResolutionFlow';
-import { DnsRecordExplorer } from '@/components/learn/interactive/domain/DnsRecordExplorer';
+import { DnsRecordExplorer as DnsRecordExplorerLegacy } from '@/components/learn/interactive/domain/DnsRecordExplorer';
+
+import { HostingTypeSelector } from '@/components/learn/interactive/hosting/HostingTypeSelector';
+import { ServerArchitectureDiagram } from '@/components/learn/interactive/hosting/ServerArchitectureDiagram';
+
+import { DnsRecordExplorer } from '@/components/learn/interactive/dns/DnsRecordExplorer';
+import { DnsResolutionSimulator } from '@/components/learn/interactive/dns/DnsResolutionSimulator';
+
+import { DomInspector } from '@/components/learn/interactive/browser/DomInspector';
+import { RenderingPipelineSimulator } from '@/components/learn/interactive/browser/RenderingPipelineSimulator';
+
+import { LiveHtmlEditor } from '@/components/learn/interactive/html/LiveHtmlEditor';
+import { ElementExplorer } from '@/components/learn/interactive/html/ElementExplorer';
+
+import { SemanticStructureBuilder } from '@/components/learn/interactive/semantic/SemanticStructureBuilder';
+import { StructureComparison } from '@/components/learn/interactive/semantic/StructureComparison';
+
+import { FormBuilder } from '@/components/learn/interactive/forms/FormBuilder';
+import { FormValidationTester } from '@/components/learn/interactive/forms/FormValidationTester';
+
+import { AccessibilityChecker } from '@/components/learn/interactive/accessibility/AccessibilityChecker';
+import { ScreenReaderSimulator } from '@/components/learn/interactive/accessibility/ScreenReaderSimulator';
+
+import { SeoPreview } from '@/components/learn/interactive/seo/SeoPreview';
+import { MetaTagEditor } from '@/components/learn/interactive/seo/MetaTagEditor';
 
 /**
  * MDX Components Configuration
@@ -47,7 +71,39 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
     // Domain Lesson Components
     AddressBarDeconstruction,
     DnsResolutionFlow,
+    DnsRecordExplorerLegacy,
+
+    // Hosting Lesson Components
+    HostingTypeSelector,
+    ServerArchitectureDiagram,
+
+    // DNS Lesson Components
     DnsRecordExplorer,
+    DnsResolutionSimulator,
+
+    // Browser Lesson Components
+    DomInspector,
+    RenderingPipelineSimulator,
+
+    // HTML Lesson Components
+    LiveHtmlEditor,
+    ElementExplorer,
+
+    // Semantic HTML Lesson Components
+    SemanticStructureBuilder,
+    StructureComparison,
+
+    // Forms Lesson Components
+    FormBuilder,
+    FormValidationTester,
+
+    // Accessibility Lesson Components
+    AccessibilityChecker,
+    ScreenReaderSimulator,
+
+    // SEO Lesson Components
+    SeoPreview,
+    MetaTagEditor,
 
     // Enhanced HTML elements with proper styling
     h1: ({ children, ...props }) => (

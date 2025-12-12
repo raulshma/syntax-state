@@ -1,0 +1,199 @@
+# Accessibility
+
+Welcome to Web Accessibility! Accessibility (often called "a11y") is about making websites usable by everyone, including people with disabilities.
+
+Think of accessibility like **building ramps alongside stairs**. Just as ramps help people in wheelchairs, good web accessibility helps people who use screen readers, keyboards, or other assistive technologies.
+
+<AccessibilityChecker initialExample="good-example" />
+
+## Why Accessibility Matters
+
+Imagine trying to use a website:
+- **Without seeing** - using a screen reader that reads content aloud
+- **Without a mouse** - navigating only with a keyboard
+- **With limited vision** - needing high contrast or large text
+- **With motor difficulties** - needing larger click targets
+
+About **15% of the world's population** has some form of disability. Making your website accessible means more people can use it!
+
+<InfoBox type="tip" title="It's Also Good for Everyone">
+Accessibility improvements often help all users! Captions help in noisy environments, keyboard navigation is faster for power users, and clear structure helps everyone understand content.
+</InfoBox>
+
+<ProgressCheckpoint section="introduction" xpReward={15} />
+
+## The Four Principles (POUR)
+
+Web accessibility is built on four main principles, remembered as POUR:
+
+### 1. Perceivable
+Users must be able to perceive the content. This means:
+- Images need text descriptions (alt text)
+- Videos need captions
+- Text needs sufficient color contrast
+
+### 2. Operable
+Users must be able to operate the interface:
+- Everything should work with a keyboard
+- Users need enough time to read content
+- Nothing should cause seizures (no rapid flashing)
+
+### 3. Understandable
+Content must be understandable:
+- Text should be readable
+- Pages should work predictably
+- Help users avoid and correct mistakes
+
+### 4. Robust
+Content must work with different technologies:
+- Works with current and future browsers
+- Works with assistive technologies
+- Uses proper HTML standards
+
+<KeyConcept title="POUR = Accessible">
+If your website is Perceivable, Operable, Understandable, and Robust, it's accessible!
+</KeyConcept>
+
+<ProgressCheckpoint section="accessibility-basics" xpReward={15} />
+
+## Essential Accessibility Practices
+
+Let's look at the most important things you can do right now:
+
+### 1. Add Alt Text to Images
+
+```html
+<!-- Good: Describes the image -->
+<img src="puppy.jpg" alt="Golden retriever puppy playing in the park">
+
+<!-- Good: Empty alt for decorative images -->
+<img src="decorative-line.png" alt="">
+
+<!-- Bad: Missing alt text -->
+<img src="important-chart.png">
+```
+
+<InfoBox type="info" title="What Makes Good Alt Text?">
+Describe what the image shows and why it matters. For a chart, describe the data. For a photo, describe what's happening. For decorative images, use empty alt="".
+</InfoBox>
+
+### 2. Use Proper Headings
+
+```html
+<!-- Good: Logical heading order -->
+<h1>Page Title</h1>
+  <h2>Section One</h2>
+    <h3>Subsection</h3>
+  <h2>Section Two</h2>
+
+<!-- Bad: Skipping heading levels -->
+<h1>Page Title</h1>
+  <h4>This skips h2 and h3!</h4>
+```
+
+### 3. Label Your Forms
+
+```html
+<!-- Good: Label connected to input -->
+<label for="email">Email Address:</label>
+<input type="email" id="email" name="email">
+
+<!-- Bad: No label -->
+<input type="email" placeholder="Enter email">
+```
+
+<ProgressCheckpoint section="aria-attributes" xpReward={15} />
+
+## How Screen Readers Work
+
+Screen readers are software that reads web content aloud. They rely on proper HTML to understand your page.
+
+<ScreenReaderSimulator initialExample="semantic-page" />
+
+### What Screen Readers Announce
+
+Screen readers tell users about:
+- **Landmarks** - "Navigation", "Main content", "Footer"
+- **Headings** - "Heading level 1, Welcome"
+- **Links** - "Link, About Us"
+- **Form fields** - "Email, edit text, required"
+- **Images** - "Image, Golden retriever puppy"
+
+<KeyConcept title="Semantic HTML = Better Announcements">
+When you use proper HTML elements like `<nav>`, `<main>`, and `<button>`, screen readers automatically know what they are!
+</KeyConcept>
+
+<ProgressCheckpoint section="keyboard-navigation" xpReward={15} />
+
+## Keyboard Navigation Basics
+
+Many users navigate websites using only a keyboard. Here's how it works:
+
+| Key | Action |
+|-----|--------|
+| Tab | Move to next interactive element |
+| Shift + Tab | Move to previous element |
+| Enter | Activate links and buttons |
+| Space | Activate buttons, check checkboxes |
+| Arrow keys | Navigate within menus, sliders |
+
+### Making Elements Keyboard Accessible
+
+```html
+<!-- Good: Button is automatically focusable -->
+<button onclick="doSomething()">Click Me</button>
+
+<!-- Bad: Div is not keyboard accessible -->
+<div onclick="doSomething()">Click Me</div>
+```
+
+<InfoBox type="warning" title="The Tab Test">
+Try navigating your website using only the Tab key. Can you reach everything? Can you see where you are? If not, there's work to do!
+</InfoBox>
+
+<ProgressCheckpoint section="testing-tools" xpReward={10} />
+
+## Key Takeaways
+
+<KeyConcept title="Accessibility = Inclusion">
+Making websites accessible means everyone can use them, regardless of ability.
+</KeyConcept>
+
+<KeyConcept title="Start with the Basics">
+Alt text, proper headings, form labels, and keyboard access cover most accessibility needs.
+</KeyConcept>
+
+<KeyConcept title="Use Semantic HTML">
+Proper HTML elements (`<button>`, `<nav>`, `<main>`) are automatically more accessible than generic `<div>` elements.
+</KeyConcept>
+
+<ProgressCheckpoint section="summary" xpReward={10} />
+
+## Quick Quiz
+
+<Quiz>
+  <Question text="What does the 'P' in POUR stand for?">
+    <Answer>Practical</Answer>
+    <Answer correct>Perceivable</Answer>
+    <Answer>Programmable</Answer>
+    <Answer>Portable</Answer>
+  </Question>
+  
+  <Question text="What should you add to images for screen readers?">
+    <Answer>A title attribute</Answer>
+    <Answer>A caption below</Answer>
+    <Answer correct>An alt attribute</Answer>
+    <Answer>A description class</Answer>
+  </Question>
+  
+  <Question text="Which key moves focus to the next interactive element?">
+    <Answer>Enter</Answer>
+    <Answer>Space</Answer>
+    <Answer>Arrow Down</Answer>
+    <Answer correct>Tab</Answer>
+  </Question>
+</Quiz>
+
+---
+
+**Great start!** 🎉 You now understand why accessibility matters and the basics of making websites accessible. In the intermediate level, we'll dive into ARIA attributes and advanced keyboard navigation.

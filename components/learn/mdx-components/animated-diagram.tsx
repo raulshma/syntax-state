@@ -1,10 +1,14 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Monitor, Server, Globe, Wifi, ArrowRight, Zap } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import {
+  AnimatedControls,
+  type AnimationSpeed,
+  speedMultipliers,
+} from '@/components/learn/shared/animated-controls';
 
 type DiagramType = 
   | 'packet-flow' 
@@ -16,24 +20,33 @@ type DiagramType =
 interface AnimatedDiagramProps {
   type: DiagramType;
   autoPlay?: boolean;
-  speed?: 'slow' | 'normal' | 'fast';
+  speed?: AnimationSpeed;
 }
-
-const speedMultipliers = {
-  slow: 1.5,
-  normal: 1,
-  fast: 0.5,
-};
 
 export function AnimatedDiagram({ 
   type, 
   autoPlay = true,
-  speed = 'normal' 
+  speed: initialSpeed = 'normal' 
 }: AnimatedDiagramProps) {
   const [isPlaying, setIsPlaying] = useState(autoPlay);
+  const [speed, setSpeed] = useState<AnimationSpeed>(initialSpeed);
+  const [resetKey, setResetKey] = useState(0);
   const multiplier = speedMultipliers[speed];
 
-  const togglePlay = () => setIsPlaying(!isPlaying);
+  const handlePlayPause = useCallback(() => {
+    setIsPlaying((prev) => !prev);
+  }, []);
+
+  const handleSpeedChange = useCallback((newSpeed: AnimationSpeed) => {
+    setSpeed(newSpeed);
+  }, []);
+
+  const handleReset = useCallback(() => {
+    setIsPlaying(false);
+    setResetKey((prev) => prev + 1);
+    // Restart playing after a brief pause
+    setTimeout(() => setIsPlaying(true), 100);
+  }, []);
 
   return (
     <motion.div
@@ -44,36 +57,31 @@ export function AnimatedDiagram({
       {/* Diagram content based on type */}
       <div className="relative p-6 min-h-[280px]">
         {type === 'packet-flow' && (
-          <PacketFlowDiagram isPlaying={isPlaying} multiplier={multiplier} />
+          <PacketFlowDiagram key={resetKey} isPlaying={isPlaying} multiplier={multiplier} />
         )}
         {type === 'dns-lookup' && (
-          <DNSLookupDiagram isPlaying={isPlaying} multiplier={multiplier} />
+          <DNSLookupDiagram key={resetKey} isPlaying={isPlaying} multiplier={multiplier} />
         )}
         {type === 'http-request' && (
-          <HTTPRequestDiagram isPlaying={isPlaying} multiplier={multiplier} />
+          <HTTPRequestDiagram key={resetKey} isPlaying={isPlaying} multiplier={multiplier} />
         )}
         {type === 'client-server' && (
-          <ClientServerDiagram isPlaying={isPlaying} multiplier={multiplier} />
+          <ClientServerDiagram key={resetKey} isPlaying={isPlaying} multiplier={multiplier} />
         )}
         {type === 'tcp-handshake' && (
-          <TCPHandshakeDiagram isPlaying={isPlaying} multiplier={multiplier} />
+          <TCPHandshakeDiagram key={resetKey} isPlaying={isPlaying} multiplier={multiplier} />
         )}
       </div>
 
-      {/* Controls */}
-      <div className="px-6 py-3 border-t border-border bg-secondary/30 flex items-center justify-between">
-        <span className="text-xs text-muted-foreground">
-          {getDiagramLabel(type)}
-        </span>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={togglePlay}
-          className="text-xs"
-        >
-          {isPlaying ? 'Pause' : 'Play'}
-        </Button>
-      </div>
+      {/* Controls - Requirements 11.1: play/pause and speed adjustment */}
+      <AnimatedControls
+        isPlaying={isPlaying}
+        speed={speed}
+        onPlayPause={handlePlayPause}
+        onSpeedChange={handleSpeedChange}
+        onReset={handleReset}
+        label={getDiagramLabel(type)}
+      />
     </motion.div>
   );
 }

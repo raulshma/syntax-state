@@ -1,0 +1,304 @@
+# Forms and Validations: Intermediate
+
+Now that you understand the basics, let's explore the full range of HTML form capabilities. We'll cover all input types, advanced validation, and form organization techniques.
+
+<FormBuilder />
+
+## All Input Types
+
+HTML5 introduced many specialized input types. Each provides appropriate UI controls and built-in validation.
+
+### Text-Based Inputs
+
+```html
+<!-- Standard text -->
+<input type="text" placeholder="Any text">
+
+<!-- Email with format validation -->
+<input type="email" placeholder="user@example.com">
+
+<!-- Password (masked) -->
+<input type="password" placeholder="••••••••">
+
+<!-- URL with format validation -->
+<input type="url" placeholder="https://example.com">
+
+<!-- Phone number -->
+<input type="tel" placeholder="+1 (555) 123-4567">
+
+<!-- Search with clear button -->
+<input type="search" placeholder="Search...">
+```
+
+### Numeric Inputs
+
+```html
+<!-- Number with spinner -->
+<input type="number" min="0" max="100" step="5">
+
+<!-- Range slider -->
+<input type="range" min="0" max="100" value="50">
+```
+
+### Date and Time Inputs
+
+```html
+<!-- Date picker -->
+<input type="date">
+
+<!-- Time picker -->
+<input type="time">
+
+<!-- Date and time -->
+<input type="datetime-local">
+
+<!-- Month picker -->
+<input type="month">
+
+<!-- Week picker -->
+<input type="week">
+```
+
+### Selection Inputs
+
+```html
+<!-- Checkbox (multiple selections) -->
+<input type="checkbox" id="agree">
+<label for="agree">I agree to terms</label>
+
+<!-- Radio buttons (single selection) -->
+<input type="radio" name="size" value="small"> Small
+<input type="radio" name="size" value="large"> Large
+
+<!-- Color picker -->
+<input type="color" value="#ff0000">
+
+<!-- File upload -->
+<input type="file" accept="image/*">
+```
+
+<InfoBox type="tip" title="Mobile Optimization">
+Using the correct input type triggers appropriate mobile keyboards and date pickers, improving user experience significantly.
+</InfoBox>
+
+<ProgressCheckpoint section="introduction" xpReward={20} />
+
+## HTML5 Validation Attributes
+
+HTML5 provides powerful validation without JavaScript:
+
+### Required Fields
+
+```html
+<input type="text" required>
+```
+
+### Length Constraints
+
+```html
+<!-- Minimum length -->
+<input type="text" minlength="3">
+
+<!-- Maximum length -->
+<input type="text" maxlength="100">
+```
+
+### Numeric Constraints
+
+```html
+<!-- Min and max values -->
+<input type="number" min="1" max="100">
+
+<!-- Step increments -->
+<input type="number" step="0.01">
+```
+
+### Pattern Matching
+
+Use regular expressions for custom validation:
+
+```html
+<!-- US Phone format -->
+<input type="tel" pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}" 
+       title="Format: 123-456-7890">
+
+<!-- Postal code -->
+<input type="text" pattern="[A-Za-z]\d[A-Za-z] \d[A-Za-z]\d"
+       title="Format: A1A 1A1">
+```
+
+<FormValidationTester initialExample="pattern" />
+
+<ProgressCheckpoint section="form-elements" xpReward={20} />
+
+## Form Organization
+
+### Fieldsets and Legends
+
+Group related fields together:
+
+```html
+<form>
+  <fieldset>
+    <legend>Personal Information</legend>
+    <label for="fname">First Name:</label>
+    <input type="text" id="fname" name="fname">
+    
+    <label for="lname">Last Name:</label>
+    <input type="text" id="lname" name="lname">
+  </fieldset>
+  
+  <fieldset>
+    <legend>Contact Details</legend>
+    <label for="email">Email:</label>
+    <input type="email" id="email" name="email">
+  </fieldset>
+</form>
+```
+
+### Select Dropdowns
+
+```html
+<label for="country">Country:</label>
+<select id="country" name="country">
+  <option value="">Select a country...</option>
+  <optgroup label="North America">
+    <option value="us">United States</option>
+    <option value="ca">Canada</option>
+  </optgroup>
+  <optgroup label="Europe">
+    <option value="uk">United Kingdom</option>
+    <option value="de">Germany</option>
+  </optgroup>
+</select>
+```
+
+### Datalist (Autocomplete)
+
+Provide suggestions while allowing custom input:
+
+```html
+<label for="browser">Browser:</label>
+<input list="browsers" id="browser" name="browser">
+<datalist id="browsers">
+  <option value="Chrome">
+  <option value="Firefox">
+  <option value="Safari">
+  <option value="Edge">
+</datalist>
+```
+
+<KeyConcept title="Fieldsets for Accessibility">
+Fieldsets with legends help screen readers understand form structure and group related fields logically.
+</KeyConcept>
+
+<ProgressCheckpoint section="input-types" xpReward={20} />
+
+## Textarea and Multi-line Input
+
+For longer text content:
+
+```html
+<label for="bio">Biography:</label>
+<textarea id="bio" name="bio" 
+          rows="5" cols="40"
+          minlength="50" maxlength="500"
+          placeholder="Tell us about yourself..."></textarea>
+```
+
+### Textarea Attributes
+
+- `rows` — visible height in lines
+- `cols` — visible width in characters
+- `wrap` — how text wraps (`soft`, `hard`, `off`)
+- `resize` — CSS property to control resizing
+
+<ProgressCheckpoint section="validation-attributes" xpReward={15} />
+
+## Form Attributes
+
+### Form-Level Attributes
+
+```html
+<form action="/submit" method="POST" 
+      autocomplete="on" novalidate>
+  <!-- form fields -->
+</form>
+```
+
+- `action` — where to send form data
+- `method` — HTTP method (GET or POST)
+- `autocomplete` — enable/disable browser autocomplete
+- `novalidate` — disable HTML5 validation
+
+### Input Attributes
+
+```html
+<input type="text" 
+       name="username"
+       id="username"
+       placeholder="Enter username"
+       value="default"
+       disabled
+       readonly
+       autofocus
+       autocomplete="username">
+```
+
+<InfoBox type="info" title="Disabled vs Readonly">
+`disabled` fields can't be edited AND aren't submitted. `readonly` fields can't be edited but ARE submitted.
+</InfoBox>
+
+<ProgressCheckpoint section="form-submission" xpReward={15} />
+
+## Key Takeaways
+
+<KeyConcept title="Right Input Type = Better UX">
+Using appropriate input types provides better mobile keyboards, built-in validation, and native UI controls.
+</KeyConcept>
+
+<KeyConcept title="Pattern for Custom Validation">
+The pattern attribute with regex enables custom validation rules without JavaScript.
+</KeyConcept>
+
+<KeyConcept title="Organize with Fieldsets">
+Group related fields with fieldset and legend for better structure and accessibility.
+</KeyConcept>
+
+<ProgressCheckpoint section="summary" xpReward={10} />
+
+## Quick Quiz
+
+<Quiz>
+  <Question text="Which input type provides a date picker UI?">
+    <Answer>text</Answer>
+    <Answer>calendar</Answer>
+    <Answer correct>date</Answer>
+    <Answer>datetime</Answer>
+  </Question>
+  
+  <Question text="What attribute uses regular expressions for validation?">
+    <Answer>regex</Answer>
+    <Answer correct>pattern</Answer>
+    <Answer>validate</Answer>
+    <Answer>match</Answer>
+  </Question>
+  
+  <Question text="Which element groups related form fields together?">
+    <Answer>group</Answer>
+    <Answer>section</Answer>
+    <Answer correct>fieldset</Answer>
+    <Answer>div</Answer>
+  </Question>
+  
+  <Question text="What's the difference between disabled and readonly?">
+    <Answer>They're the same</Answer>
+    <Answer correct>Disabled fields aren't submitted, readonly fields are</Answer>
+    <Answer>Readonly fields aren't submitted, disabled fields are</Answer>
+    <Answer>Neither are submitted</Answer>
+  </Question>
+</Quiz>
+
+---
+
+**Excellent progress!** 🎉 You now have a solid understanding of HTML forms. In the advanced level, we'll explore the FormData API, constraint validation API, and custom validation techniques.

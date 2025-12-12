@@ -1,0 +1,31 @@
+{
+  "id": "what-is-hosting",
+  "title": "What is Hosting?",
+  "description": "Understand web hosting and how websites are made available on the Internet",
+  "milestone": "internet",
+  "order": 4,
+  "sections": [
+    "introduction",
+    "hosting-basics",
+    "hosting-types",
+    "server-architecture",
+    "deployment",
+    "summary"
+  ],
+  "levels": {
+    "beginner": {
+      "estimatedMinutes": 10,
+      "xpReward": 50
+    },
+    "intermediate": {
+      "estimatedMinutes": 15,
+      "xpReward": 100
+    },
+    "advanced": {
+      "estimatedMinutes": 25,
+      "xpReward": 200
+    }
+  },
+  "prerequisites": ["how-does-the-internet-work", "what-is-a-domain-name"],
+  "tags": ["hosting", "servers", "deployment", "infrastructure"]
+}

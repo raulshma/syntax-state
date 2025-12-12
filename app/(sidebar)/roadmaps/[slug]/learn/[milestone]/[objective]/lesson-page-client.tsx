@@ -171,8 +171,8 @@ function LessonContent({
 
       if (result.success) {
         // Update gamification state with the returned data
-        if (result.data) {
-          setGamification(result.data);
+        if (result.data?.gamification) {
+          setGamification(result.data.gamification);
         }
         setHasClaimedReward(true);
         toast.success(`You earned ${totalEarnedXp} XP!`);

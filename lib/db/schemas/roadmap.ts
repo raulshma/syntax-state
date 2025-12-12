@@ -33,6 +33,15 @@ export const NodePositionSchema = z.object({
   y: z.number(),
 });
 
+// Learning objective with optional lesson link
+export const LearningObjectiveSchema = z.union([
+  z.string(), // Simple string for backward compatibility
+  z.object({
+    title: z.string().min(1),
+    lessonId: z.string().optional(), // Links to lesson content
+  }),
+]);
+
 // Individual node in roadmap
 export const RoadmapNodeSchema = z.object({
   id: z.string().min(1),
@@ -42,7 +51,7 @@ export const RoadmapNodeSchema = z.object({
   // Position for visual layout (x, y coordinates)
   position: NodePositionSchema,
   // Learning content
-  learningObjectives: z.array(z.string()).default([]),
+  learningObjectives: z.array(LearningObjectiveSchema).default([]),
   resources: z.array(TopicResourceSchema).default([]),
   estimatedMinutes: z.number().int().min(5).default(30),
   difficulty: DifficultyLevelSchema.optional(),
@@ -97,6 +106,7 @@ export type RoadmapCategory = z.infer<typeof RoadmapCategorySchema>;
 export type RoadmapNodeType = z.infer<typeof RoadmapNodeTypeSchema>;
 export type ConnectionType = z.infer<typeof ConnectionTypeSchema>;
 export type NodePosition = z.infer<typeof NodePositionSchema>;
+export type LearningObjective = z.infer<typeof LearningObjectiveSchema>;
 export type RoadmapNode = z.infer<typeof RoadmapNodeSchema>;
 export type RoadmapEdge = z.infer<typeof RoadmapEdgeSchema>;
 export type Roadmap = z.infer<typeof RoadmapSchema>;

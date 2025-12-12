@@ -114,8 +114,9 @@ export {
   ConversationList,
   /** Individual conversation item with actions */
   ConversationItem,
-  /** Create a branch from an existing conversation */
-  branchConversation,
+  /** Branch utilities */
+  getLastMessageId,
+  validateBranch,
   /** Conversation action type */
   type ConversationAction,
 } from "./conversation";

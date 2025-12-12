@@ -291,3 +291,43 @@ export function checkNewBadges(stats: {
 export function getBadgeInfo(badgeId: string) {
   return Object.values(BADGES).find(b => b.id === badgeId);
 }
+
+// Total number of Internet lessons for badge completion checks
+export const TOTAL_INTERNET_LESSONS = 6;
+
+// Internet lesson IDs for badge tracking
+export const INTERNET_LESSON_IDS = [
+  'internet/how-does-the-internet-work',
+  'internet/what-is-http',
+  'internet/what-is-a-domain-name',
+  'internet/what-is-hosting',
+  'internet/dns-and-how-it-works',
+  'internet/browsers-and-how-they-work',
+];
+
+/**
+ * Check if user has completed all Internet lessons at a specific level
+ */
+export function checkInternetMilestoneBadge(
+  completedLessons: Array<{ lessonId: string; experienceLevel: string }>,
+  level: 'beginner' | 'intermediate' | 'advanced'
+): string | null {
+  const completedInternetLessons = completedLessons.filter(
+    lesson => 
+      INTERNET_LESSON_IDS.includes(lesson.lessonId) && 
+      lesson.experienceLevel === level
+  );
+  
+  if (completedInternetLessons.length >= TOTAL_INTERNET_LESSONS) {
+    switch (level) {
+      case 'beginner':
+        return 'internet-basics';
+      case 'intermediate':
+        return 'internet-intermediate';
+      case 'advanced':
+        return 'internet-advanced';
+    }
+  }
+  
+  return null;
+}

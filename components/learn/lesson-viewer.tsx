@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft, BookOpen, CheckCircle2 } from 'lucide-react';
 import Link from 'next/link';
@@ -10,9 +10,17 @@ import { ExperienceSelector } from './experience-selector';
 import { ProgressTracker } from './progress-tracker';
 import { XPDisplay } from './xp-display';
 import { BadgeDisplay, BadgeUnlockAnimation } from './badge-display';
+import { XPAwardAnimation } from './xp-award-animation';
 import { useMDXComponents } from '@/mdx-components';
 import { cn } from '@/lib/utils';
+import { getLessonCompletionXp } from '@/lib/gamification';
+import { markSectionCompleteAction } from '@/lib/actions/gamification';
 import type { ExperienceLevel, LessonProgress, UserGamification } from '@/lib/db/schemas/lesson-progress';
+
+interface LessonCompletionResult {
+  newBadges?: string[];
+  xpAwarded?: number;
+}
 
 interface LessonViewerProps {
   lessonId: string;
@@ -27,7 +35,7 @@ interface LessonViewerProps {
   initialGamification: UserGamification | null;
   onLevelChange?: (level: ExperienceLevel) => Promise<MDXRemoteSerializeResult | null>;
   onSectionComplete?: (section: string) => Promise<void>;
-  onLessonComplete?: () => Promise<void>;
+  onLessonComplete?: () => Promise<LessonCompletionResult | void>;
 }
 
 export function LessonViewer({ 
@@ -48,59 +56,200 @@ export function LessonViewer({
   const [level, setLevel] = useState<ExperienceLevel>(initialLevel);
   const [mdxSource, setMdxSource] = useState(initialMdxSource);
   const [isLoading, setIsLoading] = useState(false);
-  const [completedSections, setCompletedSections] = useState<string[]>(
-    initialProgress?.sectionsCompleted.map(s => s.sectionId) || []
-  );
+  const [loadError, setLoadError] = useState<string | null>(null);
+  
+  // Track completed sections per level to preserve progress (Requirements 10.2)
+  const [progressByLevel, setProgressByLevel] = useState<Record<ExperienceLevel, string[]>>(() => {
+    const initial: Record<ExperienceLevel, string[]> = {
+      beginner: [],
+      intermediate: [],
+      advanced: [],
+    };
+    if (initialProgress?.sectionsCompleted) {
+      initial[initialLevel] = initialProgress.sectionsCompleted.map(s => s.sectionId);
+    }
+    return initial;
+  });
+  
+  // Track which levels have been completed (Requirements 10.3)
+  const [completedLevels, setCompletedLevels] = useState<ExperienceLevel[]>(() => {
+    // Initialize from gamification data if available
+    if (initialGamification?.completedLessons) {
+      return initialGamification.completedLessons
+        .filter(l => l.lessonId === lessonId && l.completedAt)
+        .map(l => l.experienceLevel as ExperienceLevel);
+    }
+    return [];
+  });
+  
+  const completedSections = progressByLevel[level];
+  
   const [gamification, setGamification] = useState(initialGamification);
   const [newBadge, setNewBadge] = useState<{ id: string; earnedAt: Date } | null>(null);
+  const [xpAwarded, setXpAwarded] = useState<number | null>(null);
+
+  // Track pending section completions for retry logic
+  const pendingCompletionsRef = useRef<Set<string>>(new Set());
+
+  // Handle section completion with optimistic updates and persistence (Requirements 9.1)
+  const handleSectionComplete = useCallback(async (sectionId: string) => {
+    // Use ref to get current level to avoid stale closure
+    const currentLevel = level;
+    const currentSections = progressByLevel[currentLevel];
+    
+    if (currentSections.includes(sectionId) || pendingCompletionsRef.current.has(sectionId)) {
+      return;
+    }
+    
+    // Mark as pending to prevent duplicate calls
+    pendingCompletionsRef.current.add(sectionId);
+    
+    // Optimistic update - immediately show as completed
+    setProgressByLevel(prev => ({
+      ...prev,
+      [currentLevel]: [...prev[currentLevel], sectionId],
+    }));
+    
+    // Persist to database with retry logic
+    const result = await markSectionCompleteAction(lessonId, sectionId, currentLevel);
+    
+    if (!result.success) {
+      // Revert optimistic update on failure
+      setProgressByLevel(prev => ({
+        ...prev,
+        [currentLevel]: prev[currentLevel].filter(s => s !== sectionId),
+      }));
+      console.error('Failed to persist section completion:', result.error);
+    }
+    
+    // Remove from pending
+    pendingCompletionsRef.current.delete(sectionId);
+    
+    // Call optional callback
+    onSectionComplete?.(sectionId);
+  }, [level, progressByLevel, lessonId, onSectionComplete]);
 
   const components = useMDXComponents({
     // Override ProgressCheckpoint to track completion
     ProgressCheckpoint: ({ section }: { section: string }) => {
-      const handleComplete = useCallback(async (sectionId: string) => {
-        if (!completedSections.includes(sectionId)) {
-          setCompletedSections(prev => [...prev, sectionId]);
-          onSectionComplete?.(sectionId);
-        }
-      }, []);
-
       return (
         <ProgressCheckpoint 
           section={section} 
-          onComplete={handleComplete}
+          onComplete={handleSectionComplete}
         />
       );
     },
   });
 
-  // Handle level change
+  // Handle level change with progress preservation (Requirements 10.1, 10.2, 10.4)
   const handleLevelChange = async (newLevel: ExperienceLevel) => {
     if (newLevel === level) return;
     
     setIsLoading(true);
+    setLoadError(null);
+    
     try {
+      // Fetch new content
       const newSource = await onLevelChange?.(newLevel);
+      
       if (newSource) {
         setMdxSource(newSource);
         setLevel(newLevel);
-        // Reset section progress for new level
-        setCompletedSections([]);
+        
+        // If we don't have cached progress for this level, fetch from server
+        if (progressByLevel[newLevel].length === 0) {
+          try {
+            const { getLessonProgressAction } = await import('@/lib/actions/gamification');
+            const progressResult = await getLessonProgressAction(lessonId, newLevel);
+            
+            if (progressResult.success && progressResult.data) {
+              setProgressByLevel(prev => ({
+                ...prev,
+                [newLevel]: progressResult.data!.sectionsCompleted,
+              }));
+              
+              // Update completed levels if this level is completed
+              if (progressResult.data.isCompleted && !completedLevels.includes(newLevel)) {
+                setCompletedLevels(prev => [...prev, newLevel]);
+              }
+            }
+          } catch (err) {
+            // Non-critical - progress will start fresh
+            console.warn('Could not fetch progress for level:', err);
+          }
+        }
+      } else {
+        setLoadError('Failed to load content. Please try again.');
       }
+    } catch (err) {
+      setLoadError('Failed to load content. Please try again.');
+      console.error('Level change error:', err);
     } finally {
       setIsLoading(false);
     }
   };
+  
+  // Retry loading content (Requirements 10.5)
+  const handleRetry = () => {
+    handleLevelChange(level);
+  };
 
-  // Check if lesson is complete
+  // Check if lesson is complete at current level
   const isLessonComplete = completedSections.length >= sections.length && sections.length > 0;
-  const completedLevels = initialProgress?.experienceLevel 
-    ? [initialProgress.experienceLevel] 
-    : [];
+
+  // Queue for badge animations (show one at a time)
+  const [badgeQueue, setBadgeQueue] = useState<string[]>([]);
+
+  // Process badge queue - show next badge when current one is dismissed
+  useEffect(() => {
+    if (!newBadge && badgeQueue.length > 0) {
+      const [nextBadge, ...remaining] = badgeQueue;
+      setNewBadge({ id: nextBadge, earnedAt: new Date() });
+      setBadgeQueue(remaining);
+    }
+  }, [newBadge, badgeQueue]);
 
   // Handle lesson completion
   const handleCompleteLesson = async () => {
-    await onLessonComplete?.();
-    // Could trigger badge check here
+    // Calculate XP based on experience level (beginner: 50, intermediate: 100, advanced: 200)
+    const xpReward = getLessonCompletionXp(level);
+    
+    // Show XP animation
+    setXpAwarded(xpReward);
+    
+    // Update gamification state optimistically
+    if (gamification) {
+      setGamification({
+        ...gamification,
+        totalXp: gamification.totalXp + xpReward,
+      });
+    }
+    
+    // Mark current level as completed (Requirements 10.3)
+    if (!completedLevels.includes(level)) {
+      setCompletedLevels(prev => [...prev, level]);
+    }
+    
+    // Call completion handler and get any new badges
+    const result = await onLessonComplete?.();
+    
+    // If new badges were earned, queue them for animation
+    if (result?.newBadges && result.newBadges.length > 0) {
+      setBadgeQueue(result.newBadges);
+      
+      // Update gamification state with new badges
+      if (gamification) {
+        const newBadgeObjects = result.newBadges.map(id => ({ 
+          id, 
+          earnedAt: new Date() 
+        }));
+        setGamification({
+          ...gamification,
+          totalXp: gamification.totalXp + xpReward,
+          badges: [...gamification.badges, ...newBadgeObjects],
+        });
+      }
+    }
   };
 
   return (
@@ -109,6 +258,12 @@ export function LessonViewer({
       <BadgeUnlockAnimation 
         badge={newBadge} 
         onComplete={() => setNewBadge(null)} 
+      />
+
+      {/* XP award animation */}
+      <XPAwardAnimation
+        amount={xpAwarded}
+        onComplete={() => setXpAwarded(null)}
       />
 
       {/* Header */}
@@ -172,7 +327,7 @@ export function LessonViewer({
         currentSection={sections[completedSections.length]}
       />
 
-      {/* Loading state */}
+      {/* Loading state (Requirements 10.4) */}
       {isLoading && (
         <div className="flex items-center justify-center py-12">
           <div className="flex items-center gap-3 text-muted-foreground">
@@ -183,6 +338,16 @@ export function LessonViewer({
             />
             <span>Loading {level} content...</span>
           </div>
+        </div>
+      )}
+
+      {/* Error state with retry (Requirements 10.5) */}
+      {loadError && !isLoading && (
+        <div className="flex flex-col items-center justify-center py-12 gap-4">
+          <p className="text-destructive">{loadError}</p>
+          <Button variant="outline" onClick={handleRetry}>
+            Try Again
+          </Button>
         </div>
       )}
 

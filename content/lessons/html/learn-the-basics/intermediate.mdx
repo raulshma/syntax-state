@@ -1,0 +1,265 @@
+# HTML Fundamentals: Going Deeper
+
+Now that you understand the basics, let's explore HTML in more depth. We'll cover attributes, the difference between block and inline elements, and common patterns you'll use every day.
+
+<LiveHtmlEditor />
+
+## Understanding Attributes
+
+Attributes provide **extra information** about elements. They're always placed in the opening tag and follow this pattern:
+
+```html
+<element attribute="value">Content</element>
+```
+
+### Common Attributes
+
+**`id`** — A unique identifier for an element (only one per page):
+```html
+<div id="header">This is the header</div>
+```
+
+**`class`** — A reusable identifier for styling (can be used multiple times):
+```html
+<p class="highlight">Important text</p>
+<p class="highlight">Also important</p>
+```
+
+**`href`** — The URL for links:
+```html
+<a href="https://example.com">Visit Example</a>
+```
+
+**`src`** — The source file for images, videos, etc.:
+```html
+<img src="photo.jpg" alt="Description">
+```
+
+**`alt`** — Alternative text for images (important for accessibility):
+```html
+<img src="cat.jpg" alt="A fluffy orange cat sleeping">
+```
+
+<InfoBox type="tip" title="Boolean Attributes">
+Some attributes don't need a value — just their presence enables them:
+`<input type="text" disabled>` or `<input type="text" required>`
+</InfoBox>
+
+<ProgressCheckpoint section="introduction" xpReward={20} />
+
+## Block vs Inline Elements
+
+This is one of the most important concepts in HTML! Elements behave differently based on their **display type**.
+
+### Block Elements
+
+Block elements:
+- Take up the **full width** available
+- Start on a **new line**
+- Can contain other block and inline elements
+
+Common block elements: `<div>`, `<p>`, `<h1>`-`<h6>`, `<ul>`, `<ol>`, `<li>`, `<header>`, `<footer>`, `<section>`
+
+```html
+<div>I take the full width</div>
+<div>I start on a new line</div>
+```
+
+### Inline Elements
+
+Inline elements:
+- Only take up as much width as **needed**
+- Do **not** start on a new line
+- Should only contain text or other inline elements
+
+Common inline elements: `<span>`, `<a>`, `<strong>`, `<em>`, `<img>`, `<code>`
+
+```html
+<p>This is <strong>bold</strong> and <em>italic</em> text.</p>
+```
+
+<KeyConcept title="Block vs Inline">
+Block elements are like paragraphs — they stack vertically. Inline elements are like words — they flow horizontally within text.
+</KeyConcept>
+
+<ProgressCheckpoint section="building-blocks" xpReward={20} />
+
+## The Complete Document Structure
+
+Let's look at a more complete HTML document:
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="A description of my page">
+  <title>My Website</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <nav>
+      <a href="/">Home</a>
+      <a href="/about">About</a>
+    </nav>
+  </header>
+  
+  <main>
+    <h1>Welcome</h1>
+    <p>Content goes here...</p>
+  </main>
+  
+  <footer>
+    <p>&copy; 2024 My Website</p>
+  </footer>
+  
+  <script src="app.js"></script>
+</body>
+</html>
+```
+
+### Important Head Elements
+
+| Element | Purpose |
+|---------|---------|
+| `<meta charset>` | Character encoding (always use UTF-8) |
+| `<meta viewport>` | Mobile responsiveness |
+| `<meta description>` | SEO description |
+| `<title>` | Browser tab title |
+| `<link>` | External stylesheets |
+
+<ProgressCheckpoint section="document-structure" xpReward={20} />
+
+## Working with Lists
+
+HTML has three types of lists:
+
+### Unordered Lists (Bullets)
+
+```html
+<ul>
+  <li>First item</li>
+  <li>Second item</li>
+  <li>Third item</li>
+</ul>
+```
+
+### Ordered Lists (Numbers)
+
+```html
+<ol>
+  <li>Step one</li>
+  <li>Step two</li>
+  <li>Step three</li>
+</ol>
+```
+
+### Description Lists
+
+```html
+<dl>
+  <dt>HTML</dt>
+  <dd>HyperText Markup Language</dd>
+  <dt>CSS</dt>
+  <dd>Cascading Style Sheets</dd>
+</dl>
+```
+
+<ElementExplorer initialCategory="lists" />
+
+<ProgressCheckpoint section="common-elements" xpReward={20} />
+
+## Nesting Best Practices
+
+### Valid Nesting
+
+Some elements can only contain certain other elements:
+
+✅ **Valid:**
+```html
+<ul>
+  <li>Item 1</li>
+  <li>Item 2</li>
+</ul>
+```
+
+❌ **Invalid:**
+```html
+<ul>
+  <p>This is wrong!</p>
+</ul>
+```
+
+### Common Nesting Rules
+
+| Parent | Valid Children |
+|--------|---------------|
+| `<ul>`, `<ol>` | Only `<li>` |
+| `<table>` | `<thead>`, `<tbody>`, `<tr>` |
+| `<tr>` | `<th>`, `<td>` |
+| `<p>` | Only inline elements |
+| `<a>` | Most elements except other `<a>` |
+
+<InfoBox type="warning" title="Paragraph Gotcha">
+You cannot put block elements inside `<p>`. If you do, the browser will automatically close the paragraph:
+```html
+<p>Text<div>Block</div></p>
+<!-- Becomes: <p>Text</p><div>Block</div><p></p> -->
+```
+</InfoBox>
+
+<ProgressCheckpoint section="nesting-rules" xpReward={15} />
+
+## Key Takeaways
+
+<KeyConcept title="Attributes Add Information">
+Attributes like id, class, href, and src provide extra details about elements.
+</KeyConcept>
+
+<KeyConcept title="Block vs Inline Matters">
+Block elements stack vertically and take full width. Inline elements flow with text.
+</KeyConcept>
+
+<KeyConcept title="Nesting Has Rules">
+Some elements can only contain specific child elements. Learn the common patterns.
+</KeyConcept>
+
+<ProgressCheckpoint section="summary" xpReward={15} />
+
+## Quick Quiz
+
+<Quiz>
+  <Question text="Which attribute should be unique on a page?">
+    <Answer>class</Answer>
+    <Answer correct>id</Answer>
+    <Answer>href</Answer>
+    <Answer>src</Answer>
+  </Question>
+  
+  <Question text="Which element is a block-level element?">
+    <Answer>span</Answer>
+    <Answer>a</Answer>
+    <Answer correct>div</Answer>
+    <Answer>strong</Answer>
+  </Question>
+  
+  <Question text="What can be a direct child of a &lt;ul&gt; element?">
+    <Answer>p</Answer>
+    <Answer>div</Answer>
+    <Answer correct>li</Answer>
+    <Answer>span</Answer>
+  </Question>
+  
+  <Question text="Which meta tag is essential for mobile responsiveness?">
+    <Answer>charset</Answer>
+    <Answer correct>viewport</Answer>
+    <Answer>description</Answer>
+    <Answer>author</Answer>
+  </Question>
+</Quiz>
+
+---
+
+**Excellent progress!** 🚀 You now have a solid understanding of HTML fundamentals. In the advanced level, we'll explore how browsers parse HTML and dive into the HTML5 specification.

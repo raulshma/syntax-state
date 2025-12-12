@@ -81,6 +81,12 @@ const FEATURE_INFO: Record<PlanFeature, { label: string; description: string; ic
     icon: <Palette className="w-5 h-5" />,
     minPlan: 'PRO',
   },
+  custom_theme_builder: {
+    label: 'Visual Theme Builder',
+    description: 'Build and customize themes with a visual editor',
+    icon: <Palette className="w-5 h-5" />,
+    minPlan: 'MAX',
+  },
   analytics: {
     label: 'Analytics & Insights',
     description: 'Track your preparation progress with visualizations',

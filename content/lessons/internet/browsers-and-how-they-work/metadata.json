@@ -1,0 +1,31 @@
+{
+  "id": "browsers-and-how-they-work",
+  "title": "Browsers and How They Work",
+  "description": "Understand how web browsers render pages and execute JavaScript",
+  "milestone": "internet",
+  "order": 6,
+  "sections": [
+    "introduction",
+    "browser-architecture",
+    "rendering-pipeline",
+    "javascript-engine",
+    "performance",
+    "summary"
+  ],
+  "levels": {
+    "beginner": {
+      "estimatedMinutes": 10,
+      "xpReward": 50
+    },
+    "intermediate": {
+      "estimatedMinutes": 15,
+      "xpReward": 100
+    },
+    "advanced": {
+      "estimatedMinutes": 25,
+      "xpReward": 200
+    }
+  },
+  "prerequisites": ["how-does-the-internet-work", "what-is-http"],
+  "tags": ["browsers", "rendering", "javascript", "performance"]
+}

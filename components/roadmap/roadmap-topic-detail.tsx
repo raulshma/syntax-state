@@ -21,8 +21,8 @@ import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { getObjectivesWithLessons, type ObjectiveLessonInfo } from '@/lib/actions/lessons';
-import { objectiveToLessonSlug } from '@/lib/utils/lesson-utils';
-import type { RoadmapNode } from '@/lib/db/schemas/roadmap';
+import { getObjectiveTitle } from '@/lib/utils/lesson-utils';
+import type { RoadmapNode, LearningObjective } from '@/lib/db/schemas/roadmap';
 import type { NodeProgress, NodeProgressStatus } from '@/lib/db/schemas/user-roadmap-progress';
 
 interface RoadmapTopicDetailProps {
@@ -56,8 +56,8 @@ const resourceIcons: Record<string, typeof BookOpen> = {
 };
 
 // Storage key for objective progress
-const getObjectiveProgressKey = (nodeId: string, objective: string) => 
-  `objective_progress_${nodeId}_${objectiveToLessonSlug(objective)}`;
+const getObjectiveProgressKey = (nodeId: string, lessonId: string) => 
+  `objective_progress_${nodeId}_${lessonId}`;
 
 interface ObjectiveProgress {
   completedAt?: string;
@@ -98,14 +98,14 @@ export function RoadmapTopicDetail({
         const info = await getObjectivesWithLessons(node.id, node.learningObjectives);
         setObjectivesInfo(info);
         
-        // Load progress from localStorage
+        // Load progress from localStorage using lessonId from info
         const progress: Record<string, ObjectiveProgress> = {};
-        for (const obj of node.learningObjectives) {
-          const key = getObjectiveProgressKey(node.id, obj);
+        for (const objInfo of info) {
+          const key = getObjectiveProgressKey(node.id, objInfo.lessonId);
           const stored = localStorage.getItem(key);
           if (stored) {
             try {
-              progress[obj] = JSON.parse(stored);
+              progress[objInfo.objective] = JSON.parse(stored);
             } catch {
               // Ignore parse errors
             }
@@ -229,12 +229,12 @@ export function RoadmapTopicDetail({
               </div>
             ) : (
               <ul className="space-y-2">
-                {node.learningObjectives.map((objective, index) => {
-                  const info = objectivesInfo.find(o => o.objective === objective);
-                  const progress = objectiveProgress[objective];
-                  const hasLesson = info?.hasLesson;
+                {objectivesInfo.map((info, index) => {
+                  const objectiveTitle = info.objective;
+                  const progress = objectiveProgress[objectiveTitle];
+                  const hasLesson = info.hasLesson;
                   const isObjectiveComplete = !!progress?.completedAt;
-                  const slug = objectiveToLessonSlug(objective);
+                  const slug = info.lessonId;
                   
                   return (
                     <li 
@@ -273,20 +273,20 @@ export function RoadmapTopicDetail({
                                   "text-sm font-medium",
                                   isObjectiveComplete ? "text-muted-foreground" : "text-foreground"
                                 )}>
-                                  {objective}
+                                  {objectiveTitle}
                                 </span>
                                 <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
                               </div>
                               
                               {/* XP and time info */}
                               <div className="flex items-center gap-3 mt-1">
-                                {info?.xpRewards && (
+                                {info.xpRewards && (
                                   <div className="flex items-center gap-1 text-xs text-yellow-500">
                                     <Sparkles className="w-3 h-3" />
                                     <span>{info.xpRewards.beginner}-{info.xpRewards.advanced} XP</span>
                                   </div>
                                 )}
-                                {info?.estimatedMinutes && (
+                                {info.estimatedMinutes && (
                                   <div className="flex items-center gap-1 text-xs text-muted-foreground">
                                     <Clock className="w-3 h-3" />
                                     <span>{info.estimatedMinutes.beginner}-{info.estimatedMinutes.advanced} min</span>
@@ -307,7 +307,7 @@ export function RoadmapTopicDetail({
                             <CircleDashed className="w-4 h-4 text-muted-foreground" />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <span className="text-sm text-muted-foreground">{objective}</span>
+                            <span className="text-sm text-muted-foreground">{objectiveTitle}</span>
                             <div className="flex items-center gap-1 mt-1 text-xs text-muted-foreground/70">
                               <Lock className="w-3 h-3" />
                               <span>No lesson available yet</span>

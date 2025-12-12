@@ -454,7 +454,7 @@ export interface RoadmapDocument extends Document {
     description?: string;
     type: 'milestone' | 'topic' | 'checkpoint' | 'optional';
     position: { x: number; y: number };
-    learningObjectives: string[];
+    learningObjectives: Array<string | { title: string; lessonId?: string }>;
     resources: Array<{
       title: string;
       type: 'documentation' | 'article' | 'video' | 'practice' | 'book';

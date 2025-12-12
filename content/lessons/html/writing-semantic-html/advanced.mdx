@@ -1,0 +1,373 @@
+# Writing Semantic HTML
+
+Welcome to the advanced level! You've mastered semantic elements — now let's explore how assistive technologies interpret your markup, dive deep into ARIA roles, and learn advanced patterns for creating truly accessible web experiences.
+
+<StructureComparison initialExample="page-layout" />
+
+## The Accessibility Tree
+
+When a browser parses your HTML, it creates two trees:
+1. **DOM Tree** — The structure of elements
+2. **Accessibility Tree** — A simplified tree for assistive technologies
+
+The accessibility tree strips away visual styling and focuses on:
+- **Role** — What type of element is this?
+- **Name** — What is it called?
+- **State** — Is it expanded, checked, disabled?
+- **Value** — What's the current value?
+
+```html
+<button aria-expanded="false">
+  Menu
+</button>
+```
+
+Accessibility tree node:
+- Role: button
+- Name: "Menu"
+- State: expanded=false
+
+<InfoBox type="info" title="Browser DevTools">
+You can inspect the accessibility tree in Chrome DevTools (Accessibility tab) or Firefox (Accessibility Inspector).
+</InfoBox>
+
+<ProgressCheckpoint section="introduction" xpReward={30} />
+
+## ARIA: Accessible Rich Internet Applications
+
+ARIA provides attributes to enhance accessibility when HTML semantics aren't enough. The first rule of ARIA:
+
+<KeyConcept title="First Rule of ARIA">
+Don't use ARIA if you can use native HTML. Native elements have built-in accessibility that ARIA can't fully replicate.
+</KeyConcept>
+
+### ARIA Roles
+
+Roles define what an element is. There are several categories:
+
+#### Landmark Roles
+```html
+<div role="banner">...</div>      <!-- Same as <header> -->
+<div role="navigation">...</div>  <!-- Same as <nav> -->
+<div role="main">...</div>        <!-- Same as <main> -->
+<div role="complementary">...</div> <!-- Same as <aside> -->
+<div role="contentinfo">...</div> <!-- Same as <footer> -->
+```
+
+#### Widget Roles
+```html
+<div role="button">Click me</div>
+<div role="checkbox" aria-checked="false">Option</div>
+<div role="tablist">
+  <div role="tab">Tab 1</div>
+  <div role="tab">Tab 2</div>
+</div>
+```
+
+#### Document Structure Roles
+```html
+<div role="article">...</div>
+<div role="heading" aria-level="2">Title</div>
+<div role="list">
+  <div role="listitem">Item</div>
+</div>
+```
+
+<InfoBox type="warning" title="Prefer Native Elements">
+Using `<button>` is always better than `<div role="button">`. Native elements include keyboard handling, focus management, and proper semantics automatically.
+</InfoBox>
+
+<ProgressCheckpoint section="semantic-elements" xpReward={30} />
+
+## ARIA States and Properties
+
+### Common ARIA Attributes
+
+#### `aria-label` and `aria-labelledby`
+Provide accessible names for elements.
+
+```html
+<!-- aria-label: Direct label -->
+<button aria-label="Close dialog">×</button>
+
+<!-- aria-labelledby: Reference another element -->
+<h2 id="section-title">Features</h2>
+<section aria-labelledby="section-title">
+  ...
+</section>
+```
+
+#### `aria-describedby`
+Provides additional description.
+
+```html
+<input 
+  type="password" 
+  aria-describedby="password-hint"
+>
+<p id="password-hint">
+  Must be at least 8 characters
+</p>
+```
+
+#### `aria-hidden`
+Hides content from assistive technologies.
+
+```html
+<!-- Decorative icon, hidden from screen readers -->
+<span aria-hidden="true">🎨</span>
+
+<!-- Important: Never hide focusable elements! -->
+```
+
+#### `aria-live`
+Announces dynamic content changes.
+
+```html
+<div aria-live="polite">
+  <!-- Content changes here will be announced -->
+  <p>3 items in cart</p>
+</div>
+
+<div aria-live="assertive">
+  <!-- Urgent announcements interrupt the user -->
+  <p>Error: Form submission failed</p>
+</div>
+```
+
+<ProgressCheckpoint section="page-structure" xpReward={30} />
+
+## Advanced Semantic Patterns
+
+### Accessible Navigation
+
+```html
+<nav aria-label="Main">
+  <ul role="menubar">
+    <li role="none">
+      <a role="menuitem" href="/">Home</a>
+    </li>
+    <li role="none">
+      <button 
+        role="menuitem" 
+        aria-haspopup="true"
+        aria-expanded="false"
+      >
+        Products
+      </button>
+      <ul role="menu" hidden>
+        <li role="none">
+          <a role="menuitem" href="/products/a">Product A</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+```
+
+### Accessible Tabs
+
+```html
+<div class="tabs">
+  <div role="tablist" aria-label="Content tabs">
+    <button 
+      role="tab" 
+      id="tab-1"
+      aria-selected="true"
+      aria-controls="panel-1"
+    >
+      Tab 1
+    </button>
+    <button 
+      role="tab" 
+      id="tab-2"
+      aria-selected="false"
+      aria-controls="panel-2"
+      tabindex="-1"
+    >
+      Tab 2
+    </button>
+  </div>
+  
+  <div 
+    role="tabpanel" 
+    id="panel-1"
+    aria-labelledby="tab-1"
+  >
+    Panel 1 content
+  </div>
+  
+  <div 
+    role="tabpanel" 
+    id="panel-2"
+    aria-labelledby="tab-2"
+    hidden
+  >
+    Panel 2 content
+  </div>
+</div>
+```
+
+### Accessible Modal Dialog
+
+```html
+<div 
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="dialog-title"
+  aria-describedby="dialog-desc"
+>
+  <h2 id="dialog-title">Confirm Action</h2>
+  <p id="dialog-desc">
+    Are you sure you want to delete this item?
+  </p>
+  <button>Cancel</button>
+  <button>Delete</button>
+</div>
+```
+
+<SemanticStructureBuilder />
+
+<ProgressCheckpoint section="accessibility-benefits" xpReward={30} />
+
+## Screen Reader Behavior
+
+Different screen readers interpret markup differently. Here's how major screen readers handle semantic elements:
+
+### Landmark Navigation
+
+| Screen Reader | Command |
+|--------------|---------|
+| NVDA | D (next landmark) |
+| JAWS | R (region/landmark) |
+| VoiceOver | VO + U (rotor) |
+
+### Heading Navigation
+
+| Screen Reader | Command |
+|--------------|---------|
+| NVDA | H (next heading) |
+| JAWS | H (next heading) |
+| VoiceOver | VO + Cmd + H |
+
+### How Elements Are Announced
+
+```html
+<nav aria-label="Main">
+  <a href="/">Home</a>
+</nav>
+```
+
+**NVDA announces:** "Main navigation landmark, Home link"
+
+```html
+<article>
+  <h2>Blog Post Title</h2>
+</article>
+```
+
+**VoiceOver announces:** "Article, heading level 2, Blog Post Title"
+
+<StructureComparison initialExample="navigation" />
+
+<ProgressCheckpoint section="best-practices" xpReward={25} />
+
+## Testing Accessibility
+
+### Automated Testing Tools
+
+1. **axe DevTools** — Browser extension for accessibility audits
+2. **Lighthouse** — Built into Chrome DevTools
+3. **WAVE** — Web accessibility evaluation tool
+
+### Manual Testing Checklist
+
+- [ ] Navigate with keyboard only (Tab, Enter, Escape)
+- [ ] Test with a screen reader (NVDA, VoiceOver)
+- [ ] Check color contrast ratios
+- [ ] Verify focus indicators are visible
+- [ ] Test at 200% zoom
+- [ ] Verify all images have alt text
+
+### Screen Reader Testing
+
+```bash
+# macOS: Enable VoiceOver
+Cmd + F5
+
+# Windows: Download NVDA (free)
+# https://www.nvaccess.org/
+
+# Test navigation:
+# - Can you reach all interactive elements?
+# - Are landmarks announced?
+# - Do headings make sense out of context?
+```
+
+<InfoBox type="tip" title="Real User Testing">
+Automated tools catch about 30% of accessibility issues. Real user testing with assistive technology users is essential for truly accessible sites.
+</InfoBox>
+
+## WCAG 2.1 Guidelines
+
+The Web Content Accessibility Guidelines (WCAG) define success criteria at three levels:
+
+### Level A (Minimum)
+- All images have alt text
+- All form inputs have labels
+- No keyboard traps
+- Page has a title
+
+### Level AA (Standard)
+- Color contrast ratio of 4.5:1 for text
+- Text can be resized to 200%
+- Multiple ways to find pages
+- Consistent navigation
+
+### Level AAA (Enhanced)
+- Color contrast ratio of 7:1
+- Sign language for video
+- Extended audio descriptions
+- No timing limits
+
+<KeyConcept title="Target Level AA">
+Most organizations target WCAG 2.1 Level AA compliance. It's the standard for legal requirements in many countries.
+</KeyConcept>
+
+<ProgressCheckpoint section="summary" xpReward={25} />
+
+## Quick Quiz
+
+<Quiz>
+  <Question text="What is the first rule of ARIA?">
+    <Answer>Always use ARIA roles</Answer>
+    <Answer>ARIA is required for accessibility</Answer>
+    <Answer correct>Don't use ARIA if you can use native HTML</Answer>
+    <Answer>Use aria-label on every element</Answer>
+  </Question>
+  
+  <Question text="What does aria-live='polite' do?">
+    <Answer>Makes the element focusable</Answer>
+    <Answer correct>Announces content changes without interrupting the user</Answer>
+    <Answer>Hides the element from screen readers</Answer>
+    <Answer>Adds a label to the element</Answer>
+  </Question>
+  
+  <Question text="Which WCAG level is typically required for legal compliance?">
+    <Answer>Level A</Answer>
+    <Answer correct>Level AA</Answer>
+    <Answer>Level AAA</Answer>
+    <Answer>All levels</Answer>
+  </Question>
+  
+  <Question text="What percentage of accessibility issues can automated tools typically catch?">
+    <Answer>100%</Answer>
+    <Answer>70%</Answer>
+    <Answer correct>About 30%</Answer>
+    <Answer>50%</Answer>
+  </Question>
+</Quiz>
+
+---
+
+**Outstanding work!** 🎉 You've mastered semantic HTML and accessibility. You now understand how assistive technologies interpret your markup, how to use ARIA effectively, and how to test for accessibility. Keep building inclusive web experiences!

@@ -1,0 +1,163 @@
+# SEO Basics
+
+Welcome to Search Engine Optimization! SEO is about helping search engines understand your content so they can show it to people searching for related topics.
+
+Think of SEO like **writing a good book cover and table of contents**. Just as these help readers find and understand a book, good SEO helps search engines find and understand your website.
+
+<SeoPreview />
+
+## What is SEO?
+
+SEO stands for **Search Engine Optimization**. It's the practice of making your website easier for search engines like Google to:
+
+- **Find** your pages (crawling)
+- **Understand** your content (indexing)
+- **Show** your pages in search results (ranking)
+
+When someone searches for "learn web development," search engines look through billions of pages to find the most relevant results. Good SEO helps your page be one of those results!
+
+<InfoBox type="tip" title="SEO is About Helping Users">
+The best SEO strategy is creating helpful content that answers people's questions. Search engines reward pages that genuinely help users.
+</InfoBox>
+
+<ProgressCheckpoint section="introduction" xpReward={15} />
+
+## How Search Engines Work
+
+Search engines follow three main steps:
+
+### 1. Crawling
+Search engine "bots" (also called spiders) visit websites and follow links to discover pages. They're like librarians exploring a huge library.
+
+### 2. Indexing
+After crawling, search engines analyze and store information about each page. They note the title, content, images, and more.
+
+### 3. Ranking
+When someone searches, the engine looks through its index and ranks pages by relevance and quality. The best matches appear first.
+
+<KeyConcept title="Be Crawlable, Indexable, and Valuable">
+Your page needs to be found (crawlable), understood (indexable), and helpful (valuable) to rank well.
+</KeyConcept>
+
+<ProgressCheckpoint section="meta-tags" xpReward={15} />
+
+## The Title Tag
+
+The `<title>` tag is the most important SEO element. It appears in:
+- Browser tabs
+- Search results (as the clickable headline)
+- Social media shares
+
+```html
+<head>
+  <title>Learn Web Development | SyntaxState</title>
+</head>
+```
+
+### Writing Good Titles
+
+| Do ✅ | Don't ❌ |
+|-------|---------|
+| Keep it under 60 characters | Write super long titles that get cut off... |
+| Include your main keyword | Stuff keywords unnaturally |
+| Make it descriptive and unique | Use "Home" or "Page 1" |
+| Put important words first | Start with your brand name |
+
+<InfoBox type="info" title="Character Limits Matter">
+Google typically shows 50-60 characters of your title. Anything longer gets cut off with "..." which looks unprofessional and loses information.
+</InfoBox>
+
+<ProgressCheckpoint section="heading-hierarchy" xpReward={15} />
+
+## The Meta Description
+
+The meta description is a summary of your page that appears in search results below the title.
+
+```html
+<head>
+  <meta name="description" content="Master web development with interactive lessons, hands-on projects, and AI-powered learning paths. Start your coding journey today.">
+</head>
+```
+
+### Writing Good Descriptions
+
+- **Length**: 150-160 characters (longer gets truncated)
+- **Content**: Summarize what the page offers
+- **Action**: Include a call-to-action when appropriate
+- **Keywords**: Include relevant terms naturally
+
+<KeyConcept title="Descriptions Don't Affect Ranking">
+Meta descriptions don't directly affect your search ranking, but they do affect whether people click on your result. A compelling description = more clicks!
+</KeyConcept>
+
+<ProgressCheckpoint section="structured-data" xpReward={15} />
+
+## Heading Hierarchy
+
+Headings (h1-h6) help both users and search engines understand your content structure.
+
+```html
+<h1>Main Page Title</h1>           <!-- Only one per page -->
+  <h2>Major Section</h2>           <!-- Main topics -->
+    <h3>Subsection</h3>            <!-- Subtopics -->
+    <h3>Another Subsection</h3>
+  <h2>Another Major Section</h2>
+```
+
+### Heading Best Practices
+
+1. **One H1 per page** - This is your main title
+2. **Don't skip levels** - Go h1 → h2 → h3, not h1 → h3
+3. **Be descriptive** - "Our Services" is better than "Section 2"
+4. **Include keywords** - But naturally, not forced
+
+<InfoBox type="warning" title="Headings Are Not for Styling">
+Don't use `<h3>` just because you want smaller text. Use CSS for styling and headings for structure.
+</InfoBox>
+
+<ProgressCheckpoint section="technical-seo" xpReward={10} />
+
+## Key Takeaways
+
+<KeyConcept title="Title Tags Are Crucial">
+Your title tag is the first thing users see in search results. Make it count with clear, descriptive text under 60 characters.
+</KeyConcept>
+
+<KeyConcept title="Descriptions Drive Clicks">
+Meta descriptions don't affect ranking but do affect click-through rates. Write compelling summaries that make people want to visit.
+</KeyConcept>
+
+<KeyConcept title="Structure Matters">
+Use proper heading hierarchy (h1 → h2 → h3) to help search engines understand your content organization.
+</KeyConcept>
+
+<ProgressCheckpoint section="summary" xpReward={10} />
+
+## Quick Quiz
+
+<Quiz>
+  <Question text="What is the recommended maximum length for a title tag?">
+    <Answer>30 characters</Answer>
+    <Answer>100 characters</Answer>
+    <Answer correct>60 characters</Answer>
+    <Answer>200 characters</Answer>
+  </Question>
+  
+  <Question text="How many H1 tags should a page typically have?">
+    <Answer correct>One</Answer>
+    <Answer>Two</Answer>
+    <Answer>As many as needed</Answer>
+    <Answer>None</Answer>
+  </Question>
+  
+  <Question text="What does the meta description affect?">
+    <Answer>Page loading speed</Answer>
+    <Answer>Direct search ranking</Answer>
+    <Answer correct>Click-through rate from search results</Answer>
+    <Answer>Image optimization</Answer>
+  </Question>
+</Quiz>
+
+---
+
+**Great start!** 🎉 You now understand the basics of SEO and how search engines work. In the intermediate level, we'll explore Open Graph tags, social sharing, and more advanced meta tags.

@@ -1,0 +1,229 @@
+# Writing Semantic HTML
+
+Welcome to semantic HTML! You've learned the basics of HTML elements — now let's learn how to use them **meaningfully**. Semantic HTML is about choosing the right element for the job, not just any element that looks right.
+
+Think of it like organizing a newspaper. A newspaper has clear sections: the headline, the main story, sidebars, and the footer with contact info. Semantic HTML gives your web page the same clear structure!
+
+<StructureComparison initialExample="page-layout" />
+
+## The Newspaper Analogy
+
+Imagine you're designing a newspaper:
+
+- **Header** — The masthead with the newspaper name and navigation
+- **Main Story** — The primary content readers came for
+- **Sidebar** — Related articles or advertisements
+- **Footer** — Contact info, copyright, and links
+
+HTML has elements that match these exact purposes! Instead of using generic `<div>` elements for everything, we use **semantic elements** that describe what the content actually is.
+
+<InfoBox type="tip" title="Why Does This Matter?">
+Semantic HTML helps search engines understand your content, makes your site accessible to screen readers, and makes your code easier to read and maintain. It's a win-win-win!
+</InfoBox>
+
+<ProgressCheckpoint section="introduction" xpReward={15} />
+
+## What is Semantic HTML?
+
+**Semantic** means "relating to meaning." Semantic HTML elements clearly describe their purpose:
+
+- `<header>` — "This is the header section"
+- `<nav>` — "This contains navigation links"
+- `<main>` — "This is the main content"
+- `<footer>` — "This is the footer section"
+
+Compare this to non-semantic elements like `<div>` and `<span>`, which just say "this is a container" without any meaning.
+
+```html
+<!-- Non-semantic (div soup) -->
+<div class="header">
+  <div class="nav">...</div>
+</div>
+
+<!-- Semantic (meaningful) -->
+<header>
+  <nav>...</nav>
+</header>
+```
+
+Both look the same visually, but the semantic version tells browsers, search engines, and screen readers exactly what each part is!
+
+<KeyConcept title="Semantic = Meaningful">
+Semantic elements describe their content's purpose. Non-semantic elements like `<div>` are just generic containers with no inherent meaning.
+</KeyConcept>
+
+<ProgressCheckpoint section="semantic-elements" xpReward={15} />
+
+## The Main Semantic Elements
+
+Let's meet the most important semantic elements:
+
+### `<header>` — The Introduction
+
+Contains introductory content or navigation. Usually at the top of a page or section.
+
+```html
+<header>
+  <h1>My Website</h1>
+  <nav>
+    <a href="/">Home</a>
+    <a href="/about">About</a>
+  </nav>
+</header>
+```
+
+### `<nav>` — Navigation Links
+
+Contains navigation links to other pages or sections.
+
+```html
+<nav>
+  <a href="/">Home</a>
+  <a href="/products">Products</a>
+  <a href="/contact">Contact</a>
+</nav>
+```
+
+### `<main>` — The Star of the Show
+
+Contains the primary content of your page. There should only be **one** `<main>` per page!
+
+```html
+<main>
+  <h1>Welcome to Our Store</h1>
+  <p>Browse our amazing products...</p>
+</main>
+```
+
+### `<footer>` — The Closing Section
+
+Contains footer information like copyright, contact details, or site links.
+
+```html
+<footer>
+  <p>© 2024 My Company</p>
+  <a href="/privacy">Privacy Policy</a>
+</footer>
+```
+
+<ProgressCheckpoint section="page-structure" xpReward={15} />
+
+## Building a Semantic Page Structure
+
+Let's put it all together! Here's a complete semantic page structure:
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>My Semantic Page</title>
+</head>
+<body>
+  <header>
+    <h1>My Website</h1>
+    <nav>
+      <a href="/">Home</a>
+      <a href="/about">About</a>
+    </nav>
+  </header>
+
+  <main>
+    <h2>Welcome!</h2>
+    <p>This is the main content.</p>
+  </main>
+
+  <footer>
+    <p>© 2024 My Website</p>
+  </footer>
+</body>
+</html>
+```
+
+<SemanticStructureBuilder />
+
+<InfoBox type="info" title="One Main Per Page">
+Remember: you should only have ONE `<main>` element per page. It represents the unique content of that page.
+</InfoBox>
+
+<ProgressCheckpoint section="accessibility-benefits" xpReward={15} />
+
+## Why Semantic HTML Matters
+
+### 1. Accessibility
+
+Screen readers use semantic elements to help visually impaired users navigate. They can jump directly to the `<main>` content or `<nav>` section!
+
+### 2. SEO (Search Engine Optimization)
+
+Search engines like Google understand semantic elements. Using `<article>` for blog posts helps Google know it's a standalone piece of content.
+
+### 3. Easier to Read
+
+Compare these two code snippets:
+
+```html
+<!-- Hard to understand -->
+<div class="top">
+  <div class="links">...</div>
+</div>
+
+<!-- Easy to understand -->
+<header>
+  <nav>...</nav>
+</header>
+```
+
+The semantic version is self-documenting!
+
+<KeyConcept title="Benefits of Semantic HTML">
+1. **Accessibility** — Screen readers can navigate your page
+2. **SEO** — Search engines understand your content
+3. **Maintainability** — Code is easier to read and update
+</KeyConcept>
+
+<ProgressCheckpoint section="best-practices" xpReward={10} />
+
+## Key Takeaways
+
+<KeyConcept title="Use the Right Element">
+Choose elements based on meaning, not appearance. Use `<nav>` for navigation, not `<div class="nav">`.
+</KeyConcept>
+
+<KeyConcept title="Structure Like a Newspaper">
+Think of your page like a newspaper: header, main content, sidebars, and footer.
+</KeyConcept>
+
+<KeyConcept title="One Main Per Page">
+Every page should have exactly one `<main>` element containing its primary content.
+</KeyConcept>
+
+<ProgressCheckpoint section="summary" xpReward={10} />
+
+## Quick Quiz
+
+<Quiz>
+  <Question text="What does 'semantic' mean in the context of HTML?">
+    <Answer>Making elements look pretty</Answer>
+    <Answer correct>Giving elements meaningful names that describe their purpose</Answer>
+    <Answer>Using lots of CSS classes</Answer>
+    <Answer>Making websites load faster</Answer>
+  </Question>
+  
+  <Question text="Which element should contain the main content of a page?">
+    <Answer>header</Answer>
+    <Answer>div</Answer>
+    <Answer correct>main</Answer>
+    <Answer>body</Answer>
+  </Question>
+  
+  <Question text="How many <main> elements should a page have?">
+    <Answer>As many as needed</Answer>
+    <Answer correct>Exactly one</Answer>
+    <Answer>At least two</Answer>
+    <Answer>None</Answer>
+  </Question>
+</Quiz>
+
+---
+
+**Great job!** 🎉 You now understand the basics of semantic HTML. In the intermediate level, we'll explore more semantic elements like `<article>`, `<section>`, and `<aside>`, and learn when to use each one.

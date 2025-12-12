@@ -1,0 +1,49 @@
+{
+  "id": "html/accessibility",
+  "title": "Accessibility",
+  "description": "Create inclusive web experiences following WCAG guidelines and accessible HTML practices",
+  "milestone": "html",
+  "order": 4,
+  "sections": {
+    "beginner": [
+      "introduction",
+      "accessibility-basics",
+      "aria-attributes",
+      "keyboard-navigation",
+      "testing-tools",
+      "summary"
+    ],
+    "intermediate": [
+      "introduction",
+      "accessibility-basics",
+      "aria-attributes",
+      "keyboard-navigation",
+      "testing-tools",
+      "summary"
+    ],
+    "advanced": [
+      "introduction",
+      "accessibility-basics",
+      "aria-attributes",
+      "keyboard-navigation",
+      "testing-tools",
+      "summary"
+    ]
+  },
+  "levels": {
+    "beginner": {
+      "estimatedMinutes": 10,
+      "xpReward": 50
+    },
+    "intermediate": {
+      "estimatedMinutes": 15,
+      "xpReward": 100
+    },
+    "advanced": {
+      "estimatedMinutes": 22,
+      "xpReward": 200
+    }
+  },
+  "prerequisites": ["html/writing-semantic-html"],
+  "tags": ["html", "accessibility", "wcag", "aria"]
+}
