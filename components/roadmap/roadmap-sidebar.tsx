@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect, useMemo, useTransition } from 'react';
+import { useState, useCallback, useEffect, useMemo, useTransition, useReducer } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { 
@@ -29,6 +29,7 @@ import { getObjectivesWithLessons, type ObjectiveLessonInfo } from '@/lib/action
 import { getObjectiveTitle } from '@/lib/utils/lesson-utils';
 import type { Roadmap, RoadmapNode, LearningObjective } from '@/lib/db/schemas/roadmap';
 import type { UserRoadmapProgress, NodeProgressStatus } from '@/lib/db/schemas/user-roadmap-progress';
+import { getObjectiveProgress } from '@/lib/hooks/use-objective-progress';
 
 interface RoadmapSidebarProps {
   roadmap: Roadmap;
@@ -86,7 +87,7 @@ export function RoadmapBreadcrumb({ roadmap, parentRoadmap }: RoadmapBreadcrumbP
 const statusIcons: Record<NodeProgressStatus, typeof Circle> = {
   locked: Circle,
   available: Circle,
-  'in-progress': Circle,
+  'in-progress': CircleDashed,
   completed: CheckCircle2,
   skipped: Circle,
 };
@@ -112,6 +113,7 @@ interface NodeItemProps {
   roadmapSlug: string;
   lessonAvailability?: LessonAvailability;
   objectivesInfo?: ObjectiveLessonInfo[];
+  objectiveCompletion?: { completed: number; total: number };
   isExpanded?: boolean;
   onToggleExpand?: () => void;
 }
@@ -200,6 +202,7 @@ function NodeItem({
   roadmapSlug,
   lessonAvailability = 'loading',
   objectivesInfo = [],
+  objectiveCompletion,
   isExpanded: controlledExpanded,
   onToggleExpand: controlledToggle,
 }: NodeItemProps) {
@@ -207,7 +210,16 @@ function NodeItem({
   const [localExpanded, setLocalExpanded] = useState(false);
   const isExpanded = controlledExpanded !== undefined ? controlledExpanded : localExpanded;
   
-  const Icon = statusIcons[status];
+  const effectiveStatus: NodeProgressStatus = (() => {
+    if (status === 'completed') return 'completed';
+    if (objectiveCompletion && objectiveCompletion.total > 0) {
+      if (objectiveCompletion.completed >= objectiveCompletion.total) return 'completed';
+      if (objectiveCompletion.completed > 0) return 'in-progress';
+    }
+    return status;
+  })();
+
+  const Icon = statusIcons[effectiveStatus];
   const hasObjectives = node.learningObjectives && node.learningObjectives.length > 0;
   
   const handleToggleExpand = useCallback((e: React.MouseEvent) => {
@@ -247,11 +259,21 @@ function NodeItem({
               animate={{ rotate: isExpanded ? 90 : 0 }}
               transition={{ duration: 0.2 }}
             >
-              <ChevronRight className={cn('w-3.5 h-3.5', statusColors[status])} />
+              <ChevronRight className={cn('w-3.5 h-3.5', statusColors[effectiveStatus])} />
             </motion.div>
           </button>
         ) : (
-          <Icon className={cn(isMilestone ? 'w-4 h-4' : 'w-3.5 h-3.5', statusColors[status])} />
+          <Icon className={cn(isMilestone ? 'w-4 h-4' : 'w-3.5 h-3.5', statusColors[effectiveStatus])} />
+        )}
+
+        {/* Status icon (always visible, even for expandable nodes) */}
+        {hasObjectives && (
+          <Icon
+            className={cn(
+              isMilestone ? 'w-4 h-4' : 'w-3.5 h-3.5',
+              statusColors[effectiveStatus]
+            )}
+          />
         )}
         
         {/* Node title button */}
@@ -284,6 +306,22 @@ function NodeItem({
             )}
           >
             {availableLessonsCount}/{totalObjectives}
+          </Badge>
+        )}
+
+        {/* Objective completion badge */}
+        {objectiveCompletion && objectiveCompletion.total > 0 && objectiveCompletion.completed > 0 && !isExpanded && (
+          <Badge
+            variant="outline"
+            className={cn(
+              "text-[10px] px-1.5 py-0 h-4",
+              objectiveCompletion.completed >= objectiveCompletion.total
+                ? "text-green-500 border-green-500/30"
+                : "text-yellow-500 border-yellow-500/30"
+            )}
+            title="Objectives completed"
+          >
+            {objectiveCompletion.completed}/{objectiveCompletion.total}
           </Badge>
         )}
         
@@ -354,6 +392,8 @@ export function RoadmapSidebar({
   const [nodeObjectivesInfo, setNodeObjectivesInfo] = useState<Record<string, ObjectiveLessonInfo[]>>(initialLessonAvailability);
   // No loading state needed if we have initial data!
   const [isLoadingLessons, setIsLoadingLessons] = useState(false);
+
+  const [objectiveCompletionTick, bumpObjectiveCompletionTick] = useReducer((x: number) => x + 1, 0);
   
   const getNodeStatus = (nodeId: string): NodeProgressStatus => {
     if (!progress) return 'available';
@@ -378,6 +418,48 @@ export function RoadmapSidebar({
     if (availableCount === info.length) return 'full';
     return 'partial';
   }, [nodeObjectivesInfo, isLoadingLessons]);
+
+  const computeObjectiveCompletionForNode = useCallback((nodeId: string) => {
+    const objectives = nodeObjectivesInfo[nodeId] || [];
+    if (typeof window === 'undefined' || objectives.length === 0) {
+      return { completed: 0, total: objectives.length };
+    }
+
+    let completed = 0;
+    for (const obj of objectives) {
+      const stored = getObjectiveProgress(nodeId, obj.lessonId);
+      if (stored?.completedAt) completed += 1;
+    }
+    return { completed, total: objectives.length };
+  }, [nodeObjectivesInfo]);
+
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const custom = e as CustomEvent<{ nodeId?: string }>;
+      const nodeId = custom.detail?.nodeId;
+      if (!nodeId) return;
+      if (!(nodeId in nodeObjectivesInfo)) return;
+
+      // Trigger a re-render; completion is derived from localStorage
+      bumpObjectiveCompletionTick();
+    };
+
+    window.addEventListener('objective-progress-updated', handler);
+    return () => window.removeEventListener('objective-progress-updated', handler);
+  }, [nodeObjectivesInfo]);
+
+  const objectiveCompletionByNode = useMemo(() => {
+    const next: Record<string, { completed: number; total: number }> = {};
+    // Use tick to refresh derived values when localStorage changes in same tab
+    void objectiveCompletionTick;
+
+    for (const node of roadmap.nodes) {
+      if ((nodeObjectivesInfo[node.id] || []).length > 0) {
+        next[node.id] = computeObjectiveCompletionForNode(node.id);
+      }
+    }
+    return next;
+  }, [computeObjectiveCompletionForNode, nodeObjectivesInfo, roadmap.nodes, objectiveCompletionTick]);
   
   // Group nodes by type for organized display
   const milestones = roadmap.nodes.filter(n => n.type === 'milestone');
@@ -614,6 +696,7 @@ export function RoadmapSidebar({
                   roadmapSlug={roadmap.slug}
                   lessonAvailability={getLessonAvailability(node.id)}
                   objectivesInfo={nodeObjectivesInfo[node.id] || []}
+                  objectiveCompletion={objectiveCompletionByNode[node.id]}
                   isExpanded={expandedNodes.has(node.id)}
                   onToggleExpand={() => handleToggleNode(node.id)}
                 />
@@ -639,6 +722,7 @@ export function RoadmapSidebar({
                   roadmapSlug={roadmap.slug}
                   lessonAvailability={getLessonAvailability(node.id)}
                   objectivesInfo={nodeObjectivesInfo[node.id] || []}
+                  objectiveCompletion={objectiveCompletionByNode[node.id]}
                 />
               ))}
             </ul>
@@ -662,6 +746,7 @@ export function RoadmapSidebar({
                   roadmapSlug={roadmap.slug}
                   lessonAvailability={getLessonAvailability(node.id)}
                   objectivesInfo={nodeObjectivesInfo[node.id] || []}
+                  objectiveCompletion={objectiveCompletionByNode[node.id]}
                 />
               ))}
             </ul>

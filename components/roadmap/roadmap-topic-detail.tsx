@@ -263,6 +263,10 @@ export function RoadmapTopicDetail({
   const completedObjectives = Object.keys(objectiveProgress).filter(
     obj => objectiveProgress[obj]?.completedAt
   ).length;
+
+  const hasObjectives = node.learningObjectives.length > 0;
+  const isObjectivesFullyCompleted = hasObjectives && completedObjectives >= node.learningObjectives.length;
+  const isObjectivesPartiallyCompleted = hasObjectives && completedObjectives > 0 && !isObjectivesFullyCompleted;
   
   return (
     <motion.div
@@ -282,6 +286,16 @@ export function RoadmapTopicDetail({
               <Badge variant={node.type === 'milestone' ? 'default' : 'secondary'}>
                 {node.type.charAt(0).toUpperCase() + node.type.slice(1)}
               </Badge>
+              {isObjectivesFullyCompleted && !isCompleted && (
+                <Badge variant="outline" className="text-xs text-green-500 border-green-500/30">
+                  Objectives complete
+                </Badge>
+              )}
+              {isObjectivesPartiallyCompleted && !isInProgress && !isCompleted && (
+                <Badge variant="outline" className="text-xs text-yellow-500 border-yellow-500/30">
+                  Partially complete
+                </Badge>
+              )}
               {difficulty && (
                 <span className={cn('text-xs font-medium', difficulty.color)}>
                   {difficulty.label}
@@ -323,6 +337,19 @@ export function RoadmapTopicDetail({
               {availableLessons > 0 && (
                 <Badge variant="secondary" className="text-xs ml-1">
                   {availableLessons} lessons
+                </Badge>
+              )}
+              {completedObjectives > 0 && (
+                <Badge
+                  variant="outline"
+                  className={cn(
+                    "text-xs ml-1",
+                    isObjectivesFullyCompleted
+                      ? "text-green-500 border-green-500/30"
+                      : "text-yellow-500 border-yellow-500/30"
+                  )}
+                >
+                  {completedObjectives}/{node.learningObjectives.length} done
                 </Badge>
               )}
             </div>
@@ -432,10 +459,18 @@ export function RoadmapTopicDetail({
             <div className="space-y-2">
               {node.resources.map((resource, index) => {
                 const Icon = resourceIcons[resource.type] || BookOpen;
+                const isLink = !!resource.url;
+                const Wrapper: any = isLink ? 'a' : 'div';
                 return (
-                  <div
+                  <Wrapper
                     key={index}
-                    className="flex items-start gap-3 p-3 rounded-xl bg-secondary/30 hover:bg-secondary/50 transition-colors group"
+                    href={isLink ? resource.url : undefined}
+                    target={isLink ? '_blank' : undefined}
+                    rel={isLink ? 'noopener noreferrer' : undefined}
+                    className={cn(
+                      'flex items-start gap-3 p-3 rounded-xl bg-secondary/30 hover:bg-secondary/50 transition-colors group',
+                      isLink && 'cursor-pointer'
+                    )}
                   >
                     <div className="p-1.5 rounded-lg bg-primary/10">
                       <Icon className="w-4 h-4 text-primary" />
@@ -445,7 +480,9 @@ export function RoadmapTopicDetail({
                         <span className="text-sm font-medium text-foreground truncate">
                           {resource.title}
                         </span>
-                        <ExternalLink className="w-3 h-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                        {isLink && (
+                          <ExternalLink className="w-3 h-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                        )}
                       </div>
                       <p className="text-xs text-muted-foreground mt-0.5">
                         {resource.description}
@@ -454,7 +491,7 @@ export function RoadmapTopicDetail({
                     <Badge variant="outline" className="text-xs shrink-0">
                       {resource.type}
                     </Badge>
-                  </div>
+                  </Wrapper>
                 );
               })}
             </div>

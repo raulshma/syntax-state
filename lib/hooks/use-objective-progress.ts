@@ -46,6 +46,15 @@ export function saveObjectiveProgress(
   };
   
   localStorage.setItem(key, JSON.stringify(data));
+
+  // Notify same-tab listeners (storage event does not fire in the same document)
+  try {
+    window.dispatchEvent(
+      new CustomEvent('objective-progress-updated', { detail: { nodeId, lessonId } })
+    );
+  } catch {
+    // Ignore if CustomEvent is not available
+  }
 }
 
 /**
@@ -102,6 +111,16 @@ export function syncGamificationToLocalStorage(
         lessonId: lesson.lessonId,
       };
       localStorage.setItem(key, JSON.stringify(data));
+
+      try {
+        window.dispatchEvent(
+          new CustomEvent('objective-progress-updated', {
+            detail: { nodeId: extractedNodeId, lessonId: lesson.lessonId },
+          })
+        );
+      } catch {
+        // Ignore
+      }
     }
   }
 }
@@ -114,6 +133,14 @@ export function clearObjectiveProgress(nodeId: string, lessonId: string): void {
   
   const key = getObjectiveProgressKey(nodeId, lessonId);
   localStorage.removeItem(key);
+
+  try {
+    window.dispatchEvent(
+      new CustomEvent('objective-progress-updated', { detail: { nodeId, lessonId } })
+    );
+  } catch {
+    // Ignore
+  }
 }
 
 /**
