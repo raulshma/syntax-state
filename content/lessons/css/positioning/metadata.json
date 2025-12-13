@@ -1,0 +1,42 @@
+{
+  "id": "positioning",
+  "title": "CSS Positioning",
+  "description": "Master CSS positioning - from static and relative to absolute, fixed, and sticky positioning, plus z-index and stacking contexts",
+  "milestone": "css",
+  "order": 3,
+  "sections": [
+    "introduction",
+    "static-positioning",
+    "relative-positioning",
+    "absolute-positioning",
+    "fixed-positioning",
+    "sticky-positioning",
+    "z-index",
+    "summary"
+  ],
+  "levels": {
+    "beginner": {
+      "estimatedMinutes": 35,
+      "xpReward": 50
+    },
+    "intermediate": {
+      "estimatedMinutes": 50,
+      "xpReward": 100
+    },
+    "advanced": {
+      "estimatedMinutes": 65,
+      "xpReward": 200
+    }
+  },
+  "prerequisites": ["box-model"],
+  "tags": ["css", "positioning", "layout", "z-index", "stacking-context"],
+  "cssProperties": [
+    "position",
+    "top",
+    "right",
+    "bottom",
+    "left",
+    "z-index",
+    "inset"
+  ]
+}

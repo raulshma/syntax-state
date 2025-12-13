@@ -1,0 +1,376 @@
+# CSS Grid
+
+Welcome to CSS Grid! CSS Grid is a powerful two-dimensional layout system that lets you create complex layouts with rows and columns. While Flexbox is great for one-dimensional layouts (either rows or columns), Grid excels at two-dimensional layouts where you need precise control over both.
+
+Think of CSS Grid like a spreadsheet or a chessboard: you define rows and columns, and then place items exactly where you want them. It's perfect for page layouts, image galleries, dashboards, and any design that needs a structured grid.
+
+<InfoBox type="tip" title="Why Learn This?">
+CSS Grid is essential for modern web layouts. It makes complex designs simple and maintainable. Whether you're building a magazine-style layout, a photo gallery, or a dashboard, Grid gives you the power to create professional layouts with clean, readable CSS.
+</InfoBox>
+
+<ProgressCheckpoint section="introduction" xpReward={10} />
+
+## Grid Container and Grid Items
+
+Just like Flexbox, CSS Grid works with two types of elements:
+
+1. **Grid Container** - The parent element with `display: grid`
+2. **Grid Items** - The direct children of the grid container
+
+```css
+/* Create a grid container */
+.container {
+  display: grid;
+}
+```
+
+When you set `display: grid` on an element, its direct children automatically become grid items. The container defines the grid structure (rows and columns), and the items are placed into that grid.
+
+<KeyConcept title="Grid vs Flexbox">
+**When to use Grid:**
+- You need control over both rows AND columns
+- You're creating a page layout or complex structure
+- You want to place items in specific grid cells
+
+**When to use Flexbox:**
+- You're arranging items in a single row or column
+- You want items to wrap naturally
+- You're creating navigation bars, button groups, or simple layouts
+
+Often, you'll use both together - Grid for the overall page layout, Flexbox for components within grid items!
+</KeyConcept>
+
+<ProgressCheckpoint section="grid-basics" xpReward={10} />
+
+## Grid Template: Defining Columns and Rows
+
+The `grid-template-columns` and `grid-template-rows` properties define the structure of your grid.
+
+```css
+/* Create 3 equal columns */
+.container {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+/* Create 2 rows of 100px each */
+.container {
+  display: grid;
+  grid-template-rows: 100px 100px;
+}
+```
+
+**Understanding `fr` (fraction unit):**
+The `fr` unit represents a fraction of the available space. Think of it like slicing a pie:
+- `1fr 1fr 1fr` = three equal slices (33.3% each)
+- `2fr 1fr 1fr` = first slice is twice as big (50%, 25%, 25%)
+
+**Other sizing options:**
+- **Fixed sizes**: `200px`, `10rem`
+- **Percentages**: `25%`, `50%`
+- **Auto**: Size based on content
+- **Minmax**: `minmax(100px, 1fr)` - minimum 100px, maximum 1fr
+
+Let's see this in action:
+
+<GridPlayground
+  initialColumns="1fr 1fr 1fr"
+  initialRows="100px 100px"
+  initialGap={{ row: 10, column: 10 }}
+  initialItems={6}
+  showControls={true}
+  showGridLines={true}
+/>
+
+Try changing the grid template in the playground above:
+- Change `1fr 1fr 1fr` to `2fr 1fr 1fr` to make the first column wider
+- Change `100px 100px` to `auto auto` to size rows by content
+- Try `repeat(3, 1fr)` as a shorthand for `1fr 1fr 1fr`
+
+<ProgressCheckpoint section="grid-template" xpReward={10} />
+
+## Grid Gaps: Spacing Between Items
+
+The `gap` property (or `row-gap` and `column-gap`) adds space between grid items - like the gutters in a magazine layout.
+
+```css
+.container {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 20px; /* 20px gap between all items */
+}
+
+/* Or control row and column gaps separately */
+.container {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  row-gap: 20px;
+  column-gap: 10px;
+}
+```
+
+<KeyConcept title="Gap vs Margin">
+**Why use `gap` instead of `margin`?**
+
+`gap` is better because:
+- It only adds space BETWEEN items (not on the edges)
+- You don't need to worry about removing margin from first/last items
+- It's cleaner and more maintainable
+
+```css
+/* Old way with margin (messy) */
+.item {
+  margin: 10px;
+}
+.item:first-child {
+  margin-left: 0;
+}
+
+/* New way with gap (clean!) */
+.container {
+  gap: 20px;
+}
+```
+</KeyConcept>
+
+Try adjusting the gap in the playground above to see how it affects spacing!
+
+<ProgressCheckpoint section="grid-gaps" xpReward={10} />
+
+## Grid Placement: Positioning Items
+
+By default, grid items are placed automatically in order. But you can place items in specific grid cells using line numbers.
+
+**Understanding Grid Lines:**
+Grid lines are the invisible lines that define the grid structure:
+- A 3-column grid has 4 vertical lines (numbered 1, 2, 3, 4)
+- A 2-row grid has 3 horizontal lines (numbered 1, 2, 3)
+
+```css
+/* Place an item from column line 1 to 3 (spans 2 columns) */
+.item {
+  grid-column: 1 / 3;
+}
+
+/* Place an item from row line 1 to 3 (spans 2 rows) */
+.item {
+  grid-row: 1 / 3;
+}
+
+/* Shorthand: span 2 columns */
+.item {
+  grid-column: span 2;
+}
+```
+
+**Common placement patterns:**
+
+```css
+/* Full-width header */
+.header {
+  grid-column: 1 / -1; /* From first to last line */
+}
+
+/* Sidebar spanning 2 rows */
+.sidebar {
+  grid-row: span 2;
+}
+
+/* Featured item taking 2x2 space */
+.featured {
+  grid-column: span 2;
+  grid-row: span 2;
+}
+```
+
+<KeyConcept title="Negative Line Numbers">
+You can use negative numbers to count from the end:
+- `-1` is the last line
+- `-2` is the second-to-last line
+
+This is perfect for full-width items: `grid-column: 1 / -1` means "from the first line to the last line" regardless of how many columns you have!
+</KeyConcept>
+
+<ProgressCheckpoint section="grid-placement" xpReward={10} />
+
+## Grid Areas: Named Regions
+
+Grid areas let you name regions of your grid and place items by name instead of line numbers. This makes your CSS much more readable!
+
+```css
+/* Define named areas */
+.container {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  grid-template-rows: auto 1fr auto;
+  grid-template-areas:
+    "header header"
+    "sidebar main"
+    "footer footer";
+}
+
+/* Place items in named areas */
+.header {
+  grid-area: header;
+}
+
+.sidebar {
+  grid-area: sidebar;
+}
+
+.main {
+  grid-area: main;
+}
+
+.footer {
+  grid-area: footer;
+}
+```
+
+This creates a classic layout with a header, sidebar, main content, and footer - and the CSS clearly shows the structure!
+
+**Visual representation:**
+```
+┌─────────────────────┐
+│       header        │
+├──────────┬──────────┤
+│ sidebar  │   main   │
+│          │          │
+├──────────┴──────────┤
+│       footer        │
+└─────────────────────┘
+```
+
+<KeyConcept title="Grid Areas Are Powerful">
+Grid areas make your code self-documenting. When you see:
+
+```css
+grid-template-areas:
+  "header header header"
+  "sidebar main main"
+  "footer footer footer";
+```
+
+You can instantly visualize the layout! This is much clearer than working with line numbers.
+</KeyConcept>
+
+<ProgressCheckpoint section="grid-areas" xpReward={10} />
+
+## Auto-Placement: Letting Grid Do the Work
+
+When you don't specify placement for items, Grid automatically places them using the auto-placement algorithm.
+
+```css
+/* Items flow in rows (default) */
+.container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-auto-flow: row;
+}
+
+/* Items flow in columns */
+.container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-auto-flow: column;
+}
+```
+
+**Auto-placement is perfect for:**
+- Image galleries where items flow naturally
+- Card layouts that adapt to content
+- Responsive designs that reflow at different screen sizes
+
+```css
+/* Responsive card grid */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+}
+```
+
+This creates a grid that automatically adjusts the number of columns based on available space - cards will wrap to new rows as needed!
+
+<KeyConcept title="Auto-Fit vs Auto-Fill">
+- **`auto-fit`**: Collapses empty tracks, stretching items to fill space
+- **`auto-fill`**: Keeps empty tracks, maintaining consistent sizing
+
+For most responsive layouts, `auto-fit` is what you want!
+</KeyConcept>
+
+<ProgressCheckpoint section="auto-placement" xpReward={10} />
+
+## Key Takeaways
+
+<KeyConcept title="Summary">
+- **CSS Grid** creates two-dimensional layouts with precise control over rows and columns
+- Set `display: grid` on a container to make its children grid items
+- **grid-template-columns** and **grid-template-rows** define the grid structure
+- Use **`fr`** units to create flexible, proportional columns and rows
+- **gap** adds space between grid items (cleaner than margins)
+- **Grid lines** are numbered from 1, use them to place items precisely
+- **grid-column** and **grid-row** control item placement and spanning
+- **grid-template-areas** lets you name regions for readable, maintainable layouts
+- **Auto-placement** with `repeat(auto-fit, minmax())` creates responsive grids
+- Grid is perfect for page layouts, dashboards, and complex two-dimensional designs
+</KeyConcept>
+
+<ProgressCheckpoint section="summary" xpReward={10} />
+
+## Quick Quiz
+
+Test your understanding of CSS Grid:
+
+<Quiz>
+  <Question text="What CSS property do you set on a parent element to create a grid container?">
+    <Answer>grid: true</Answer>
+    <Answer correct>display: grid</Answer>
+    <Answer>layout: grid</Answer>
+    <Answer>grid-container: true</Answer>
+  </Question>
+
+  <Question text="What does the 'fr' unit stand for in CSS Grid?">
+    <Answer>frame</Answer>
+    <Answer correct>fraction</Answer>
+    <Answer>free</Answer>
+    <Answer>flexible row</Answer>
+  </Question>
+
+  <Question text="How do you create 3 equal columns in a grid?">
+    <Answer>columns: 3</Answer>
+    <Answer>grid-columns: 33% 33% 33%</Answer>
+    <Answer correct>grid-template-columns: 1fr 1fr 1fr</Answer>
+    <Answer>grid-size: 3</Answer>
+  </Question>
+
+  <Question text="What property adds space between grid items?">
+    <Answer>spacing</Answer>
+    <Answer>margin</Answer>
+    <Answer correct>gap</Answer>
+    <Answer>grid-spacing</Answer>
+  </Question>
+
+  <Question text="How do you make an item span 2 columns?">
+    <Answer>width: 2</Answer>
+    <Answer correct>grid-column: span 2</Answer>
+    <Answer>columns: 2</Answer>
+    <Answer>grid-span: 2</Answer>
+  </Question>
+
+  <Question text="What does 'grid-column: 1 / -1' do?">
+    <Answer>Creates one column</Answer>
+    <Answer>Spans from column 1 to column -1</Answer>
+    <Answer correct>Makes the item span all columns (full width)</Answer>
+    <Answer>Creates an error</Answer>
+  </Question>
+</Quiz>
+
+---
+
+**Excellent work!** 🎉 You now understand the fundamentals of CSS Grid. Next, you might want to explore:
+- **Intermediate Grid** - Learn about grid areas, line names, and advanced placement techniques
+- **Advanced Grid** - Master implicit grids, subgrid, and complex grid patterns
+- **Responsive Design** - Combine Grid with media queries for fully responsive layouts
+
+CSS Grid is your superpower for creating professional, complex layouts with clean, maintainable code!

@@ -1,0 +1,95 @@
+{
+  "id": "transforms",
+  "title": "CSS Transforms",
+  "description": "Master CSS transforms - from 2D translations and rotations to 3D transforms, perspective, and matrix transformations",
+  "milestone": "css",
+  "order": 10,
+  "sections": [
+    "introduction",
+    "2d-transforms-basics",
+    "translate",
+    "rotate",
+    "scale",
+    "skew",
+    "transform-origin",
+    "3d-transforms",
+    "perspective",
+    "transform-composition",
+    "matrix-transforms",
+    "performance",
+    "summary"
+  ],
+  "levels": {
+    "beginner": {
+      "estimatedMinutes": 45,
+      "xpReward": 50
+    },
+    "intermediate": {
+      "estimatedMinutes": 60,
+      "xpReward": 100
+    },
+    "advanced": {
+      "estimatedMinutes": 75,
+      "xpReward": 200
+    }
+  },
+  "prerequisites": ["css/box-model", "css/positioning"],
+  "tags": ["css", "transforms", "2d", "3d", "translate", "rotate", "scale", "skew", "perspective", "matrix"],
+  "cssProperties": [
+    "transform",
+    "transform-origin",
+    "transform-style",
+    "perspective",
+    "perspective-origin",
+    "backface-visibility",
+    "translate()",
+    "translateX()",
+    "translateY()",
+    "translateZ()",
+    "translate3d()",
+    "rotate()",
+    "rotateX()",
+    "rotateY()",
+    "rotateZ()",
+    "rotate3d()",
+    "scale()",
+    "scaleX()",
+    "scaleY()",
+    "scaleZ()",
+    "scale3d()",
+    "skew()",
+    "skewX()",
+    "skewY()",
+    "matrix()",
+    "matrix3d()"
+  ],
+  "browserSupport": [
+    {
+      "feature": "2D Transforms",
+      "minVersions": {
+        "chrome": "36",
+        "firefox": "16",
+        "safari": "9",
+        "edge": "12"
+      }
+    },
+    {
+      "feature": "3D Transforms",
+      "minVersions": {
+        "chrome": "36",
+        "firefox": "16",
+        "safari": "9",
+        "edge": "12"
+      }
+    },
+    {
+      "feature": "transform-style: preserve-3d",
+      "minVersions": {
+        "chrome": "36",
+        "firefox": "16",
+        "safari": "9",
+        "edge": "12"
+      }
+    }
+  ]
+}

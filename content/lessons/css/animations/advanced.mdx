@@ -1,0 +1,583 @@
+# CSS Animations - Advanced
+
+Welcome to advanced CSS animations! At this level, you'll learn the critical performance considerations that separate amateur animations from professional, production-ready implementations.
+
+Performance is not optional—poorly optimized animations can make your site feel sluggish, drain battery life, and frustrate users. This lesson will teach you how to create buttery-smooth animations that run at 60fps consistently.
+
+<InfoBox type="warning" title="Performance Matters">
+A beautiful animation that causes jank (stuttering) is worse than no animation at all. Users will notice and remember poor performance. This lesson will ensure your animations are both beautiful AND performant.
+</InfoBox>
+
+<ProgressCheckpoint section="introduction" xpReward={10} />
+
+## Performance Considerations
+
+### The Rendering Pipeline
+
+Understanding how browsers render animations is crucial for optimization. The browser goes through several steps to display each frame:
+
+1. **JavaScript**: Calculate animation values
+2. **Style**: Determine which CSS rules apply
+3. **Layout**: Calculate element positions and sizes
+4. **Paint**: Fill in pixels (colors, images, text)
+5. **Composite**: Layer elements together
+
+<KeyConcept title="The Golden Rule">
+**Animate only `transform` and `opacity`** whenever possible. These properties can be animated on the GPU without triggering layout or paint, resulting in smooth 60fps animations.
+</KeyConcept>
+
+### Properties and Their Performance Cost
+
+```css
+/* ✅ FAST - GPU accelerated, no layout/paint */
+.fast {
+  animation: fastMove 1s;
+}
+
+@keyframes fastMove {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100px);
+    opacity: 0.5;
+  }
+}
+
+/* ❌ SLOW - Triggers layout AND paint */
+.slow {
+  animation: slowMove 1s;
+}
+
+@keyframes slowMove {
+  from {
+    left: 0;
+    width: 100px;
+  }
+  to {
+    left: 100px;
+    width: 200px;
+  }
+}
+```
+
+<KeyConcept title="Performance Hierarchy">
+**Best (Composite only):**
+- `transform` (translate, rotate, scale)
+- `opacity`
+
+**Okay (Paint only):**
+- `color`
+- `background-color`
+- `box-shadow`
+
+**Avoid (Layout + Paint):**
+- `width`, `height`
+- `top`, `left`, `right`, `bottom`
+- `margin`, `padding`
+- `border-width`
+</KeyConcept>
+
+### Why Transform is Fast
+
+The `transform` property is special because it happens on the **compositor thread**, separate from the main thread. This means:
+
+- Animations don't block JavaScript execution
+- Smooth 60fps even on slower devices
+- Better battery life on mobile devices
+- No layout recalculation needed
+
+<InfoBox type="tip" title="Transform Instead of Position">
+Instead of animating `left` and `top`, use `transform: translate()`:
+
+```css
+/* ❌ Slow */
+.slow { left: 100px; top: 50px; }
+
+/* ✅ Fast */
+.fast { transform: translate(100px, 50px); }
+```
+
+They look identical but perform very differently!
+</InfoBox>
+
+<ProgressCheckpoint section="performance-considerations" xpReward={15} />
+
+## The will-change Property
+
+The `will-change` property is a performance hint that tells the browser which properties you plan to animate. This allows the browser to optimize ahead of time.
+
+### Basic Usage
+
+```css
+.animated-element {
+  will-change: transform, opacity;
+}
+
+.animated-element:hover {
+  transform: scale(1.2);
+  opacity: 0.8;
+}
+```
+
+<KeyConcept title="will-change Syntax">
+```css
+will-change: property1, property2;
+```
+
+Common values:
+- `transform`
+- `opacity`
+- `scroll-position`
+- `contents`
+- `auto` (default, no hint)
+</KeyConcept>
+
+### When to Use will-change
+
+```css
+/* ✅ GOOD: Applied before animation starts */
+.button {
+  transition: transform 0.3s;
+}
+
+.button:hover {
+  will-change: transform;
+  transform: scale(1.1);
+}
+
+.button:not(:hover) {
+  will-change: auto;
+}
+
+/* ❌ BAD: Applied to everything always */
+* {
+  will-change: transform, opacity;
+}
+
+/* ❌ BAD: Applied during animation */
+.animated {
+  animation: move 1s;
+  will-change: transform; /* Too late! */
+}
+```
+
+<InfoBox type="warning" title="will-change Warnings">
+**Don't overuse will-change!** It consumes memory and can actually hurt performance if applied to too many elements. Use it sparingly and remove it when not needed.
+
+**Best practices:**
+- Apply it just before animation starts
+- Remove it after animation ends
+- Never apply it to all elements
+- Don't use it for animations that are already smooth
+</InfoBox>
+
+### Dynamic will-change with JavaScript
+
+For the best performance, add and remove `will-change` dynamically:
+
+```javascript
+// Before animation
+element.style.willChange = 'transform';
+
+// Start animation
+element.classList.add('animated');
+
+// After animation ends
+element.addEventListener('animationend', () => {
+  element.style.willChange = 'auto';
+});
+```
+
+<ProgressCheckpoint section="will-change" xpReward={15} />
+
+## Complex Animation Patterns
+
+### Staggered Animations
+
+Create cascading effects by delaying animations for each element:
+
+```css
+.item {
+  opacity: 0;
+  animation: fadeInUp 0.6s ease-out forwards;
+}
+
+.item:nth-child(1) { animation-delay: 0s; }
+.item:nth-child(2) { animation-delay: 0.1s; }
+.item:nth-child(3) { animation-delay: 0.2s; }
+.item:nth-child(4) { animation-delay: 0.3s; }
+.item:nth-child(5) { animation-delay: 0.4s; }
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+```
+
+<InfoBox type="tip" title="Calculating Delays">
+For dynamic staggering, use CSS custom properties:
+
+```css
+.item {
+  animation: fadeInUp 0.6s ease-out forwards;
+  animation-delay: calc(var(--index) * 0.1s);
+}
+```
+
+Then set `--index` in HTML or JavaScript for each item.
+</InfoBox>
+
+### Chained Animations
+
+Run multiple animations in sequence using delays:
+
+```css
+.element {
+  animation:
+    fadeIn 0.5s ease-out,
+    slideUp 0.5s 0.5s ease-out forwards,
+    bounce 0.3s 1s ease-in-out forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(0); }
+  to { transform: translateY(-20px); }
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(-20px); }
+  50% { transform: translateY(-30px); }
+}
+```
+
+### Complex Multi-Property Animations
+
+Combine multiple properties for rich, engaging effects:
+
+<CssEditor
+  initialCss={`@keyframes complexEntry {
+  0% {
+    opacity: 0;
+    transform: translateY(50px) scale(0.8) rotate(-5deg);
+    filter: blur(10px);
+  }
+  50% {
+    opacity: 0.8;
+    transform: translateY(-10px) scale(1.05) rotate(2deg);
+    filter: blur(2px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1) rotate(0deg);
+    filter: blur(0);
+  }
+}
+
+.card {
+  width: 300px;
+  padding: 30px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+  animation: complexEntry 1s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.card h3 {
+  margin: 0 0 10px 0;
+}
+
+.card p {
+  margin: 0;
+  opacity: 0.9;
+}`}
+  initialHtml={`<div class="card">
+  <h3>Welcome!</h3>
+  <p>This card has a complex entrance animation combining multiple properties.</p>
+</div>`}
+  height={450}
+/>
+
+<ProgressCheckpoint section="complex-patterns" xpReward={15} />
+
+## Animation Performance Debugging
+
+### Using Browser DevTools
+
+Modern browsers provide tools to identify performance issues:
+
+1. **Chrome DevTools Performance Tab**:
+   - Record while animation runs
+   - Look for long frames (>16ms)
+   - Check for layout thrashing
+
+2. **Firefox Performance Tools**:
+   - Waterfall view shows rendering pipeline
+   - Identify expensive operations
+
+3. **Safari Web Inspector**:
+   - Timeline shows frame rate
+   - Layers view shows composited elements
+
+<KeyConcept title="Performance Metrics">
+- **60fps**: 16.67ms per frame (ideal)
+- **30fps**: 33.33ms per frame (acceptable)
+- **<30fps**: Noticeable jank (unacceptable)
+
+If frames take longer than 16.67ms, users will notice stuttering.
+</KeyConcept>
+
+### Common Performance Issues
+
+<InfoBox type="warning" title="Performance Pitfalls">
+**1. Animating layout properties**
+- Problem: Triggers expensive layout recalculation
+- Solution: Use `transform` instead
+
+**2. Too many simultaneous animations**
+- Problem: Overwhelms the GPU
+- Solution: Limit concurrent animations, use staggering
+
+**3. Large blur or shadow animations**
+- Problem: Very expensive to paint
+- Solution: Animate opacity of pre-blurred elements
+
+**4. Animating on scroll**
+- Problem: Can cause jank if not optimized
+- Solution: Use `transform` and `will-change`, consider `requestAnimationFrame`
+
+**5. Forgetting hardware acceleration**
+- Problem: Animation runs on CPU instead of GPU
+- Solution: Use `transform: translateZ(0)` to force GPU acceleration
+</InfoBox>
+
+### Hardware Acceleration Tricks
+
+Force GPU acceleration for smoother animations:
+
+```css
+.accelerated {
+  /* Force GPU layer */
+  transform: translateZ(0);
+  /* or */
+  will-change: transform;
+  /* or */
+  backface-visibility: hidden;
+}
+```
+
+<InfoBox type="tip" title="When to Force Acceleration">
+Use these tricks when:
+- Animation is stuttering despite using transform/opacity
+- Element has complex children that need to move together
+- You're animating on scroll
+
+Don't use them everywhere—creating too many GPU layers uses memory!
+</InfoBox>
+
+<ProgressCheckpoint section="performance-considerations" xpReward={10} />
+
+## Advanced Timing Functions
+
+### Cubic Bezier Curves
+
+Create custom timing functions with `cubic-bezier()`:
+
+```css
+.custom-ease {
+  animation: move 1s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+```
+
+The four numbers control the curve shape. Use tools like [cubic-bezier.com](https://cubic-bezier.com) to visualize and create custom curves.
+
+<KeyConcept title="Famous Cubic Bezier Curves">
+```css
+/* Material Design */
+.material-standard { animation: move 1s cubic-bezier(0.4, 0.0, 0.2, 1); }
+.material-decelerate { animation: move 1s cubic-bezier(0.0, 0.0, 0.2, 1); }
+.material-accelerate { animation: move 1s cubic-bezier(0.4, 0.0, 1, 1); }
+
+/* iOS */
+.ios-ease { animation: move 1s cubic-bezier(0.25, 0.1, 0.25, 1); }
+
+/* Bounce */
+.bounce { animation: move 1s cubic-bezier(0.68, -0.55, 0.265, 1.55); }
+```
+</KeyConcept>
+
+### Steps Timing Function
+
+Create frame-by-frame animations:
+
+```css
+@keyframes sprite {
+  to { background-position: -1000px; }
+}
+
+.sprite-animation {
+  animation: sprite 1s steps(10) infinite;
+}
+```
+
+Perfect for sprite sheet animations or creating a "digital" feel.
+
+<ProgressCheckpoint section="complex-patterns" xpReward={10} />
+
+## Production-Ready Animation Checklist
+
+Before shipping animations to production, verify:
+
+<KeyConcept title="Animation Checklist">
+**Performance:**
+- [ ] Primarily animates `transform` and `opacity`
+- [ ] Runs at 60fps on target devices
+- [ ] Uses `will-change` appropriately (added before, removed after)
+- [ ] No layout thrashing or forced synchronous layouts
+
+**Accessibility:**
+- [ ] Respects `prefers-reduced-motion` media query
+- [ ] Provides alternative non-animated experience
+- [ ] Doesn't cause motion sickness (avoid rapid spinning/flashing)
+- [ ] Animation duration is reasonable (<1s for most effects)
+
+**User Experience:**
+- [ ] Animation has a clear purpose (not just decoration)
+- [ ] Doesn't block user interaction
+- [ ] Provides feedback for user actions
+- [ ] Feels natural and polished
+
+**Code Quality:**
+- [ ] Uses semantic keyframe names
+- [ ] Properly scoped (doesn't affect unintended elements)
+- [ ] Includes fallbacks for older browsers
+- [ ] Well-documented for team members
+</KeyConcept>
+
+### Respecting prefers-reduced-motion
+
+Always provide an alternative for users who prefer reduced motion:
+
+```css
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-100px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animated {
+  animation: slideIn 0.5s ease-out;
+}
+
+/* Respect user preferences */
+@media (prefers-reduced-motion: reduce) {
+  .animated {
+    animation: none;
+    /* Instantly show final state */
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+```
+
+<InfoBox type="warning" title="Accessibility is Not Optional">
+Failing to respect `prefers-reduced-motion` can cause motion sickness, vestibular disorders, and seizures in some users. Always provide a reduced-motion alternative.
+</InfoBox>
+
+<ProgressCheckpoint section="performance-considerations" xpReward={10} />
+
+## Summary
+
+Let's recap the advanced animation techniques and performance optimizations you've mastered!
+
+<KeyConcept title="Key Takeaways">
+- **Performance**: Animate only `transform` and `opacity` for 60fps
+- **will-change**: Use sparingly, add before animation, remove after
+- **Rendering Pipeline**: Avoid triggering layout and paint
+- **GPU Acceleration**: Use `transform: translateZ(0)` when needed
+- **Complex Patterns**: Stagger delays, chain animations, combine properties
+- **Debugging**: Use browser DevTools to identify bottlenecks
+- **Timing Functions**: Custom cubic-bezier curves for unique feels
+- **Accessibility**: Always respect `prefers-reduced-motion`
+- **Production Checklist**: Verify performance, accessibility, and UX before shipping
+</KeyConcept>
+
+<ProgressCheckpoint section="summary" xpReward={10} />
+
+## Quick Quiz
+
+Test your understanding of advanced animation concepts!
+
+<Quiz>
+  <Question text="Which properties can be animated on the GPU without triggering layout or paint?">
+    <Answer>width and height</Answer>
+    <Answer correct>transform and opacity</Answer>
+    <Answer>left and top</Answer>
+    <Answer>margin and padding</Answer>
+  </Question>
+
+  <Question text="When should you apply will-change?">
+    <Answer>To all elements always</Answer>
+    <Answer>During the animation</Answer>
+    <Answer correct>Just before the animation starts</Answer>
+    <Answer>After the animation ends</Answer>
+  </Question>
+
+  <Question text="What is the target frame rate for smooth animations?">
+    <Answer>30fps</Answer>
+    <Answer>45fps</Answer>
+    <Answer correct>60fps</Answer>
+    <Answer>120fps</Answer>
+  </Question>
+
+  <Question text="Why is animating 'left' slower than animating 'transform: translateX()'?">
+    <Answer>They perform the same</Answer>
+    <Answer correct>left triggers layout recalculation, transform doesn't</Answer>
+    <Answer>transform is newer</Answer>
+    <Answer>left is deprecated</Answer>
+  </Question>
+
+  <Question text="What does prefers-reduced-motion do?">
+    <Answer>Makes animations faster</Answer>
+    <Answer>Disables all CSS</Answer>
+    <Answer correct>Indicates user prefers minimal animation</Answer>
+    <Answer>Improves performance</Answer>
+  </Question>
+
+  <Question text="What's a common side effect of overusing will-change?">
+    <Answer>Animations become slower</Answer>
+    <Answer correct>Increased memory consumption</Answer>
+    <Answer>Browser crashes</Answer>
+    <Answer>CSS becomes invalid</Answer>
+  </Question>
+
+  <Question text="What is the maximum frame time for 60fps?">
+    <Answer>8.33ms</Answer>
+    <Answer correct>16.67ms</Answer>
+    <Answer>33.33ms</Answer>
+    <Answer>60ms</Answer>
+  </Question>
+</Quiz>
+
+---
+
+**Congratulations!** 🎉 You've mastered advanced CSS animations! You now understand how to create performant, accessible, production-ready animations that delight users without compromising performance. These skills will set your work apart and ensure your animations run smoothly on all devices.
+

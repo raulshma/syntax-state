@@ -1,0 +1,975 @@
+# CSS Grid - Advanced
+
+Welcome to advanced CSS Grid! In this lesson, we'll explore the most sophisticated aspects of Grid: implicit vs explicit grids, subgrid, nested grid patterns, and advanced techniques for creating complex, production-ready layouts.
+
+<InfoBox type="tip" title="What You'll Master">
+You'll learn how Grid creates implicit tracks automatically, master subgrid for aligning nested grids, understand the intricacies of grid sizing algorithms, and build complex, performant layouts that handle edge cases gracefully.
+</InfoBox>
+
+<ProgressCheckpoint section="introduction" xpReward={20} />
+
+## Implicit vs Explicit Grids
+
+Understanding the difference between implicit and explicit grids is crucial for mastering CSS Grid. This distinction affects how your layouts behave when content exceeds your defined grid structure.
+
+### Explicit Grid: What You Define
+
+The **explicit grid** is the grid you explicitly define using `grid-template-columns`, `grid-template-rows`, and `grid-template-areas`.
+
+```css
+.container {
+  display: grid;
+  /* Explicit grid: 3 columns, 2 rows */
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: 200px 200px;
+}
+```
+
+This creates a 3×2 grid (6 cells total). But what happens if you have 7 or 8 items?
+
+### Implicit Grid: Auto-Generated Tracks
+
+The **implicit grid** consists of tracks that Grid automatically creates when items don't fit in the explicit grid.
+
+```css
+.container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: 200px 200px;
+  
+  /* Control implicit row sizing */
+  grid-auto-rows: 150px;
+  
+  /* Control implicit column sizing */
+  grid-auto-columns: 100px;
+  
+  /* Control flow direction for implicit tracks */
+  grid-auto-flow: row; /* or column */
+}
+```
+
+**How it works:**
+- Items 1-6 fit in the explicit grid (3 columns × 2 rows)
+- Item 7 creates an implicit row (sized by `grid-auto-rows`)
+- Item 8 continues in that implicit row
+- And so on...
+
+<GridPlayground
+  initialColumns="1fr 1fr 1fr"
+  initialRows="200px 200px"
+  initialGap={{ row: 10, column: 10 }}
+  initialItems={9}
+  showControls={true}
+  showGridLines={true}
+/>
+
+Try adding more items in the playground above. Notice how Grid automatically creates new rows!
+
+### Controlling Implicit Track Sizing
+
+```css
+/* Fixed size implicit tracks */
+.grid-fixed {
+  grid-auto-rows: 200px;
+}
+
+/* Flexible implicit tracks */
+.grid-flexible {
+  grid-auto-rows: minmax(100px, auto);
+}
+
+/* Multiple implicit track sizes (repeating pattern) */
+.grid-pattern {
+  grid-auto-rows: 200px 150px 100px;
+  /* Creates a repeating pattern: 200px, 150px, 100px, 200px, 150px, 100px... */
+}
+```
+
+<KeyConcept title="Explicit vs Implicit: Key Differences">
+**Explicit Grid:**
+- Defined by you with `grid-template-*` properties
+- Fixed structure (unless using `auto-fit`/`auto-fill`)
+- Predictable and intentional
+
+**Implicit Grid:**
+- Created automatically by Grid when needed
+- Sized by `grid-auto-rows` and `grid-auto-columns`
+- Handles overflow gracefully
+
+**Best Practice:** Always define `grid-auto-rows` and `grid-auto-columns` to control how implicit tracks behave. Don't rely on browser defaults!
+
+```css
+/* Good: explicit control */
+.container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-auto-rows: minmax(150px, auto);
+}
+
+/* Bad: implicit tracks use browser default (usually auto) */
+.container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  /* No grid-auto-rows defined! */
+}
+```
+</KeyConcept>
+
+### Implicit Grid Flow Direction
+
+The `grid-auto-flow` property controls where implicit tracks are created:
+
+```css
+/* Create implicit rows (default) */
+.grid-rows {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-auto-flow: row;
+  grid-auto-rows: 150px;
+}
+
+/* Create implicit columns */
+.grid-columns {
+  display: grid;
+  grid-template-rows: repeat(2, 200px);
+  grid-auto-flow: column;
+  grid-auto-columns: 200px;
+}
+
+/* Dense packing in rows */
+.grid-dense {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-auto-flow: row dense;
+}
+```
+
+**When to use column flow:**
+- Horizontal scrolling galleries
+- Timeline layouts
+- Carousel-style interfaces
+
+**When to use row flow:**
+- Vertical scrolling content (most common)
+- Card grids
+- Standard page layouts
+
+<ProgressCheckpoint section="implicit-explicit" xpReward={20} />
+
+## Subgrid: Aligning Nested Grids
+
+Subgrid is one of Grid's most powerful features, allowing nested grids to align with their parent grid's tracks. This solves the long-standing problem of aligning content across nested components.
+
+### The Problem Subgrid Solves
+
+Without subgrid, nested grids are independent:
+
+```css
+/* Parent grid */
+.parent {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+/* Child grid (independent) */
+.child {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  /* This grid doesn't align with parent! */
+}
+```
+
+The child grid's columns don't align with the parent's columns, making it impossible to create consistent alignment across nested components.
+
+### Subgrid to the Rescue
+
+```css
+.parent {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+.child {
+  display: grid;
+  /* Inherit parent's column tracks */
+  grid-template-columns: subgrid;
+  /* Child can span multiple parent columns */
+  grid-column: span 2;
+}
+```
+
+Now the child grid's columns align perfectly with the parent's columns!
+
+### Subgrid Syntax
+
+```css
+/* Subgrid for columns only */
+.item {
+  display: grid;
+  grid-template-columns: subgrid;
+  grid-column: span 3; /* Span 3 parent columns */
+}
+
+/* Subgrid for rows only */
+.item {
+  display: grid;
+  grid-template-rows: subgrid;
+  grid-row: span 2; /* Span 2 parent rows */
+}
+
+/* Subgrid for both dimensions */
+.item {
+  display: grid;
+  grid-template-columns: subgrid;
+  grid-template-rows: subgrid;
+  grid-column: span 3;
+  grid-row: span 2;
+}
+```
+
+### Practical Subgrid Example: Card Grid
+
+One of the most common use cases for subgrid is creating card grids where all cards align perfectly:
+
+```css
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.card {
+  display: grid;
+  grid-template-columns: subgrid;
+  grid-template-rows: auto 1fr auto;
+  /* Now all card headers, content, and footers align! */
+}
+
+.card-header {
+  grid-column: 1 / -1;
+}
+
+.card-content {
+  grid-column: 1 / -1;
+}
+
+.card-footer {
+  grid-column: 1 / -1;
+}
+```
+
+This ensures that all card headers align horizontally, all content areas align, and all footers align - even when cards have different content lengths!
+
+### Subgrid with Named Lines
+
+Subgrid inherits named lines from the parent:
+
+```css
+.parent {
+  display: grid;
+  grid-template-columns: 
+    [sidebar-start] 250px 
+    [sidebar-end content-start] 1fr 
+    [content-end];
+}
+
+.child {
+  display: grid;
+  grid-template-columns: subgrid;
+  grid-column: sidebar-start / content-end;
+  /* Child can use parent's named lines! */
+}
+
+.nested-item {
+  grid-column: content-start / content-end;
+}
+```
+
+<BrowserCompatibility
+  feature="CSS Subgrid"
+  minVersions={{
+    chrome: '117',
+    firefox: '71',
+    safari: '16',
+    edge: '117',
+  }}
+  showFallback={true}
+  showPrefixes={false}
+/>
+
+<KeyConcept title="Subgrid Browser Support">
+**Browser Support (as of 2024):**
+- ✅ Firefox: Full support since version 71
+- ✅ Safari: Full support since version 16
+- ✅ Chrome/Edge: Full support since version 117
+
+**Fallback Strategy:**
+```css
+.card {
+  /* Fallback: independent grid */
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  
+  /* Progressive enhancement: subgrid */
+  @supports (grid-template-columns: subgrid) {
+    grid-template-columns: subgrid;
+  }
+}
+```
+
+For older browsers, the card will still work but won't align with siblings. This is acceptable progressive enhancement!
+</KeyConcept>
+
+<ProgressCheckpoint section="subgrid" xpReward={20} />
+
+## Nested Grid Patterns
+
+Even without subgrid, nested grids are powerful. Let's explore advanced nested grid patterns.
+
+### Pattern 1: Grid Within Grid Items
+
+```css
+/* Outer grid: page layout */
+.page {
+  display: grid;
+  grid-template-columns: 250px 1fr;
+  grid-template-rows: auto 1fr auto;
+  gap: 20px;
+  min-height: 100vh;
+}
+
+/* Inner grid: dashboard widgets */
+.main-content {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 15px;
+}
+
+/* Nested grid: widget internals */
+.widget {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: 10px;
+  padding: 20px;
+}
+```
+
+This creates a three-level nested grid:
+1. Page layout (sidebar + main)
+2. Widget grid (responsive cards)
+3. Widget internals (header, content, footer)
+
+### Pattern 2: Asymmetric Nested Grids
+
+```css
+/* Outer grid: magazine layout */
+.magazine {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 20px;
+}
+
+/* Hero article with nested grid */
+.hero {
+  grid-column: 1 / 9;
+  grid-row: 1 / 3;
+  
+  display: grid;
+  grid-template-rows: 1fr auto;
+  grid-template-columns: 1fr 1fr;
+}
+
+.hero-image {
+  grid-column: 1 / -1;
+  grid-row: 1;
+}
+
+.hero-title {
+  grid-column: 1 / -1;
+  grid-row: 2;
+}
+
+/* Sidebar with nested grid */
+.sidebar {
+  grid-column: 9 / -1;
+  grid-row: 1 / 3;
+  
+  display: grid;
+  grid-auto-rows: minmax(150px, auto);
+  gap: 15px;
+}
+```
+
+### Pattern 3: Responsive Nested Grids
+
+```css
+/* Outer grid adapts to screen size */
+.layout {
+  display: grid;
+  gap: 20px;
+}
+
+/* Mobile: single column */
+@media (max-width: 768px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+  
+  .content {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+}
+
+/* Desktop: multi-column */
+@media (min-width: 769px) {
+  .layout {
+    grid-template-columns: 250px 1fr 250px;
+  }
+  
+  .content {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+}
+```
+
+<KeyConcept title="Nested Grid Best Practices">
+**When to nest grids:**
+- Each grid level has a distinct layout purpose
+- You need different gap sizes at different levels
+- You want independent responsive behavior
+
+**When NOT to nest grids:**
+- You can achieve the layout with a single grid
+- You need alignment across nested boundaries (use subgrid instead)
+- Performance is critical (nested grids add complexity)
+
+**Performance tip:** Nested grids are performant, but avoid excessive nesting (3-4 levels max). If you need more, reconsider your layout structure!
+</KeyConcept>
+
+<ProgressCheckpoint section="nested-patterns" xpReward={20} />
+
+## Complex Grid Patterns
+
+Let's explore advanced grid patterns for real-world applications.
+
+### Pattern 1: Masonry-Style Layout
+
+While CSS Grid doesn't natively support true masonry (like Pinterest), you can approximate it:
+
+```css
+.masonry {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  grid-auto-rows: 10px; /* Small row height */
+  gap: 10px;
+}
+
+.masonry-item {
+  /* Items span multiple rows based on content */
+  grid-row: span var(--row-span);
+}
+```
+
+```javascript
+// Calculate row span based on content height
+items.forEach(item => {
+  const rowHeight = 10;
+  const rowGap = 10;
+  const contentHeight = item.scrollHeight;
+  const rowSpan = Math.ceil((contentHeight + rowGap) / (rowHeight + rowGap));
+  item.style.setProperty('--row-span', rowSpan);
+});
+```
+
+**Note:** For true masonry, consider using CSS Masonry (experimental) or JavaScript libraries like Masonry.js.
+
+### Pattern 2: Holy Grail Layout (Modern)
+
+The classic "Holy Grail" layout with Grid:
+
+```css
+.holy-grail {
+  display: grid;
+  grid-template-columns: minmax(150px, 200px) 1fr minmax(150px, 200px);
+  grid-template-rows: auto 1fr auto;
+  grid-template-areas:
+    "header header header"
+    "nav main aside"
+    "footer footer footer";
+  gap: 20px;
+  min-height: 100vh;
+}
+
+.header { grid-area: header; }
+.nav { grid-area: nav; }
+.main { grid-area: main; }
+.aside { grid-area: aside; }
+.footer { grid-area: footer; }
+
+/* Responsive: stack on mobile */
+@media (max-width: 768px) {
+  .holy-grail {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "header"
+      "nav"
+      "main"
+      "aside"
+      "footer";
+  }
+}
+```
+
+### Pattern 3: Overlapping Grid Items
+
+Grid items can overlap, creating layered designs:
+
+```css
+.overlay-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(3, 200px);
+}
+
+.background {
+  grid-column: 1 / 4;
+  grid-row: 1 / 3;
+  z-index: 1;
+}
+
+.foreground {
+  grid-column: 2 / 5;
+  grid-row: 2 / 4;
+  z-index: 2;
+}
+
+.accent {
+  grid-column: 3 / 4;
+  grid-row: 1 / 2;
+  z-index: 3;
+}
+```
+
+Use `z-index` to control stacking order. This is perfect for:
+- Hero sections with overlapping elements
+- Card designs with decorative elements
+- Image galleries with captions
+
+### Pattern 4: RAM (Repeat, Auto, Minmax)
+
+The RAM technique creates ultra-responsive grids:
+
+```css
+.ram-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+  gap: 20px;
+}
+```
+
+**Why this works:**
+- `repeat(auto-fit, ...)` - Creates as many columns as fit
+- `minmax(min(100%, 300px), 1fr)` - Minimum 300px OR 100% (whichever is smaller)
+- On narrow screens, `min(100%, 300px)` = 100%, so items stack
+- On wide screens, items are at least 300px and grow to fill space
+
+This is the most robust responsive grid pattern!
+
+### Pattern 5: Grid with Aspect Ratio
+
+Maintain aspect ratios in grid items:
+
+```css
+.aspect-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.aspect-item {
+  aspect-ratio: 16 / 9;
+  /* Or use padding-bottom hack for older browsers */
+}
+
+/* Fallback for older browsers */
+@supports not (aspect-ratio: 16 / 9) {
+  .aspect-item {
+    position: relative;
+    padding-bottom: 56.25%; /* 9/16 = 0.5625 */
+  }
+  
+  .aspect-item > * {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+}
+```
+
+<ProgressCheckpoint section="complex-patterns" xpReward={20} />
+
+## Grid Sizing Algorithms
+
+Understanding how Grid calculates track sizes is crucial for advanced layouts.
+
+### The `fr` Unit Algorithm
+
+The `fr` unit distributes available space AFTER fixed sizes are allocated:
+
+```css
+.grid {
+  display: grid;
+  grid-template-columns: 200px 1fr 2fr 100px;
+  width: 1000px;
+}
+```
+
+**Calculation:**
+1. Fixed sizes: 200px + 100px = 300px
+2. Available space: 1000px - 300px = 700px
+3. Total fr units: 1fr + 2fr = 3fr
+4. 1fr = 700px / 3 = 233.33px
+5. Final sizes: 200px, 233.33px, 466.67px, 100px
+
+### Minmax() Sizing
+
+`minmax(min, max)` creates flexible tracks with constraints:
+
+```css
+/* Column is at least 200px, at most 1fr */
+grid-template-columns: minmax(200px, 1fr);
+
+/* Column is at least content size, at most 500px */
+grid-template-columns: minmax(auto, 500px);
+
+/* Column is at least 0, at most content size */
+grid-template-columns: minmax(0, auto);
+```
+
+**Common patterns:**
+
+```css
+/* Flexible sidebar (200px-300px) */
+grid-template-columns: minmax(200px, 300px) 1fr;
+
+/* Content-based with max width */
+grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+
+/* Prevent overflow */
+grid-template-columns: minmax(0, 1fr);
+/* Without minmax(0, ...), content can overflow! */
+```
+
+### Auto vs Fr
+
+`auto` and `fr` behave differently:
+
+```css
+/* auto: size based on content */
+grid-template-columns: auto 1fr;
+/* First column: as wide as its content
+   Second column: remaining space */
+
+/* fr: distribute available space */
+grid-template-columns: 1fr 1fr;
+/* Both columns: equal share of available space */
+```
+
+**When to use auto:**
+- Sidebar that should fit its content
+- Columns that should shrink-wrap
+- Headers/footers with variable content
+
+**When to use fr:**
+- Columns that should share space equally
+- Flexible content areas
+- Responsive layouts
+
+### Fit-Content()
+
+`fit-content(max)` sizes based on content, up to a maximum:
+
+```css
+/* Column fits content, max 300px */
+grid-template-columns: fit-content(300px) 1fr;
+
+/* Useful for sidebars with variable content */
+.layout {
+  display: grid;
+  grid-template-columns: fit-content(250px) 1fr fit-content(200px);
+}
+```
+
+<KeyConcept title="Grid Sizing Priority">
+Grid resolves track sizes in this order:
+
+1. **Fixed sizes** (px, rem, %) - allocated first
+2. **minmax() minimums** - guaranteed minimum space
+3. **auto** - based on content size
+4. **fr units** - distribute remaining space
+5. **minmax() maximums** - cap the final size
+
+Understanding this order helps you predict how your grid will behave!
+
+**Example:**
+```css
+grid-template-columns: 200px minmax(100px, 1fr) auto 2fr;
+```
+
+1. 200px allocated
+2. 100px minimum allocated for second column
+3. auto column sized to content
+4. Remaining space split: 1fr + 2fr = 3fr
+5. Second column capped at 1fr of remaining space
+</KeyConcept>
+
+<ProgressCheckpoint section="sizing-algorithms" xpReward={20} />
+
+## Performance Optimization
+
+Advanced Grid layouts can be complex. Here's how to keep them performant.
+
+### Avoid Layout Thrashing
+
+```css
+/* Bad: forces layout recalculation */
+.item {
+  grid-column: span 2;
+  width: 100%; /* Unnecessary! */
+}
+
+/* Good: let Grid handle sizing */
+.item {
+  grid-column: span 2;
+}
+```
+
+### Use Content-Visibility
+
+For large grids with many items:
+
+```css
+.grid-item {
+  content-visibility: auto;
+  contain-intrinsic-size: 300px 200px;
+}
+```
+
+This tells the browser to skip rendering off-screen items, dramatically improving performance for large grids!
+
+### Minimize Nested Grids
+
+```css
+/* Bad: excessive nesting */
+.level1 { display: grid; }
+.level2 { display: grid; }
+.level3 { display: grid; }
+.level4 { display: grid; }
+.level5 { display: grid; } /* Too deep! */
+
+/* Good: flatten when possible */
+.container {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+}
+
+.item {
+  grid-column: span 4;
+  /* Use spanning instead of nesting */
+}
+```
+
+### Use Will-Change Sparingly
+
+```css
+/* Only for items that will animate */
+.animated-grid-item {
+  will-change: transform;
+}
+
+/* Remove after animation */
+.animated-grid-item.done {
+  will-change: auto;
+}
+```
+
+<ProgressCheckpoint section="performance" xpReward={20} />
+
+## Browser Compatibility and Fallbacks
+
+### Feature Detection
+
+```css
+/* Fallback for browsers without Grid */
+.container {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+/* Progressive enhancement */
+@supports (display: grid) {
+  .container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  }
+}
+```
+
+### Subgrid Fallback
+
+```css
+.card {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+}
+
+/* Use subgrid if available */
+@supports (grid-template-columns: subgrid) {
+  .card {
+    grid-template-columns: subgrid;
+  }
+}
+```
+
+### Aspect Ratio Fallback
+
+```css
+.item {
+  aspect-ratio: 16 / 9;
+}
+
+@supports not (aspect-ratio: 16 / 9) {
+  .item {
+    position: relative;
+    padding-bottom: 56.25%;
+  }
+  
+  .item > * {
+    position: absolute;
+    inset: 0;
+  }
+}
+```
+
+<BrowserCompatibility
+  feature="CSS Grid"
+  minVersions={{
+    chrome: '57',
+    firefox: '52',
+    safari: '10.1',
+    edge: '16',
+  }}
+  showFallback={true}
+  showPrefixes={false}
+/>
+
+<ProgressCheckpoint section="compatibility" xpReward={20} />
+
+## Key Takeaways
+
+<KeyConcept title="Summary">
+- **Implicit grids** are created automatically when items exceed the explicit grid; control them with `grid-auto-rows` and `grid-auto-columns`
+- **Explicit grids** are defined by `grid-template-*` properties and provide predictable structure
+- **Subgrid** allows nested grids to align with parent grid tracks, solving alignment problems across components
+- **Nested grids** are powerful but should be used judiciously (3-4 levels max)
+- **Complex patterns** like RAM (`repeat(auto-fit, minmax(min(100%, 300px), 1fr))`) create ultra-responsive layouts
+- **Grid sizing** follows a priority: fixed sizes → minmax minimums → auto → fr units → minmax maximums
+- **`fr` units** distribute space AFTER fixed sizes are allocated
+- **`minmax()`** creates flexible tracks with constraints
+- **`auto`** sizes based on content, **`fr`** distributes available space
+- **Performance** matters: use `content-visibility` for large grids, minimize nesting, avoid layout thrashing
+- **Subgrid support** is excellent in modern browsers; use `@supports` for fallbacks
+- **Overlapping items** with z-index create layered designs
+- Always define `grid-auto-rows` to control implicit track behavior
+- Use `@supports` for progressive enhancement with newer features
+</KeyConcept>
+
+<ProgressCheckpoint section="summary" xpReward={20} />
+
+## Quick Quiz
+
+Test your advanced CSS Grid knowledge:
+
+<Quiz>
+  <Question text="What's the difference between explicit and implicit grids?">
+    <Answer>Explicit grids are faster</Answer>
+    <Answer correct>Explicit grids are defined by grid-template-*, implicit grids are auto-generated when items overflow</Answer>
+    <Answer>Implicit grids are defined by the developer</Answer>
+    <Answer>There is no difference</Answer>
+  </Question>
+
+  <Question text="What does subgrid do?">
+    <Answer>Creates a smaller grid</Answer>
+    <Answer>Makes the grid load faster</Answer>
+    <Answer correct>Allows a nested grid to inherit and align with its parent grid's tracks</Answer>
+    <Answer>Removes grid lines</Answer>
+  </Question>
+
+  <Question text="How does the fr unit calculate space?">
+    <Answer>It divides the total container width equally</Answer>
+    <Answer correct>It distributes available space AFTER fixed sizes are allocated</Answer>
+    <Answer>It's always equal to 100px</Answer>
+    <Answer>It's the same as percentages</Answer>
+  </Question>
+
+  <Question text="What's the purpose of grid-auto-rows?">
+    <Answer>To create automatic animations</Answer>
+    <Answer correct>To control the size of implicitly created rows</Answer>
+    <Answer>To make rows responsive</Answer>
+    <Answer>To delete empty rows</Answer>
+  </Question>
+
+  <Question text="What does minmax(200px, 1fr) mean?">
+    <Answer>The track is always 200px</Answer>
+    <Answer>The track is always 1fr</Answer>
+    <Answer correct>The track is at least 200px and at most 1fr of available space</Answer>
+    <Answer>The track alternates between 200px and 1fr</Answer>
+  </Question>
+
+  <Question text="What's the best pattern for ultra-responsive grids?">
+    <Answer>grid-template-columns: 1fr 1fr 1fr</Answer>
+    <Answer correct>grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr))</Answer>
+    <Answer>grid-template-columns: auto auto auto</Answer>
+    <Answer>grid-template-columns: 33% 33% 33%</Answer>
+  </Question>
+
+  <Question text="How do you make grid items overlap?">
+    <Answer>Use negative margins</Answer>
+    <Answer>Use position: absolute</Answer>
+    <Answer correct>Place items in overlapping grid areas and use z-index</Answer>
+    <Answer>You can't overlap grid items</Answer>
+  </Question>
+
+  <Question text="What's the maximum recommended nesting depth for grids?">
+    <Answer>1 level</Answer>
+    <Answer>2 levels</Answer>
+    <Answer correct>3-4 levels</Answer>
+    <Answer>Unlimited</Answer>
+  </Question>
+</Quiz>
+
+---
+
+**Congratulations!** 🎉 You've mastered advanced CSS Grid! You now understand:
+- How implicit and explicit grids work together
+- How to use subgrid for perfect alignment
+- Complex nested grid patterns
+- Advanced sizing algorithms
+- Performance optimization techniques
+
+You're ready to build production-grade, complex layouts with CSS Grid. Next steps:
+- **Build Real Projects** - Apply these techniques to actual websites
+- **Explore CSS Masonry** - The upcoming native masonry layout
+- **Combine with Flexbox** - Use both layout systems together for maximum power
+- **Study Performance** - Profile and optimize your grid layouts
+
+CSS Grid is one of the most powerful layout tools in modern CSS. Master it, and you can build anything!
+

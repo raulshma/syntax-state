@@ -1,0 +1,74 @@
+{
+  "id": "responsive-design",
+  "title": "CSS Responsive Design",
+  "description": "Master responsive design - from media queries and viewport units to container queries and fluid typography",
+  "milestone": "css",
+  "order": 8,
+  "sections": [
+    "introduction",
+    "media-queries",
+    "viewport-units",
+    "mobile-first-desktop-first",
+    "breakpoint-strategies",
+    "fluid-typography",
+    "container-queries",
+    "responsive-images",
+    "advanced-patterns",
+    "summary"
+  ],
+  "levels": {
+    "beginner": {
+      "estimatedMinutes": 45,
+      "xpReward": 50
+    },
+    "intermediate": {
+      "estimatedMinutes": 60,
+      "xpReward": 100
+    },
+    "advanced": {
+      "estimatedMinutes": 75,
+      "xpReward": 200
+    }
+  },
+  "prerequisites": ["css/box-model", "css/flexbox", "css/grid"],
+  "tags": ["css", "responsive", "media-queries", "viewport", "mobile-first", "breakpoints", "fluid-typography", "container-queries"],
+  "cssProperties": [
+    "@media",
+    "vw",
+    "vh",
+    "vmin",
+    "vmax",
+    "dvh",
+    "svh",
+    "lvh",
+    "clamp()",
+    "min()",
+    "max()",
+    "@container",
+    "container-type",
+    "container-name",
+    "cqi",
+    "cqw",
+    "cqh"
+  ],
+  "browserSupport": [
+    {
+      "feature": "Container Queries",
+      "minVersions": {
+        "chrome": "105",
+        "firefox": "110",
+        "safari": "16",
+        "edge": "105"
+      }
+    },
+    {
+      "feature": "Dynamic Viewport Units (dvh, svh, lvh)",
+      "minVersions": {
+        "chrome": "108",
+        "firefox": "101",
+        "safari": "15.4",
+        "edge": "108"
+      }
+    }
+  ]
+}

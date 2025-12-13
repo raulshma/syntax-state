@@ -1,0 +1,429 @@
+# CSS Box Model - Intermediate
+
+Now that you understand the basics of the box model, let's dive deeper into some important concepts that will help you handle real-world layout challenges: box-sizing, margin collapsing, and the differences between inline and block elements.
+
+<InfoBox type="tip" title="What You'll Learn">
+In this lesson, you'll master the nuances of the box model that trip up many developers. You'll learn why margins sometimes "collapse," how box-sizing affects your layouts, and how inline and block elements behave differently. These concepts are crucial for building robust, predictable layouts.
+</InfoBox>
+
+<ProgressCheckpoint section="introduction" xpReward={15} />
+
+## Deep Dive: box-sizing
+
+The `box-sizing` property fundamentally changes how browsers calculate an element's dimensions. Understanding this property is essential for modern CSS development.
+
+### content-box (Default)
+
+With `content-box`, the width and height you set apply only to the content area. Padding and border are added on top:
+
+```css
+.content-box {
+  box-sizing: content-box; /* default */
+  width: 300px;
+  padding: 20px;
+  border: 5px solid black;
+  /* Actual width = 300px + 40px (padding) + 10px (border) = 350px */
+}
+```
+
+This can make layouts unpredictable because adding padding or border changes the element's total size.
+
+### border-box (Recommended)
+
+With `border-box`, the width and height include padding and border. The content area shrinks to accommodate them:
+
+```css
+.border-box {
+  box-sizing: border-box;
+  width: 300px;
+  padding: 20px;
+  border: 5px solid black;
+  /* Actual width = 300px (padding and border included) */
+  /* Content width = 300px - 40px - 10px = 250px */
+}
+```
+
+<KeyConcept title="Industry Standard">
+Most modern CSS frameworks and developers use this global reset:
+
+```css
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+```
+
+This makes sizing intuitive and prevents unexpected layout shifts when adding padding or borders.
+</KeyConcept>
+
+<BoxModelVisualizer
+  initialContent={{ width: 250, height: 100 }}
+  initialPadding={{ top: 20, right: 20, bottom: 20, left: 20 }}
+  initialBorder={{ width: 5, style: 'solid', color: '#3b82f6' }}
+  initialMargin={{ top: 10, right: 10, bottom: 10, left: 10 }}
+  showControls={true}
+/>
+
+Try adjusting the padding and border in the visualizer above. Notice how with `border-box`, the total width stays constant while the content area adjusts.
+
+<ProgressCheckpoint section="box-sizing" xpReward={15} />
+
+## Margin Collapsing
+
+Margin collapsing is one of the most confusing aspects of the box model. When two vertical margins meet, they don't add together - instead, they "collapse" into a single margin.
+
+### When Margins Collapse
+
+Margins collapse in three main scenarios:
+
+**1. Adjacent Siblings**
+
+When two block elements are stacked vertically, their margins collapse:
+
+```css
+.box-1 {
+  margin-bottom: 30px;
+}
+
+.box-2 {
+  margin-top: 20px;
+}
+
+/* The space between them is 30px (not 50px!) */
+/* The larger margin wins */
+```
+
+**2. Parent and First/Last Child**
+
+A parent's margin can collapse with its first or last child's margin:
+
+```css
+.parent {
+  margin-top: 20px;
+}
+
+.first-child {
+  margin-top: 30px;
+}
+
+/* The parent's top margin collapses with the child's */
+/* Total top margin is 30px (the larger value) */
+```
+
+**3. Empty Elements**
+
+An element with no content, padding, or border can have its top and bottom margins collapse with each other:
+
+```css
+.empty {
+  margin-top: 20px;
+  margin-bottom: 30px;
+  /* These collapse into a single 30px margin */
+}
+```
+
+### Preventing Margin Collapse
+
+You can prevent margin collapse by:
+
+1. **Adding padding or border** to the parent
+2. **Using flexbox or grid** on the parent (they don't collapse)
+3. **Adding overflow: hidden** to the parent
+4. **Making the parent an inline-block**
+
+```css
+/* Prevent collapse with padding */
+.parent {
+  padding: 1px 0;
+}
+
+/* Prevent collapse with flexbox */
+.parent {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Prevent collapse with overflow */
+.parent {
+  overflow: hidden;
+}
+```
+
+<KeyConcept title="Important Note">
+Margin collapsing only happens with **vertical margins** (top and bottom). Horizontal margins (left and right) never collapse. Also, margins only collapse in the normal document flow - not with floated, absolutely positioned, or flex/grid items.
+</KeyConcept>
+
+<ProgressCheckpoint section="margin-collapsing" xpReward={15} />
+
+## Inline vs Block Elements
+
+Understanding the difference between inline and block elements is crucial for controlling layout behavior.
+
+### Block Elements
+
+Block elements:
+- Start on a new line
+- Take up the full width available (by default)
+- Respect all box model properties (width, height, margin, padding)
+- Stack vertically
+
+```css
+/* Common block elements: div, p, h1-h6, section, article */
+.block {
+  display: block;
+  width: 300px;
+  height: 100px;
+  margin: 20px;
+  padding: 15px;
+}
+```
+
+### Inline Elements
+
+Inline elements:
+- Flow with text content
+- Only take up as much width as needed
+- **Ignore** width and height properties
+- **Ignore** top and bottom margins
+- Respect left and right margins and all padding
+
+```css
+/* Common inline elements: span, a, strong, em */
+.inline {
+  display: inline;
+  width: 300px;        /* Ignored! */
+  height: 100px;       /* Ignored! */
+  margin: 20px 10px;   /* Only left/right work */
+  padding: 15px;       /* All padding works, but may overlap */
+}
+```
+
+### Inline-Block: Best of Both Worlds
+
+`inline-block` combines characteristics of both:
+- Flows inline with text
+- Respects all box model properties (width, height, all margins and padding)
+
+```css
+.inline-block {
+  display: inline-block;
+  width: 150px;
+  height: 100px;
+  margin: 20px;
+  padding: 15px;
+  /* All properties work! */
+}
+```
+
+<KeyConcept title="Practical Use Cases">
+**Use block** for: Main layout containers, sections, articles
+
+**Use inline** for: Text-level elements within paragraphs (spans, links)
+
+**Use inline-block** for: Navigation items, buttons, small cards that should flow inline but need specific dimensions
+</KeyConcept>
+
+<CssEditor
+  initialHtml={`<div class="container">
+  <div class="block">Block Element</div>
+  <span class="inline">Inline Element</span>
+  <span class="inline">Another Inline</span>
+  <div class="inline-block">Inline-Block</div>
+  <div class="inline-block">Inline-Block</div>
+</div>`}
+  initialCss={`.container {
+  padding: 20px;
+  background: #f3f4f6;
+}
+
+.block {
+  background: #3b82f6;
+  color: white;
+  padding: 10px;
+  margin: 10px 0;
+}
+
+.inline {
+  background: #10b981;
+  color: white;
+  padding: 10px;
+  margin: 10px;
+}
+
+.inline-block {
+  display: inline-block;
+  background: #f59e0b;
+  color: white;
+  padding: 10px;
+  margin: 10px;
+  width: 120px;
+}`}
+  height={400}
+  showPreview={true}
+/>
+
+Experiment with the code above. Try:
+- Changing `display` values
+- Adding width and height to inline elements
+- Adjusting margins on different display types
+
+<ProgressCheckpoint section="inline-vs-block" xpReward={15} />
+
+## Practical Examples
+
+### Creating a Card Component
+
+Let's apply our box model knowledge to create a well-spaced card:
+
+```css
+.card {
+  /* Use border-box for predictable sizing */
+  box-sizing: border-box;
+  
+  /* Set dimensions */
+  width: 300px;
+  
+  /* Add padding for content breathing room */
+  padding: 20px;
+  
+  /* Add a subtle border */
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  
+  /* Add margin to separate from other cards */
+  margin: 16px;
+  
+  /* Add shadow for depth */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.card-title {
+  margin-top: 0;        /* Remove default top margin */
+  margin-bottom: 12px;  /* Space below title */
+}
+
+.card-content {
+  margin-bottom: 16px;  /* Space below content */
+}
+
+.card-button {
+  display: inline-block;
+  padding: 8px 16px;
+  margin-top: 8px;
+  border: none;
+  background: #3b82f6;
+  color: white;
+  border-radius: 4px;
+}
+```
+
+### Centering Content
+
+```css
+/* Center a container horizontally */
+.centered-container {
+  width: 800px;
+  max-width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 0 20px; /* Padding for mobile */
+}
+
+/* Center text within an element */
+.centered-text {
+  text-align: center;
+  padding: 20px;
+}
+```
+
+<ProgressCheckpoint section="practical-examples" xpReward={15} />
+
+## Common Pitfalls and Solutions
+
+### Pitfall 1: Unexpected Element Size
+
+**Problem:** Element is larger than expected
+
+**Solution:** Check if you're using `content-box` and add `box-sizing: border-box`
+
+### Pitfall 2: Margins Not Working on Inline Elements
+
+**Problem:** Top/bottom margins don't work on `<span>` or `<a>`
+
+**Solution:** Use `display: inline-block` or use padding instead
+
+### Pitfall 3: Collapsed Margins Creating Unexpected Spacing
+
+**Problem:** Margins between elements are smaller than expected
+
+**Solution:** Use padding on the parent, or switch to flexbox/grid layout
+
+### Pitfall 4: Content Overflowing
+
+**Problem:** Content breaks out of its container
+
+**Solution:** Set `overflow: hidden` or `overflow: auto` on the container
+
+<ProgressCheckpoint section="common-pitfalls" xpReward={15} />
+
+## Key Takeaways
+
+<KeyConcept title="Summary">
+- **box-sizing: border-box** makes sizing predictable by including padding and border in width/height
+- **Margin collapsing** causes vertical margins to merge rather than add - only the larger margin is used
+- Margins only collapse in normal flow, not with flexbox, grid, or positioned elements
+- **Block elements** respect all box model properties and stack vertically
+- **Inline elements** ignore width, height, and vertical margins
+- **Inline-block** combines the best of both: flows inline but respects all box model properties
+- Use padding on parents to prevent margin collapse
+- Always consider box-sizing when setting dimensions
+</KeyConcept>
+
+<ProgressCheckpoint section="summary" xpReward={10} />
+
+## Quick Quiz
+
+<Quiz>
+  <Question text="With box-sizing: border-box and width: 200px, padding: 20px, border: 5px, what is the content width?">
+    <Answer>200px</Answer>
+    <Answer>160px</Answer>
+    <Answer correct>150px</Answer>
+    <Answer>250px</Answer>
+  </Question>
+
+  <Question text="When do vertical margins collapse?">
+    <Answer>Always</Answer>
+    <Answer correct>In normal flow between adjacent block elements</Answer>
+    <Answer>Only with inline elements</Answer>
+    <Answer>Never</Answer>
+  </Question>
+
+  <Question text="Which display value respects width and height but flows inline?">
+    <Answer>inline</Answer>
+    <Answer>block</Answer>
+    <Answer correct>inline-block</Answer>
+    <Answer>flex</Answer>
+  </Question>
+
+  <Question text="How can you prevent margin collapse between a parent and its first child?">
+    <Answer correct>Add padding or border to the parent</Answer>
+    <Answer>Increase the child's margin</Answer>
+    <Answer>Use negative margins</Answer>
+    <Answer>Set the child to display: inline</Answer>
+  </Question>
+
+  <Question text="Which box model properties do inline elements ignore?">
+    <Answer>All margins</Answer>
+    <Answer>All padding</Answer>
+    <Answer correct>Width, height, and vertical margins</Answer>
+    <Answer>Border</Answer>
+  </Question>
+</Quiz>
+
+---
+
+**Great progress!** 🎉 You now have a solid understanding of box model nuances. Ready for more advanced topics? Check out:
+- **Advanced Box Model** - Explore formatting contexts and edge cases
+- **Flexbox** - Modern one-dimensional layouts
+- **CSS Grid** - Powerful two-dimensional layouts

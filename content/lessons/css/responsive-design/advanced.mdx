@@ -1,0 +1,826 @@
+# CSS Responsive Design - Advanced
+
+Welcome to advanced responsive design! You've mastered media queries and fluid typography - now it's time to explore cutting-edge CSS features that are revolutionizing how we build responsive layouts.
+
+In this lesson, you'll learn about container queries (the future of responsive design), advanced responsive image techniques, and sophisticated patterns used in modern web applications.
+
+<InfoBox type="tip" title="What You'll Master">
+This lesson covers modern CSS features that solve problems media queries can't. You'll learn techniques used in production by companies like Google, Airbnb, and GitHub.
+</InfoBox>
+
+<ProgressCheckpoint section="introduction" xpReward={10} />
+
+## Container Queries - The Game Changer
+
+Container queries are like media queries, but instead of responding to the viewport size, they respond to a **parent container's size**. This is revolutionary for component-based design.
+
+### The Problem with Media Queries
+
+Media queries only know about the viewport, not where a component is placed:
+
+```css
+/* This card looks great in the sidebar... */
+@media (min-width: 768px) {
+  .card {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+  }
+}
+
+/* ...but breaks when used in a narrow sidebar! */
+/* The viewport is 768px+, but the sidebar is only 300px wide */
+```
+
+**The issue:** A component in a narrow sidebar gets the same styles as one in the main content area, even though they have different widths.
+
+### Container Queries to the Rescue
+
+Container queries let components respond to their container's size:
+
+```css
+/* Define a container */
+.sidebar,
+.main-content {
+  container-type: inline-size;
+  container-name: card-container;
+}
+
+/* Base card styles (narrow container) */
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+/* When container is 400px+ wide */
+@container card-container (min-width: 400px) {
+  .card {
+    flex-direction: row;
+    gap: 1.5rem;
+  }
+  
+  .card-image {
+    width: 150px;
+    flex-shrink: 0;
+  }
+}
+
+/* When container is 600px+ wide */
+@container card-container (min-width: 600px) {
+  .card {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 2rem;
+  }
+}
+```
+
+<KeyConcept title="Container Query Syntax">
+```css
+/* 1. Define a container */
+.container {
+  container-type: inline-size; /* or 'size' or 'normal' */
+  container-name: my-container; /* optional but recommended */
+}
+
+/* 2. Query the container */
+@container my-container (min-width: 400px) {
+  .child {
+    /* Styles when container is 400px+ wide */
+  }
+}
+```
+
+**Container types:**
+- `inline-size`: Query based on width (most common)
+- `size`: Query based on width AND height
+- `normal`: Not a query container (default)
+</KeyConcept>
+
+### Container Query Units
+
+Just like viewport units (vw, vh), container queries have their own units:
+
+```css
+.container {
+  container-type: inline-size;
+}
+
+.child {
+  /* cqw = container query width */
+  width: 50cqw; /* 50% of container width */
+  
+  /* cqh = container query height */
+  height: 30cqh; /* 30% of container height */
+  
+  /* cqi = container query inline size (width in LTR) */
+  padding: 2cqi;
+  
+  /* cqb = container query block size (height in LTR) */
+  margin-block: 1cqb;
+  
+  /* cqmin = smaller of cqi or cqb */
+  font-size: 5cqmin;
+  
+  /* cqmax = larger of cqi or cqb */
+  border-radius: 2cqmax;
+}
+```
+
+### Practical Example: Responsive Card Component
+
+```css
+/* Card container */
+.card-wrapper {
+  container-type: inline-size;
+  container-name: card;
+}
+
+/* Base card (mobile/narrow) */
+.card {
+  background: white;
+  border-radius: 8px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.card-image {
+  width: 100%;
+  aspect-ratio: 16/9;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.card-title {
+  font-size: clamp(1.25rem, 4cqw, 1.75rem);
+  margin-top: 1rem;
+}
+
+.card-description {
+  font-size: clamp(0.875rem, 2.5cqw, 1rem);
+  color: #64748b;
+}
+
+/* Medium container (400px+) */
+@container card (min-width: 400px) {
+  .card {
+    flex-direction: row;
+    gap: 1.5rem;
+  }
+  
+  .card-image {
+    width: 40%;
+    aspect-ratio: 1;
+  }
+  
+  .card-content {
+    flex: 1;
+  }
+  
+  .card-title {
+    margin-top: 0;
+  }
+}
+
+/* Large container (600px+) */
+@container card (min-width: 600px) {
+  .card {
+    padding: 2rem;
+  }
+  
+  .card-image {
+    width: 200px;
+  }
+  
+  .card-meta {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+}
+```
+
+<InfoBox type="warning" title="Browser Support">
+Container queries are supported in:
+- Chrome/Edge 105+
+- Firefox 110+
+- Safari 16+
+
+For older browsers, use `@supports` to provide fallbacks:
+
+```css
+@supports not (container-type: inline-size) {
+  /* Fallback styles using media queries */
+  @media (min-width: 768px) {
+    .card {
+      flex-direction: row;
+    }
+  }
+}
+```
+</InfoBox>
+
+<ProgressCheckpoint section="container-queries" xpReward={20} />
+
+## Responsive Images
+
+Images are often the largest assets on a page. Serving the right image size is crucial for performance.
+
+### The Problem
+
+```html
+<!-- Bad: Same large image for all devices -->
+<img src="hero-4000x3000.jpg" alt="Hero" />
+<!-- Mobile users download 2MB when they only need 200KB! -->
+```
+
+### Solution 1: srcset and sizes
+
+The `srcset` attribute lets you provide multiple image sizes, and the browser picks the best one:
+
+```html
+<img
+  src="image-800.jpg"
+  srcset="
+    image-400.jpg 400w,
+    image-800.jpg 800w,
+    image-1200.jpg 1200w,
+    image-1600.jpg 1600w
+  "
+  sizes="
+    (max-width: 640px) 100vw,
+    (max-width: 1024px) 50vw,
+    33vw
+  "
+  alt="Responsive image"
+/>
+```
+
+<KeyConcept title="Understanding srcset and sizes">
+**srcset**: List of available images with their widths
+```html
+srcset="image-400.jpg 400w, image-800.jpg 800w"
+```
+- `400w` means the image is 400 pixels wide
+- Browser knows the actual image dimensions
+
+**sizes**: Tells browser how much space the image will take
+```html
+sizes="(max-width: 640px) 100vw, 50vw"
+```
+- On screens ≤640px: image takes 100% of viewport width
+- On larger screens: image takes 50% of viewport width
+
+**Browser's job**: Pick the smallest image that's still large enough for the space and screen density.
+</KeyConcept>
+
+### Solution 2: picture Element
+
+For art direction (different crops for different sizes):
+
+```html
+<picture>
+  <!-- Mobile: Portrait crop -->
+  <source
+    media="(max-width: 640px)"
+    srcset="hero-mobile-400.jpg 400w, hero-mobile-800.jpg 800w"
+    sizes="100vw"
+  />
+  
+  <!-- Tablet: Square crop -->
+  <source
+    media="(max-width: 1024px)"
+    srcset="hero-tablet-800.jpg 800w, hero-tablet-1200.jpg 1200w"
+    sizes="100vw"
+  />
+  
+  <!-- Desktop: Landscape crop -->
+  <source
+    srcset="hero-desktop-1200.jpg 1200w, hero-desktop-1600.jpg 1600w"
+    sizes="100vw"
+  />
+  
+  <!-- Fallback -->
+  <img src="hero-desktop-1200.jpg" alt="Hero image" />
+</picture>
+```
+
+### Solution 3: Modern Image Formats
+
+Serve WebP/AVIF with fallbacks:
+
+```html
+<picture>
+  <!-- Modern browsers: AVIF (best compression) -->
+  <source type="image/avif" srcset="image.avif" />
+  
+  <!-- Fallback: WebP (good compression) -->
+  <source type="image/webp" srcset="image.webp" />
+  
+  <!-- Fallback: JPEG (universal support) -->
+  <img src="image.jpg" alt="Image" />
+</picture>
+```
+
+### CSS Responsive Images
+
+```css
+/* Responsive image container */
+.image-container {
+  position: relative;
+  width: 100%;
+  /* Maintain aspect ratio */
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+}
+
+.image-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* or 'contain' */
+  object-position: center; /* or 'top', 'bottom', etc. */
+}
+
+/* Responsive background images */
+.hero {
+  background-image: image-set(
+    url('hero-1x.jpg') 1x,
+    url('hero-2x.jpg') 2x,
+    url('hero-3x.jpg') 3x
+  );
+  background-size: cover;
+  background-position: center;
+  
+  /* Fallback for older browsers */
+  background-image: url('hero-2x.jpg');
+}
+
+/* Different images at different breakpoints */
+.banner {
+  background-image: url('banner-mobile.jpg');
+}
+
+@media (min-width: 768px) {
+  .banner {
+    background-image: url('banner-tablet.jpg');
+  }
+}
+
+@media (min-width: 1024px) {
+  .banner {
+    background-image: url('banner-desktop.jpg');
+  }
+}
+```
+
+<InfoBox type="tip" title="Image Optimization Checklist">
+✅ Use `srcset` and `sizes` for resolution switching
+
+✅ Use `<picture>` for art direction (different crops)
+
+✅ Serve modern formats (AVIF, WebP) with fallbacks
+
+✅ Use `loading="lazy"` for images below the fold
+
+✅ Set explicit `width` and `height` to prevent layout shift
+
+✅ Use `aspect-ratio` CSS property for responsive containers
+
+✅ Compress images (aim for <200KB for hero images)
+
+✅ Use CDN with automatic image optimization (Cloudinary, Imgix)
+</InfoBox>
+
+<ProgressCheckpoint section="responsive-images" xpReward={20} />
+
+## Advanced Responsive Patterns
+
+### Pattern 1: Intrinsic Layouts (No Media Queries!)
+
+Use CSS Grid's `auto-fit` and `minmax()` for layouts that adapt without media queries:
+
+```css
+.grid {
+  display: grid;
+  /* Automatically create columns that are at least 250px,
+     but grow to fill available space */
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+}
+
+/* That's it! No media queries needed.
+   - 1 column on narrow screens
+   - 2 columns on medium screens
+   - 3+ columns on wide screens */
+```
+
+<KeyConcept title="auto-fit vs auto-fill">
+```css
+/* auto-fit: Collapses empty tracks */
+grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+/* Items stretch to fill available space */
+
+/* auto-fill: Keeps empty tracks */
+grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+/* Items maintain size, leaving empty space */
+```
+
+**Use auto-fit** when you want items to grow and fill space.
+**Use auto-fill** when you want consistent item sizes.
+</KeyConcept>
+
+### Pattern 2: Responsive Typography Scale
+
+Create a fluid type scale that adapts to viewport:
+
+```css
+:root {
+  /* Base size scales from 16px to 20px */
+  --font-size-base: clamp(1rem, 0.9rem + 0.5vw, 1.25rem);
+  
+  /* Type scale multiplier */
+  --scale: 1.25; /* Major third */
+  
+  /* Calculate sizes based on scale */
+  --font-size-sm: calc(var(--font-size-base) / var(--scale));
+  --font-size-md: var(--font-size-base);
+  --font-size-lg: calc(var(--font-size-base) * var(--scale));
+  --font-size-xl: calc(var(--font-size-base) * var(--scale) * var(--scale));
+  --font-size-2xl: calc(var(--font-size-base) * var(--scale) * var(--scale) * var(--scale));
+}
+
+body {
+  font-size: var(--font-size-md);
+}
+
+h1 { font-size: var(--font-size-2xl); }
+h2 { font-size: var(--font-size-xl); }
+h3 { font-size: var(--font-size-lg); }
+small { font-size: var(--font-size-sm); }
+```
+
+### Pattern 3: Responsive Spacing System
+
+```css
+:root {
+  /* Base spacing unit that scales */
+  --space-unit: clamp(0.5rem, 1vw, 1rem);
+  
+  /* Spacing scale */
+  --space-xs: calc(var(--space-unit) * 0.5);
+  --space-sm: var(--space-unit);
+  --space-md: calc(var(--space-unit) * 2);
+  --space-lg: calc(var(--space-unit) * 3);
+  --space-xl: calc(var(--space-unit) * 4);
+  --space-2xl: calc(var(--space-unit) * 6);
+}
+
+.section {
+  padding-block: var(--space-xl);
+  padding-inline: var(--space-md);
+}
+
+.card {
+  padding: var(--space-md);
+  gap: var(--space-sm);
+}
+```
+
+### Pattern 4: Responsive Component Variants
+
+Use container queries for component variants:
+
+```css
+.button-group {
+  container-type: inline-size;
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* Narrow: Stack buttons */
+.button-group {
+  flex-direction: column;
+}
+
+.button {
+  width: 100%;
+}
+
+/* Wide: Horizontal buttons */
+@container (min-width: 400px) {
+  .button-group {
+    flex-direction: row;
+  }
+  
+  .button {
+    width: auto;
+    flex: 1;
+  }
+}
+
+/* Extra wide: Auto-width buttons */
+@container (min-width: 600px) {
+  .button {
+    flex: 0 1 auto;
+  }
+}
+```
+
+### Pattern 5: Responsive Data Tables
+
+Tables are notoriously difficult to make responsive. Here's a modern approach:
+
+```css
+.table-container {
+  container-type: inline-size;
+  overflow-x: auto;
+}
+
+/* Narrow: Card layout */
+@container (max-width: 640px) {
+  table {
+    display: block;
+  }
+  
+  thead {
+    display: none;
+  }
+  
+  tbody, tr, td {
+    display: block;
+  }
+  
+  tr {
+    margin-bottom: 1rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 1rem;
+  }
+  
+  td {
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    gap: 1rem;
+    padding: 0.5rem 0;
+  }
+  
+  td::before {
+    content: attr(data-label);
+    font-weight: bold;
+  }
+}
+
+/* Wide: Normal table */
+@container (min-width: 641px) {
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  th, td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid #e2e8f0;
+  }
+}
+```
+
+<ProgressCheckpoint section="advanced-patterns" xpReward={20} />
+
+## Hands-On Practice
+
+Let's build a sophisticated responsive component using container queries:
+
+<CssEditor
+  initialHtml={`
+<div class="page-layout">
+  <aside class="sidebar">
+    <div class="card-wrapper">
+      <article class="card">
+        <img src="https://via.placeholder.com/400x300" alt="Card" class="card-image" />
+        <div class="card-content">
+          <h3 class="card-title">Sidebar Card</h3>
+          <p class="card-description">This card adapts to its container, not the viewport!</p>
+          <button class="card-button">Read More</button>
+        </div>
+      </article>
+    </div>
+  </aside>
+  
+  <main class="main-content">
+    <div class="card-wrapper">
+      <article class="card">
+        <img src="https://via.placeholder.com/400x300" alt="Card" class="card-image" />
+        <div class="card-content">
+          <h3 class="card-title">Main Content Card</h3>
+          <p class="card-description">Same component, different layout based on container width!</p>
+          <button class="card-button">Read More</button>
+        </div>
+      </article>
+    </div>
+  </main>
+</div>
+  `}
+  initialCss={`
+/* Page layout */
+.page-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+  padding: 1rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+@media (min-width: 1024px) {
+  .page-layout {
+    grid-template-columns: 300px 1fr;
+  }
+}
+
+/* Container query setup */
+.card-wrapper {
+  container-type: inline-size;
+  container-name: card;
+}
+
+/* Base card (narrow) */
+.card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.card-image {
+  width: 100%;
+  aspect-ratio: 4/3;
+  object-fit: cover;
+}
+
+.card-content {
+  padding: clamp(1rem, 3cqw, 1.5rem);
+}
+
+.card-title {
+  font-size: clamp(1.125rem, 4cqw, 1.5rem);
+  margin: 0 0 0.5rem 0;
+  color: #1e293b;
+}
+
+.card-description {
+  font-size: clamp(0.875rem, 2.5cqw, 1rem);
+  color: #64748b;
+  margin: 0 0 1rem 0;
+  line-height: 1.6;
+}
+
+.card-button {
+  background: #3b82f6;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  font-size: clamp(0.875rem, 2cqw, 1rem);
+  cursor: pointer;
+  width: 100%;
+}
+
+/* Medium container (400px+) */
+@container card (min-width: 400px) {
+  .card {
+    flex-direction: row;
+  }
+  
+  .card-image {
+    width: 40%;
+    aspect-ratio: 1;
+  }
+  
+  .card-button {
+    width: auto;
+  }
+}
+
+/* Large container (600px+) */
+@container card (min-width: 600px) {
+  .card {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+  }
+  
+  .card-image {
+    width: 100%;
+    height: 100%;
+  }
+  
+  .card-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+}
+  `}
+  height={600}
+  showPreview={true}
+/>
+
+<InfoBox type="tip" title="Notice the Magic!">
+Both cards use the **exact same HTML and CSS**, but they look different because:
+- The sidebar card is in a narrow container (300px)
+- The main content card is in a wide container (1fr)
+- Container queries make each card adapt to its container!
+
+This is impossible with media queries alone.
+</InfoBox>
+
+<ProgressCheckpoint section="summary" xpReward={10} />
+
+## Key Takeaways
+
+<KeyConcept title="Advanced Responsive Design">
+✅ **Container queries** let components respond to their container size, not viewport size
+
+✅ **Container query units** (cqw, cqh, cqi, cqb, cqmin, cqmax) size elements relative to containers
+
+✅ **Responsive images** use `srcset`, `sizes`, and `<picture>` for optimal performance
+
+✅ **Modern image formats** (AVIF, WebP) reduce file sizes by 30-50%
+
+✅ **Intrinsic layouts** with `auto-fit` and `minmax()` adapt without media queries
+
+✅ **Fluid type scales** create harmonious typography that scales smoothly
+
+✅ **Responsive spacing systems** ensure consistent spacing at all sizes
+
+✅ **Component variants** with container queries enable truly reusable components
+
+✅ **Always provide fallbacks** for cutting-edge features using `@supports`
+</KeyConcept>
+
+<BrowserCompatibility
+  feature="Container Queries"
+  minVersions={{
+    chrome: '105',
+    firefox: '110',
+    safari: '16',
+    edge: '105',
+  }}
+  showFallback={true}
+  showPrefixes={false}
+/>
+
+<ProgressCheckpoint section="summary" xpReward={10} />
+
+## Quick Quiz
+
+<Quiz>
+  <Question text="What's the main advantage of container queries over media queries?">
+    <Answer>They're faster</Answer>
+    <Answer>They're easier to write</Answer>
+    <Answer correct>Components respond to their container size, not viewport size</Answer>
+    <Answer>They work in all browsers</Answer>
+  </Question>
+
+  <Question text="What does 'cqw' stand for?">
+    <Answer>CSS query width</Answer>
+    <Answer correct>Container query width</Answer>
+    <Answer>Computed query width</Answer>
+    <Answer>Custom query width</Answer>
+  </Question>
+
+  <Question text="Which HTML element is best for art direction (different crops at different sizes)?">
+    <Answer>&lt;img&gt; with srcset</Answer>
+    <Answer correct>&lt;picture&gt; with multiple &lt;source&gt; elements</Answer>
+    <Answer>&lt;figure&gt;</Answer>
+    <Answer>&lt;canvas&gt;</Answer>
+  </Question>
+
+  <Question text="What does 'auto-fit' do in grid-template-columns?">
+    <Answer>Creates a fixed number of columns</Answer>
+    <Answer correct>Creates as many columns as fit, collapsing empty tracks</Answer>
+    <Answer>Automatically sizes columns equally</Answer>
+    <Answer>Fits content to columns</Answer>
+  </Question>
+
+  <Question text="How do you provide a fallback for container queries?">
+    <Answer>Use @media as fallback</Answer>
+    <Answer correct>Use @supports to detect support and provide alternatives</Answer>
+    <Answer>Use JavaScript detection</Answer>
+    <Answer>Container queries don't need fallbacks</Answer>
+  </Question>
+</Quiz>
+
+---
+
+**Congratulations!** 🎉 You've mastered advanced responsive design! You now understand container queries, responsive images, and sophisticated patterns used in modern web development.
+
+**Next Steps:**
+- Experiment with container queries in your projects
+- Optimize images using modern formats and responsive techniques
+- Build component libraries that adapt to any context
+- Explore CSS Grid and Flexbox lessons for more layout techniques

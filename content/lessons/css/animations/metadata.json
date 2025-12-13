@@ -1,0 +1,74 @@
+{
+  "id": "animations",
+  "title": "CSS Animations",
+  "description": "Master CSS animations - from keyframes and timing functions to performance optimization and complex animation patterns",
+  "milestone": "css",
+  "order": 9,
+  "sections": [
+    "introduction",
+    "keyframes-basics",
+    "animation-properties",
+    "timing-functions",
+    "animation-iteration-direction",
+    "animation-fill-mode",
+    "transitions-vs-animations",
+    "performance-considerations",
+    "will-change",
+    "complex-patterns",
+    "summary"
+  ],
+  "levels": {
+    "beginner": {
+      "estimatedMinutes": 50,
+      "xpReward": 50
+    },
+    "intermediate": {
+      "estimatedMinutes": 65,
+      "xpReward": 100
+    },
+    "advanced": {
+      "estimatedMinutes": 80,
+      "xpReward": 200
+    }
+  },
+  "prerequisites": ["css/box-model", "css/positioning", "css/transforms"],
+  "tags": ["css", "animations", "keyframes", "timing-functions", "performance", "will-change", "transitions"],
+  "cssProperties": [
+    "@keyframes",
+    "animation",
+    "animation-name",
+    "animation-duration",
+    "animation-timing-function",
+    "animation-delay",
+    "animation-iteration-count",
+    "animation-direction",
+    "animation-fill-mode",
+    "animation-play-state",
+    "transition",
+    "transition-property",
+    "transition-duration",
+    "transition-timing-function",
+    "transition-delay",
+    "will-change"
+  ],
+  "browserSupport": [
+    {
+      "feature": "CSS Animations",
+      "minVersions": {
+        "chrome": "43",
+        "firefox": "16",
+        "safari": "9",
+        "edge": "12"
+      }
+    },
+    {
+      "feature": "will-change",
+      "minVersions": {
+        "chrome": "36",
+        "firefox": "36",
+        "safari": "9.1",
+        "edge": "79"
+      }
+    }
+  ]
+}

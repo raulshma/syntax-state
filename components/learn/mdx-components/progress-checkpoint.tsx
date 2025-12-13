@@ -103,6 +103,7 @@ export function ProgressCheckpoint({
   return (
     <motion.div
       ref={elementRef}
+      id={`section-${section}`}
       data-section={section}
       data-completed={isCompleted}
       initial={{ opacity: 0, scale: 0.9 }}

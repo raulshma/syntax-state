@@ -1,0 +1,364 @@
+# CSS Transforms
+
+Welcome to CSS Transforms! Imagine you have a photo on your desk - you can **move it around**, **rotate it**, **make it bigger or smaller**, or even **tilt it** at an angle. CSS transforms let you do exactly that with elements on your web page!
+
+In this lesson, you'll learn how to use 2D transforms to move, rotate, scale, and skew elements. These powerful tools will help you create dynamic, engaging layouts and interactive effects. By the end, you'll be able to transform any element on your page!
+
+<InfoBox type="tip" title="Why Learn Transforms?">
+Transforms are essential for modern web design. They enable smooth animations, create visual interest, and help build interactive user interfaces. Unlike changing position or size properties, transforms are hardware-accelerated, making them perfect for smooth animations and transitions.
+</InfoBox>
+
+<ProgressCheckpoint section="introduction" xpReward={10} />
+
+## Understanding 2D Transforms
+
+**2D transforms** let you manipulate elements in two dimensions: horizontally (X-axis) and vertically (Y-axis). Think of your screen as a flat piece of paper - you can move things left/right, up/down, spin them around, or change their size.
+
+All transforms use the `transform` property, which accepts one or more transform functions:
+
+```css
+.box {
+  transform: rotate(45deg);
+}
+```
+
+<KeyConcept title="The Transform Property">
+- **transform**: The CSS property that applies transformations
+- **Transform functions**: Functions like `translate()`, `rotate()`, `scale()`, and `skew()`
+- **Multiple transforms**: You can combine multiple transforms in one declaration
+- **No layout impact**: Transforms don't affect the layout of other elements
+</KeyConcept>
+
+<ProgressCheckpoint section="2d-transforms-basics" xpReward={15} />
+
+## Translate - Moving Elements
+
+**Translate** means "move" - it shifts an element from its original position. Think of it like picking up a book and moving it to a different spot on your desk.
+
+### Basic Translation
+
+```css
+.move-right {
+  transform: translateX(50px);
+}
+
+.move-down {
+  transform: translateY(30px);
+}
+
+.move-diagonal {
+  transform: translate(50px, 30px);
+}
+```
+
+<KeyConcept title="Translate Functions">
+- **translateX(value)**: Moves horizontally (positive = right, negative = left)
+- **translateY(value)**: Moves vertically (positive = down, negative = up)
+- **translate(x, y)**: Moves in both directions at once
+- **Units**: Use px, em, rem, or even percentages (% of element's own size)
+</KeyConcept>
+
+### Using Percentages
+
+Percentages are based on the element's own dimensions:
+
+```css
+.center-me {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+```
+
+This is a classic centering technique! The element moves to 50% of its parent, then translates back by 50% of its own size.
+
+<InfoBox type="tip" title="Why Not Use Position?">
+While you can move elements with `position: relative` and `left/top`, transforms are hardware-accelerated and perform better, especially for animations!
+</InfoBox>
+
+<ProgressCheckpoint section="translate" xpReward={15} />
+
+## Rotate - Spinning Elements
+
+**Rotate** spins an element around a point. Imagine spinning a plate on a table - that's rotation!
+
+### Basic Rotation
+
+```css
+.spin-clockwise {
+  transform: rotate(45deg);
+}
+
+.spin-counter {
+  transform: rotate(-45deg);
+}
+
+.full-spin {
+  transform: rotate(360deg);
+}
+```
+
+<KeyConcept title="Rotation Units">
+- **deg**: Degrees (360deg = full circle)
+- **turn**: Full rotations (1turn = 360deg, 0.5turn = 180deg)
+- **rad**: Radians (2π rad = 360deg)
+- **Positive values**: Clockwise rotation
+- **Negative values**: Counter-clockwise rotation
+</KeyConcept>
+
+### Practical Example
+
+```css
+.arrow {
+  transform: rotate(90deg);
+}
+```
+
+This rotates an arrow icon 90 degrees clockwise - perfect for pointing in different directions!
+
+<ProgressCheckpoint section="rotate" xpReward={15} />
+
+## Scale - Resizing Elements
+
+**Scale** changes the size of an element. Think of it like zooming in or out on a photo.
+
+### Basic Scaling
+
+```css
+.make-bigger {
+  transform: scale(1.5);
+}
+
+.make-smaller {
+  transform: scale(0.5);
+}
+
+.stretch-wide {
+  transform: scaleX(2);
+}
+
+.stretch-tall {
+  transform: scaleY(2);
+}
+```
+
+<KeyConcept title="Scale Functions">
+- **scale(value)**: Scales uniformly in both directions
+- **scale(x, y)**: Scales differently in each direction
+- **scaleX(value)**: Scales only horizontally
+- **scaleY(value)**: Scales only vertically
+- **1 = original size**, **2 = double size**, **0.5 = half size**
+</KeyConcept>
+
+### Scale Values Explained
+
+- `scale(1)` - Original size (no change)
+- `scale(2)` - Twice as big
+- `scale(0.5)` - Half the size
+- `scale(0)` - Invisible (zero size)
+- `scale(-1)` - Flipped (mirror image)
+
+<InfoBox type="warning" title="Scale and Layout">
+Scaling doesn't change the element's actual space in the layout - it only changes how it looks! Other elements won't move to make room.
+</InfoBox>
+
+<ProgressCheckpoint section="scale" xpReward={15} />
+
+## Skew - Tilting Elements
+
+**Skew** tilts an element along the X or Y axis. Imagine pushing the top of a rectangle to the side while keeping the bottom in place - that's skewing!
+
+### Basic Skewing
+
+```css
+.slant-right {
+  transform: skewX(20deg);
+}
+
+.slant-down {
+  transform: skewY(10deg);
+}
+
+.parallelogram {
+  transform: skew(20deg, 10deg);
+}
+```
+
+<KeyConcept title="Skew Functions">
+- **skewX(angle)**: Tilts along the X-axis (horizontal)
+- **skewY(angle)**: Tilts along the Y-axis (vertical)
+- **skew(x, y)**: Tilts in both directions
+- **Positive values**: Tilts in one direction
+- **Negative values**: Tilts in the opposite direction
+</KeyConcept>
+
+### When to Use Skew
+
+Skew is great for:
+- Creating parallelogram shapes
+- Adding dynamic, angled designs
+- Creating perspective effects
+- Making decorative elements
+
+<InfoBox type="tip" title="Skew Sparingly">
+Skew can make text hard to read, so use it carefully! It works best for decorative elements and backgrounds.
+</InfoBox>
+
+<ProgressCheckpoint section="skew" xpReward={15} />
+
+## Transform Origin - The Pivot Point
+
+By default, transforms happen around the **center** of an element. But what if you want to rotate around a corner instead? That's where `transform-origin` comes in!
+
+### Understanding Transform Origin
+
+Think of transform-origin as the "pin" that holds your element in place while it transforms. Like pinning a piece of paper to a board before spinning it.
+
+```css
+.rotate-from-corner {
+  transform: rotate(45deg);
+  transform-origin: top left;
+}
+
+.rotate-from-bottom {
+  transform: rotate(45deg);
+  transform-origin: bottom center;
+}
+```
+
+<KeyConcept title="Transform Origin Values">
+- **Keywords**: `top`, `bottom`, `left`, `right`, `center`
+- **Percentages**: `0% 0%` (top left), `50% 50%` (center), `100% 100%` (bottom right)
+- **Lengths**: `10px 20px` (specific pixel position)
+- **Default**: `center center` (50% 50%)
+</KeyConcept>
+
+### Common Transform Origins
+
+```css
+/* Rotate from top-left corner */
+transform-origin: top left;
+
+/* Rotate from bottom edge */
+transform-origin: bottom center;
+
+/* Rotate from a specific point */
+transform-origin: 20px 30px;
+```
+
+<ProgressCheckpoint section="transform-origin" xpReward={15} />
+
+## Combining Multiple Transforms
+
+The real power of transforms comes from **combining** them! You can apply multiple transform functions in a single declaration.
+
+### Multiple Transforms
+
+```css
+.fancy-box {
+  transform: translate(50px, 20px) rotate(45deg) scale(1.2);
+}
+```
+
+This moves the box, then rotates it, then scales it up!
+
+<KeyConcept title="Transform Order Matters">
+Transforms are applied **from right to left** (or in the order written). The order can produce different results!
+
+```css
+/* Rotate THEN translate */
+transform: translate(100px, 0) rotate(45deg);
+
+/* Translate THEN rotate */
+transform: rotate(45deg) translate(100px, 0);
+```
+
+These produce different results because the rotation changes the direction of the translation!
+</KeyConcept>
+
+### Try It Yourself!
+
+<TransformPlayground
+  initialTransform={{
+    translateX: 0,
+    translateY: 0,
+    rotate: 0,
+    scaleX: 1,
+    scaleY: 1,
+    skewX: 0,
+    skewY: 0
+  }}
+  showControls={true}
+  show3D={false}
+/>
+
+Experiment with different transform values and see how they affect the element. Try combining multiple transforms and notice how the order changes the result!
+
+<ProgressCheckpoint section="transform-composition" xpReward={15} />
+
+## Key Takeaways
+
+<KeyConcept title="Summary">
+- **transform** property applies transformations to elements
+- **translate()** moves elements without affecting layout
+- **rotate()** spins elements around a point
+- **scale()** resizes elements (doesn't affect layout space)
+- **skew()** tilts elements along an axis
+- **transform-origin** sets the pivot point for transformations
+- **Multiple transforms** can be combined in one declaration
+- **Order matters** when combining transforms
+- **Hardware-accelerated** for smooth animations
+</KeyConcept>
+
+<ProgressCheckpoint section="summary" xpReward={10} />
+
+## Quick Quiz
+
+Test your understanding of CSS transforms!
+
+<Quiz>
+  <Question text="Which transform function would you use to move an element 50 pixels to the right?">
+    <Answer>rotate(50deg)</Answer>
+    <Answer correct>translateX(50px)</Answer>
+    <Answer>scaleX(50)</Answer>
+    <Answer>skewX(50deg)</Answer>
+  </Question>
+
+  <Question text="What does transform: scale(2) do?">
+    <Answer>Moves the element 2 pixels</Answer>
+    <Answer>Rotates the element 2 degrees</Answer>
+    <Answer correct>Makes the element twice as big</Answer>
+    <Answer>Creates 2 copies of the element</Answer>
+  </Question>
+
+  <Question text="What is the default transform-origin?">
+    <Answer>top left</Answer>
+    <Answer correct>center center</Answer>
+    <Answer>bottom right</Answer>
+    <Answer>0 0</Answer>
+  </Question>
+
+  <Question text="Which value rotates an element counter-clockwise?">
+    <Answer>rotate(45deg)</Answer>
+    <Answer correct>rotate(-45deg)</Answer>
+    <Answer>rotate(45turn)</Answer>
+    <Answer>rotate(360deg)</Answer>
+  </Question>
+
+  <Question text="Do transforms affect the layout of other elements?">
+    <Answer>Yes, they push other elements aside</Answer>
+    <Answer correct>No, they only change visual appearance</Answer>
+    <Answer>Only if you use translate</Answer>
+    <Answer>Only if you use scale</Answer>
+  </Question>
+</Quiz>
+
+---
+
+**Excellent work!** 🎉 You've mastered the basics of 2D transforms! You can now move, rotate, scale, and skew elements with confidence.
+
+**Next Steps:**
+- Try the **Intermediate** level to learn about 3D transforms and perspective
+- Explore **CSS Animations** to animate your transforms
+- Check out **CSS Transitions** for smooth transform changes

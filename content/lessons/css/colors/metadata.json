@@ -1,0 +1,47 @@
+{
+  "id": "colors",
+  "title": "CSS Colors",
+  "description": "Master CSS colors - from RGB and HSL to gradients, transparency, and modern color functions",
+  "milestone": "css",
+  "order": 7,
+  "sections": [
+    "introduction",
+    "color-models",
+    "opacity-transparency",
+    "gradients",
+    "color-functions",
+    "color-accessibility",
+    "summary"
+  ],
+  "levels": {
+    "beginner": {
+      "estimatedMinutes": 40,
+      "xpReward": 50
+    },
+    "intermediate": {
+      "estimatedMinutes": 55,
+      "xpReward": 100
+    },
+    "advanced": {
+      "estimatedMinutes": 70,
+      "xpReward": 200
+    }
+  },
+  "prerequisites": ["css/selectors", "css/box-model"],
+  "tags": ["css", "colors", "rgb", "hsl", "hex", "gradients", "opacity", "accessibility"],
+  "cssProperties": [
+    "color",
+    "background-color",
+    "border-color",
+    "opacity",
+    "rgb()",
+    "rgba()",
+    "hsl()",
+    "hsla()",
+    "linear-gradient()",
+    "radial-gradient()",
+    "conic-gradient()",
+    "color-mix()",
+    "color-contrast()"
+  ]
+}

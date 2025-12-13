@@ -1,0 +1,280 @@
+# CSS Animations
+
+Welcome to CSS Animations! Think of animations as **bringing your web pages to life**. Just like a flipbook creates the illusion of movement by showing slightly different images in sequence, CSS animations create smooth motion by transitioning between different styles over time.
+
+In this lesson, you'll learn how to create animations using keyframes, control their timing and speed, and make your web pages more engaging and interactive. By the end, you'll be able to add delightful motion to your designs!
+
+<InfoBox type="tip" title="Why Learn Animations?">
+Animations make websites feel alive and responsive. They guide user attention, provide feedback, and create memorable experiences. A well-placed animation can transform a static page into an engaging interface that users love to interact with.
+</InfoBox>
+
+<ProgressCheckpoint section="introduction" xpReward={10} />
+
+## Keyframes - The Foundation of Animations
+
+**Keyframes** are like the key moments in your animation story. You define what your element looks like at different points in time, and CSS smoothly fills in the motion between those points.
+
+Think of it like directing a movie: you tell the actor where to be at the beginning, middle, and end of a scene, and they figure out how to move between those positions!
+
+### Creating Your First Keyframe
+
+```css
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+```
+
+<KeyConcept title="Keyframe Syntax">
+- **@keyframes**: Declares a new animation
+- **fadeIn**: The name you give your animation (you choose this!)
+- **from**: The starting state (0%)
+- **to**: The ending state (100%)
+- You can also use percentages: **0%**, **50%**, **100%**
+</KeyConcept>
+
+### Using Percentage-Based Keyframes
+
+For more control, use percentages to define multiple steps:
+
+```css
+@keyframes bounce {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-30px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+```
+
+This creates a bouncing effect: starts at the bottom (0%), jumps up halfway through (50%), and returns to the bottom (100%).
+
+<InfoBox type="tip" title="Multiple Properties">
+You can animate multiple CSS properties in the same keyframe! Change color, size, position, and more all at once.
+</InfoBox>
+
+<ProgressCheckpoint section="keyframes-basics" xpReward={15} />
+
+## Animation Properties
+
+Once you've defined keyframes, you need to **apply** them to an element. This is where animation properties come in!
+
+### The animation-name and animation-duration
+
+These are the two essential properties to make an animation work:
+
+```css
+.fade-in-box {
+  animation-name: fadeIn;
+  animation-duration: 2s;
+}
+```
+
+<KeyConcept title="Essential Animation Properties">
+- **animation-name**: Which keyframe animation to use
+- **animation-duration**: How long the animation takes (in seconds or milliseconds)
+  - `2s` = 2 seconds
+  - `500ms` = 500 milliseconds (half a second)
+</KeyConcept>
+
+### The animation Shorthand
+
+Instead of writing multiple properties, you can use the shorthand:
+
+```css
+.fade-in-box {
+  animation: fadeIn 2s;
+}
+```
+
+This is much cleaner! The format is: `animation: name duration`
+
+### Try It Yourself!
+
+Create your own animation:
+
+<CssEditor
+  initialCss={`@keyframes slideIn {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.box {
+  width: 200px;
+  height: 100px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  animation: slideIn 1s;
+}`}
+  initialHtml={`<div class="box">
+  I slide in!
+</div>`}
+  height={400}
+/>
+
+<ProgressCheckpoint section="animation-properties" xpReward={15} />
+
+## Timing Functions - Controlling Speed
+
+**Timing functions** control how an animation progresses over time. Should it start slow and speed up? Move at a constant pace? Bounce at the end?
+
+Think of timing functions like different driving styles: some people accelerate smoothly, others start fast and slow down, and some might even bounce a bit when they brake!
+
+### Common Timing Functions
+
+```css
+.linear {
+  animation: moveRight 2s linear;
+}
+
+.ease {
+  animation: moveRight 2s ease;
+}
+
+.ease-in {
+  animation: moveRight 2s ease-in;
+}
+
+.ease-out {
+  animation: moveRight 2s ease-out;
+}
+
+.ease-in-out {
+  animation: moveRight 2s ease-in-out;
+}
+```
+
+<KeyConcept title="Timing Function Types">
+- **linear**: Constant speed from start to finish
+- **ease**: Starts slow, speeds up, then slows down (default)
+- **ease-in**: Starts slow, then speeds up
+- **ease-out**: Starts fast, then slows down
+- **ease-in-out**: Starts slow, speeds up in middle, slows down at end
+</KeyConcept>
+
+### Visualizing Timing Functions
+
+Use the AnimationBuilder to see how different timing functions affect motion:
+
+<AnimationBuilder
+  initialKeyframes={{
+    '0%': { transform: 'translateX(0)' },
+    '100%': { transform: 'translateX(300px)' }
+  }}
+  initialDuration={2000}
+  initialTimingFunction="ease"
+  showTimeline={true}
+/>
+
+<InfoBox type="tip" title="Choosing the Right Timing">
+- **ease-out**: Best for elements entering the screen (feels natural)
+- **ease-in**: Best for elements leaving the screen
+- **ease-in-out**: Best for elements that stay on screen
+- **linear**: Best for continuous motion (like a loading spinner)
+</InfoBox>
+
+<ProgressCheckpoint section="timing-functions" xpReward={15} />
+
+## Animation Timeline
+
+Understanding how animations progress over time is crucial. The AnimationTimeline component lets you scrub through an animation frame by frame:
+
+<AnimationTimeline
+  keyframes={{
+    '0%': { transform: 'scale(1)', opacity: '1' },
+    '50%': { transform: 'scale(1.5)', opacity: '0.5' },
+    '100%': { transform: 'scale(1)', opacity: '1' }
+  }}
+  duration={2000}
+  timingFunction="ease-in-out"
+  showControls={true}
+/>
+
+<InfoBox type="tip" title="Using the Timeline">
+- **Play/Pause**: Control animation playback
+- **Scrubber**: Drag to see any point in the animation
+- **Keyframe Markers**: Show where you defined keyframes
+- **Timing Curve**: Visualizes how speed changes over time
+</InfoBox>
+
+<ProgressCheckpoint section="animation-iteration-direction" xpReward={10} />
+
+## Summary
+
+Let's recap what you've learned about CSS animations!
+
+<KeyConcept title="Key Takeaways">
+- **@keyframes**: Define animation steps using `from`/`to` or percentages
+- **animation-name**: Specifies which keyframe animation to use
+- **animation-duration**: Controls how long the animation takes
+- **animation-timing-function**: Controls the speed curve (linear, ease, ease-in, ease-out, ease-in-out)
+- **Shorthand**: `animation: name duration timing-function`
+- You can animate multiple CSS properties simultaneously
+- Timing functions make animations feel more natural and polished
+</KeyConcept>
+
+<ProgressCheckpoint section="summary" xpReward={10} />
+
+## Quick Quiz
+
+Test your understanding of CSS animations!
+
+<Quiz>
+  <Question text="What does @keyframes do?">
+    <Answer>Applies an animation to an element</Answer>
+    <Answer correct>Defines the steps of an animation</Answer>
+    <Answer>Sets the animation speed</Answer>
+    <Answer>Creates a transition effect</Answer>
+  </Question>
+
+  <Question text="Which property determines how long an animation takes?">
+    <Answer>animation-name</Answer>
+    <Answer correct>animation-duration</Answer>
+    <Answer>animation-speed</Answer>
+    <Answer>animation-time</Answer>
+  </Question>
+
+  <Question text="What does the 'ease-out' timing function do?">
+    <Answer>Starts slow, then speeds up</Answer>
+    <Answer correct>Starts fast, then slows down</Answer>
+    <Answer>Maintains constant speed</Answer>
+    <Answer>Bounces at the end</Answer>
+  </Question>
+
+  <Question text="In keyframes, what does '50%' represent?">
+    <Answer>50 pixels</Answer>
+    <Answer>50 seconds</Answer>
+    <Answer correct>The halfway point of the animation</Answer>
+    <Answer>50% opacity</Answer>
+  </Question>
+
+  <Question text="Which timing function maintains constant speed?">
+    <Answer>ease</Answer>
+    <Answer>ease-in</Answer>
+    <Answer>ease-out</Answer>
+    <Answer correct>linear</Answer>
+  </Question>
+</Quiz>
+
+---
+
+**Excellent work!** 🎉 You now understand the fundamentals of CSS animations. Next, you'll learn about animation iteration, direction, fill modes, and how to optimize animations for performance in the intermediate and advanced lessons!
+

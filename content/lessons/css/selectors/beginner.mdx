@@ -1,0 +1,475 @@
+# CSS Selectors
+
+Welcome to CSS Selectors! Think of selectors as **address labels** for your HTML elements. Just like you need an address to send a letter to the right house, you need selectors to apply styles to the right elements on your web page.
+
+In this lesson, you'll learn how to target specific elements, groups of elements, and even elements in specific states. By the end, you'll be able to style any element on your page with precision!
+
+<InfoBox type="tip" title="Why Learn Selectors?">
+Selectors are the foundation of CSS. Without them, you can't apply any styles! Mastering selectors means you can style anything on your page exactly the way you want.
+</InfoBox>
+
+<ProgressCheckpoint section="introduction" xpReward={10} />
+
+## Basic Selectors
+
+Let's start with the three most common selectors you'll use every day.
+
+### Element Selector
+
+The **element selector** targets all elements of a specific type. It's like saying "style all the paragraphs" or "style all the headings."
+
+```css
+p {
+  color: blue;
+}
+```
+
+This makes **all** `<p>` elements blue. Simple!
+
+### Class Selector
+
+The **class selector** targets elements with a specific class attribute. Classes are like name tags you can give to multiple elements.
+
+```html
+<p class="highlight">This paragraph is special!</p>
+<p>This one is normal.</p>
+```
+
+```css
+.highlight {
+  background-color: yellow;
+}
+```
+
+Notice the **dot (.)** before the class name in CSS. Only the first paragraph gets the yellow background because it has the `highlight` class.
+
+<KeyConcept title="Classes Are Reusable">
+You can use the same class on multiple elements. That's what makes classes so powerful — one style rule can affect many elements!
+</KeyConcept>
+
+### ID Selector
+
+The **ID selector** targets a single, unique element. IDs are like social security numbers — each element can only have one, and it should be unique on the page.
+
+```html
+<div id="header">Welcome to my site!</div>
+```
+
+```css
+#header {
+  font-size: 24px;
+  font-weight: bold;
+}
+```
+
+Notice the **hash (#)** before the ID name in CSS.
+
+<InfoBox type="warning" title="IDs Should Be Unique">
+Each ID should only appear once per page. If you need to style multiple elements the same way, use classes instead!
+</InfoBox>
+
+### Try It Yourself!
+
+<SelectorPlayground 
+  initialHtml={`<div>
+  <h1>Welcome</h1>
+  <p class="intro">This is an introduction.</p>
+  <p>This is a regular paragraph.</p>
+  <p class="intro">Another intro paragraph.</p>
+  <div id="special">I'm unique!</div>
+</div>`}
+  initialSelector="p"
+  showSpecificity={false}
+  highlightMatches={true}
+/>
+
+<ProgressCheckpoint section="basic-selectors" xpReward={15} />
+
+## Combinators
+
+Combinators let you select elements based on their **relationship** to other elements. Think of them as ways to describe family relationships in your HTML tree.
+
+### Descendant Selector (Space)
+
+The **descendant selector** targets elements inside other elements, no matter how deep.
+
+```css
+div p {
+  color: green;
+}
+```
+
+This selects all `<p>` elements that are **anywhere inside** a `<div>`, even if they're nested several levels deep.
+
+```html
+<div>
+  <p>I'm green!</p>
+  <section>
+    <p>I'm also green!</p>
+  </section>
+</div>
+<p>I'm not green (not inside a div).</p>
+```
+
+### Child Selector (>)
+
+The **child selector** is more specific — it only targets **direct children**.
+
+```css
+div > p {
+  color: red;
+}
+```
+
+```html
+<div>
+  <p>I'm red! (direct child)</p>
+  <section>
+    <p>I'm not red (grandchild, not direct child).</p>
+  </section>
+</div>
+```
+
+<KeyConcept title="Descendant vs Child">
+**Descendant** (space) = any level deep. **Child** (>) = only direct children. Think of it like family: descendants include children, grandchildren, great-grandchildren, etc., but children are just the next generation.
+</KeyConcept>
+
+### Adjacent Sibling Selector (+)
+
+The **adjacent sibling selector** targets an element that comes **immediately after** another element (same parent).
+
+```css
+h1 + p {
+  font-size: 18px;
+}
+```
+
+This selects a `<p>` that comes **right after** an `<h1>`.
+
+```html
+<h1>Title</h1>
+<p>I'm 18px! (right after h1)</p>
+<p>I'm normal size (not right after h1).</p>
+```
+
+### General Sibling Selector (~)
+
+The **general sibling selector** targets **all** siblings that come after an element.
+
+```css
+h1 ~ p {
+  color: gray;
+}
+```
+
+This selects **all** `<p>` elements that come after an `<h1>` (with the same parent).
+
+<SelectorPlayground 
+  initialHtml={`<div>
+  <h1>Title</h1>
+  <p>First paragraph</p>
+  <p>Second paragraph</p>
+  <span>A span</span>
+  <p>Third paragraph</p>
+</div>`}
+  initialSelector="h1 ~ p"
+  showSpecificity={false}
+  highlightMatches={true}
+/>
+
+<ProgressCheckpoint section="combinators" xpReward={10} />
+
+## Pseudo-classes
+
+**Pseudo-classes** let you select elements based on their **state** or **position**. They always start with a colon (:).
+
+### Interactive States
+
+These pseudo-classes respond to user interaction:
+
+#### :hover
+Applies when the user hovers over an element with their mouse.
+
+```css
+button:hover {
+  background-color: blue;
+}
+```
+
+#### :focus
+Applies when an element has keyboard focus (like when you tab to a button or click in an input field).
+
+```css
+input:focus {
+  border-color: green;
+}
+```
+
+#### :active
+Applies when an element is being clicked.
+
+```css
+button:active {
+  transform: scale(0.95);
+}
+```
+
+### Position-based Pseudo-classes
+
+These select elements based on their position among siblings:
+
+#### :first-child
+Selects an element if it's the first child of its parent.
+
+```css
+p:first-child {
+  font-weight: bold;
+}
+```
+
+#### :last-child
+Selects an element if it's the last child of its parent.
+
+```css
+p:last-child {
+  margin-bottom: 0;
+}
+```
+
+#### :nth-child(n)
+Selects elements based on their position. You can use numbers or formulas!
+
+```css
+/* Every odd row */
+tr:nth-child(odd) {
+  background-color: #f0f0f0;
+}
+
+/* Every 3rd element */
+li:nth-child(3n) {
+  color: red;
+}
+```
+
+<InfoBox type="info" title="Pseudo-classes Are Powerful">
+Pseudo-classes let you create interactive effects and style patterns without adding extra classes to your HTML. They're one of CSS's superpowers!
+</InfoBox>
+
+<SelectorPlayground 
+  initialHtml={`<ul>
+  <li>First item</li>
+  <li>Second item</li>
+  <li>Third item</li>
+  <li>Fourth item</li>
+  <li>Fifth item</li>
+</ul>`}
+  initialSelector="li:nth-child(odd)"
+  showSpecificity={false}
+  highlightMatches={true}
+/>
+
+<ProgressCheckpoint section="pseudo-classes" xpReward={10} />
+
+## Attribute Selectors
+
+**Attribute selectors** let you target elements based on their attributes and attribute values. They use square brackets [].
+
+### Basic Attribute Selector
+
+Select elements that have a specific attribute:
+
+```css
+[disabled] {
+  opacity: 0.5;
+}
+```
+
+This selects any element with a `disabled` attribute.
+
+### Exact Value Match
+
+Select elements where an attribute equals a specific value:
+
+```css
+[type="text"] {
+  border: 1px solid gray;
+}
+```
+
+This selects elements where `type="text"` exactly.
+
+### Contains Value
+
+Select elements where an attribute contains a specific value:
+
+```css
+[class*="btn"] {
+  padding: 10px;
+}
+```
+
+This selects elements whose class contains "btn" anywhere (like "btn-primary", "submit-btn", etc.).
+
+### Starts With
+
+Select elements where an attribute starts with a specific value:
+
+```css
+[href^="https"] {
+  color: green;
+}
+```
+
+This selects links that start with "https".
+
+### Ends With
+
+Select elements where an attribute ends with a specific value:
+
+```css
+[src$=".jpg"] {
+  border: 2px solid black;
+}
+```
+
+This selects images that end with ".jpg".
+
+<KeyConcept title="Attribute Selectors Are Flexible">
+Attribute selectors are great for styling elements based on their attributes without adding extra classes. They're especially useful for forms and links!
+</KeyConcept>
+
+<SelectorPlayground 
+  initialHtml={`<div>
+  <input type="text" placeholder="Name">
+  <input type="email" placeholder="Email">
+  <input type="password" placeholder="Password">
+  <button type="submit">Submit</button>
+</div>`}
+  initialSelector="[type='text']"
+  showSpecificity={false}
+  highlightMatches={true}
+/>
+
+<ProgressCheckpoint section="attribute-selectors" xpReward={10} />
+
+## Specificity Basics
+
+When multiple CSS rules target the same element, **specificity** determines which rule wins. Think of it as a **priority system**.
+
+### The Specificity Hierarchy
+
+From **lowest** to **highest** priority:
+
+1. **Element selectors** (e.g., `p`, `div`) — 1 point
+2. **Class selectors** (e.g., `.highlight`) — 10 points
+3. **ID selectors** (e.g., `#header`) — 100 points
+4. **Inline styles** (e.g., `style="color: red"`) — 1000 points
+
+### How It Works
+
+```css
+p {
+  color: blue;  /* Specificity: 1 */
+}
+
+.highlight {
+  color: yellow;  /* Specificity: 10 */
+}
+
+#special {
+  color: red;  /* Specificity: 100 */
+}
+```
+
+```html
+<p>I'm blue (only element selector applies)</p>
+<p class="highlight">I'm yellow (class beats element)</p>
+<p id="special" class="highlight">I'm red (ID beats class)</p>
+```
+
+<InfoBox type="tip" title="The Golden Rule">
+The more specific your selector, the higher its priority. But don't overuse IDs — they make your CSS harder to override later!
+</InfoBox>
+
+### Combining Selectors
+
+When you combine selectors, their specificity adds up:
+
+```css
+div.highlight {
+  /* Specificity: 1 (div) + 10 (class) = 11 */
+  color: green;
+}
+
+.highlight {
+  /* Specificity: 10 */
+  color: yellow;
+}
+```
+
+The first rule wins because 11 > 10!
+
+<ProgressCheckpoint section="specificity" xpReward={10} />
+
+## Key Takeaways
+
+<KeyConcept title="Three Basic Selectors">
+**Element** selectors target all elements of a type. **Class** selectors (.) target elements with a class. **ID** selectors (#) target unique elements.
+</KeyConcept>
+
+<KeyConcept title="Combinators Show Relationships">
+Use **space** for descendants, **>** for direct children, **+** for adjacent siblings, and **~** for general siblings.
+</KeyConcept>
+
+<KeyConcept title="Pseudo-classes Add Interactivity">
+Pseudo-classes like **:hover**, **:focus**, and **:nth-child()** let you style elements based on state or position.
+</KeyConcept>
+
+<KeyConcept title="Specificity Determines Priority">
+When rules conflict, the most specific selector wins: **ID > Class > Element**.
+</KeyConcept>
+
+<ProgressCheckpoint section="summary" xpReward={5} />
+
+## Quick Quiz
+
+<Quiz>
+  <Question text="Which selector targets all paragraphs with the class 'intro'?">
+    <Answer>p intro</Answer>
+    <Answer correct>p.intro</Answer>
+    <Answer>#p.intro</Answer>
+    <Answer>p[intro]</Answer>
+  </Question>
+  
+  <Question text="What does the selector 'div > p' select?">
+    <Answer>All p elements anywhere inside a div</Answer>
+    <Answer correct>Only p elements that are direct children of a div</Answer>
+    <Answer>All div elements inside a p</Answer>
+    <Answer>The first p inside a div</Answer>
+  </Question>
+  
+  <Question text="Which selector has the highest specificity?">
+    <Answer>p</Answer>
+    <Answer>.highlight</Answer>
+    <Answer correct>#header</Answer>
+    <Answer>div p</Answer>
+  </Question>
+  
+  <Question text="What does the :hover pseudo-class do?">
+    <Answer>Selects the first element</Answer>
+    <Answer correct>Applies styles when the mouse is over an element</Answer>
+    <Answer>Selects hidden elements</Answer>
+    <Answer>Applies styles to all elements</Answer>
+  </Question>
+  
+  <Question text="Which attribute selector matches elements where href starts with 'https'?">
+    <Answer>[href*='https']</Answer>
+    <Answer correct>[href^='https']</Answer>
+    <Answer>[href$='https']</Answer>
+    <Answer>[href='https']</Answer>
+  </Question>
+</Quiz>
+
+---
+
+**Excellent work!** 🎉 You now understand the fundamentals of CSS selectors. In the intermediate level, we'll explore more advanced combinators, complex pseudo-classes, and dive deeper into specificity calculations.

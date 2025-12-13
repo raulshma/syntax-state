@@ -1,0 +1,408 @@
+# CSS Animations - Intermediate
+
+Welcome back! Now that you understand the basics of CSS animations, it's time to level up. In this lesson, you'll learn how to control animation repetition, direction, and what happens before and after animations run.
+
+These advanced controls give you precise power over animation behavior, allowing you to create more sophisticated and polished effects.
+
+<InfoBox type="tip" title="What You'll Master">
+By the end of this lesson, you'll be able to create animations that loop infinitely, run backwards, alternate directions, and maintain their final state. These techniques are essential for professional web animations.
+</InfoBox>
+
+<ProgressCheckpoint section="introduction" xpReward={10} />
+
+## Animation Iteration and Direction
+
+### Animation Iteration Count
+
+The `animation-iteration-count` property controls how many times an animation repeats.
+
+```css
+.bounce-once {
+  animation: bounce 1s;
+  animation-iteration-count: 1;
+}
+
+.bounce-three-times {
+  animation: bounce 1s;
+  animation-iteration-count: 3;
+}
+
+.bounce-forever {
+  animation: bounce 1s;
+  animation-iteration-count: infinite;
+}
+```
+
+<KeyConcept title="Iteration Count Values">
+- **Number** (1, 2, 3, etc.): Runs that many times
+- **infinite**: Runs forever (great for loading spinners!)
+- **Default**: 1 (runs once)
+</KeyConcept>
+
+### Animation Direction
+
+The `animation-direction` property controls whether animations run forwards, backwards, or alternate.
+
+```css
+.forward {
+  animation: slideIn 2s;
+  animation-direction: normal;
+}
+
+.backward {
+  animation: slideIn 2s;
+  animation-direction: reverse;
+}
+
+.alternate {
+  animation: slideIn 2s;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+}
+
+.alternate-reverse {
+  animation: slideIn 2s;
+  animation-iteration-count: infinite;
+  animation-direction: alternate-reverse;
+}
+```
+
+<KeyConcept title="Direction Values">
+- **normal**: Plays forward (0% → 100%) - default
+- **reverse**: Plays backward (100% → 0%)
+- **alternate**: Alternates forward then backward (great for ping-pong effects!)
+- **alternate-reverse**: Alternates backward then forward
+</KeyConcept>
+
+<InfoBox type="tip" title="Alternate Direction">
+The `alternate` direction is perfect for creating smooth back-and-forth motion. Combined with `infinite`, it creates seamless looping animations without jarring resets!
+</InfoBox>
+
+### Try It Yourself!
+
+Experiment with iteration and direction:
+
+<CssEditor
+  initialCss={`@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.pulse-box {
+  width: 150px;
+  height: 150px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 50%;
+  animation: pulse 2s ease-in-out infinite;
+}`}
+  initialHtml={`<div class="pulse-box"></div>`}
+  height={400}
+/>
+
+<ProgressCheckpoint section="animation-iteration-direction" xpReward={15} />
+
+## Animation Fill Mode
+
+The `animation-fill-mode` property controls what styles are applied to an element **before** and **after** the animation runs. This is crucial for preventing jarring jumps!
+
+### Understanding the Problem
+
+By default, when an animation finishes, the element snaps back to its original styles. This can look abrupt and unprofessional.
+
+```css
+/* Without fill-mode: element jumps back after animation */
+.fade-in {
+  opacity: 0;
+  animation: fadeIn 1s;
+}
+
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+  }
+}
+/* After animation: opacity jumps back to 0! */
+```
+
+### Fill Mode Values
+
+```css
+.forwards {
+  animation: fadeIn 1s;
+  animation-fill-mode: forwards;
+}
+
+.backwards {
+  animation: fadeIn 1s 2s;
+  animation-fill-mode: backwards;
+}
+
+.both {
+  animation: fadeIn 1s 2s;
+  animation-fill-mode: both;
+}
+```
+
+<KeyConcept title="Fill Mode Values">
+- **none**: No styles applied before or after (default)
+- **forwards**: Keeps the final keyframe styles after animation ends
+- **backwards**: Applies first keyframe styles during animation-delay
+- **both**: Applies both forwards and backwards behavior
+</KeyConcept>
+
+### When to Use Each Fill Mode
+
+<InfoBox type="tip" title="Fill Mode Use Cases">
+- **forwards**: Use when you want the animation's end state to persist (fade-ins, slide-ins)
+- **backwards**: Use when you have a delay and want the starting state visible immediately
+- **both**: Use when you have both a delay AND want to keep the end state
+- **none**: Use for looping animations that return to their start state
+</InfoBox>
+
+### Visualizing Fill Modes
+
+<AnimationBuilder
+  initialKeyframes={{
+    '0%': { transform: 'translateX(0)', opacity: '0' },
+    '100%': { transform: 'translateX(200px)', opacity: '1' }
+  }}
+  initialDuration={1000}
+  initialTimingFunction="ease-out"
+  showTimeline={true}
+/>
+
+<InfoBox type="warning" title="Common Mistake">
+Forgetting `animation-fill-mode: forwards` is one of the most common animation mistakes! If your element "jumps back" after animating, this is usually the fix.
+</InfoBox>
+
+<ProgressCheckpoint section="animation-fill-mode" xpReward={15} />
+
+## Transitions vs Animations
+
+Both transitions and animations create motion, but they serve different purposes. Understanding when to use each is key to writing clean, maintainable CSS.
+
+### Transitions: Simple State Changes
+
+Transitions are for **simple changes between two states**, usually triggered by user interaction.
+
+```css
+.button {
+  background-color: blue;
+  transition: background-color 0.3s ease;
+}
+
+.button:hover {
+  background-color: darkblue;
+}
+```
+
+<KeyConcept title="When to Use Transitions">
+- Hover effects
+- Focus states
+- Simple property changes
+- User-triggered interactions
+- Two-state animations (A → B)
+</KeyConcept>
+
+### Animations: Complex Multi-Step Motion
+
+Animations are for **complex, multi-step sequences** that can run automatically.
+
+```css
+@keyframes complexMove {
+  0% { transform: translateX(0) rotate(0deg); }
+  25% { transform: translateX(100px) rotate(90deg); }
+  50% { transform: translateX(100px) translateY(100px) rotate(180deg); }
+  75% { transform: translateX(0) translateY(100px) rotate(270deg); }
+  100% { transform: translateX(0) rotate(360deg); }
+}
+
+.complex-animation {
+  animation: complexMove 4s infinite;
+}
+```
+
+<KeyConcept title="When to Use Animations">
+- Loading spinners
+- Attention-grabbing effects
+- Multi-step sequences
+- Looping animations
+- Automatic animations (not user-triggered)
+- More than two states (A → B → C → D)
+</KeyConcept>
+
+### Side-by-Side Comparison
+
+<CssEditor
+  initialCss={`/* Transition Example */
+.transition-box {
+  width: 100px;
+  height: 100px;
+  background: #3b82f6;
+  transition: transform 0.3s ease;
+}
+
+.transition-box:hover {
+  transform: scale(1.2);
+}
+
+/* Animation Example */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animation-box {
+  width: 100px;
+  height: 100px;
+  background: #8b5cf6;
+  animation: spin 2s linear infinite;
+}`}
+  initialHtml={`<div style="display: flex; gap: 40px; padding: 20px;">
+  <div>
+    <p>Hover me (Transition)</p>
+    <div class="transition-box"></div>
+  </div>
+  <div>
+    <p>Always spinning (Animation)</p>
+    <div class="animation-box"></div>
+  </div>
+</div>`}
+  height={400}
+/>
+
+<InfoBox type="tip" title="Quick Decision Guide">
+**Use Transition if:**
+- You have exactly two states
+- It's triggered by user interaction
+- It's a simple property change
+
+**Use Animation if:**
+- You have multiple steps/keyframes
+- It runs automatically
+- It needs to loop
+- You need precise control over timing
+</InfoBox>
+
+<ProgressCheckpoint section="transitions-vs-animations" xpReward={15} />
+
+## Animation Delay and Shorthand
+
+### Animation Delay
+
+The `animation-delay` property waits before starting the animation.
+
+```css
+.delayed {
+  animation-name: fadeIn;
+  animation-duration: 1s;
+  animation-delay: 2s;
+}
+```
+
+This waits 2 seconds, then runs the fadeIn animation for 1 second.
+
+### Complete Shorthand Syntax
+
+You can combine all animation properties into one line:
+
+```css
+.complete {
+  animation: name duration timing-function delay iteration-count direction fill-mode;
+}
+
+/* Example */
+.example {
+  animation: bounce 2s ease-in-out 1s infinite alternate both;
+}
+```
+
+<KeyConcept title="Shorthand Order">
+```
+animation: name duration timing-function delay iteration-count direction fill-mode;
+```
+
+**Tip**: The first time value is always duration, the second is delay!
+</KeyConcept>
+
+<ProgressCheckpoint section="animation-fill-mode" xpReward={10} />
+
+## Summary
+
+Let's recap the advanced animation controls you've learned!
+
+<KeyConcept title="Key Takeaways">
+- **animation-iteration-count**: Controls repetition (number or infinite)
+- **animation-direction**: Controls playback direction (normal, reverse, alternate, alternate-reverse)
+- **animation-fill-mode**: Controls styles before/after animation (none, forwards, backwards, both)
+- **animation-delay**: Waits before starting the animation
+- **Transitions**: Best for simple, user-triggered state changes
+- **Animations**: Best for complex, multi-step, or automatic motion
+- **forwards fill-mode**: Essential for keeping animation end states
+- **alternate direction**: Perfect for smooth back-and-forth motion
+</KeyConcept>
+
+<ProgressCheckpoint section="summary" xpReward={10} />
+
+## Quick Quiz
+
+Test your understanding of advanced animation controls!
+
+<Quiz>
+  <Question text="What does animation-iteration-count: infinite do?">
+    <Answer>Runs the animation very fast</Answer>
+    <Answer correct>Makes the animation loop forever</Answer>
+    <Answer>Runs the animation once</Answer>
+    <Answer>Stops the animation</Answer>
+  </Question>
+
+  <Question text="Which direction value creates a ping-pong effect?">
+    <Answer>normal</Answer>
+    <Answer>reverse</Answer>
+    <Answer correct>alternate</Answer>
+    <Answer>both</Answer>
+  </Question>
+
+  <Question text="What does animation-fill-mode: forwards do?">
+    <Answer>Makes the animation run forward</Answer>
+    <Answer correct>Keeps the final keyframe styles after animation ends</Answer>
+    <Answer>Starts the animation immediately</Answer>
+    <Answer>Makes the animation faster</Answer>
+  </Question>
+
+  <Question text="When should you use a transition instead of an animation?">
+    <Answer>When you need multiple keyframes</Answer>
+    <Answer>When you want it to loop</Answer>
+    <Answer correct>When you have a simple two-state change</Answer>
+    <Answer>When you want it to run automatically</Answer>
+  </Question>
+
+  <Question text="In the shorthand 'animation: bounce 2s 1s', what does '1s' represent?">
+    <Answer>Duration</Answer>
+    <Answer correct>Delay</Answer>
+    <Answer>Iteration count</Answer>
+    <Answer>Speed</Answer>
+  </Question>
+
+  <Question text="Which fill-mode should you use if you have a delay AND want to keep the end state?">
+    <Answer>forwards</Answer>
+    <Answer>backwards</Answer>
+    <Answer correct>both</Answer>
+    <Answer>none</Answer>
+  </Question>
+</Quiz>
+
+---
+
+**Excellent work!** 🎉 You now have complete control over animation behavior. Next, you'll learn about performance optimization, the will-change property, and complex animation patterns in the advanced lesson!
+

@@ -175,13 +175,14 @@ export function Quiz({ id, children, onComplete, onAnswerRecorded }: QuizProps) 
 }
 
 interface QuestionProps {
-  children: React.ReactNode;
+  children?: React.ReactNode;
+  text?: string;
 }
 
-export function Question({ children }: QuestionProps) {
+export function Question({ children, text }: QuestionProps) {
   return (
     <p className="text-base font-medium text-foreground mb-4">
-      {children}
+      {text || children}
     </p>
   );
 }

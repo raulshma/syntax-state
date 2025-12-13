@@ -1,0 +1,51 @@
+{
+  "id": "box-model",
+  "title": "CSS Box Model",
+  "description": "Understand the CSS box model - content, padding, border, and margin - and how they affect element sizing and layout",
+  "milestone": "css",
+  "order": 2,
+  "sections": [
+    "introduction",
+    "content-area",
+    "padding",
+    "border",
+    "margin",
+    "box-sizing",
+    "summary"
+  ],
+  "levels": {
+    "beginner": {
+      "estimatedMinutes": 25,
+      "xpReward": 50
+    },
+    "intermediate": {
+      "estimatedMinutes": 40,
+      "xpReward": 100
+    },
+    "advanced": {
+      "estimatedMinutes": 55,
+      "xpReward": 200
+    }
+  },
+  "prerequisites": ["html/learn-the-basics"],
+  "tags": ["css", "box-model", "padding", "margin", "border", "box-sizing"],
+  "cssProperties": [
+    "padding",
+    "padding-top",
+    "padding-right",
+    "padding-bottom",
+    "padding-left",
+    "margin",
+    "margin-top",
+    "margin-right",
+    "margin-bottom",
+    "margin-left",
+    "border",
+    "border-width",
+    "border-style",
+    "border-color",
+    "box-sizing",
+    "width",
+    "height"
+  ]
+}

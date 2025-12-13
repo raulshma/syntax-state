@@ -1,6 +1,15 @@
 import { cache } from 'react';
 import { getUsersCollection } from '../collections';
-import { calculateLevel, checkNewBadges, TOTAL_INTERNET_LESSONS } from '@/lib/gamification';
+import { 
+  calculateLevel, 
+  checkNewBadges, 
+  TOTAL_INTERNET_LESSONS,
+  TOTAL_CSS_LESSONS,
+  checkCssSelectorMasterBadge,
+  checkLayoutExpertBadge,
+  checkAnimationWizardBadge,
+  checkCssMasterBadge,
+} from '@/lib/gamification';
 import { UserGamification } from '@/lib/db/schemas/user';
 
 /**
@@ -108,6 +117,13 @@ export async function completeLesson(
         l.lessonId.startsWith('internet/') && l.experienceLevel === targetLevel
     ).length;
   
+  // Calculate CSS lesson stats
+  const cssLessonsCompleted = new Set(
+    updatedCompletedLessons
+      .filter((l: { lessonId: string }) => l.lessonId.startsWith('css/'))
+      .map((l: { lessonId: string }) => l.lessonId)
+  ).size;
+  
   const stats = {
     completedLessons: updatedCompletedLessons.length,
     currentStreak: currentGamification.currentStreak,
@@ -119,6 +135,11 @@ export async function completeLesson(
     internetLessonsIntermediateCompleted: internetLessonsAtLevel('intermediate'),
     internetLessonsAdvancedCompleted: internetLessonsAtLevel('advanced'),
     totalInternetLessons: TOTAL_INTERNET_LESSONS,
+    cssLessonsCompleted,
+    totalCssLessons: TOTAL_CSS_LESSONS,
+    cssSelectorAllLevelsCompleted: checkCssSelectorMasterBadge(updatedCompletedLessons) !== null,
+    cssFlexboxAndGridCompleted: checkLayoutExpertBadge(updatedCompletedLessons) !== null,
+    cssAnimationsAndTransformsCompleted: checkAnimationWizardBadge(updatedCompletedLessons) !== null,
   };
   
   const newBadgeIds = checkNewBadges(stats, existingBadgeIds);

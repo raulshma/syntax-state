@@ -1,0 +1,605 @@
+# CSS Selectors - Intermediate
+
+Now that you understand the basics, let's level up your selector skills! In this lesson, you'll learn practical techniques for targeting elements in real-world scenarios, master advanced pseudo-classes, and understand how specificity really works under the hood.
+
+These techniques will help you write more maintainable CSS and solve complex styling challenges with elegance.
+
+<InfoBox type="tip" title="Real-World Selectors">
+The selectors you'll learn here are used daily by professional developers. They'll help you write less code, avoid unnecessary classes, and create more flexible stylesheets.
+</InfoBox>
+
+<ProgressCheckpoint section="introduction" xpReward={15} />
+
+## Grouping and Universal Selectors
+
+### Grouping Selectors
+
+When multiple selectors need the same styles, group them with commas to avoid repetition:
+
+```css
+h1, h2, h3 {
+  font-family: 'Arial', sans-serif;
+  color: #333;
+}
+```
+
+This is much cleaner than writing three separate rules!
+
+### Universal Selector (*)
+
+The **universal selector** targets **every element** on the page:
+
+```css
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+```
+
+This is commonly used in CSS resets to normalize browser defaults.
+
+<InfoBox type="warning" title="Use Sparingly">
+The universal selector can impact performance if overused. It's best for resets or when you truly need to target everything.
+</InfoBox>
+
+### Combining Universal with Other Selectors
+
+You can combine the universal selector with others:
+
+```css
+/* All elements inside .container */
+.container * {
+  border: 1px solid red;
+}
+
+/* All direct children of .container */
+.container > * {
+  margin-bottom: 20px;
+}
+```
+
+<ProgressCheckpoint section="basic-selectors" xpReward={20} />
+
+## Advanced Combinators
+
+### Chaining Selectors
+
+You can chain selectors together (no space) to be more specific:
+
+```css
+/* Paragraphs with BOTH classes */
+p.intro.highlight {
+  font-size: 18px;
+  background: yellow;
+}
+```
+
+```html
+<p class="intro">Not selected</p>
+<p class="highlight">Not selected</p>
+<p class="intro highlight">Selected! (has both classes)</p>
+```
+
+### Combining Multiple Combinators
+
+You can create complex selector chains:
+
+```css
+/* Paragraphs that are direct children of divs with class 'content' */
+div.content > p {
+  line-height: 1.6;
+}
+
+/* Links inside list items that are inside nav */
+nav li a {
+  text-decoration: none;
+}
+
+/* First paragraph after any heading inside article */
+article h1 + p,
+article h2 + p,
+article h3 + p {
+  font-size: 1.1em;
+  color: #666;
+}
+```
+
+### Practical Example: Navigation Styling
+
+```css
+/* Style all nav links */
+nav a {
+  color: #333;
+  padding: 10px 15px;
+}
+
+/* Style only direct child links (not nested dropdowns) */
+nav > ul > li > a {
+  font-weight: bold;
+}
+
+/* Style the active link */
+nav a.active {
+  color: blue;
+  border-bottom: 2px solid blue;
+}
+
+/* Style links on hover */
+nav a:hover {
+  background-color: #f0f0f0;
+}
+```
+
+<SelectorPlayground 
+  initialHtml={`<nav>
+  <ul>
+    <li><a href="#" class="active">Home</a></li>
+    <li><a href="#">About</a></li>
+    <li>
+      <a href="#">Services</a>
+      <ul>
+        <li><a href="#">Web Design</a></li>
+        <li><a href="#">Development</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>`}
+  initialSelector="nav > ul > li > a"
+  showSpecificity={true}
+  highlightMatches={true}
+/>
+
+<ProgressCheckpoint section="combinators" xpReward={20} />
+
+## Advanced Pseudo-classes
+
+### Structural Pseudo-classes
+
+#### :nth-child() Formulas
+
+The `:nth-child()` pseudo-class accepts formulas for complex patterns:
+
+```css
+/* Every 3rd element starting from the 2nd */
+li:nth-child(3n+2) {
+  background: lightblue;
+}
+
+/* Formula breakdown: 3n+2
+   n=0: 3(0)+2 = 2 (2nd element)
+   n=1: 3(1)+2 = 5 (5th element)
+   n=2: 3(2)+2 = 8 (8th element)
+*/
+```
+
+Common patterns:
+- `odd` or `2n+1` — odd elements (1st, 3rd, 5th...)
+- `even` or `2n` — even elements (2nd, 4th, 6th...)
+- `3n` — every 3rd element (3rd, 6th, 9th...)
+- `n+4` — 4th element and beyond
+
+#### :nth-of-type()
+
+Similar to `:nth-child()`, but only counts elements of the same type:
+
+```css
+/* Every other paragraph (ignores other elements) */
+p:nth-of-type(odd) {
+  background: #f0f0f0;
+}
+```
+
+```html
+<div>
+  <h2>Title</h2>
+  <p>1st paragraph - selected</p>
+  <p>2nd paragraph</p>
+  <span>Not a paragraph</span>
+  <p>3rd paragraph - selected</p>
+</div>
+```
+
+#### :first-of-type and :last-of-type
+
+```css
+/* First paragraph in any container */
+p:first-of-type {
+  font-size: 1.2em;
+}
+
+/* Last image in any container */
+img:last-of-type {
+  margin-bottom: 0;
+}
+```
+
+#### :only-child and :only-of-type
+
+```css
+/* Paragraphs that are the only child */
+p:only-child {
+  text-align: center;
+}
+
+/* Images that are the only image in their container */
+img:only-of-type {
+  display: block;
+  margin: 0 auto;
+}
+```
+
+### Negation Pseudo-class
+
+The `:not()` pseudo-class excludes elements:
+
+```css
+/* All links except those with class 'external' */
+a:not(.external) {
+  color: blue;
+}
+
+/* All list items except the first */
+li:not(:first-child) {
+  margin-top: 10px;
+}
+
+/* All inputs except checkboxes and radios */
+input:not([type="checkbox"]):not([type="radio"]) {
+  padding: 5px;
+  border: 1px solid #ccc;
+}
+```
+
+### Form Pseudo-classes
+
+#### :checked
+
+Styles checked checkboxes and radio buttons:
+
+```css
+input[type="checkbox"]:checked {
+  accent-color: green;
+}
+
+/* Style label when checkbox is checked */
+input[type="checkbox"]:checked + label {
+  font-weight: bold;
+  color: green;
+}
+```
+
+#### :disabled and :enabled
+
+```css
+input:disabled {
+  background-color: #f0f0f0;
+  cursor: not-allowed;
+}
+
+button:enabled:hover {
+  background-color: blue;
+}
+```
+
+#### :required and :optional
+
+```css
+input:required {
+  border-left: 3px solid red;
+}
+
+input:optional {
+  border-left: 3px solid gray;
+}
+```
+
+#### :valid and :invalid
+
+```css
+input:valid {
+  border-color: green;
+}
+
+input:invalid {
+  border-color: red;
+}
+
+/* Only show invalid state after user interaction */
+input:invalid:not(:focus):not(:placeholder-shown) {
+  border-color: red;
+  background-color: #ffe0e0;
+}
+```
+
+<InfoBox type="info" title="Form Pseudo-classes Are Powerful">
+These pseudo-classes let you create interactive form feedback without JavaScript. They respond automatically to user input and validation states!
+</InfoBox>
+
+<SelectorPlayground 
+  initialHtml={`<form>
+  <input type="text" required placeholder="Name">
+  <input type="email" required placeholder="Email">
+  <input type="checkbox" id="agree">
+  <label for="agree">I agree</label>
+  <button type="submit" disabled>Submit</button>
+</form>`}
+  initialSelector="input:required"
+  showSpecificity={true}
+  highlightMatches={true}
+/>
+
+<ProgressCheckpoint section="pseudo-classes" xpReward={20} />
+
+## Advanced Attribute Selectors
+
+### Case-Insensitive Matching
+
+Add `i` flag for case-insensitive matching:
+
+```css
+/* Matches href="HTTPS://..." or href="https://..." */
+[href^="https" i] {
+  color: green;
+}
+```
+
+### Multiple Attribute Selectors
+
+Combine multiple attribute selectors:
+
+```css
+/* Text inputs that are required */
+input[type="text"][required] {
+  border: 2px solid red;
+}
+
+/* Links that are external and open in new tab */
+a[href^="http"][target="_blank"] {
+  padding-right: 20px;
+  background: url('external-icon.svg') right center no-repeat;
+}
+```
+
+### Practical Use Cases
+
+#### Styling Different File Types
+
+```css
+/* PDF links */
+a[href$=".pdf"]::after {
+  content: " 📄";
+}
+
+/* Image links */
+a[href$=".jpg"]::after,
+a[href$=".png"]::after {
+  content: " 🖼️";
+}
+
+/* External links */
+a[href^="http"]:not([href*="mysite.com"])::after {
+  content: " ↗";
+}
+```
+
+#### Form Input Styling
+
+```css
+/* Email inputs */
+input[type="email"] {
+  background-image: url('email-icon.svg');
+  background-position: 10px center;
+  background-repeat: no-repeat;
+  padding-left: 35px;
+}
+
+/* Password inputs */
+input[type="password"] {
+  font-family: monospace;
+  letter-spacing: 2px;
+}
+```
+
+<ProgressCheckpoint section="attribute-selectors" xpReward={15} />
+
+## Understanding Specificity
+
+Now let's dive deeper into how specificity really works.
+
+### The Specificity Calculation
+
+Specificity is calculated as a three-part number: **(a, b, c)**
+
+- **a** = number of ID selectors
+- **b** = number of class selectors, attribute selectors, and pseudo-classes
+- **c** = number of element selectors and pseudo-elements
+
+```css
+/* (0, 0, 1) - one element */
+p { }
+
+/* (0, 1, 0) - one class */
+.highlight { }
+
+/* (1, 0, 0) - one ID */
+#header { }
+
+/* (0, 1, 1) - one class + one element */
+p.intro { }
+
+/* (0, 2, 1) - two classes + one element */
+div.content.main { }
+
+/* (1, 1, 2) - one ID + one class + two elements */
+div#header .nav a { }
+```
+
+### Comparing Specificity
+
+Compare from left to right:
+
+```css
+/* (1, 0, 0) */
+#header { color: red; }
+
+/* (0, 10, 0) */
+.a.b.c.d.e.f.g.h.i.j { color: blue; }
+```
+
+Even though the second selector has 10 classes, the first wins because **1 ID beats any number of classes**!
+
+### The Specificity Calculator
+
+<SpecificityCalculator 
+  initialSelectors={[
+    "p",
+    ".highlight",
+    "#header",
+    "div.content p",
+    "#main .sidebar a:hover"
+  ]}
+  showBreakdown={true}
+  showComparison={true}
+/>
+
+### Practical Specificity Tips
+
+#### 1. Keep Specificity Low
+
+Lower specificity makes CSS easier to override:
+
+```css
+/* ❌ Too specific - hard to override */
+div#content .sidebar ul li a.active {
+  color: blue;
+}
+
+/* ✅ Better - easier to work with */
+.sidebar-link.active {
+  color: blue;
+}
+```
+
+#### 2. Avoid !important
+
+The `!important` flag overrides everything, but makes CSS hard to maintain:
+
+```css
+/* ❌ Avoid this */
+.button {
+  color: red !important;
+}
+
+/* ✅ Better - increase specificity properly */
+.primary-button {
+  color: red;
+}
+```
+
+#### 3. Use Classes Over IDs
+
+Classes are reusable and have lower specificity:
+
+```css
+/* ❌ IDs are too specific */
+#header { }
+#nav { }
+#footer { }
+
+/* ✅ Classes are more flexible */
+.header { }
+.nav { }
+.footer { }
+```
+
+### The Cascade
+
+When specificity is equal, the **last rule** wins:
+
+```css
+.button {
+  color: blue;
+}
+
+.button {
+  color: red;  /* This wins - same specificity, but comes last */
+}
+```
+
+<InfoBox type="tip" title="Specificity Strategy">
+Start with low specificity and increase only when needed. This makes your CSS more maintainable and easier to override in special cases.
+</InfoBox>
+
+<ProgressCheckpoint section="specificity" xpReward={20} />
+
+## Key Takeaways
+
+<KeyConcept title="Group Selectors for Efficiency">
+Use commas to apply the same styles to multiple selectors. Use the universal selector (*) for resets.
+</KeyConcept>
+
+<KeyConcept title="Chain Selectors for Precision">
+Combine selectors without spaces to target elements with multiple classes or specific combinations.
+</KeyConcept>
+
+<KeyConcept title="Master Structural Pseudo-classes">
+Use :nth-child() formulas, :not(), and type-specific selectors for complex patterns without extra markup.
+</KeyConcept>
+
+<KeyConcept title="Leverage Form Pseudo-classes">
+Use :checked, :disabled, :valid, and :invalid for interactive form styling without JavaScript.
+</KeyConcept>
+
+<KeyConcept title="Calculate Specificity Correctly">
+Specificity is (IDs, Classes/Attributes/Pseudo-classes, Elements). Compare left to right.
+</KeyConcept>
+
+<KeyConcept title="Keep Specificity Low">
+Lower specificity makes CSS more maintainable. Prefer classes over IDs, avoid !important.
+</KeyConcept>
+
+<ProgressCheckpoint section="summary" xpReward={10} />
+
+## Quick Quiz
+
+<Quiz>
+  <Question text="What does the selector 'div.container.main' select?">
+    <Answer>All divs, all .container, and all .main elements</Answer>
+    <Answer correct>Divs that have both 'container' and 'main' classes</Answer>
+    <Answer>Divs inside .container inside .main</Answer>
+    <Answer>The first div with class container or main</Answer>
+  </Question>
+  
+  <Question text="What is the specificity of '#header .nav a:hover'?">
+    <Answer>(0, 2, 2)</Answer>
+    <Answer>(1, 1, 1)</Answer>
+    <Answer correct>(1, 1, 2)</Answer>
+    <Answer>(1, 2, 1)</Answer>
+  </Question>
+  
+  <Question text="Which selector targets every 3rd list item?">
+    <Answer>li:nth-child(3)</Answer>
+    <Answer correct>li:nth-child(3n)</Answer>
+    <Answer>li:nth-child(n+3)</Answer>
+    <Answer>li:every(3)</Answer>
+  </Question>
+  
+  <Question text="What does 'input:not([type='submit'])' select?">
+    <Answer>All submit buttons</Answer>
+    <Answer correct>All inputs except submit buttons</Answer>
+    <Answer>All inputs without a type attribute</Answer>
+    <Answer>Nothing - invalid selector</Answer>
+  </Question>
+  
+  <Question text="Which has higher specificity?">
+    <Answer>.class1.class2.class3</Answer>
+    <Answer correct>#id</Answer>
+    <Answer>div.class</Answer>
+    <Answer>All have equal specificity</Answer>
+  </Question>
+</Quiz>
+
+---
+
+**Great progress!** 🎉 You now have a solid understanding of practical selector techniques and specificity. In the advanced level, we'll explore cutting-edge selectors, complex specificity scenarios, and performance considerations.

@@ -1,0 +1,574 @@
+# CSS Grid - Intermediate
+
+Welcome back to CSS Grid! Now that you understand the basics, let's dive deeper into advanced placement techniques, named grid lines, and the auto-placement algorithm. These techniques will help you create more sophisticated and maintainable grid layouts.
+
+<InfoBox type="tip" title="What You'll Learn">
+In this lesson, you'll master grid areas for semantic layouts, learn to name grid lines for clearer code, understand how the auto-placement algorithm works, and build practical, real-world grid layouts that are both flexible and maintainable.
+</InfoBox>
+
+<ProgressCheckpoint section="introduction" xpReward={15} />
+
+## Grid Template Areas: Semantic Layouts
+
+Grid template areas are one of Grid's most powerful features. They let you create visual ASCII-art representations of your layout directly in CSS, making your code self-documenting and easy to maintain.
+
+### Creating a Classic Blog Layout
+
+```css
+.blog-layout {
+  display: grid;
+  grid-template-columns: 250px 1fr 250px;
+  grid-template-rows: auto 1fr auto;
+  grid-template-areas:
+    "header  header  header"
+    "sidebar content aside"
+    "footer  footer  footer";
+  gap: 20px;
+  min-height: 100vh;
+}
+
+.header  { grid-area: header; }
+.sidebar { grid-area: sidebar; }
+.content { grid-area: content; }
+.aside   { grid-area: aside; }
+.footer  { grid-area: footer; }
+```
+
+This creates a professional blog layout with:
+- Full-width header and footer
+- Left sidebar (250px)
+- Main content area (flexible)
+- Right sidebar/aside (250px)
+
+<GridPlayground
+  initialColumns="250px 1fr 250px"
+  initialRows="auto 1fr auto"
+  initialGap={{ row: 20, column: 20 }}
+  initialItems={5}
+  showControls={true}
+  showGridLines={true}
+/>
+
+### Responsive Grid Areas
+
+The beauty of grid areas is how easily they adapt to different screen sizes:
+
+```css
+/* Desktop layout */
+.layout {
+  grid-template-columns: 250px 1fr 250px;
+  grid-template-areas:
+    "header  header  header"
+    "sidebar content aside"
+    "footer  footer  footer";
+}
+
+/* Tablet layout */
+@media (max-width: 1024px) {
+  .layout {
+    grid-template-columns: 200px 1fr;
+    grid-template-areas:
+      "header  header"
+      "sidebar content"
+      "aside   aside"
+      "footer  footer";
+  }
+}
+
+/* Mobile layout */
+@media (max-width: 768px) {
+  .layout {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "header"
+      "content"
+      "sidebar"
+      "aside"
+      "footer";
+  }
+}
+```
+
+Notice how the same HTML elements rearrange themselves just by changing the grid-template-areas!
+
+<KeyConcept title="Grid Areas Best Practices">
+**Rules for grid-template-areas:**
+- Each area name must form a rectangle (no L-shapes or complex shapes)
+- Use a dot (`.`) to represent empty cells
+- Area names must be valid CSS identifiers (no spaces or special characters)
+- The visual layout in your CSS matches the actual layout - making it easy to understand!
+
+```css
+/* Valid: rectangular areas */
+grid-template-areas:
+  "header header header"
+  "sidebar main main"
+  ". footer footer";  /* Dot = empty cell */
+
+/* Invalid: L-shaped area */
+grid-template-areas:
+  "header header main"
+  "header sidebar main";  /* 'header' is L-shaped! */
+```
+</KeyConcept>
+
+<ProgressCheckpoint section="grid-areas" xpReward={15} />
+
+## Named Grid Lines: Clearer Placement
+
+Instead of using numbers, you can name your grid lines to make placement more semantic and maintainable.
+
+### Basic Named Lines
+
+```css
+.container {
+  display: grid;
+  grid-template-columns: 
+    [sidebar-start] 250px 
+    [sidebar-end content-start] 1fr 
+    [content-end];
+  grid-template-rows: 
+    [header-start] auto 
+    [header-end main-start] 1fr 
+    [main-end footer-start] auto 
+    [footer-end];
+}
+
+/* Place items using named lines */
+.header {
+  grid-column: sidebar-start / content-end;
+  grid-row: header-start / header-end;
+}
+
+.sidebar {
+  grid-column: sidebar-start / sidebar-end;
+  grid-row: main-start / main-end;
+}
+
+.content {
+  grid-column: content-start / content-end;
+  grid-row: main-start / main-end;
+}
+```
+
+### Automatic Line Names from Areas
+
+When you use grid-template-areas, Grid automatically creates named lines for you:
+
+```css
+.container {
+  grid-template-areas:
+    "header header"
+    "sidebar main"
+    "footer footer";
+}
+
+/* These lines are automatically created: */
+/* header-start, header-end */
+/* sidebar-start, sidebar-end */
+/* main-start, main-end */
+/* footer-start, footer-end */
+
+/* You can use them for placement */
+.overlay {
+  grid-column: sidebar-start / main-end;
+  grid-row: sidebar-start / sidebar-end;
+}
+```
+
+<KeyConcept title="When to Use Named Lines">
+Named lines are most useful when:
+- You have a complex grid with many columns/rows
+- You're creating reusable layout components
+- You want to make your code more self-documenting
+- You need to reference the same lines multiple times
+
+For simple grids, line numbers are often clearer!
+</KeyConcept>
+
+<ProgressCheckpoint section="named-lines" xpReward={15} />
+
+## Understanding the Auto-Placement Algorithm
+
+When you don't explicitly place grid items, Grid uses an auto-placement algorithm to position them. Understanding this algorithm helps you create more predictable layouts.
+
+### Auto-Placement Flow
+
+```css
+/* Default: place items in rows, filling each row before moving to next */
+.container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-auto-flow: row; /* default */
+}
+
+/* Place items in columns, filling each column before moving to next */
+.container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-auto-flow: column;
+}
+
+/* Dense packing: fill holes left by larger items */
+.container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-auto-flow: row dense;
+}
+```
+
+### The Dense Keyword
+
+The `dense` keyword tells Grid to fill in gaps left by larger items:
+
+```css
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-auto-flow: row dense;
+  gap: 10px;
+}
+
+/* Some items span multiple cells */
+.featured {
+  grid-column: span 2;
+  grid-row: span 2;
+}
+
+.wide {
+  grid-column: span 2;
+}
+```
+
+Without `dense`, large items create gaps. With `dense`, smaller items fill those gaps, creating a tighter layout.
+
+<KeyConcept title="Dense Packing Trade-offs">
+**Pros of `dense`:**
+- Creates visually tighter layouts
+- No awkward gaps in your grid
+- Perfect for image galleries and masonry-style layouts
+
+**Cons of `dense`:**
+- Items may not appear in source order
+- Can be confusing for keyboard navigation
+- May not be appropriate for content that needs to flow logically
+
+Use `dense` for visual layouts (galleries, dashboards) but avoid it for content that needs to maintain reading order!
+</KeyConcept>
+
+<ProgressCheckpoint section="auto-placement" xpReward={15} />
+
+## Practical Grid Layouts
+
+Let's build some real-world layouts using what we've learned.
+
+### Dashboard Layout
+
+```css
+.dashboard {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  grid-template-rows: auto auto 1fr auto;
+  gap: 20px;
+  padding: 20px;
+}
+
+.header {
+  grid-column: 1 / -1;
+}
+
+.sidebar {
+  grid-column: 1 / 3;
+  grid-row: 2 / 4;
+}
+
+.stats {
+  grid-column: 3 / -1;
+  grid-row: 2;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+}
+
+.main-chart {
+  grid-column: 3 / -1;
+  grid-row: 3;
+}
+
+.footer {
+  grid-column: 1 / -1;
+}
+```
+
+This creates a professional dashboard with:
+- 12-column grid for flexibility
+- Sidebar spanning multiple rows
+- Stats cards that adapt to available space
+- Large main chart area
+- Full-width header and footer
+
+### Magazine Layout
+
+```css
+.magazine {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  grid-auto-rows: 200px;
+  gap: 15px;
+}
+
+.hero {
+  grid-column: 1 / 5;
+  grid-row: 1 / 3;
+}
+
+.featured-1 {
+  grid-column: 5 / 7;
+  grid-row: 1;
+}
+
+.featured-2 {
+  grid-column: 5 / 7;
+  grid-row: 2;
+}
+
+/* Regular articles auto-place */
+.article {
+  grid-column: span 2;
+}
+```
+
+This creates a magazine-style layout with:
+- Large hero article (4 columns × 2 rows)
+- Two featured articles in the sidebar
+- Regular articles that auto-place in 2-column spans
+
+<ProgressCheckpoint section="practical-layouts" xpReward={15} />
+
+## Responsive Grid Patterns
+
+### Auto-Fit and Auto-Fill
+
+These keywords create responsive grids that adapt to available space:
+
+```css
+/* Auto-fit: collapse empty tracks, stretch items */
+.grid-auto-fit {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+/* Auto-fill: keep empty tracks, maintain sizing */
+.grid-auto-fill {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 20px;
+}
+```
+
+**When to use each:**
+- **auto-fit**: When you want items to stretch to fill available space
+- **auto-fill**: When you want to maintain consistent item sizing
+
+### Responsive Card Grid
+
+```css
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+  gap: 20px;
+}
+```
+
+The `min(100%, 300px)` ensures cards never exceed container width on small screens!
+
+### Responsive Layout with Grid Areas
+
+```css
+.responsive-layout {
+  display: grid;
+  gap: 20px;
+}
+
+/* Mobile: single column */
+@media (min-width: 320px) {
+  .responsive-layout {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "header"
+      "main"
+      "sidebar"
+      "footer";
+  }
+}
+
+/* Tablet: two columns */
+@media (min-width: 768px) {
+  .responsive-layout {
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas:
+      "header header"
+      "main sidebar"
+      "footer footer";
+  }
+}
+
+/* Desktop: three columns */
+@media (min-width: 1024px) {
+  .responsive-layout {
+    grid-template-columns: 250px 1fr 250px;
+    grid-template-areas:
+      "header header header"
+      "sidebar main aside"
+      "footer footer footer";
+  }
+}
+```
+
+<KeyConcept title="Mobile-First Grid Design">
+Start with a single-column mobile layout, then add complexity for larger screens:
+
+```css
+/* Base: mobile (single column) */
+.layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
+
+/* Tablet: add columns */
+@media (min-width: 768px) {
+  .layout {
+    grid-template-columns: 200px 1fr;
+  }
+}
+
+/* Desktop: more columns */
+@media (min-width: 1024px) {
+  .layout {
+    grid-template-columns: 250px 1fr 250px;
+  }
+}
+```
+
+This approach is easier to maintain and ensures your layout works on all devices!
+</KeyConcept>
+
+<ProgressCheckpoint section="responsive-patterns" xpReward={15} />
+
+## Alignment in Grid
+
+Grid provides powerful alignment properties for both the grid container and individual items.
+
+### Container Alignment
+
+```css
+.container {
+  display: grid;
+  grid-template-columns: repeat(3, 200px);
+  grid-template-rows: repeat(2, 150px);
+  
+  /* Align all items within their cells */
+  justify-items: center;  /* horizontal alignment */
+  align-items: center;    /* vertical alignment */
+  
+  /* Align the entire grid within the container */
+  justify-content: center;  /* horizontal */
+  align-content: center;    /* vertical */
+  
+  height: 100vh;
+}
+```
+
+### Item Alignment
+
+```css
+.item {
+  /* Override container alignment for this item */
+  justify-self: start;  /* horizontal */
+  align-self: end;      /* vertical */
+}
+```
+
+**Alignment values:**
+- `start` - Align to the start edge
+- `end` - Align to the end edge
+- `center` - Center the item
+- `stretch` - Stretch to fill the cell (default)
+
+<ProgressCheckpoint section="alignment" xpReward={15} />
+
+## Key Takeaways
+
+<KeyConcept title="Summary">
+- **Grid template areas** create semantic, visual layouts that are easy to understand and maintain
+- **Named grid lines** make complex grids more readable and maintainable
+- The **auto-placement algorithm** can flow items in rows or columns, with optional dense packing
+- **`dense` packing** fills gaps but may reorder items visually
+- **12-column grids** provide flexibility for complex layouts like dashboards
+- **`repeat(auto-fit, minmax())`** creates responsive grids that adapt to screen size
+- **Grid areas** make responsive layouts simple - just redefine the areas at different breakpoints
+- **Alignment properties** give precise control over item positioning within cells
+- Combine Grid for page layout with Flexbox for component layout
+- Start with mobile-first single-column layouts, then add complexity for larger screens
+</KeyConcept>
+
+<ProgressCheckpoint section="summary" xpReward={15} />
+
+## Quick Quiz
+
+Test your intermediate CSS Grid knowledge:
+
+<Quiz>
+  <Question text="What is the main advantage of using grid-template-areas?">
+    <Answer>It makes the grid faster</Answer>
+    <Answer correct>It creates a visual representation of the layout in CSS, making it self-documenting</Answer>
+    <Answer>It reduces the file size</Answer>
+    <Answer>It works better on mobile devices</Answer>
+  </Question>
+
+  <Question text="What does the 'dense' keyword do in grid-auto-flow?">
+    <Answer>Makes the grid more compact</Answer>
+    <Answer correct>Fills gaps left by larger items with smaller items</Answer>
+    <Answer>Increases the density of grid lines</Answer>
+    <Answer>Makes items smaller</Answer>
+  </Question>
+
+  <Question text="What's the difference between auto-fit and auto-fill?">
+    <Answer>auto-fit is faster</Answer>
+    <Answer>auto-fill is more responsive</Answer>
+    <Answer correct>auto-fit collapses empty tracks and stretches items, auto-fill keeps empty tracks</Answer>
+    <Answer>They are the same</Answer>
+  </Question>
+
+  <Question text="How do you create a full-width header in a multi-column grid?">
+    <Answer>width: 100%</Answer>
+    <Answer correct>grid-column: 1 / -1</Answer>
+    <Answer>grid-span: all</Answer>
+    <Answer>full-width: true</Answer>
+  </Question>
+
+  <Question text="What happens when you use grid-template-areas?">
+    <Answer>It only works on desktop</Answer>
+    <Answer>It requires JavaScript</Answer>
+    <Answer correct>Grid automatically creates named lines for each area</Answer>
+    <Answer>It disables auto-placement</Answer>
+  </Question>
+
+  <Question text="What's the best approach for responsive grid layouts?">
+    <Answer>Use JavaScript to detect screen size</Answer>
+    <Answer>Create separate grids for each device</Answer>
+    <Answer correct>Start with mobile single-column, add complexity with media queries</Answer>
+    <Answer>Always use 12 columns</Answer>
+  </Question>
+</Quiz>
+
+---
+
+**Excellent work!** 🎉 You now have intermediate CSS Grid skills. Next, explore:
+- **Advanced Grid** - Master implicit grids, subgrid, and complex nested patterns
+- **CSS Grid + Flexbox** - Combine both layout systems for maximum power
+- **Real-World Projects** - Build complete page layouts using Grid
+
+You're well on your way to mastering modern CSS layouts!

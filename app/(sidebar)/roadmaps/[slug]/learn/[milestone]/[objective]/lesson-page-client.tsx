@@ -27,6 +27,9 @@ import { Quiz, Question, Answer } from '@/components/learn/mdx-components/quiz';
 import { saveObjectiveProgress, clearObjectiveProgress } from '@/lib/hooks/use-objective-progress';
 
 import type { UserGamification } from '@/lib/db/schemas/user';
+import type { NextLessonSuggestion as NextLessonSuggestionType } from '@/lib/actions/lessons';
+import { NextLessonSuggestion } from '@/components/learn/next-lesson-suggestion';
+import { SectionSidebar } from '@/components/learn/section-sidebar';
 
 interface LessonPageClientProps {
   lessonId: string;
@@ -41,6 +44,7 @@ interface LessonPageClientProps {
   initialTimeSpent?: number;
   isLessonCompleted?: boolean;
   initialGamification?: UserGamification | null;
+  nextLessonSuggestion?: NextLessonSuggestionType | null;
 }
 
 // Inner component that uses the progress context
@@ -57,6 +61,7 @@ function LessonContent({
   initialTimeSpent = 0,
   isLessonCompleted = false,
   initialGamification = null,
+  nextLessonSuggestion = null,
 }: LessonPageClientProps) {
   const [level, setLevel] = useState<ExperienceLevel>(initialLevel);
   const [mdxSource, setMdxSource] = useState<MDXRemoteSerializeResult>(initialMdxSource);
@@ -249,56 +254,60 @@ function LessonContent({
   }, [lessonId, milestoneId, resetProgress]);
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="relative">
       {/* XP Award Animation */}
       <XPAwardAnimation
         amount={xpAwarded}
         onComplete={() => setXpAwarded(null)}
       />
       
-      {/* Header */}
-      <div className="mb-8">
-        {/* Breadcrumb */}
-        <Link
-          href={`/roadmaps/${roadmapSlug}`}
-          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mb-4"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back to Roadmap
-        </Link>
+      <div className="max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-8">
+          {/* Main content */}
+          <div className="min-w-0">
+            {/* Header */}
+            <div className="mb-8">
+              {/* Breadcrumb */}
+              <Link
+                href={`/roadmaps/${roadmapSlug}`}
+                className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mb-4"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                Back to Roadmap
+              </Link>
 
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2 mb-2">
-              <BookOpen className="w-5 h-5 text-primary" />
-              <span className="text-sm text-muted-foreground">
-                {milestoneTitle}
-              </span>
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <BookOpen className="w-5 h-5 text-primary" />
+                    <span className="text-sm text-muted-foreground">
+                      {milestoneTitle}
+                    </span>
+                  </div>
+                  <h1 className="text-2xl md:text-3xl font-bold text-foreground">
+                    {lessonTitle}
+                  </h1>
+                </div>
+
+                {/* XP Display */}
+                <XPDisplay totalXp={totalXp} currentStreak={currentStreak} compact />
+              </div>
             </div>
-            <h1 className="text-2xl md:text-3xl font-bold text-foreground">
-              {lessonTitle}
-            </h1>
-          </div>
 
-          {/* XP Display */}
-          <XPDisplay totalXp={totalXp} currentStreak={currentStreak} compact />
-        </div>
-      </div>
+            {/* Experience Level Selector */}
+            <ExperienceSelector
+              currentLevel={level}
+              onLevelChange={handleLevelChange}
+              completedLevels={[]}
+              disabled={isLoading}
+            />
 
-      {/* Experience Level Selector */}
-      <ExperienceSelector
-        currentLevel={level}
-        onLevelChange={handleLevelChange}
-        completedLevels={[]}
-        disabled={isLoading}
-      />
-
-      {/* Progress Tracker */}
-      <ProgressTracker
-        sections={sections}
-        completedSections={completedSectionIds}
-        currentSection={currentSection ?? undefined}
-      />
+            {/* Progress Tracker */}
+            <ProgressTracker
+              sections={sections}
+              completedSections={completedSectionIds}
+              currentSection={currentSection ?? undefined}
+            />
 
       {/* Loading state */}
       <AnimatePresence mode="wait">
@@ -369,15 +378,39 @@ function LessonContent({
         )}
       </AnimatePresence>
 
-      {/* Navigation */}
-      <div className="mt-12 pt-8 border-t border-border">
-        <div className="flex justify-between">
-          <Link href={`/roadmaps/${roadmapSlug}`}>
-            <Button variant="outline">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Roadmap
-            </Button>
-          </Link>
+      {/* Next lesson suggestion - show after completion */}
+      {isComplete && hasClaimedReward && nextLessonSuggestion && (
+        <div className="mt-6">
+          <NextLessonSuggestion
+            lessonPath={nextLessonSuggestion.lessonPath}
+            title={nextLessonSuggestion.title}
+            description={nextLessonSuggestion.description}
+            estimatedMinutes={nextLessonSuggestion.estimatedMinutes}
+            xpReward={nextLessonSuggestion.xpReward}
+            roadmapSlug={roadmapSlug}
+          />
+        </div>
+      )}
+
+            {/* Navigation */}
+            <div className="mt-12 pt-8 border-t border-border">
+              <div className="flex justify-between">
+                <Link href={`/roadmaps/${roadmapSlug}`}>
+                  <Button variant="outline">
+                    <ArrowLeft className="w-4 h-4 mr-2" />
+                    Back to Roadmap
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </div>
+
+          {/* Section Sidebar */}
+          <SectionSidebar
+            sections={sections}
+            completedSections={completedSectionIds}
+            currentSection={currentSection ?? undefined}
+          />
         </div>
       </div>
     </div>

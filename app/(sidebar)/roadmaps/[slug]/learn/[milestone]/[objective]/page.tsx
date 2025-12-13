@@ -1,10 +1,6 @@
 import { notFound } from 'next/navigation';
 import { auth } from '@clerk/nextjs/server';
-import fs from 'fs/promises';
-import path from 'path';
-import { serialize } from 'next-mdx-remote/serialize';
-import remarkGfm from 'remark-gfm';
-import { getLessonMetadata } from '@/lib/actions/lessons';
+import { getLessonMetadata, getLessonContent, getNextLessonSuggestion } from '@/lib/actions/lessons';
 import { LessonPageClient } from './lesson-page-client';
 import type { ExperienceLevel } from '@/lib/db/schemas/lesson-progress';
 import { getUserGamificationAction } from '@/lib/actions/gamification';
@@ -18,26 +14,6 @@ interface LearnObjectivePageProps {
   searchParams: Promise<{
     level?: string;
   }>;
-}
-
-const CONTENT_DIR = path.join(process.cwd(), 'content', 'lessons');
-
-async function getSerializedMdx(lessonPath: string, level: ExperienceLevel) {
-  try {
-    const mdxPath = path.join(CONTENT_DIR, lessonPath, `${level}.mdx`);
-    const source = await fs.readFile(mdxPath, 'utf-8');
-    
-    const serialized = await serialize(source, {
-      mdxOptions: {
-        remarkPlugins: [remarkGfm],
-      },
-    });
-    
-    return serialized;
-  } catch (error) {
-    console.error('Failed to serialize MDX:', error);
-    return null;
-  }
 }
 
 export default async function LearnObjectivePage({ 
@@ -68,8 +44,8 @@ export default async function LearnObjectivePage({
   // Determine initial experience level
   const initialLevel = (resolvedSearchParams.level as ExperienceLevel) || 'beginner';
   
-  // Get serialized MDX for the initial level
-  const serializedMdx = await getSerializedMdx(lessonPath, initialLevel);
+  // Get serialized MDX for the initial level (cached for performance)
+  const serializedMdx = await getLessonContent(lessonPath, initialLevel);
   if (!serializedMdx) {
     notFound();
   }
@@ -98,6 +74,13 @@ export default async function LearnObjectivePage({
   const initialTimeSpent = completedLesson?.timeSpentSeconds || 0;
   const isLessonCompleted = !!completedLesson;
 
+  // Get next lesson suggestion based on completed lessons
+  const nextLessonSuggestion = await getNextLessonSuggestion(
+    lessonPath,
+    initialLevel,
+    userGamification?.completedLessons || []
+  );
+
   return (
     <div className="container py-8">
       <LessonPageClient
@@ -113,6 +96,7 @@ export default async function LearnObjectivePage({
         initialTimeSpent={initialTimeSpent}
         isLessonCompleted={isLessonCompleted}
         initialGamification={userGamification}
+        nextLessonSuggestion={nextLessonSuggestion}
       />
     </div>
   );

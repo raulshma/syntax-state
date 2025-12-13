@@ -1,0 +1,518 @@
+# CSS Transforms - Intermediate
+
+Welcome to the intermediate level of CSS Transforms! Now that you understand 2D transforms, it's time to add a third dimension. You'll learn how to create depth, perspective, and truly three-dimensional effects that make elements appear to exist in 3D space.
+
+In this lesson, you'll master 3D transforms, understand perspective, learn about transform-origin in 3D space, and discover how to compose complex transformations. Get ready to add depth to your designs!
+
+<InfoBox type="tip" title="Why 3D Transforms?">
+3D transforms open up a world of creative possibilities. They're perfect for card flips, image galleries, interactive interfaces, and creating depth in your designs. Modern browsers have excellent support, making 3D transforms a practical tool for production websites.
+</InfoBox>
+
+<ProgressCheckpoint section="introduction" xpReward={10} />
+
+## Introduction to 3D Transforms
+
+**3D transforms** add a third axis - the Z-axis - which represents depth. Imagine your screen as a window into a 3D space:
+- **X-axis**: Horizontal (left to right)
+- **Y-axis**: Vertical (top to bottom)
+- **Z-axis**: Depth (toward you or away from you)
+
+### Enabling 3D Space
+
+To use 3D transforms, you need to establish a 3D rendering context:
+
+```css
+.container {
+  perspective: 1000px;
+}
+
+.card {
+  transform-style: preserve-3d;
+}
+```
+
+<KeyConcept title="3D Transform Properties">
+- **perspective**: Creates depth by defining the distance from the viewer
+- **transform-style**: Determines if children are positioned in 3D space
+  - `flat`: Children are flattened (default)
+  - `preserve-3d`: Children maintain 3D positioning
+- **backface-visibility**: Controls whether the back of an element is visible
+  - `visible`: Back face is visible (default)
+  - `hidden`: Back face is hidden
+</KeyConcept>
+
+<ProgressCheckpoint section="3d-transforms" xpReward={15} />
+
+## Understanding Perspective
+
+**Perspective** is the key to realistic 3D effects. It simulates how objects appear smaller as they move away from you, just like in real life.
+
+### How Perspective Works
+
+Think of perspective as the distance between you and your screen. A smaller perspective value means you're closer (more dramatic 3D effect), while a larger value means you're farther away (subtler effect).
+
+```css
+/* Close perspective - dramatic effect */
+.close {
+  perspective: 300px;
+}
+
+/* Far perspective - subtle effect */
+.far {
+  perspective: 2000px;
+}
+```
+
+### Perspective vs Perspective Function
+
+There are two ways to apply perspective:
+
+```css
+/* Method 1: On the parent (affects all children) */
+.container {
+  perspective: 1000px;
+}
+
+/* Method 2: On the element itself */
+.element {
+  transform: perspective(1000px) rotateY(45deg);
+}
+```
+
+<KeyConcept title="Perspective Guidelines">
+- **Parent perspective**: Use when multiple elements share the same 3D space
+- **Transform perspective**: Use for individual element effects
+- **Typical values**: 500px to 2000px
+- **Lower values**: More dramatic, "in your face" effect
+- **Higher values**: Subtler, more realistic effect
+</KeyConcept>
+
+### Perspective Origin
+
+Just like transform-origin, you can control where the perspective "eye" is positioned:
+
+```css
+.container {
+  perspective: 1000px;
+  perspective-origin: top left;
+}
+```
+
+This makes it look like you're viewing the 3D space from the top-left corner.
+
+<ProgressCheckpoint section="perspective" xpReward={15} />
+
+## 3D Rotation
+
+3D rotation lets you spin elements around the X, Y, or Z axes, creating effects like card flips and spinning cubes.
+
+### Rotating Around Each Axis
+
+```css
+/* Rotate around X-axis (horizontal flip) */
+.flip-horizontal {
+  transform: rotateX(180deg);
+}
+
+/* Rotate around Y-axis (vertical flip) */
+.flip-vertical {
+  transform: rotateY(180deg);
+}
+
+/* Rotate around Z-axis (same as 2D rotate) */
+.spin {
+  transform: rotateZ(45deg);
+}
+```
+
+<KeyConcept title="3D Rotation Axes">
+- **rotateX()**: Flips top-to-bottom (like opening a book)
+- **rotateY()**: Flips left-to-right (like opening a door)
+- **rotateZ()**: Spins clockwise/counter-clockwise (same as 2D rotate)
+- **rotate3d(x, y, z, angle)**: Rotates around a custom 3D vector
+</KeyConcept>
+
+### The Classic Card Flip
+
+Here's a practical example - a card that flips to reveal its back:
+
+```css
+.card-container {
+  perspective: 1000px;
+}
+
+.card {
+  transform-style: preserve-3d;
+  transition: transform 0.6s;
+}
+
+.card:hover {
+  transform: rotateY(180deg);
+}
+
+.card-front,
+.card-back {
+  backface-visibility: hidden;
+}
+
+.card-back {
+  transform: rotateY(180deg);
+}
+```
+
+<InfoBox type="tip" title="Backface Visibility">
+When creating flip effects, use `backface-visibility: hidden` to hide the back of elements. This prevents the back from showing through when rotated!
+</InfoBox>
+
+<ProgressCheckpoint section="3d-transforms" xpReward={15} />
+
+## 3D Translation
+
+Just like 2D translation, you can move elements in 3D space, including along the Z-axis (toward or away from you).
+
+### Moving in 3D Space
+
+```css
+/* Move toward viewer */
+.come-forward {
+  transform: translateZ(100px);
+}
+
+/* Move away from viewer */
+.go-back {
+  transform: translateZ(-100px);
+}
+
+/* Move in all three dimensions */
+.move-3d {
+  transform: translate3d(50px, 30px, 100px);
+}
+```
+
+<KeyConcept title="3D Translation Functions">
+- **translateZ(value)**: Moves along the Z-axis (depth)
+  - Positive values: Toward the viewer (appears larger)
+  - Negative values: Away from the viewer (appears smaller)
+- **translate3d(x, y, z)**: Moves in all three dimensions at once
+- **Requires perspective**: Z-axis movement only visible with perspective
+</KeyConcept>
+
+### Practical Example: Layered Cards
+
+```css
+.card-stack {
+  perspective: 1000px;
+}
+
+.card-1 {
+  transform: translateZ(0px);
+}
+
+.card-2 {
+  transform: translateZ(-50px);
+}
+
+.card-3 {
+  transform: translateZ(-100px);
+}
+```
+
+This creates a stack of cards with depth, where each card appears behind the previous one.
+
+<ProgressCheckpoint section="3d-transforms" xpReward={15} />
+
+## 3D Scaling
+
+Scaling in 3D space affects the Z-axis as well, though the visual effect is subtle without rotation.
+
+```css
+/* Scale in all dimensions */
+.scale-3d {
+  transform: scale3d(1.5, 1.5, 2);
+}
+
+/* Scale only depth */
+.scale-depth {
+  transform: scaleZ(2);
+}
+```
+
+<InfoBox type="note" title="ScaleZ Visibility">
+`scaleZ()` only has a visible effect when combined with other 3D transforms like rotation. On its own, it doesn't change the appearance because you're looking straight at the element!
+</InfoBox>
+
+<ProgressCheckpoint section="3d-transforms" xpReward={15} />
+
+## Transform Composition in 3D
+
+Combining 3D transforms creates complex, realistic effects. The order of transforms is even more critical in 3D space.
+
+### Order Matters More in 3D
+
+```css
+/* Rotate THEN translate */
+.example-1 {
+  transform: rotateY(45deg) translateZ(100px);
+}
+
+/* Translate THEN rotate */
+.example-2 {
+  transform: translateZ(100px) rotateY(45deg);
+}
+```
+
+These produce very different results! In the first example, the element rotates, then moves along its new Z-axis. In the second, it moves forward first, then rotates in place.
+
+<KeyConcept title="Transform Composition Best Practices">
+1. **Start with perspective** if using the transform function
+2. **Translate first** for positioning
+3. **Rotate second** for orientation
+4. **Scale last** for sizing
+5. **Test different orders** to achieve your desired effect
+</KeyConcept>
+
+### Complex 3D Example
+
+```css
+.complex-transform {
+  transform: 
+    perspective(1000px)
+    translateZ(50px)
+    rotateX(20deg)
+    rotateY(30deg)
+    scale(1.2);
+}
+```
+
+This creates a complex 3D effect: adds perspective, moves forward, tilts on two axes, and scales up.
+
+<ProgressCheckpoint section="transform-composition" xpReward={15} />
+
+## Transform Origin in 3D
+
+In 3D space, transform-origin can have a Z-component, controlling the depth of the pivot point.
+
+```css
+.element {
+  transform-origin: center center 100px;
+}
+```
+
+The third value sets the Z-position of the origin point.
+
+### Common 3D Transform Origins
+
+```css
+/* Rotate around front face */
+transform-origin: center center 0;
+
+/* Rotate around back face */
+transform-origin: center center -100px;
+
+/* Rotate around a point in front */
+transform-origin: center center 50px;
+```
+
+<InfoBox type="tip" title="When to Use 3D Origin">
+The Z-component of transform-origin is most useful when creating complex 3D objects like cubes or when you need precise control over rotation points in 3D space.
+</InfoBox>
+
+<ProgressCheckpoint section="transform-origin" xpReward={15} />
+
+## Interactive 3D Playground
+
+<TransformPlayground
+  initialTransform={{
+    translateX: 0,
+    translateY: 0,
+    translateZ: 0,
+    rotateX: 0,
+    rotateY: 0,
+    rotateZ: 0,
+    scaleX: 1,
+    scaleY: 1,
+    scaleZ: 1
+  }}
+  showControls={true}
+  show3D={true}
+/>
+
+Experiment with 3D transforms! Try rotating around different axes, moving along the Z-axis, and combining multiple transforms. Notice how perspective affects the appearance.
+
+<ProgressCheckpoint section="3d-transforms" xpReward={15} />
+
+## Practical 3D Patterns
+
+### Pattern 1: Flip Card
+
+```css
+.flip-card {
+  perspective: 1000px;
+  width: 300px;
+  height: 200px;
+}
+
+.flip-card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.6s;
+}
+
+.flip-card:hover .flip-card-inner {
+  transform: rotateY(180deg);
+}
+
+.flip-card-front,
+.flip-card-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+}
+
+.flip-card-back {
+  transform: rotateY(180deg);
+}
+```
+
+### Pattern 2: 3D Cube
+
+```css
+.cube-container {
+  perspective: 1000px;
+}
+
+.cube {
+  width: 200px;
+  height: 200px;
+  position: relative;
+  transform-style: preserve-3d;
+  transform: rotateX(-20deg) rotateY(30deg);
+}
+
+.cube-face {
+  position: absolute;
+  width: 200px;
+  height: 200px;
+}
+
+.front  { transform: translateZ(100px); }
+.back   { transform: translateZ(-100px) rotateY(180deg); }
+.right  { transform: rotateY(90deg) translateZ(100px); }
+.left   { transform: rotateY(-90deg) translateZ(100px); }
+.top    { transform: rotateX(90deg) translateZ(100px); }
+.bottom { transform: rotateX(-90deg) translateZ(100px); }
+```
+
+### Pattern 3: Parallax Layers
+
+```css
+.parallax-container {
+  perspective: 1000px;
+  overflow-x: hidden;
+}
+
+.layer-1 {
+  transform: translateZ(0px);
+}
+
+.layer-2 {
+  transform: translateZ(-100px) scale(1.1);
+}
+
+.layer-3 {
+  transform: translateZ(-200px) scale(1.2);
+}
+```
+
+<ProgressCheckpoint section="3d-transforms" xpReward={15} />
+
+## Browser Compatibility and Performance
+
+### Browser Support
+
+3D transforms have excellent support in modern browsers:
+- Chrome/Edge: Full support since version 36
+- Firefox: Full support since version 16
+- Safari: Full support since version 9
+
+### Performance Tips
+
+<KeyConcept title="3D Transform Performance">
+- **Use transform instead of position**: Transforms are hardware-accelerated
+- **Avoid transform-style: preserve-3d on many elements**: Can be expensive
+- **Use will-change sparingly**: `will-change: transform` for animated elements
+- **Limit nested 3D contexts**: Each preserve-3d creates a new rendering context
+- **Test on mobile devices**: 3D transforms can be more expensive on mobile
+</KeyConcept>
+
+<ProgressCheckpoint section="performance" xpReward={10} />
+
+## Key Takeaways
+
+<KeyConcept title="Summary">
+- **3D transforms** add depth using the Z-axis
+- **perspective** creates realistic 3D effects (500px-2000px typical)
+- **transform-style: preserve-3d** enables 3D positioning for children
+- **backface-visibility: hidden** hides the back of rotated elements
+- **rotateX/Y/Z** rotates around each axis
+- **translateZ** moves toward/away from the viewer
+- **Transform order** is critical in 3D space
+- **3D transforms are hardware-accelerated** for smooth performance
+- **Combine with transitions** for smooth 3D animations
+</KeyConcept>
+
+<ProgressCheckpoint section="summary" xpReward={10} />
+
+## Quick Quiz
+
+Test your understanding of 3D transforms!
+
+<Quiz>
+  <Question text="What property creates depth and makes 3D transforms visible?">
+    <Answer>transform-style</Answer>
+    <Answer correct>perspective</Answer>
+    <Answer>backface-visibility</Answer>
+    <Answer>translateZ</Answer>
+  </Question>
+
+  <Question text="Which transform function flips an element like opening a door?">
+    <Answer>rotateX(180deg)</Answer>
+    <Answer correct>rotateY(180deg)</Answer>
+    <Answer>rotateZ(180deg)</Answer>
+    <Answer>rotate(180deg)</Answer>
+  </Question>
+
+  <Question text="What does backface-visibility: hidden do?">
+    <Answer>Hides the entire element</Answer>
+    <Answer correct>Hides the back side when rotated</Answer>
+    <Answer>Prevents 3D transforms</Answer>
+    <Answer>Removes perspective</Answer>
+  </Question>
+
+  <Question text="What value of transform-style enables 3D positioning for child elements?">
+    <Answer>3d</Answer>
+    <Answer>enabled</Answer>
+    <Answer correct>preserve-3d</Answer>
+    <Answer>flat</Answer>
+  </Question>
+
+  <Question text="Which translateZ value moves an element toward the viewer?">
+    <Answer correct>translateZ(100px)</Answer>
+    <Answer>translateZ(-100px)</Answer>
+    <Answer>translateZ(0)</Answer>
+    <Answer>All of the above</Answer>
+  </Question>
+</Quiz>
+
+---
+
+**Fantastic work!** 🎉 You've mastered 3D transforms and can now create depth and dimension in your designs!
+
+**Next Steps:**
+- Try the **Advanced** level to learn about matrix transformations and optimization
+- Explore **CSS Animations** to animate your 3D transforms
+- Check out **CSS Transitions** for smooth 3D effects
+- Build a 3D card flip or cube as a practice project

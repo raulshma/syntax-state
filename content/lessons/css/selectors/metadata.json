@@ -1,0 +1,33 @@
+{
+  "id": "selectors",
+  "title": "CSS Selectors",
+  "description": "Master CSS selectors - from basic element selectors to complex patterns and specificity",
+  "milestone": "css",
+  "order": 1,
+  "sections": [
+    "introduction",
+    "basic-selectors",
+    "combinators",
+    "pseudo-classes",
+    "attribute-selectors",
+    "specificity",
+    "summary"
+  ],
+  "levels": {
+    "beginner": {
+      "estimatedMinutes": 30,
+      "xpReward": 50
+    },
+    "intermediate": {
+      "estimatedMinutes": 45,
+      "xpReward": 100
+    },
+    "advanced": {
+      "estimatedMinutes": 60,
+      "xpReward": 200
+    }
+  },
+  "prerequisites": ["html/learn-the-basics"],
+  "tags": ["css", "selectors", "specificity", "cascade"],
+  "cssProperties": ["selector", "specificity", "cascade"]
+}

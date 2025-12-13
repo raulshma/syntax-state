@@ -1,4 +1,5 @@
 import type { MDXComponents } from 'mdx/types';
+import { Suspense } from 'react';
 import {
   AnimatedDiagram,
   InteractiveDemo,
@@ -10,6 +11,7 @@ import {
   ProgressCheckpoint,
   KeyConcept,
   Comparison,
+  EnhancedCodeBlock,
 } from '@/components/learn/mdx-components';
 
 import { HttpConversation } from '@/components/learn/interactive/http/HttpConversation';
@@ -87,6 +89,24 @@ import {
   ComponentTypeSelector,
   ServerDataFlowDiagram,
 } from '@/components/learn/interactive/react';
+
+// CSS Lesson Components
+import {
+  BoxModelVisualizer,
+  SelectorPlayground,
+  FlexboxPlayground,
+  GridPlayground,
+  CssEditor,
+  PositioningDemo,
+  ColorMixer,
+  AnimationBuilder,
+  TransformPlayground,
+  ResponsivePreview,
+  SpecificityCalculator,
+  AnimationTimeline,
+  BrowserCompatibility,
+  CssComparison,
+} from '@/components/learn/interactive/css';
 
 /**
  * MDX Components Configuration
@@ -193,6 +213,22 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
     ComponentTypeSelector,
     ServerDataFlowDiagram,
 
+    // CSS Lesson Components
+    BoxModelVisualizer,
+    SelectorPlayground,
+    FlexboxPlayground,
+    GridPlayground,
+    CssEditor,
+    PositioningDemo,
+    ColorMixer,
+    AnimationBuilder,
+    TransformPlayground,
+    ResponsivePreview,
+    SpecificityCalculator,
+    AnimationTimeline,
+    BrowserCompatibility,
+    CssComparison,
+
     // Enhanced HTML elements with proper styling
     h1: ({ children, ...props }) => (
       <h1
@@ -254,22 +290,54 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
         {children}
       </blockquote>
     ),
-    code: ({ children, ...props }) => (
-      <code
-        className="bg-secondary px-1.5 py-0.5 rounded text-sm font-mono text-primary"
-        {...props}
-      >
-        {children}
-      </code>
-    ),
-    pre: ({ children, ...props }) => (
-      <pre
-        className="bg-secondary/50 border border-border rounded-xl p-4 overflow-x-auto my-4"
-        {...props}
-      >
-        {children}
-      </pre>
-    ),
+    code: ({ children, className, ...props }) => {
+      // If this code element is inside a pre (code block), don't render inline styles
+      // The pre handler will take care of it
+      const isCodeBlock = className?.startsWith('language-');
+      
+      if (isCodeBlock) {
+        return <code className={className} {...props}>{children}</code>;
+      }
+      
+      // Inline code
+      return (
+        <code
+          className="bg-secondary px-1.5 py-0.5 rounded text-sm font-mono text-primary"
+          {...props}
+        >
+          {children}
+        </code>
+      );
+    },
+    pre: ({ children, ...props }) => {
+      // Extract code element from children
+      const codeElement = children as any;
+      
+      // Check if this is a code block (has a code child with className)
+      if (
+        codeElement?.props?.className?.startsWith('language-') &&
+        typeof codeElement?.props?.children === 'string'
+      ) {
+        return (
+          <EnhancedCodeBlock
+            className={codeElement.props.className}
+            {...props}
+          >
+            {codeElement.props.children}
+          </EnhancedCodeBlock>
+        );
+      }
+      
+      // Fallback for non-code-block pre elements
+      return (
+        <pre
+          className="bg-secondary/50 border border-border rounded-xl p-4 overflow-x-auto my-4"
+          {...props}
+        >
+          {children}
+        </pre>
+      );
+    },
     a: ({ children, href, ...props }) => (
       <a
         href={href}

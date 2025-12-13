@@ -1,0 +1,614 @@
+# CSS Colors - Advanced
+
+Welcome to advanced CSS colors! In this lesson, you'll explore cutting-edge color features including `color-mix()`, modern color spaces, advanced gradient techniques, and color theory for professional design systems.
+
+<InfoBox type="tip" title="Modern CSS Colors">
+The CSS Color Module Level 4 and 5 specifications introduce powerful new features for color manipulation. While some features have limited browser support, they represent the future of CSS colors.
+</InfoBox>
+
+<ProgressCheckpoint section="introduction" xpReward={10} />
+
+## Modern Color Functions
+
+### color-mix()
+
+The `color-mix()` function allows you to blend two colors together in a specified color space. This is incredibly powerful for creating color variations programmatically.
+
+```css
+.mixed-color {
+  /* Mix 50% blue with 50% red */
+  background-color: color-mix(in srgb, #3B82F6 50%, #EF4444 50%);
+}
+
+.tinted {
+  /* Mix 80% primary color with 20% white for a tint */
+  background-color: color-mix(in srgb, var(--primary) 80%, white 20%);
+}
+
+.shaded {
+  /* Mix 80% primary color with 20% black for a shade */
+  background-color: color-mix(in srgb, var(--primary) 80%, black 20%);
+}
+```
+
+<KeyConcept title="color-mix() Syntax">
+```css
+color-mix(in colorspace, color1 percentage, color2 percentage)
+```
+
+**Color spaces:** `srgb`, `srgb-linear`, `lab`, `oklab`, `xyz`, `hsl`, `hwb`
+
+**Percentages:** Must add up to 100% (or omit one to auto-calculate)
+</KeyConcept>
+
+<BrowserCompatibility
+  feature="color-mix()"
+  minVersions={{
+    chrome: '111',
+    firefox: '113',
+    safari: '16.2',
+    edge: '111',
+  }}
+  showFallback={true}
+  showPrefixes={false}
+/>
+
+### Relative Color Syntax
+
+Relative color syntax lets you create color variations based on an existing color's components.
+
+```css
+:root {
+  --primary: #3B82F6;
+}
+
+.lighter {
+  /* Make primary 20% lighter */
+  background-color: hsl(from var(--primary) h s calc(l + 20%));
+}
+
+.more-saturated {
+  /* Increase saturation by 30% */
+  background-color: hsl(from var(--primary) h calc(s + 30%) l);
+}
+
+.rotated-hue {
+  /* Rotate hue by 180 degrees (complementary color) */
+  background-color: hsl(from var(--primary) calc(h + 180deg) s l);
+}
+```
+
+<KeyConcept title="Relative Color Syntax">
+```css
+hsl(from <color> h s l)
+rgb(from <color> r g b)
+```
+
+Access components of an existing color and manipulate them with `calc()`.
+</KeyConcept>
+
+### color-contrast()
+
+The `color-contrast()` function automatically selects the color with the best contrast ratio from a list.
+
+```css
+.auto-contrast {
+  background-color: var(--bg-color);
+  /* Automatically choose black or white based on best contrast */
+  color: color-contrast(var(--bg-color) vs white, black);
+}
+```
+
+<InfoBox type="tip" title="Accessibility Automation">
+`color-contrast()` is perfect for design systems where you need text to be readable on any background color. However, browser support is still limited.
+</InfoBox>
+
+<ProgressCheckpoint section="color-functions" xpReward={20} />
+
+## Color Spaces and Gamuts
+
+### Understanding Color Spaces
+
+Different color spaces represent colors in different ways, each with strengths for specific use cases.
+
+<KeyConcept title="Common Color Spaces">
+**sRGB** (Standard RGB):
+- Default color space for the web
+- Limited gamut (can't represent all visible colors)
+- Best compatibility
+
+**Display P3**:
+- Wider gamut than sRGB (25% more colors)
+- Supported by modern displays (Apple devices, high-end monitors)
+- Better for vibrant colors
+
+**Lab/OKLab**:
+- Perceptually uniform (equal distances = equal perceived differences)
+- Device-independent
+- Best for color manipulation and mixing
+
+**LCH/OKLCH**:
+- Cylindrical version of Lab/OKLab
+- Easier to work with (like HSL but perceptually uniform)
+- Great for creating color palettes
+</KeyConcept>
+
+### Using Wide Gamut Colors
+
+```css
+.vibrant-red {
+  /* sRGB red */
+  color: rgb(255, 0, 0);
+  
+  /* Display P3 red (more vibrant on supported displays) */
+  color: color(display-p3 1 0 0);
+}
+
+.oklch-color {
+  /* OKLCH: Lightness, Chroma, Hue */
+  color: oklch(0.7 0.2 180deg);
+}
+```
+
+<BrowserCompatibility
+  feature="oklch() and oklab()"
+  minVersions={{
+    chrome: '111',
+    firefox: '113',
+    safari: '15.4',
+    edge: '111',
+  }}
+  showFallback={true}
+  showPrefixes={false}
+/>
+
+<InfoBox type="tip" title="Progressive Enhancement">
+Always provide an sRGB fallback before using wide gamut colors:
+```css
+.element {
+  color: rgb(255, 0, 0); /* Fallback */
+  color: color(display-p3 1 0 0); /* Enhanced */
+}
+```
+</InfoBox>
+
+### Detecting Color Gamut Support
+
+Use media queries to detect color gamut support:
+
+```css
+/* Default: sRGB colors */
+.vibrant {
+  background: rgb(255, 0, 100);
+}
+
+/* Enhanced: Display P3 colors */
+@media (color-gamut: p3) {
+  .vibrant {
+    background: color(display-p3 1 0 0.4);
+  }
+}
+
+/* Future: Rec2020 colors */
+@media (color-gamut: rec2020) {
+  .vibrant {
+    background: color(rec2020 1 0 0.4);
+  }
+}
+```
+
+<ProgressCheckpoint section="color-spaces" xpReward={20} />
+
+## Advanced Gradient Techniques
+
+### Multi-Stop Gradients
+
+Create complex, multi-color gradients with precise control:
+
+```css
+.sunset-gradient {
+  background: linear-gradient(
+    to bottom,
+    #1e3a8a 0%,
+    #3b82f6 20%,
+    #f59e0b 40%,
+    #f97316 60%,
+    #dc2626 80%,
+    #7c2d12 100%
+  );
+}
+```
+
+### Repeating Gradients
+
+Create patterns with repeating gradients:
+
+```css
+.striped {
+  background: repeating-linear-gradient(
+    45deg,
+    #3B82F6,
+    #3B82F6 10px,
+    #1E40AF 10px,
+    #1E40AF 20px
+  );
+}
+
+.concentric-circles {
+  background: repeating-radial-gradient(
+    circle,
+    #3B82F6,
+    #3B82F6 10px,
+    #1E40AF 10px,
+    #1E40AF 20px
+  );
+}
+```
+
+### Gradient Mesh Effects
+
+Combine multiple gradients for complex effects:
+
+```css
+.mesh-gradient {
+  background:
+    radial-gradient(at 0% 0%, #3B82F6 0px, transparent 50%),
+    radial-gradient(at 100% 0%, #8B5CF6 0px, transparent 50%),
+    radial-gradient(at 100% 100%, #EC4899 0px, transparent 50%),
+    radial-gradient(at 0% 100%, #10B981 0px, transparent 50%),
+    #1F2937;
+}
+```
+
+### Animated Gradients
+
+Create dynamic, animated gradient effects:
+
+```css
+@keyframes gradient-shift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.animated-gradient {
+  background: linear-gradient(
+    270deg,
+    #3B82F6,
+    #8B5CF6,
+    #EC4899,
+    #3B82F6
+  );
+  background-size: 400% 400%;
+  animation: gradient-shift 8s ease infinite;
+}
+```
+
+### Try Advanced Gradients!
+
+<CssEditor
+  initialCss={`.mesh {
+  width: 300px;
+  height: 300px;
+  background:
+    radial-gradient(at 20% 30%, rgba(59, 130, 246, 0.5) 0px, transparent 50%),
+    radial-gradient(at 80% 20%, rgba(139, 92, 246, 0.5) 0px, transparent 50%),
+    radial-gradient(at 80% 80%, rgba(236, 72, 153, 0.5) 0px, transparent 50%),
+    radial-gradient(at 20% 80%, rgba(16, 185, 129, 0.5) 0px, transparent 50%),
+    #1F2937;
+  border-radius: 16px;
+  margin: 20px;
+}
+
+.striped {
+  width: 300px;
+  height: 100px;
+  background: repeating-linear-gradient(
+    45deg,
+    #3B82F6,
+    #3B82F6 20px,
+    #1E40AF 20px,
+    #1E40AF 40px
+  );
+  border-radius: 8px;
+  margin: 20px;
+}
+
+@keyframes shift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+.animated {
+  width: 300px;
+  height: 100px;
+  background: linear-gradient(
+    270deg,
+    #3B82F6,
+    #8B5CF6,
+    #EC4899,
+    #3B82F6
+  );
+  background-size: 400% 400%;
+  animation: shift 6s ease infinite;
+  border-radius: 8px;
+  margin: 20px;
+}`}
+  initialHtml={`<div class="mesh"></div>
+<div class="striped"></div>
+<div class="animated"></div>`}
+  height={600}
+/>
+
+<ProgressCheckpoint section="gradients" xpReward={20} />
+
+## Professional Color Systems
+
+### Building a Design System
+
+A professional color system includes primary, secondary, neutral, and semantic colors with multiple shades.
+
+```css
+:root {
+  /* Primary colors (9 shades) */
+  --primary-50: #EFF6FF;
+  --primary-100: #DBEAFE;
+  --primary-200: #BFDBFE;
+  --primary-300: #93C5FD;
+  --primary-400: #60A5FA;
+  --primary-500: #3B82F6;
+  --primary-600: #2563EB;
+  --primary-700: #1D4ED8;
+  --primary-800: #1E40AF;
+  --primary-900: #1E3A8A;
+  
+  /* Semantic colors */
+  --success: #10B981;
+  --warning: #F59E0B;
+  --error: #EF4444;
+  --info: #3B82F6;
+  
+  /* Neutral colors */
+  --gray-50: #F9FAFB;
+  --gray-100: #F3F4F6;
+  --gray-200: #E5E7EB;
+  --gray-300: #D1D5DB;
+  --gray-400: #9CA3AF;
+  --gray-500: #6B7280;
+  --gray-600: #4B5563;
+  --gray-700: #374151;
+  --gray-800: #1F2937;
+  --gray-900: #111827;
+}
+```
+
+### Color Naming Conventions
+
+<KeyConcept title="Best Practices for Color Names">
+**Avoid:**
+- Descriptive names: `--blue`, `--light-blue`
+- Visual names: `--button-color`, `--header-bg`
+
+**Prefer:**
+- Semantic names: `--primary`, `--secondary`, `--accent`
+- Purpose-based: `--text-primary`, `--bg-surface`, `--border-default`
+- Numbered scales: `--primary-500`, `--gray-700`
+
+This makes it easier to change colors without renaming variables.
+</KeyConcept>
+
+### Dark Mode Color Systems
+
+Implement dark mode with CSS variables:
+
+```css
+:root {
+  --bg-primary: #FFFFFF;
+  --bg-secondary: #F3F4F6;
+  --text-primary: #111827;
+  --text-secondary: #6B7280;
+  --border-default: #E5E7EB;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-primary: #111827;
+    --bg-secondary: #1F2937;
+    --text-primary: #F9FAFB;
+    --text-secondary: #9CA3AF;
+    --border-default: #374151;
+  }
+}
+
+/* Or use a class-based approach */
+.dark {
+  --bg-primary: #111827;
+  --bg-secondary: #1F2937;
+  --text-primary: #F9FAFB;
+  --text-secondary: #9CA3AF;
+  --border-default: #374151;
+}
+```
+
+### Color Palette Generation
+
+Use HSL to generate color palettes programmatically:
+
+```css
+:root {
+  --hue: 220;
+  
+  /* Generate shades by adjusting lightness */
+  --color-50: hsl(var(--hue), 100%, 95%);
+  --color-100: hsl(var(--hue), 100%, 90%);
+  --color-200: hsl(var(--hue), 100%, 80%);
+  --color-300: hsl(var(--hue), 100%, 70%);
+  --color-400: hsl(var(--hue), 100%, 60%);
+  --color-500: hsl(var(--hue), 100%, 50%);
+  --color-600: hsl(var(--hue), 100%, 40%);
+  --color-700: hsl(var(--hue), 100%, 30%);
+  --color-800: hsl(var(--hue), 100%, 20%);
+  --color-900: hsl(var(--hue), 100%, 10%);
+}
+
+/* Change the entire palette by changing one variable */
+.theme-green {
+  --hue: 150;
+}
+
+.theme-purple {
+  --hue: 270;
+}
+```
+
+<ProgressCheckpoint section="color-systems" xpReward={20} />
+
+## Performance and Optimization
+
+### Gradient Performance
+
+<KeyConcept title="Gradient Performance Tips">
+1. **Use CSS gradients over images**: Faster to load and render
+2. **Limit gradient complexity**: Too many color stops can impact performance
+3. **Avoid animating gradients directly**: Animate `background-position` or `opacity` instead
+4. **Use `will-change` sparingly**: Only for elements that will definitely animate
+5. **Consider `background-attachment: fixed` carefully**: Can cause performance issues on mobile
+</KeyConcept>
+
+### Color Variable Performance
+
+```css
+/* ✅ Good: Define once, use everywhere */
+:root {
+  --primary: #3B82F6;
+}
+
+.button { background: var(--primary); }
+.link { color: var(--primary); }
+
+/* ❌ Avoid: Recalculating colors repeatedly */
+.button { background: hsl(220, 100%, 50%); }
+.link { color: hsl(220, 100%, 50%); }
+```
+
+### Browser Compatibility Strategies
+
+```css
+/* Progressive enhancement pattern */
+.element {
+  /* Fallback for all browsers */
+  background: rgb(59, 130, 246);
+  
+  /* Modern browsers with color-mix support */
+  background: color-mix(in srgb, #3B82F6 80%, white 20%);
+}
+
+/* Feature detection with @supports */
+@supports (background: color-mix(in srgb, red, blue)) {
+  .element {
+    background: color-mix(in srgb, var(--primary) 80%, white 20%);
+  }
+}
+```
+
+<ProgressCheckpoint section="performance" xpReward={15} />
+
+## Summary
+
+You've mastered advanced CSS color techniques!
+
+<KeyConcept title="Key Takeaways">
+**Modern Color Functions:**
+- `color-mix()`: Blend colors in different color spaces
+- Relative color syntax: Create variations from existing colors
+- `color-contrast()`: Automatically select accessible colors
+
+**Color Spaces:**
+- sRGB: Standard web color space
+- Display P3: Wider gamut for modern displays
+- Lab/OKLab: Perceptually uniform color spaces
+- Use media queries to detect gamut support
+
+**Advanced Gradients:**
+- Multi-stop gradients for complex effects
+- Repeating gradients for patterns
+- Gradient meshes by layering multiple gradients
+- Animate gradients with `background-position`
+
+**Professional Color Systems:**
+- Use semantic naming conventions
+- Create numbered shade scales (50-900)
+- Implement dark mode with CSS variables
+- Generate palettes programmatically with HSL
+
+**Performance:**
+- CSS gradients are faster than images
+- Limit gradient complexity
+- Animate `background-position` not gradients directly
+- Use progressive enhancement for modern features
+</KeyConcept>
+
+<ProgressCheckpoint section="summary" xpReward={15} />
+
+## Quick Quiz
+
+<Quiz>
+  <Question text="What does color-mix() allow you to do?">
+    <Answer>Change color brightness</Answer>
+    <Answer correct>Blend two colors together in a specified color space</Answer>
+    <Answer>Convert between color formats</Answer>
+    <Answer>Detect color gamut support</Answer>
+  </Question>
+
+  <Question text="Which color space is perceptually uniform?">
+    <Answer>sRGB</Answer>
+    <Answer>RGB</Answer>
+    <Answer correct>OKLab</Answer>
+    <Answer>Hex</Answer>
+  </Question>
+
+  <Question text="What's the advantage of Display P3 over sRGB?">
+    <Answer>Better browser support</Answer>
+    <Answer>Smaller file size</Answer>
+    <Answer correct>Wider color gamut (25% more colors)</Answer>
+    <Answer>Faster rendering</Answer>
+  </Question>
+
+  <Question text="How should you animate gradients for best performance?">
+    <Answer>Animate the gradient directly</Answer>
+    <Answer correct>Animate background-position</Answer>
+    <Answer>Use JavaScript</Answer>
+    <Answer>Recreate the gradient each frame</Answer>
+  </Question>
+
+  <Question text="What's the best naming convention for color variables?">
+    <Answer>Descriptive names like --blue</Answer>
+    <Answer correct>Semantic names like --primary or numbered scales like --primary-500</Answer>
+    <Answer>Visual names like --button-color</Answer>
+    <Answer>Random names</Answer>
+  </Question>
+
+  <Question text="How do you detect Display P3 support?">
+    <Answer>Use JavaScript</Answer>
+    <Answer correct>Use @media (color-gamut: p3)</Answer>
+    <Answer>Use @supports</Answer>
+    <Answer>Check user agent</Answer>
+  </Question>
+
+  <Question text="What's the purpose of relative color syntax?">
+    <Answer>Make colors load faster</Answer>
+    <Answer correct>Create color variations based on an existing color's components</Answer>
+    <Answer>Convert between color spaces</Answer>
+    <Answer>Improve accessibility</Answer>
+  </Question>
+</Quiz>
+
+---
+
+**Outstanding work!** 🌈 You now have expert-level knowledge of CSS colors. You can create sophisticated color systems, use cutting-edge color features, and build accessible, performant designs. Keep experimenting with these advanced techniques!

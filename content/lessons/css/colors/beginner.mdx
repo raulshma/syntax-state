@@ -1,0 +1,246 @@
+# CSS Colors
+
+Welcome to CSS Colors! Think of colors as the **paint palette** for your web pages. Just like an artist mixes paints to create the perfect shade, CSS gives you multiple ways to define and work with colors.
+
+In this lesson, you'll learn about different color models (RGB, HSL, and Hex), how to add transparency, and how to create beautiful gradients. By the end, you'll be able to bring your web pages to life with color!
+
+<InfoBox type="tip" title="Why Learn Colors?">
+Colors are fundamental to web design. They set the mood, guide user attention, and make your content visually appealing. Understanding how colors work in CSS gives you complete creative control over your designs.
+</InfoBox>
+
+<ProgressCheckpoint section="introduction" xpReward={10} />
+
+## Color Models
+
+CSS provides three main ways to define colors: **RGB**, **HSL**, and **Hex**. Each has its own strengths, and you can use whichever feels most natural to you!
+
+### RGB - Red, Green, Blue
+
+RGB works like mixing colored lights. Imagine three flashlights (red, green, and blue) - by adjusting their brightness from 0 to 255, you can create any color!
+
+```css
+.red-text {
+  color: rgb(255, 0, 0);
+}
+
+.purple-text {
+  color: rgb(128, 0, 128);
+}
+
+.white-text {
+  color: rgb(255, 255, 255);
+}
+```
+
+<KeyConcept title="RGB Values">
+- **First number**: Red (0-255)
+- **Second number**: Green (0-255)
+- **Third number**: Blue (0-255)
+- **rgb(0, 0, 0)**: Black (no light)
+- **rgb(255, 255, 255)**: White (all lights at full)
+</KeyConcept>
+
+### HSL - Hue, Saturation, Lightness
+
+HSL is like describing a color the way humans naturally think about it: "What color is it? How vibrant? How bright?"
+
+```css
+.blue-text {
+  color: hsl(240, 100%, 50%);
+}
+
+.light-blue {
+  color: hsl(240, 100%, 75%);
+}
+
+.muted-blue {
+  color: hsl(240, 50%, 50%);
+}
+```
+
+<KeyConcept title="HSL Values">
+- **Hue**: The color itself (0-360 degrees on a color wheel)
+  - 0° = Red, 120° = Green, 240° = Blue
+- **Saturation**: How vibrant (0% = gray, 100% = full color)
+- **Lightness**: How bright (0% = black, 50% = normal, 100% = white)
+</KeyConcept>
+
+<InfoBox type="tip" title="When to Use HSL">
+HSL is great when you want to create color variations! Want a lighter version? Just increase the lightness. Want a more muted version? Decrease the saturation.
+</InfoBox>
+
+### Hex - Hexadecimal
+
+Hex codes are the most common way to write colors in CSS. They're compact and widely used in design tools.
+
+```css
+.red-text {
+  color: #FF0000;
+}
+
+.green-text {
+  color: #00FF00;
+}
+
+.blue-text {
+  color: #0000FF;
+}
+```
+
+<KeyConcept title="Understanding Hex Codes">
+A hex code has 6 characters: **#RRGGBB**
+- First 2 characters: Red (00-FF)
+- Middle 2 characters: Green (00-FF)
+- Last 2 characters: Blue (00-FF)
+
+**Shorthand**: If pairs match, you can shorten it!
+- #FF0000 → #F00
+- #00FF00 → #0F0
+- #FFFFFF → #FFF
+</KeyConcept>
+
+### Try All Three Models!
+
+Experiment with the ColorMixer to see how RGB, HSL, and Hex all represent the same colors:
+
+<ColorMixer
+  initialColor="#3B82F6"
+  showModels={['rgb', 'hsl', 'hex']}
+/>
+
+<ProgressCheckpoint section="color-models" xpReward={15} />
+
+## Opacity and Transparency
+
+Sometimes you want colors to be see-through, like looking through colored glass. CSS provides two ways to add transparency!
+
+### RGBA and HSLA
+
+Add an **alpha channel** (transparency) to RGB or HSL by using `rgba()` or `hsla()`.
+
+```css
+.semi-transparent-red {
+  background-color: rgba(255, 0, 0, 0.5);
+}
+
+.semi-transparent-blue {
+  background-color: hsla(240, 100%, 50%, 0.5);
+}
+```
+
+<KeyConcept title="Alpha Values">
+The alpha value controls transparency:
+- **1** or **100%**: Fully opaque (solid)
+- **0.5** or **50%**: Half transparent
+- **0** or **0%**: Fully transparent (invisible)
+</KeyConcept>
+
+### The opacity Property
+
+The `opacity` property makes an **entire element** transparent, including all its children.
+
+```css
+.faded-box {
+  opacity: 0.7;
+}
+
+.very-faded {
+  opacity: 0.3;
+}
+```
+
+<InfoBox type="warning" title="RGBA vs Opacity">
+**RGBA/HSLA**: Only makes the color transparent
+**opacity**: Makes the entire element and all its children transparent
+
+Use RGBA/HSLA when you only want the background transparent but text solid!
+</InfoBox>
+
+### Try It Yourself!
+
+Experiment with transparency:
+
+<CssEditor
+  initialCss={`.box {
+  width: 200px;
+  height: 100px;
+  background-color: rgba(59, 130, 246, 0.5);
+  color: rgb(0, 0, 0);
+  padding: 20px;
+  border: 2px solid rgb(59, 130, 246);
+}
+
+.faded {
+  opacity: 0.5;
+}`}
+  initialHtml={`<div class="box">
+  Semi-transparent background
+</div>
+
+<div class="box faded">
+  Entire element faded
+</div>`}
+  height={400}
+/>
+
+<ProgressCheckpoint section="opacity-transparency" xpReward={15} />
+
+## Summary
+
+Let's recap what you've learned about CSS colors!
+
+<KeyConcept title="Key Takeaways">
+- **RGB**: Mix red, green, and blue light (0-255 each)
+- **HSL**: Define colors by hue (0-360°), saturation (0-100%), and lightness (0-100%)
+- **Hex**: Compact format using #RRGGBB notation
+- **RGBA/HSLA**: Add transparency with an alpha channel (0-1)
+- **opacity**: Makes entire elements transparent (0-1)
+- All three color models can represent the same colors - use whichever you prefer!
+</KeyConcept>
+
+<ProgressCheckpoint section="summary" xpReward={10} />
+
+## Quick Quiz
+
+Test your understanding of CSS colors!
+
+<Quiz>
+  <Question text="Which RGB value creates pure red?">
+    <Answer>rgb(0, 255, 0)</Answer>
+    <Answer correct>rgb(255, 0, 0)</Answer>
+    <Answer>rgb(0, 0, 255)</Answer>
+    <Answer>rgb(255, 255, 255)</Answer>
+  </Question>
+
+  <Question text="In HSL, what does the 'L' stand for?">
+    <Answer>Light</Answer>
+    <Answer correct>Lightness</Answer>
+    <Answer>Luminosity</Answer>
+    <Answer>Level</Answer>
+  </Question>
+
+  <Question text="What is the shorthand hex code for #FFFFFF?">
+    <Answer>#FFF000</Answer>
+    <Answer>#F0F0F0</Answer>
+    <Answer correct>#FFF</Answer>
+    <Answer>#FFFF</Answer>
+  </Question>
+
+  <Question text="What alpha value makes a color 50% transparent?">
+    <Answer>0</Answer>
+    <Answer correct>0.5</Answer>
+    <Answer>50</Answer>
+    <Answer>1</Answer>
+  </Question>
+
+  <Question text="What's the difference between rgba() and the opacity property?">
+    <Answer>They do exactly the same thing</Answer>
+    <Answer correct>rgba() only affects the color, opacity affects the entire element</Answer>
+    <Answer>opacity only affects the color, rgba() affects the entire element</Answer>
+    <Answer>rgba() is newer and better</Answer>
+  </Question>
+</Quiz>
+
+---
+
+**Excellent work!** 🎉 You now understand the fundamentals of CSS colors. Next, you'll learn about gradients, color functions, and color accessibility in the intermediate and advanced lessons!

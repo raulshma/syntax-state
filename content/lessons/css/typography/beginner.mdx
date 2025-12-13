@@ -1,0 +1,342 @@
+# CSS Typography
+
+Welcome to CSS Typography! Think of typography as the **art of making text beautiful and readable**. Just like choosing the right font for a poster or a book cover, CSS gives you the power to control how text looks on your web pages.
+
+In this lesson, you'll learn how to change fonts, adjust sizes, align text, and add decorative effects. By the end, you'll be able to make your text look professional and engaging!
+
+<InfoBox type="tip" title="Why Learn Typography?">
+Typography is one of the most important aspects of web design. Good typography makes your content easy to read and helps communicate your message effectively. Poor typography can make even great content hard to consume.
+</InfoBox>
+
+<ProgressCheckpoint section="introduction" xpReward={10} />
+
+## Font Properties
+
+Font properties control the **typeface** and **appearance** of your text. Let's explore the most important ones!
+
+### font-family
+
+The **font-family** property lets you choose which typeface to use. Think of it like choosing between handwriting, print, or fancy calligraphy.
+
+```css
+p {
+  font-family: Arial, sans-serif;
+}
+```
+
+<KeyConcept title="Font Stacks">
+Always provide multiple fonts as a **fallback stack**. If the first font isn't available on the user's computer, the browser will try the next one, and so on.
+</KeyConcept>
+
+Common font families:
+- **Serif fonts**: Times New Roman, Georgia (have little "feet" on letters)
+- **Sans-serif fonts**: Arial, Helvetica (clean, no "feet")
+- **Monospace fonts**: Courier, Consolas (all letters same width, like typewriters)
+
+### font-size
+
+The **font-size** property controls how big or small your text appears.
+
+```css
+h1 {
+  font-size: 32px;
+}
+
+p {
+  font-size: 16px;
+}
+```
+
+Common units:
+- **px** (pixels): Fixed size, like `16px`
+- **em**: Relative to parent font size, like `1.5em` (1.5 times parent size)
+- **rem**: Relative to root font size, like `1rem` (usually 16px)
+
+<InfoBox type="tip" title="Which Unit Should I Use?">
+For beginners, **px** is easiest to understand. As you advance, **rem** is great for responsive designs because it scales with user preferences.
+</InfoBox>
+
+### font-weight
+
+The **font-weight** property controls how **bold** or **light** your text appears.
+
+```css
+.bold-text {
+  font-weight: bold;
+}
+
+.light-text {
+  font-weight: 300;
+}
+```
+
+Common values:
+- **normal** or **400**: Regular weight
+- **bold** or **700**: Bold text
+- **100-900**: Numeric values (if the font supports them)
+
+### font-style
+
+The **font-style** property makes text **italic** or **oblique** (slanted).
+
+```css
+.italic {
+  font-style: italic;
+}
+
+.normal {
+  font-style: normal;
+}
+```
+
+### Try It Yourself!
+
+Experiment with different font properties:
+
+<CssEditor
+  initialCss={`h1 {
+  font-family: Georgia, serif;
+  font-size: 32px;
+  font-weight: bold;
+}
+
+p {
+  font-family: Arial, sans-serif;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+}`}
+  initialHtml={`<h1>Welcome to Typography</h1>
+<p>This is a paragraph with regular text.</p>
+<p class="special">Try changing the font properties above!</p>`}
+  height={300}
+/>
+
+<ProgressCheckpoint section="font-properties" xpReward={15} />
+
+## Text Properties
+
+Text properties control how text is **aligned**, **decorated**, and **transformed**.
+
+### text-align
+
+The **text-align** property controls the horizontal alignment of text within its container.
+
+```css
+.center {
+  text-align: center;
+}
+
+.right {
+  text-align: right;
+}
+
+.left {
+  text-align: left;
+}
+```
+
+Think of it like the alignment buttons in a word processor!
+
+### text-decoration
+
+The **text-decoration** property adds lines to your text.
+
+```css
+.underline {
+  text-decoration: underline;
+}
+
+.line-through {
+  text-decoration: line-through;
+}
+
+.no-decoration {
+  text-decoration: none;
+}
+```
+
+Common uses:
+- **underline**: For emphasis or links
+- **line-through**: For showing deleted or discounted text
+- **none**: To remove default link underlines
+
+<InfoBox type="warning" title="Be Careful with Underlines">
+Users expect underlined text to be clickable links. Only underline text if it's actually a link, or you might confuse your visitors!
+</InfoBox>
+
+### text-transform
+
+The **text-transform** property changes the capitalization of text.
+
+```css
+.uppercase {
+  text-transform: uppercase;
+}
+
+.lowercase {
+  text-transform: lowercase;
+}
+
+.capitalize {
+  text-transform: capitalize;
+}
+```
+
+Examples:
+- **uppercase**: "hello world" → "HELLO WORLD"
+- **lowercase**: "HELLO WORLD" → "hello world"
+- **capitalize**: "hello world" → "Hello World"
+
+### Practice Text Properties
+
+<CssEditor
+  initialCss={`h2 {
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.highlight {
+  text-decoration: underline;
+}
+
+.strikethrough {
+  text-decoration: line-through;
+}`}
+  initialHtml={`<h2>Typography is Fun!</h2>
+<p>This is <span class="highlight">important text</span> that needs attention.</p>
+<p>This price is <span class="strikethrough">$99</span> now only $49!</p>`}
+  height={300}
+/>
+
+<ProgressCheckpoint section="text-properties" xpReward={15} />
+
+## Combining Font and Text Properties
+
+Now let's put everything together! You can combine multiple properties to create beautiful text styles.
+
+```css
+.heading {
+  font-family: Georgia, serif;
+  font-size: 36px;
+  font-weight: bold;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.subtitle {
+  font-family: Arial, sans-serif;
+  font-size: 18px;
+  font-weight: 300;
+  font-style: italic;
+  text-align: center;
+}
+```
+
+<KeyConcept title="Typography Hierarchy">
+Use different font sizes, weights, and styles to create a **visual hierarchy**. This helps readers understand which content is most important:
+- **Headings**: Larger, bolder
+- **Body text**: Medium size, regular weight
+- **Captions**: Smaller, lighter weight
+</KeyConcept>
+
+### Create Your Own Design
+
+Try creating a complete text design:
+
+<CssEditor
+  initialCss={`h1 {
+  font-family: Georgia, serif;
+  font-size: 48px;
+  font-weight: bold;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.subtitle {
+  font-family: Arial, sans-serif;
+  font-size: 20px;
+  font-style: italic;
+  text-align: center;
+}
+
+p {
+  font-family: Arial, sans-serif;
+  font-size: 16px;
+  text-align: left;
+}`}
+  initialHtml={`<h1>Amazing Typography</h1>
+<p class="subtitle">Learn to style text like a pro</p>
+<p>Typography is the art and technique of arranging type to make written language legible, readable, and appealing when displayed.</p>`}
+  height={350}
+/>
+
+<ProgressCheckpoint section="advanced-typography" xpReward={15} />
+
+## Key Takeaways
+
+<KeyConcept title="Summary">
+**Font Properties:**
+- `font-family`: Choose the typeface (with fallback fonts)
+- `font-size`: Control text size (px, em, rem)
+- `font-weight`: Make text bold or light (normal, bold, 100-900)
+- `font-style`: Make text italic or normal
+
+**Text Properties:**
+- `text-align`: Align text (left, center, right)
+- `text-decoration`: Add lines (underline, line-through, none)
+- `text-transform`: Change capitalization (uppercase, lowercase, capitalize)
+
+**Best Practices:**
+- Always provide fallback fonts in font-family
+- Use appropriate font sizes for readability (16px minimum for body text)
+- Create visual hierarchy with different sizes and weights
+- Be careful with underlines (users expect them to be links)
+</KeyConcept>
+
+<ProgressCheckpoint section="summary" xpReward={10} />
+
+## Quick Quiz
+
+Test your typography knowledge!
+
+<Quiz>
+  <Question text="Which property would you use to make text bold?">
+    <Answer>font-size</Answer>
+    <Answer correct>font-weight</Answer>
+    <Answer>text-decoration</Answer>
+    <Answer>font-style</Answer>
+  </Question>
+
+  <Question text="What does text-align: center do?">
+    <Answer>Makes text bold and centered</Answer>
+    <Answer correct>Horizontally centers text within its container</Answer>
+    <Answer>Vertically centers text</Answer>
+    <Answer>Centers text on the page</Answer>
+  </Question>
+
+  <Question text="Why should you provide multiple fonts in font-family?">
+    <Answer>To make the page load faster</Answer>
+    <Answer>To confuse the browser</Answer>
+    <Answer correct>As fallbacks if the first font isn't available</Answer>
+    <Answer>It's not necessary</Answer>
+  </Question>
+
+  <Question text="Which text-transform value would change 'hello' to 'HELLO'?">
+    <Answer>capitalize</Answer>
+    <Answer>lowercase</Answer>
+    <Answer correct>uppercase</Answer>
+    <Answer>bold</Answer>
+  </Question>
+
+  <Question text="What's the recommended minimum font size for body text?">
+    <Answer>10px</Answer>
+    <Answer>12px</Answer>
+    <Answer correct>16px</Answer>
+    <Answer>20px</Answer>
+  </Question>
+</Quiz>
+
+---
+
+**Excellent work!** 🎉 You've mastered the basics of CSS typography! Next, explore **CSS Colors** to learn how to add color to your text, or continue to the intermediate level to learn about web fonts and advanced spacing techniques.

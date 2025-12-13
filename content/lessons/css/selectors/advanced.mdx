@@ -1,0 +1,790 @@
+# CSS Selectors - Advanced
+
+Welcome to the advanced level! Here, we'll explore cutting-edge CSS selectors, dive into complex specificity scenarios, examine browser compatibility considerations, and discuss performance implications. These techniques are used in production applications and will help you write sophisticated, maintainable CSS.
+
+<InfoBox type="tip" title="Production-Ready Techniques">
+The patterns you'll learn here are used in large-scale applications. They'll help you solve complex styling challenges while maintaining code quality and performance.
+</InfoBox>
+
+<ProgressCheckpoint section="introduction" xpReward={20} />
+
+## Modern and Experimental Selectors
+
+### The :is() Pseudo-class
+
+The `:is()` pseudo-class (formerly `:matches()` and `:any()`) simplifies complex selector lists:
+
+```css
+/* Without :is() - repetitive */
+header a:hover,
+footer a:hover,
+aside a:hover {
+  color: blue;
+}
+
+/* With :is() - cleaner */
+:is(header, footer, aside) a:hover {
+  color: blue;
+}
+```
+
+**Key characteristics:**
+- Takes the specificity of its **most specific** argument
+- Forgiving selector list (invalid selectors don't break the entire rule)
+- Excellent browser support (all modern browsers)
+
+```css
+/* Specificity is (1, 0, 1) - from #header */
+:is(#header, .nav, footer) a {
+  color: red;
+}
+```
+
+### The :where() Pseudo-class
+
+Similar to `:is()`, but with **zero specificity**:
+
+```css
+/* Specificity: (0, 0, 0) - easy to override */
+:where(header, footer, aside) a {
+  color: gray;
+}
+
+/* This easily overrides the above */
+a {
+  color: blue;
+}
+```
+
+**Use cases:**
+- Creating low-specificity utility styles
+- Building design systems with easy overrides
+- Resetting styles without specificity wars
+
+```css
+/* Reset button styles with zero specificity */
+:where(button, .btn) {
+  border: none;
+  background: none;
+  padding: 0;
+  font: inherit;
+}
+
+/* Easy to override */
+.primary-button {
+  background: blue;
+  padding: 10px 20px;
+}
+```
+
+### The :has() Pseudo-class (Relational Selector)
+
+The `:has()` pseudo-class is revolutionary — it lets you select **parent** elements based on their children:
+
+```css
+/* Articles that contain an image */
+article:has(img) {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+}
+
+/* Forms with invalid inputs */
+form:has(input:invalid) {
+  border: 2px solid red;
+}
+
+/* Cards with a .featured class inside */
+.card:has(.featured) {
+  border: 3px solid gold;
+}
+```
+
+**Advanced patterns:**
+
+```css
+/* Headings followed by a paragraph */
+h2:has(+ p) {
+  margin-bottom: 0.5em;
+}
+
+/* Sections without any headings */
+section:not(:has(h1, h2, h3)) {
+  padding-top: 0;
+}
+
+/* List items containing checked checkboxes */
+li:has(input[type="checkbox"]:checked) {
+  background-color: #e8f5e9;
+  text-decoration: line-through;
+}
+```
+
+<BrowserCompatibility
+  feature=":has() Selector"
+  minVersions={{
+    chrome: '105',
+    firefox: '121',
+    safari: '15.4',
+    edge: '105',
+  }}
+  showFallback={true}
+  showPrefixes={false}
+/>
+
+### The :focus-visible Pseudo-class
+
+Distinguishes between keyboard focus and mouse focus:
+
+```css
+/* Only show focus ring for keyboard navigation */
+button:focus-visible {
+  outline: 2px solid blue;
+  outline-offset: 2px;
+}
+
+/* Remove focus ring for mouse clicks */
+button:focus:not(:focus-visible) {
+  outline: none;
+}
+```
+
+This improves accessibility while maintaining clean aesthetics for mouse users.
+
+### The :focus-within Pseudo-class
+
+Styles an element when it or any descendant has focus:
+
+```css
+/* Highlight form when any input is focused */
+form:focus-within {
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+}
+
+/* Show helper text when input is focused */
+.form-group:focus-within .helper-text {
+  opacity: 1;
+  transform: translateY(0);
+}
+```
+
+<SelectorPlayground 
+  initialHtml={`<div class="card">
+  <h3>Article Title</h3>
+  <img src="placeholder.jpg" alt="Article image">
+  <p>Article content...</p>
+</div>
+<div class="card">
+  <h3>Another Article</h3>
+  <p>No image here...</p>
+</div>`}
+  initialSelector=".card:has(img)"
+  showSpecificity={true}
+  highlightMatches={true}
+/>
+
+<ProgressCheckpoint section="basic-selectors" xpReward={30} />
+
+## Complex Combinator Patterns
+
+### Combining Multiple Relationship Selectors
+
+Create sophisticated targeting with multiple combinators:
+
+```css
+/* Direct child paragraphs that come after headings in articles */
+article > h2 + p {
+  font-size: 1.2em;
+  color: #666;
+}
+
+/* Links in list items that are direct children of nav, but not the first */
+nav > ul > li:not(:first-child) > a {
+  border-left: 1px solid #ddd;
+}
+
+/* All paragraphs after the first heading in sections with class 'content' */
+section.content h2 ~ p {
+  line-height: 1.8;
+}
+```
+
+### Selector Scope and Context
+
+Understanding how selectors interact with document structure:
+
+```css
+/* This is different from... */
+.sidebar .widget h3 { }
+
+/* ...this (more specific) */
+.sidebar > .widget > h3 { }
+
+/* And different from this (only adjacent) */
+.sidebar .widget + h3 { }
+```
+
+### Performance Considerations
+
+**Right-to-left parsing:** Browsers read selectors from right to left.
+
+```css
+/* ❌ Slow - checks every <a>, then every <li>, then every <ul> */
+ul li a {
+  color: blue;
+}
+
+/* ✅ Faster - more specific rightmost selector */
+.nav-link {
+  color: blue;
+}
+
+/* ❌ Very slow - checks every element */
+* a {
+  color: blue;
+}
+```
+
+**Key principles:**
+1. Avoid universal selectors on the right side
+2. Avoid overly complex descendant chains
+3. Use classes for frequently styled elements
+4. Keep selectors as short as possible
+
+<InfoBox type="info" title="Modern Browser Optimization">
+Modern browsers are highly optimized, so selector performance rarely matters for most sites. Focus on maintainability first, optimize only if you have measured performance issues.
+</InfoBox>
+
+<ProgressCheckpoint section="combinators" xpReward={35} />
+
+## Advanced Pseudo-class Techniques
+
+### Complex :nth-child() Patterns
+
+#### Selecting Ranges
+
+```css
+/* First 3 items */
+li:nth-child(-n+3) {
+  font-weight: bold;
+}
+
+/* Items 4 through 7 */
+li:nth-child(n+4):nth-child(-n+7) {
+  background: lightblue;
+}
+
+/* All but first 3 */
+li:nth-child(n+4) {
+  opacity: 0.7;
+}
+
+/* Last 3 items */
+li:nth-last-child(-n+3) {
+  border-bottom: none;
+}
+```
+
+#### Combining with :not()
+
+```css
+/* Every 3rd item, but not the first */
+li:nth-child(3n):not(:first-child) {
+  page-break-after: always;
+}
+
+/* Odd items that aren't the first or last */
+li:nth-child(odd):not(:first-child):not(:last-child) {
+  background: #f9f9f9;
+}
+```
+
+### The :empty Pseudo-class
+
+Targets elements with no children (including text nodes):
+
+```css
+/* Hide empty paragraphs */
+p:empty {
+  display: none;
+}
+
+/* Style empty state */
+.message-list:empty::before {
+  content: "No messages yet";
+  color: #999;
+  font-style: italic;
+}
+
+/* Note: whitespace counts as content! */
+/* This is NOT empty: <p> </p> */
+/* This IS empty: <p></p> */
+```
+
+### The :target Pseudo-class
+
+Styles the element targeted by the URL fragment:
+
+```css
+/* When URL is page.html#section1 */
+section:target {
+  background: #fffacd;
+  border-left: 4px solid #ffd700;
+  padding-left: 20px;
+}
+
+/* Smooth scroll to target */
+:target {
+  scroll-margin-top: 80px; /* Account for fixed header */
+}
+```
+
+### The :placeholder-shown Pseudo-class
+
+Targets inputs that are currently showing placeholder text:
+
+```css
+/* Float label pattern */
+.form-field {
+  position: relative;
+}
+
+.form-field label {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  transition: all 0.2s;
+}
+
+.form-field input:not(:placeholder-shown) + label,
+.form-field input:focus + label {
+  top: 0;
+  font-size: 0.75em;
+  color: blue;
+}
+```
+
+### Combining Pseudo-classes
+
+Stack multiple pseudo-classes for precise targeting:
+
+```css
+/* Required inputs that are invalid and have been touched */
+input:required:invalid:not(:focus):not(:placeholder-shown) {
+  border-color: red;
+  background-image: url('error-icon.svg');
+}
+
+/* Links that are external, not visited, and being hovered */
+a[href^="http"]:not([href*="mysite.com"]):not(:visited):hover {
+  color: orange;
+  text-decoration: underline;
+}
+
+/* Checked checkboxes that are disabled */
+input[type="checkbox"]:checked:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+```
+
+<SelectorPlayground 
+  initialHtml={`<ul>
+  <li>Item 1</li>
+  <li>Item 2</li>
+  <li>Item 3</li>
+  <li>Item 4</li>
+  <li>Item 5</li>
+  <li>Item 6</li>
+  <li>Item 7</li>
+  <li>Item 8</li>
+</ul>`}
+  initialSelector="li:nth-child(n+4):nth-child(-n+7)"
+  showSpecificity={true}
+  highlightMatches={true}
+/>
+
+<ProgressCheckpoint section="pseudo-classes" xpReward={35} />
+
+## Advanced Attribute Selector Patterns
+
+### Language-Specific Selectors
+
+```css
+/* Elements with lang attribute */
+[lang] {
+  font-style: italic;
+}
+
+/* Specific language */
+[lang="fr"] {
+  quotes: "«" "»";
+}
+
+/* Language prefix (matches fr, fr-CA, fr-FR, etc.) */
+[lang|="fr"] {
+  font-family: "French Font", serif;
+}
+```
+
+### Data Attribute Selectors
+
+```css
+/* Tooltip positioning */
+[data-tooltip] {
+  position: relative;
+  cursor: help;
+}
+
+[data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: black;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 4px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+}
+
+[data-tooltip]:hover::after {
+  opacity: 1;
+}
+
+/* State-based styling */
+[data-state="loading"] {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+[data-state="error"] {
+  border-color: red;
+}
+
+[data-state="success"] {
+  border-color: green;
+}
+```
+
+### Complex Attribute Patterns
+
+```css
+/* Multiple conditions */
+a[href^="https"][target="_blank"][rel~="noopener"] {
+  /* Secure external links */
+}
+
+/* Case-insensitive with wildcards */
+[class*="icon" i] {
+  /* Matches Icon, ICON, icon, etc. */
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+}
+
+/* Combining with pseudo-classes */
+input[type="text"][required]:invalid:not(:focus) {
+  border-color: red;
+}
+```
+
+### ARIA Attribute Selectors
+
+```css
+/* Expanded/collapsed states */
+[aria-expanded="true"] .icon {
+  transform: rotate(180deg);
+}
+
+/* Hidden elements */
+[aria-hidden="true"] {
+  display: none;
+}
+
+/* Current page in navigation */
+[aria-current="page"] {
+  font-weight: bold;
+  color: blue;
+}
+
+/* Disabled state */
+[aria-disabled="true"] {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+```
+
+<ProgressCheckpoint section="attribute-selectors" xpReward={30} />
+
+## Specificity Edge Cases and Strategies
+
+### The Specificity Wars
+
+Understanding complex specificity scenarios:
+
+```css
+/* (0, 0, 1) */
+p { color: black; }
+
+/* (0, 1, 0) */
+.text { color: blue; }
+
+/* (0, 1, 1) */
+p.text { color: green; }
+
+/* (1, 0, 0) */
+#content { color: red; }
+
+/* (1, 1, 1) */
+#content p.text { color: purple; }
+
+/* (0, 0, 0) - :where() has zero specificity! */
+:where(#content) p { color: orange; }
+
+/* (1, 0, 1) - :is() takes highest specificity */
+:is(#content, .container) p { color: yellow; }
+```
+
+### Specificity Calculation Examples
+
+<SpecificityCalculator 
+  initialSelectors={[
+    "div p",
+    ".container .text",
+    "#main article p",
+    "div.container > p.intro",
+    ":is(#header, .nav) a:hover",
+    ":where(#header, .nav) a:hover",
+    "article:has(img) h2 + p"
+  ]}
+  showBreakdown={true}
+  showComparison={true}
+/>
+
+### The !important Nuclear Option
+
+```css
+/* ❌ Creates maintenance nightmares */
+.button {
+  color: red !important;
+}
+
+/* Now you need !important to override */
+.button.primary {
+  color: blue !important;
+}
+
+/* And it escalates... */
+.button.primary.large {
+  color: green !important;
+}
+```
+
+**When !important is acceptable:**
+
+1. **Utility classes** that should always win:
+```css
+.hidden {
+  display: none !important;
+}
+
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  overflow: hidden !important;
+}
+```
+
+2. **Overriding third-party styles** you can't modify:
+```css
+/* Override library styles */
+.third-party-widget .button {
+  background: blue !important;
+}
+```
+
+3. **User stylesheets** for accessibility:
+```css
+/* User stylesheet for high contrast */
+* {
+  background: black !important;
+  color: white !important;
+}
+```
+
+### Specificity Management Strategies
+
+#### 1. BEM Methodology
+
+```css
+/* Block */
+.card { }
+
+/* Element */
+.card__title { }
+.card__content { }
+
+/* Modifier */
+.card--featured { }
+.card__title--large { }
+
+/* All have same specificity (0, 1, 0) */
+```
+
+#### 2. Utility-First Approach
+
+```css
+/* Low specificity utilities */
+.mt-4 { margin-top: 1rem; }
+.text-center { text-align: center; }
+.flex { display: flex; }
+
+/* Component-specific overrides */
+.card { }
+.card.mt-4 { } /* Slightly higher specificity when needed */
+```
+
+#### 3. Layered Specificity
+
+```css
+/* Layer 1: Resets (lowest) */
+* { margin: 0; padding: 0; }
+
+/* Layer 2: Base elements */
+p { line-height: 1.6; }
+
+/* Layer 3: Layout classes */
+.container { max-width: 1200px; }
+
+/* Layer 4: Component classes */
+.card { border: 1px solid #ddd; }
+
+/* Layer 5: State classes */
+.is-active { font-weight: bold; }
+
+/* Layer 6: Utilities (highest) */
+.mt-0 { margin-top: 0; }
+```
+
+### Cascade Layers (@layer)
+
+Modern CSS supports explicit cascade layers:
+
+```css
+@layer reset, base, components, utilities;
+
+@layer reset {
+  * { margin: 0; padding: 0; }
+}
+
+@layer base {
+  p { line-height: 1.6; }
+}
+
+@layer components {
+  .card { border: 1px solid #ddd; }
+}
+
+@layer utilities {
+  .mt-0 { margin-top: 0 !important; }
+}
+
+/* Layers have lower priority than unlayered styles */
+/* Order: reset < base < components < utilities < unlayered */
+```
+
+<InfoBox type="tip" title="Specificity Best Practices">
+1. Keep specificity as low as possible
+2. Use classes over IDs for styling
+3. Avoid deep nesting (max 3 levels)
+4. Use :where() for zero-specificity resets
+5. Reserve !important for utilities only
+6. Consider BEM or similar methodology
+7. Use @layer for explicit cascade control
+</InfoBox>
+
+<ProgressCheckpoint section="specificity" xpReward={35} />
+
+## Key Takeaways
+
+<KeyConcept title="Modern Selectors Are Powerful">
+:is(), :where(), and :has() enable sophisticated patterns with better maintainability. :is() simplifies complex lists, :where() provides zero specificity, and :has() enables parent selection.
+</KeyConcept>
+
+<KeyConcept title="Performance Matters at Scale">
+Browsers parse selectors right-to-left. Keep selectors short, avoid universal selectors on the right, and use classes for frequently styled elements.
+</KeyConcept>
+
+<KeyConcept title="Combine Pseudo-classes Strategically">
+Stack multiple pseudo-classes for precise targeting. Use :nth-child() ranges, :not() for exclusions, and form pseudo-classes for interactive feedback.
+</KeyConcept>
+
+<KeyConcept title="Attribute Selectors Are Versatile">
+Use data attributes for state management, ARIA attributes for accessibility-aware styling, and language attributes for internationalization.
+</KeyConcept>
+
+<KeyConcept title="Manage Specificity Deliberately">
+Use methodologies like BEM, leverage :where() for resets, reserve !important for utilities, and consider @layer for explicit cascade control.
+</KeyConcept>
+
+<KeyConcept title="Specificity Calculation">
+Remember: (IDs, Classes/Attributes/Pseudo-classes, Elements). :where() = 0, :is() = highest argument, !important overrides everything.
+</KeyConcept>
+
+<ProgressCheckpoint section="summary" xpReward={15} />
+
+## Quick Quiz
+
+<Quiz>
+  <Question text="What is the specificity of ':is(#header, .nav) a:hover'?">
+    <Answer>(0, 2, 1)</Answer>
+    <Answer correct>(1, 1, 1)</Answer>
+    <Answer>(1, 2, 1)</Answer>
+    <Answer>(0, 1, 2)</Answer>
+  </Question>
+  
+  <Question text="What does 'article:has(img)' select?">
+    <Answer>All images inside articles</Answer>
+    <Answer correct>Articles that contain an image</Answer>
+    <Answer>Articles followed by an image</Answer>
+    <Answer>Images that are inside articles</Answer>
+  </Question>
+  
+  <Question text="Which selector has ZERO specificity?">
+    <Answer>:is(#id, .class)</Answer>
+    <Answer correct>:where(#id, .class)</Answer>
+    <Answer>:not(.class)</Answer>
+    <Answer>*</Answer>
+  </Question>
+  
+  <Question text="What does 'li:nth-child(-n+3)' select?">
+    <Answer>Every 3rd list item</Answer>
+    <Answer>List items after the 3rd</Answer>
+    <Answer correct>The first 3 list items</Answer>
+    <Answer>The 3rd list item only</Answer>
+  </Question>
+  
+  <Question text="When is !important acceptable to use?">
+    <Answer>Whenever you need to override something</Answer>
+    <Answer>For all component styles</Answer>
+    <Answer correct>For utility classes and overriding third-party styles</Answer>
+    <Answer>Never - it should always be avoided</Answer>
+  </Question>
+  
+  <Question text="How do browsers parse CSS selectors?">
+    <Answer>Left to right</Answer>
+    <Answer correct>Right to left</Answer>
+    <Answer>Top to bottom</Answer>
+    <Answer>Random order</Answer>
+  </Question>
+</Quiz>
+
+---
+
+**Congratulations!** 🎉 You've mastered CSS selectors at an advanced level. You now understand modern selector features, complex specificity scenarios, performance considerations, and production-ready patterns. These skills will serve you well in building sophisticated, maintainable stylesheets for any project.

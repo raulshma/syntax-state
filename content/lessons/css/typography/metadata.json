@@ -1,0 +1,45 @@
+{
+  "id": "typography",
+  "title": "CSS Typography",
+  "description": "Master CSS typography - from font properties to web fonts and advanced text styling techniques",
+  "milestone": "css",
+  "order": 6,
+  "sections": [
+    "introduction",
+    "font-properties",
+    "text-properties",
+    "web-fonts",
+    "line-spacing",
+    "advanced-typography",
+    "summary"
+  ],
+  "levels": {
+    "beginner": {
+      "estimatedMinutes": 35,
+      "xpReward": 50
+    },
+    "intermediate": {
+      "estimatedMinutes": 50,
+      "xpReward": 100
+    },
+    "advanced": {
+      "estimatedMinutes": 65,
+      "xpReward": 200
+    }
+  },
+  "prerequisites": ["css/selectors", "css/box-model"],
+  "tags": ["css", "typography", "fonts", "text", "web-fonts"],
+  "cssProperties": [
+    "font-family",
+    "font-size",
+    "font-weight",
+    "font-style",
+    "text-align",
+    "text-decoration",
+    "text-transform",
+    "line-height",
+    "letter-spacing",
+    "word-spacing",
+    "@font-face"
+  ]
+}

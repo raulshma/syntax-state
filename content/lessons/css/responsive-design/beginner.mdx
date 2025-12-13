@@ -1,0 +1,328 @@
+# CSS Responsive Design
+
+Welcome to Responsive Design! Imagine your website as a **shape-shifting chameleon** that adapts perfectly to any screen size - from tiny phones to massive desktop monitors. That's what responsive design is all about!
+
+In this lesson, you'll learn how to make your websites look great on any device using media queries and viewport units. By the end, you'll be able to create layouts that automatically adjust to different screen sizes.
+
+<InfoBox type="tip" title="Why Learn Responsive Design?">
+Today, people browse the web on phones, tablets, laptops, and desktops. Responsive design ensures your website looks beautiful and works perfectly on every device. It's not optional anymore - it's essential!
+</InfoBox>
+
+<ProgressCheckpoint section="introduction" xpReward={10} />
+
+## Media Queries - The Foundation
+
+Media queries are like **if statements for CSS**. They let you say: "If the screen is this wide, apply these styles."
+
+Think of it like choosing clothes based on the weather:
+- ☀️ If it's hot → wear shorts
+- 🌧️ If it's rainy → wear a jacket
+- ❄️ If it's cold → wear a coat
+
+Similarly, media queries let you apply different styles based on screen size!
+
+### Basic Media Query Syntax
+
+```css
+/* Default styles for all screens */
+.container {
+  width: 100%;
+  padding: 20px;
+}
+
+/* Styles for screens 768px and wider (tablets and up) */
+@media (min-width: 768px) {
+  .container {
+    width: 750px;
+    margin: 0 auto;
+  }
+}
+
+/* Styles for screens 1024px and wider (desktops) */
+@media (min-width: 1024px) {
+  .container {
+    width: 960px;
+  }
+}
+```
+
+<KeyConcept title="Media Query Anatomy">
+```css
+@media (condition) {
+  /* CSS rules that apply when condition is true */
+}
+```
+
+**Common conditions:**
+- `min-width: 768px` - Screen is **at least** 768px wide
+- `max-width: 767px` - Screen is **at most** 767px wide
+- `min-width: 768px and max-width: 1023px` - Screen is **between** 768px and 1023px
+</KeyConcept>
+
+### Common Breakpoints
+
+Breakpoints are the screen widths where your design changes. Here are the most common ones:
+
+```css
+/* Mobile phones (default - no media query needed) */
+.text {
+  font-size: 16px;
+}
+
+/* Tablets (768px and up) */
+@media (min-width: 768px) {
+  .text {
+    font-size: 18px;
+  }
+}
+
+/* Laptops (1024px and up) */
+@media (min-width: 1024px) {
+  .text {
+    font-size: 20px;
+  }
+}
+
+/* Large desktops (1440px and up) */
+@media (min-width: 1440px) {
+  .text {
+    font-size: 22px;
+  }
+}
+```
+
+<InfoBox type="tip" title="Standard Breakpoints">
+While you can use any breakpoint, these are industry standards:
+- **Mobile**: 0-767px
+- **Tablet**: 768px-1023px
+- **Desktop**: 1024px-1439px
+- **Large Desktop**: 1440px+
+</InfoBox>
+
+<ProgressCheckpoint section="media-queries" xpReward={15} />
+
+## Viewport Units - Flexible Sizing
+
+Viewport units are like **percentage signs on steroids**. They let you size elements based on the browser window size.
+
+Think of the viewport as the **visible area** of the web page - like looking through a window. Viewport units let you say "make this element 50% of the window height" or "make this 100% of the window width."
+
+### The Four Viewport Units
+
+```css
+.full-screen-hero {
+  width: 100vw;   /* 100% of viewport width */
+  height: 100vh;  /* 100% of viewport height */
+}
+
+.half-screen {
+  width: 50vw;    /* 50% of viewport width */
+  height: 50vh;   /* 50% of viewport height */
+}
+
+.square {
+  width: 50vmin;  /* 50% of the smaller dimension */
+  height: 50vmin; /* Always creates a square! */
+}
+
+.responsive-text {
+  font-size: 5vw; /* Font grows/shrinks with screen width */
+}
+```
+
+<KeyConcept title="Viewport Units Explained">
+- **vw** (viewport width): 1vw = 1% of viewport width
+  - 100vw = full width of the screen
+- **vh** (viewport height): 1vh = 1% of viewport height
+  - 100vh = full height of the screen
+- **vmin** (viewport minimum): 1vmin = 1% of the smaller dimension
+  - Great for keeping things square!
+- **vmax** (viewport maximum): 1vmax = 1% of the larger dimension
+  - Less commonly used
+</KeyConcept>
+
+### Practical Examples
+
+```css
+/* Full-screen hero section */
+.hero {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Responsive heading that scales with screen */
+.hero-title {
+  font-size: 8vw; /* Gets bigger on wider screens */
+}
+
+/* Sidebar that's always 30% of screen width */
+.sidebar {
+  width: 30vw;
+  height: 100vh;
+}
+
+/* Square element that fits any screen */
+.profile-pic {
+  width: 40vmin;
+  height: 40vmin;
+  border-radius: 50%;
+}
+```
+
+<InfoBox type="warning" title="Watch Out for Horizontal Scrollbars!">
+Using `width: 100vw` can sometimes create horizontal scrollbars because it doesn't account for the vertical scrollbar width. Use `width: 100%` instead when you want full width without scrollbars.
+</InfoBox>
+
+<ProgressCheckpoint section="viewport-units" xpReward={15} />
+
+## Hands-On Practice
+
+Let's see responsive design in action! Try adjusting the viewport size and watch how the layout adapts.
+
+<ResponsivePreview
+  html={`
+<div class="container">
+  <header class="header">
+    <h1>My Responsive Site</h1>
+  </header>
+  <main class="content">
+    <div class="card">Card 1</div>
+    <div class="card">Card 2</div>
+    <div class="card">Card 3</div>
+  </main>
+</div>
+  `}
+  css={`
+/* Mobile-first: Default styles */
+.container {
+  padding: 10px;
+}
+
+.header {
+  background: #3b82f6;
+  color: white;
+  padding: 20px;
+  text-align: center;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.card {
+  background: #e0e7ff;
+  padding: 30px;
+  border-radius: 8px;
+  text-align: center;
+}
+
+/* Tablet: 768px and up */
+@media (min-width: 768px) {
+  .container {
+    padding: 20px;
+  }
+  
+  .content {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+  
+  .card {
+    flex: 1 1 calc(50% - 10px);
+  }
+}
+
+/* Desktop: 1024px and up */
+@media (min-width: 1024px) {
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  
+  .card {
+    flex: 1 1 calc(33.333% - 10px);
+  }
+}
+  `}
+  viewports={[
+    { name: 'Mobile', width: 375, height: 667 },
+    { name: 'Tablet', width: 768, height: 1024 },
+    { name: 'Desktop', width: 1440, height: 900 }
+  ]}
+  initialViewport="Mobile"
+/>
+
+<InfoBox type="tip" title="What's Happening?">
+- **Mobile (375px)**: Cards stack vertically in a single column
+- **Tablet (768px)**: Cards arrange in 2 columns
+- **Desktop (1024px)**: Cards arrange in 3 columns
+
+This is responsive design in action! The same HTML adapts to different screen sizes.
+</InfoBox>
+
+<ProgressCheckpoint section="summary" xpReward={10} />
+
+## Key Takeaways
+
+<KeyConcept title="Responsive Design Essentials">
+✅ **Media queries** let you apply different styles at different screen sizes
+
+✅ **Breakpoints** are the screen widths where your design changes (768px, 1024px, etc.)
+
+✅ **Viewport units** (vw, vh, vmin, vmax) size elements relative to the browser window
+
+✅ **Mobile-first** means starting with mobile styles and adding larger screen styles with `min-width`
+
+✅ **Responsive design** ensures your website works beautifully on all devices
+</KeyConcept>
+
+<ProgressCheckpoint section="summary" xpReward={10} />
+
+## Quick Quiz
+
+Test your understanding of responsive design basics!
+
+<Quiz>
+  <Question text="What does @media (min-width: 768px) mean?">
+    <Answer>Apply styles when screen is exactly 768px</Answer>
+    <Answer correct>Apply styles when screen is 768px or wider</Answer>
+    <Answer>Apply styles when screen is less than 768px</Answer>
+    <Answer>Apply styles only on tablets</Answer>
+  </Question>
+
+  <Question text="What does 100vh represent?">
+    <Answer>100 pixels</Answer>
+    <Answer>100% of the element's height</Answer>
+    <Answer correct>100% of the viewport height</Answer>
+    <Answer>100% of the page height</Answer>
+  </Question>
+
+  <Question text="Which viewport unit would you use to create a perfect square that adapts to any screen?">
+    <Answer>vw</Answer>
+    <Answer>vh</Answer>
+    <Answer correct>vmin</Answer>
+    <Answer>vmax</Answer>
+  </Question>
+
+  <Question text="What's the most common breakpoint for tablets?">
+    <Answer>640px</Answer>
+    <Answer correct>768px</Answer>
+    <Answer>1024px</Answer>
+    <Answer>1440px</Answer>
+  </Question>
+</Quiz>
+
+---
+
+**Excellent work!** 🎉 You've learned the fundamentals of responsive design! Next, you'll explore mobile-first vs desktop-first approaches and advanced breakpoint strategies in the intermediate level.
+
+**Next Steps:**
+- Try the intermediate level to learn about mobile-first development
+- Practice creating responsive layouts with Flexbox and Grid
+- Experiment with different breakpoint strategies

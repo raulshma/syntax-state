@@ -1,0 +1,452 @@
+# CSS Colors - Intermediate
+
+Welcome back! Now that you understand basic color models, it's time to level up with **gradients**, **color functions**, and **color accessibility**. These techniques will help you create professional, visually stunning, and accessible designs.
+
+<InfoBox type="tip" title="What You'll Learn">
+In this lesson, you'll master gradients (linear, radial, and conic), explore powerful color functions, and learn how to ensure your color choices are accessible to all users.
+</InfoBox>
+
+<ProgressCheckpoint section="introduction" xpReward={10} />
+
+## Gradients
+
+Gradients let you create smooth transitions between two or more colors. They're perfect for backgrounds, buttons, and creating depth in your designs.
+
+### Linear Gradients
+
+Linear gradients transition colors along a straight line. Think of it like a sunset - colors blend smoothly from one to another.
+
+```css
+.gradient-box {
+  background: linear-gradient(to right, #3B82F6, #8B5CF6);
+}
+
+.vertical-gradient {
+  background: linear-gradient(to bottom, #EF4444, #F59E0B);
+}
+
+.diagonal-gradient {
+  background: linear-gradient(45deg, #10B981, #3B82F6);
+}
+```
+
+<KeyConcept title="Linear Gradient Syntax">
+```css
+linear-gradient(direction, color1, color2, ...)
+```
+
+**Directions:**
+- `to right`, `to left`, `to top`, `to bottom`
+- Angles: `45deg`, `90deg`, `180deg`
+- Default: `to bottom`
+</KeyConcept>
+
+### Color Stops
+
+Control exactly where colors transition by adding **color stops** (percentages or lengths).
+
+```css
+.custom-gradient {
+  background: linear-gradient(
+    to right,
+    #3B82F6 0%,
+    #8B5CF6 50%,
+    #EC4899 100%
+  );
+}
+
+.sharp-transition {
+  background: linear-gradient(
+    to right,
+    #3B82F6 0%,
+    #3B82F6 50%,
+    #EC4899 50%,
+    #EC4899 100%
+  );
+}
+```
+
+<InfoBox type="tip" title="Creating Sharp Transitions">
+To create a sharp line instead of a smooth blend, place two color stops at the same position (like 50% in the example above).
+</InfoBox>
+
+### Radial Gradients
+
+Radial gradients radiate outward from a center point, like ripples in water or a spotlight effect.
+
+```css
+.radial-gradient {
+  background: radial-gradient(circle, #3B82F6, #1E40AF);
+}
+
+.ellipse-gradient {
+  background: radial-gradient(ellipse, #EC4899, #BE185D);
+}
+
+.positioned-gradient {
+  background: radial-gradient(
+    circle at top left,
+    #10B981,
+    #059669
+  );
+}
+```
+
+<KeyConcept title="Radial Gradient Syntax">
+```css
+radial-gradient(shape at position, color1, color2, ...)
+```
+
+**Shapes:** `circle` or `ellipse` (default)
+**Positions:** `at center`, `at top left`, `at 30% 70%`
+</KeyConcept>
+
+### Conic Gradients
+
+Conic gradients rotate around a center point, perfect for pie charts or color wheels.
+
+```css
+.conic-gradient {
+  background: conic-gradient(
+    from 0deg,
+    #EF4444,
+    #F59E0B,
+    #10B981,
+    #3B82F6,
+    #8B5CF6,
+    #EF4444
+  );
+}
+
+.pie-chart {
+  background: conic-gradient(
+    #3B82F6 0deg 120deg,
+    #10B981 120deg 240deg,
+    #F59E0B 240deg 360deg
+  );
+  border-radius: 50%;
+}
+```
+
+### Try Creating Gradients!
+
+Experiment with different gradient types and color combinations:
+
+<CssEditor
+  initialCss={`.linear {
+  width: 200px;
+  height: 100px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  margin: 10px;
+  border-radius: 8px;
+}
+
+.radial {
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(circle at center, #ffecd2 0%, #fcb69f 100%);
+  margin: 10px;
+  border-radius: 50%;
+}
+
+.conic {
+  width: 200px;
+  height: 200px;
+  background: conic-gradient(
+    from 0deg,
+    #ff6b6b,
+    #4ecdc4,
+    #45b7d1,
+    #f7b731,
+    #ff6b6b
+  );
+  margin: 10px;
+  border-radius: 50%;
+}`}
+  initialHtml={`<div class="linear"></div>
+<div class="radial"></div>
+<div class="conic"></div>`}
+  height={500}
+/>
+
+<ProgressCheckpoint section="gradients" xpReward={20} />
+
+## Color Functions
+
+Modern CSS provides powerful functions for manipulating colors dynamically.
+
+### currentColor
+
+The `currentColor` keyword uses the current text color value. It's perfect for creating consistent designs.
+
+```css
+.icon-button {
+  color: #3B82F6;
+  border: 2px solid currentColor;
+  /* border will be #3B82F6 */
+}
+
+.icon-button:hover {
+  color: #1E40AF;
+  /* border automatically updates to #1E40AF */
+}
+```
+
+<KeyConcept title="Why Use currentColor?">
+`currentColor` creates a relationship between text color and other properties. Change the color once, and related properties update automatically!
+</KeyConcept>
+
+### CSS Variables for Colors
+
+CSS custom properties (variables) make color management much easier, especially for themes.
+
+```css
+:root {
+  --primary-color: #3B82F6;
+  --primary-dark: #1E40AF;
+  --primary-light: #93C5FD;
+}
+
+.button {
+  background-color: var(--primary-color);
+  border: 2px solid var(--primary-dark);
+}
+
+.button:hover {
+  background-color: var(--primary-dark);
+}
+```
+
+<InfoBox type="tip" title="Color System Best Practice">
+Define your color palette as CSS variables at the `:root` level. This makes it easy to maintain consistency and create theme switchers!
+</InfoBox>
+
+### Practical Example: Color System
+
+<CssEditor
+  initialCss={`:root {
+  --color-primary: #3B82F6;
+  --color-success: #10B981;
+  --color-warning: #F59E0B;
+  --color-danger: #EF4444;
+}
+
+.button {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 6px;
+  color: white;
+  font-weight: 600;
+  margin: 5px;
+  cursor: pointer;
+}
+
+.button-primary {
+  background-color: var(--color-primary);
+}
+
+.button-success {
+  background-color: var(--color-success);
+}
+
+.button-warning {
+  background-color: var(--color-warning);
+}
+
+.button-danger {
+  background-color: var(--color-danger);
+}`}
+  initialHtml={`<button class="button button-primary">Primary</button>
+<button class="button button-success">Success</button>
+<button class="button button-warning">Warning</button>
+<button class="button button-danger">Danger</button>`}
+  height={400}
+/>
+
+<ProgressCheckpoint section="color-functions" xpReward={15} />
+
+## Color Accessibility
+
+Creating accessible color combinations ensures everyone can use your website, including people with visual impairments.
+
+### Contrast Ratios
+
+The **contrast ratio** measures the difference between text and background colors. WCAG (Web Content Accessibility Guidelines) defines minimum ratios:
+
+<KeyConcept title="WCAG Contrast Requirements">
+**Level AA (Minimum):**
+- Normal text: 4.5:1 contrast ratio
+- Large text (18pt+ or 14pt+ bold): 3:1 contrast ratio
+
+**Level AAA (Enhanced):**
+- Normal text: 7:1 contrast ratio
+- Large text: 4.5:1 contrast ratio
+</KeyConcept>
+
+### Good vs Bad Contrast Examples
+
+```css
+/* ❌ Poor contrast - hard to read */
+.bad-contrast {
+  color: #CCCCCC;
+  background-color: #FFFFFF;
+  /* Ratio: 1.6:1 - fails WCAG */
+}
+
+/* ✅ Good contrast - easy to read */
+.good-contrast {
+  color: #1F2937;
+  background-color: #FFFFFF;
+  /* Ratio: 16.1:1 - passes AAA */
+}
+
+/* ✅ Also good */
+.good-contrast-2 {
+  color: #FFFFFF;
+  background-color: #1E40AF;
+  /* Ratio: 8.6:1 - passes AAA */
+}
+```
+
+<InfoBox type="warning" title="Common Accessibility Mistakes">
+- Light gray text on white backgrounds
+- Yellow text on white backgrounds
+- Relying only on color to convey information
+- Using low-contrast colors for important UI elements
+</InfoBox>
+
+### Color Blindness Considerations
+
+About 8% of men and 0.5% of women have some form of color blindness. Design tips:
+
+1. **Don't rely on color alone**: Use icons, patterns, or text labels
+2. **Test your palette**: Use tools to simulate color blindness
+3. **Avoid problematic combinations**:
+   - Red and green (most common color blindness)
+   - Blue and yellow (less common but still important)
+
+### Testing Your Colors
+
+<CssEditor
+  initialCss={`.text-sample {
+  padding: 20px;
+  margin: 10px 0;
+  font-size: 16px;
+  border-radius: 8px;
+}
+
+.fail {
+  color: #999999;
+  background-color: #FFFFFF;
+  /* Contrast ratio: 2.8:1 - FAILS */
+}
+
+.pass-aa {
+  color: #595959;
+  background-color: #FFFFFF;
+  /* Contrast ratio: 7.0:1 - PASSES AA */
+}
+
+.pass-aaa {
+  color: #1F2937;
+  background-color: #FFFFFF;
+  /* Contrast ratio: 16.1:1 - PASSES AAA */
+}`}
+  initialHtml={`<div class="text-sample fail">
+  ❌ This text fails WCAG (2.8:1)
+</div>
+
+<div class="text-sample pass-aa">
+  ✅ This text passes AA (7.0:1)
+</div>
+
+<div class="text-sample pass-aaa">
+  ✅ This text passes AAA (16.1:1)
+</div>`}
+  height={400}
+/>
+
+<KeyConcept title="Accessibility Tools">
+Use these tools to check your color combinations:
+- **WebAIM Contrast Checker**: Online tool for testing contrast ratios
+- **Browser DevTools**: Many browsers now show contrast ratios in the color picker
+- **Figma/Sketch plugins**: Design tools have accessibility checkers built-in
+</KeyConcept>
+
+<ProgressCheckpoint section="color-accessibility" xpReward={15} />
+
+## Summary
+
+You've learned powerful techniques for working with colors in CSS!
+
+<KeyConcept title="Key Takeaways">
+**Gradients:**
+- Linear gradients: Smooth transitions along a line
+- Radial gradients: Transitions radiating from a center
+- Conic gradients: Rotational color transitions
+- Use color stops for precise control
+
+**Color Functions:**
+- `currentColor`: Inherits the current text color
+- CSS variables: Create maintainable color systems
+- Define color palettes at `:root` for consistency
+
+**Accessibility:**
+- Maintain 4.5:1 contrast ratio for normal text (AA)
+- Maintain 7:1 contrast ratio for enhanced accessibility (AAA)
+- Don't rely on color alone to convey information
+- Consider color blindness when choosing palettes
+- Use tools to test your color combinations
+</KeyConcept>
+
+<ProgressCheckpoint section="summary" xpReward={10} />
+
+## Quick Quiz
+
+<Quiz>
+  <Question text="What's the default direction for linear-gradient()?">
+    <Answer>to right</Answer>
+    <Answer correct>to bottom</Answer>
+    <Answer>to top</Answer>
+    <Answer>45deg</Answer>
+  </Question>
+
+  <Question text="Which gradient type is best for creating a color wheel?">
+    <Answer>linear-gradient</Answer>
+    <Answer>radial-gradient</Answer>
+    <Answer correct>conic-gradient</Answer>
+    <Answer>circular-gradient</Answer>
+  </Question>
+
+  <Question text="What does currentColor reference?">
+    <Answer>The background color</Answer>
+    <Answer correct>The text color (color property)</Answer>
+    <Answer>The border color</Answer>
+    <Answer>The parent's color</Answer>
+  </Question>
+
+  <Question text="What's the minimum contrast ratio for normal text to pass WCAG AA?">
+    <Answer>3:1</Answer>
+    <Answer correct>4.5:1</Answer>
+    <Answer>7:1</Answer>
+    <Answer>10:1</Answer>
+  </Question>
+
+  <Question text="Why should you avoid relying only on color to convey information?">
+    <Answer>It looks unprofessional</Answer>
+    <Answer>It uses more bandwidth</Answer>
+    <Answer correct>Some users may have color blindness or visual impairments</Answer>
+    <Answer>It's harder to code</Answer>
+  </Question>
+
+  <Question text="How do you create a sharp color transition in a gradient?">
+    <Answer>Use more colors</Answer>
+    <Answer correct>Place two color stops at the same position</Answer>
+    <Answer>Use a smaller angle</Answer>
+    <Answer>Use radial instead of linear</Answer>
+  </Question>
+</Quiz>
+
+---
+
+**Fantastic work!** 🎨 You now have the skills to create beautiful, accessible color schemes. Ready for advanced topics? The advanced lesson covers modern color functions like `color-mix()` and color spaces!

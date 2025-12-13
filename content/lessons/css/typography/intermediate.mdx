@@ -1,0 +1,420 @@
+# CSS Typography - Intermediate
+
+Welcome back to CSS Typography! Now that you understand the basics, it's time to level up. In this lesson, you'll learn how to use custom web fonts, control spacing between lines and letters, and implement professional font loading strategies.
+
+These techniques will help you create truly unique and polished designs that stand out from the default system fonts.
+
+<InfoBox type="tip" title="What You'll Learn">
+- How to use custom web fonts with @font-face and Google Fonts
+- Fine-tuning text spacing with line-height and letter-spacing
+- Font loading strategies to improve performance
+- Creating professional typography systems
+</InfoBox>
+
+<ProgressCheckpoint section="introduction" xpReward={10} />
+
+## Web Fonts and @font-face
+
+Web fonts allow you to use custom typefaces that aren't installed on your users' computers. This opens up a world of design possibilities beyond the standard system fonts.
+
+### The @font-face Rule
+
+The **@font-face** rule lets you define custom fonts by specifying where to download them from.
+
+```css
+@font-face {
+  font-family: 'MyCustomFont';
+  src: url('/fonts/mycustomfont.woff2') format('woff2'),
+       url('/fonts/mycustomfont.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
+
+h1 {
+  font-family: 'MyCustomFont', sans-serif;
+}
+```
+
+<KeyConcept title="Font Formats">
+Modern browsers support several font formats:
+- **WOFF2**: Best compression, modern browsers (use this first)
+- **WOFF**: Good compression, wider browser support
+- **TTF/OTF**: Older formats, larger file sizes
+
+Always provide multiple formats for better browser compatibility.
+</KeyConcept>
+
+### Font Properties in @font-face
+
+You can define multiple font files for different weights and styles:
+
+```css
+/* Regular weight */
+@font-face {
+  font-family: 'Roboto';
+  src: url('/fonts/roboto-regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+}
+
+/* Bold weight */
+@font-face {
+  font-family: 'Roboto';
+  src: url('/fonts/roboto-bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+}
+
+/* Italic style */
+@font-face {
+  font-family: 'Roboto';
+  src: url('/fonts/roboto-italic.woff2') format('woff2');
+  font-weight: 400;
+  font-style: italic;
+}
+```
+
+Now when you use `font-weight: bold` or `font-style: italic`, the browser will load the correct font file!
+
+### Using Google Fonts
+
+Google Fonts is a free service that hosts thousands of web fonts. It's the easiest way to add custom fonts to your site.
+
+**Step 1: Add the link in your HTML**
+```html
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+```
+
+**Step 2: Use the font in your CSS**
+```css
+body {
+  font-family: 'Roboto', sans-serif;
+}
+```
+
+<InfoBox type="tip" title="Optimizing Google Fonts">
+Only load the font weights and styles you actually need. Loading too many variants slows down your page!
+</InfoBox>
+
+### Try Web Fonts
+
+<CssEditor
+  initialCss={`@font-face {
+  font-family: 'CustomHeading';
+  src: local('Georgia');
+  font-weight: bold;
+}
+
+h1 {
+  font-family: 'CustomHeading', serif;
+  font-size: 48px;
+  font-weight: bold;
+}
+
+p {
+  font-family: Arial, sans-serif;
+  font-size: 18px;
+}`}
+  initialHtml={`<h1>Custom Web Font</h1>
+<p>This heading uses a custom font defined with @font-face, while this paragraph uses a standard system font.</p>
+<p>In production, you'd load actual font files from your server or a CDN like Google Fonts.</p>`}
+  height={350}
+/>
+
+<ProgressCheckpoint section="web-fonts" xpReward={15} />
+
+## Line Height and Letter Spacing
+
+Proper spacing is crucial for readability. Let's explore how to control the space between lines and letters.
+
+### line-height
+
+The **line-height** property controls the vertical space between lines of text. Think of it as the "breathing room" between lines.
+
+```css
+p {
+  line-height: 1.6;
+}
+```
+
+<KeyConcept title="Line Height Best Practices">
+- **Body text**: Use 1.5 to 1.8 for comfortable reading
+- **Headings**: Use 1.2 to 1.4 for tighter spacing
+- **Unitless values** (like 1.6) are best because they scale with font size
+</KeyConcept>
+
+**Different line-height values:**
+
+```css
+.tight {
+  line-height: 1.2;  /* Tight spacing */
+}
+
+.normal {
+  line-height: 1.5;  /* Comfortable for body text */
+}
+
+.loose {
+  line-height: 2.0;  /* Very spacious */
+}
+```
+
+### letter-spacing
+
+The **letter-spacing** property controls the horizontal space between characters.
+
+```css
+h1 {
+  letter-spacing: 2px;
+}
+
+.tight {
+  letter-spacing: -0.5px;
+}
+```
+
+<InfoBox type="tip" title="When to Use Letter Spacing">
+- **Increase spacing**: For uppercase headings or logos
+- **Decrease spacing**: For large display text (carefully!)
+- **Body text**: Usually leave at default (0)
+</InfoBox>
+
+### word-spacing
+
+The **word-spacing** property controls space between words (less commonly used).
+
+```css
+p {
+  word-spacing: 4px;
+}
+```
+
+### Experiment with Spacing
+
+<CssEditor
+  initialCss={`h1 {
+  font-size: 36px;
+  line-height: 1.2;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+p {
+  font-size: 18px;
+  line-height: 1.6;
+  letter-spacing: 0;
+}
+
+.tight {
+  line-height: 1.2;
+}
+
+.loose {
+  line-height: 2.0;
+  letter-spacing: 1px;
+}`}
+  initialHtml={`<h1>Spacing Matters</h1>
+<p>This paragraph has comfortable line-height (1.6) for easy reading. Notice how the lines aren't too cramped or too far apart.</p>
+<p class="tight">This paragraph has tight line-height (1.2). See how the lines are closer together?</p>
+<p class="loose">This paragraph has loose line-height (2.0) and letter-spacing. It's very spacious!</p>`}
+  height={400}
+/>
+
+<ProgressCheckpoint section="line-spacing" xpReward={15} />
+
+## Font Loading Strategies
+
+Loading custom fonts can slow down your page. Let's explore strategies to optimize font loading for better performance.
+
+### font-display Property
+
+The **font-display** property in @font-face controls how fonts are displayed while loading.
+
+```css
+@font-face {
+  font-family: 'MyFont';
+  src: url('/fonts/myfont.woff2') format('woff2');
+  font-display: swap;
+}
+```
+
+**font-display values:**
+
+- **swap**: Show fallback font immediately, swap when custom font loads (best for most cases)
+- **block**: Hide text briefly, then show custom font (can cause "flash of invisible text")
+- **fallback**: Brief block period, then show fallback if font isn't ready
+- **optional**: Use custom font only if it loads very quickly
+
+<KeyConcept title="Recommended Strategy">
+Use `font-display: swap` for most web fonts. This ensures text is always visible, even if the custom font takes time to load. Users see content immediately with the fallback font, then it smoothly switches to your custom font.
+</KeyConcept>
+
+### Preloading Critical Fonts
+
+For fonts used above the fold, preload them to speed up loading:
+
+```html
+<link rel="preload" href="/fonts/myfont.woff2" as="font" type="font/woff2" crossorigin>
+```
+
+### Subsetting Fonts
+
+**Font subsetting** means including only the characters you need, reducing file size.
+
+For example, if you only use English, you don't need Chinese or Arabic characters!
+
+```css
+/* Google Fonts with Latin subset only */
+@import url('https://fonts.googleapis.com/css2?family=Roboto&subset=latin&display=swap');
+```
+
+### System Font Stack
+
+For maximum performance, consider using system fonts (fonts already on users' devices):
+
+```css
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 
+               Roboto, Oxygen, Ubuntu, Cantarell, 
+               'Helvetica Neue', sans-serif;
+}
+```
+
+This uses the native font for each operating system, resulting in zero download time!
+
+<InfoBox type="tip" title="Performance vs Design">
+Balance performance with design needs:
+- **Critical branding**: Use custom fonts with proper loading strategies
+- **Body text**: Consider system fonts for instant loading
+- **Headings only**: Load custom fonts just for headings, use system fonts for body
+</InfoBox>
+
+<ProgressCheckpoint section="advanced-typography" xpReward={15} />
+
+## Creating a Typography System
+
+Professional websites use a consistent typography system. Let's create one!
+
+### Define Your Scale
+
+Create a modular scale for font sizes:
+
+```css
+:root {
+  --font-size-xs: 0.75rem;   /* 12px */
+  --font-size-sm: 0.875rem;  /* 14px */
+  --font-size-base: 1rem;    /* 16px */
+  --font-size-lg: 1.125rem;  /* 18px */
+  --font-size-xl: 1.25rem;   /* 20px */
+  --font-size-2xl: 1.5rem;   /* 24px */
+  --font-size-3xl: 1.875rem; /* 30px */
+  --font-size-4xl: 2.25rem;  /* 36px */
+}
+```
+
+### Define Your Fonts
+
+```css
+:root {
+  --font-heading: 'Georgia', serif;
+  --font-body: 'Arial', sans-serif;
+  --font-mono: 'Courier New', monospace;
+}
+```
+
+### Apply Your System
+
+```css
+h1 {
+  font-family: var(--font-heading);
+  font-size: var(--font-size-4xl);
+  line-height: 1.2;
+}
+
+h2 {
+  font-family: var(--font-heading);
+  font-size: var(--font-size-3xl);
+  line-height: 1.3;
+}
+
+p {
+  font-family: var(--font-body);
+  font-size: var(--font-size-base);
+  line-height: 1.6;
+}
+
+code {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-sm);
+}
+```
+
+<CssEditor
+  initialCss={`:root {
+  --font-heading: Georgia, serif;
+  --font-body: Arial, sans-serif;
+  --font-size-4xl: 2.25rem;
+  --font-size-2xl: 1.5rem;
+  --font-size-base: 1rem;
+}
+
+h1 {
+  font-family: var(--font-heading);
+  font-size: var(--font-size-4xl);
+  line-height: 1.2;
+  margin-bottom: 1rem;
+}
+
+h2 {
+  font-family: var(--font-heading);
+  font-size: var(--font-size-2xl);
+  line-height: 1.3;
+  margin-bottom: 0.75rem;
+}
+
+p {
+  font-family: var(--font-body);
+  font-size: var(--font-size-base);
+  line-height: 1.6;
+  margin-bottom: 1rem;
+}`}
+  initialHtml={`<h1>Typography System</h1>
+<p>A consistent typography system makes your design look professional and cohesive.</p>
+<h2>Benefits of a System</h2>
+<p>Using CSS variables makes it easy to maintain and update your typography across your entire site.</p>`}
+  height={400}
+/>
+
+<ProgressCheckpoint section="summary" xpReward={10} />
+
+## Key Takeaways
+
+<KeyConcept title="Summary">
+**Web Fonts:**
+- Use @font-face to define custom fonts
+- Google Fonts provides easy access to thousands of free fonts
+- Always provide fallback fonts
+- Load only the weights and styles you need
+
+**Spacing:**
+- `line-height`: 1.5-1.8 for body text, 1.2-1.4 for headings
+- `letter-spacing`: Increase for uppercase headings, use sparingly
+- Use unitless line-height values for better scaling
+
+**Performance:**
+- Use `font-display: swap` for better user experience
+- Preload critical fonts
+- Consider font subsetting to reduce file size
+- System fonts load instantly (zero download time)
+
+**Typography Systems:**
+- Define a consistent scale using CSS variables
+- Separate fonts for headings, body, and code
+- Maintain consistency across your site
+</KeyConcept>
+
+---
+
+**Great progress!** 🎉 You now understand web fonts, spacing, and performance optimization. Ready for advanced techniques? Continue to the advanced level to learn about variable fonts and cutting-edge typography features!

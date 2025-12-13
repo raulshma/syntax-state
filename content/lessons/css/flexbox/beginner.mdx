@@ -1,0 +1,303 @@
+# CSS Flexbox
+
+Welcome to CSS Flexbox! Flexbox (Flexible Box Layout) is a powerful layout system that makes it easy to create flexible, responsive layouts. Before Flexbox, creating layouts required complex positioning and float tricks. Flexbox simplifies everything!
+
+Think of Flexbox like organizing items on a shelf: you can arrange them in a row or column, space them evenly, align them to the top or bottom, and even change their order - all with simple CSS properties.
+
+<InfoBox type="tip" title="Why Learn This?">
+Flexbox is one of the most important CSS skills for modern web development. It's perfect for navigation bars, card layouts, centering content, and creating responsive designs. Once you master Flexbox, you'll wonder how you ever lived without it!
+</InfoBox>
+
+<ProgressCheckpoint section="introduction" xpReward={10} />
+
+## Flex Container and Flex Items
+
+Flexbox works with two types of elements:
+
+1. **Flex Container** - The parent element with `display: flex`
+2. **Flex Items** - The direct children of the flex container
+
+```css
+/* Create a flex container */
+.container {
+  display: flex;
+}
+```
+
+When you set `display: flex` on an element, its direct children automatically become flex items. The container controls how those items are arranged and spaced.
+
+<KeyConcept title="The Flex Relationship">
+Think of the flex container as a stage director and the flex items as actors. The director (container) tells the actors (items) where to stand, how to space themselves, and how to align. The actors follow the director's instructions!
+</KeyConcept>
+
+<ProgressCheckpoint section="flex-container" xpReward={10} />
+
+## Flex Direction: Choosing Your Layout Direction
+
+The `flex-direction` property controls whether items are arranged in a row (horizontally) or a column (vertically).
+
+```css
+/* Arrange items in a row (default) */
+.container {
+  display: flex;
+  flex-direction: row;
+}
+
+/* Arrange items in a column */
+.container {
+  display: flex;
+  flex-direction: column;
+}
+```
+
+**Flex Direction Options:**
+- `row` - Items arranged left to right (default)
+- `row-reverse` - Items arranged right to left
+- `column` - Items arranged top to bottom
+- `column-reverse` - Items arranged bottom to top
+
+Let's see this in action:
+
+<FlexboxPlayground
+  initialItems={4}
+  initialDirection="row"
+  initialJustifyContent="flex-start"
+  initialAlignItems="stretch"
+  initialGap={10}
+  showControls={true}
+/>
+
+Try changing the flex direction in the playground above. Notice how:
+- `row` arranges items horizontally (like books on a shelf)
+- `column` arranges items vertically (like a stack of books)
+- The reverse options flip the order
+
+<ProgressCheckpoint section="flex-direction" xpReward={10} />
+
+## Justify Content: Spacing Along the Main Axis
+
+The `justify-content` property controls how items are spaced along the main axis (horizontal for row, vertical for column).
+
+```css
+.container {
+  display: flex;
+  justify-content: center; /* Center items */
+}
+```
+
+**Justify Content Options:**
+- `flex-start` - Items packed at the start (default)
+- `flex-end` - Items packed at the end
+- `center` - Items centered
+- `space-between` - Items evenly spaced, first and last touch edges
+- `space-around` - Items evenly spaced with equal space around them
+- `space-evenly` - Items evenly spaced with equal space between them
+
+<KeyConcept title="Understanding Main Axis">
+The **main axis** is the primary direction of your flex container:
+- For `flex-direction: row`, the main axis is horizontal (left to right)
+- For `flex-direction: column`, the main axis is vertical (top to bottom)
+
+`justify-content` always works along the main axis!
+</KeyConcept>
+
+Try different `justify-content` values in the playground above to see how items are spaced. This is perfect for:
+- Centering navigation links
+- Creating evenly spaced button groups
+- Distributing cards across a page
+
+<ProgressCheckpoint section="justify-content" xpReward={10} />
+
+## Align Items: Positioning Along the Cross Axis
+
+The `align-items` property controls how items are positioned along the cross axis (perpendicular to the main axis).
+
+```css
+.container {
+  display: flex;
+  align-items: center; /* Center items vertically */
+}
+```
+
+**Align Items Options:**
+- `stretch` - Items stretch to fill the container (default)
+- `flex-start` - Items aligned to the start of the cross axis
+- `flex-end` - Items aligned to the end of the cross axis
+- `center` - Items centered on the cross axis
+- `baseline` - Items aligned by their text baseline
+
+<KeyConcept title="Understanding Cross Axis">
+The **cross axis** is perpendicular to the main axis:
+- For `flex-direction: row`, the cross axis is vertical (top to bottom)
+- For `flex-direction: column`, the cross axis is horizontal (left to right)
+
+`align-items` always works along the cross axis!
+</KeyConcept>
+
+**Perfect Centering:**
+One of Flexbox's superpowers is centering content both horizontally and vertically:
+
+```css
+.container {
+  display: flex;
+  justify-content: center; /* Center horizontally */
+  align-items: center;     /* Center vertically */
+  height: 100vh;           /* Full viewport height */
+}
+```
+
+This creates perfect centering - something that used to require complex tricks!
+
+<ProgressCheckpoint section="align-items" xpReward={10} />
+
+## Flex Items: Controlling Individual Items
+
+While the container controls the overall layout, individual flex items can also have properties:
+
+```css
+/* Make one item grow to fill available space */
+.item {
+  flex-grow: 1;
+}
+
+/* Change the order of an item */
+.item {
+  order: 2;
+}
+
+/* Override the container's align-items for one item */
+.item {
+  align-self: flex-end;
+}
+```
+
+**Common Flex Item Properties:**
+- `flex-grow` - How much the item should grow relative to others (default: 0)
+- `flex-shrink` - How much the item should shrink relative to others (default: 1)
+- `flex-basis` - The initial size of the item before growing/shrinking
+- `order` - Change the visual order (default: 0)
+- `align-self` - Override the container's align-items for this item
+
+<KeyConcept title="Flex Grow in Action">
+`flex-grow` is perfect for creating flexible layouts:
+
+```css
+.sidebar {
+  flex-grow: 0; /* Don't grow */
+  width: 200px;
+}
+
+.main-content {
+  flex-grow: 1; /* Grow to fill remaining space */
+}
+```
+
+This creates a sidebar with fixed width and main content that fills the rest!
+</KeyConcept>
+
+<ProgressCheckpoint section="flex-items" xpReward={10} />
+
+## Flex Wrap: Handling Overflow
+
+By default, flex items try to fit on one line. The `flex-wrap` property controls what happens when items don't fit:
+
+```css
+/* Allow items to wrap to new lines */
+.container {
+  display: flex;
+  flex-wrap: wrap;
+}
+```
+
+**Flex Wrap Options:**
+- `nowrap` - All items on one line (default, may overflow)
+- `wrap` - Items wrap to new lines as needed
+- `wrap-reverse` - Items wrap to new lines in reverse order
+
+**When to use flex-wrap:**
+- Responsive card grids that adapt to screen size
+- Tag lists that wrap to multiple lines
+- Image galleries that reflow based on viewport width
+
+```css
+/* Responsive card layout */
+.card-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.card {
+  flex: 1 1 300px; /* Grow, shrink, minimum 300px */
+}
+```
+
+This creates cards that wrap to new rows when the screen gets narrow!
+
+<ProgressCheckpoint section="flex-wrap" xpReward={10} />
+
+## Key Takeaways
+
+<KeyConcept title="Summary">
+- **Flexbox** creates flexible, responsive layouts with simple CSS properties
+- Set `display: flex` on a container to make its children flex items
+- **flex-direction** controls the layout direction (row or column)
+- **justify-content** spaces items along the main axis (horizontal for row)
+- **align-items** positions items along the cross axis (vertical for row)
+- **flex-wrap** allows items to wrap to new lines when they don't fit
+- Individual items can use **flex-grow**, **order**, and **align-self** for fine control
+- Flexbox makes centering content trivially easy!
+</KeyConcept>
+
+<ProgressCheckpoint section="summary" xpReward={10} />
+
+## Quick Quiz
+
+Test your understanding of CSS Flexbox:
+
+<Quiz>
+  <Question text="What CSS property do you set on a parent element to create a flex container?">
+    <Answer>flex: 1</Answer>
+    <Answer correct>display: flex</Answer>
+    <Answer>flex-container: true</Answer>
+    <Answer>layout: flex</Answer>
+  </Question>
+
+  <Question text="Which property controls whether flex items are arranged horizontally or vertically?">
+    <Answer>flex-layout</Answer>
+    <Answer correct>flex-direction</Answer>
+    <Answer>flex-orientation</Answer>
+    <Answer>direction</Answer>
+  </Question>
+
+  <Question text="To center items both horizontally and vertically in a flex container, which properties do you use?">
+    <Answer>center: both</Answer>
+    <Answer>align: center</Answer>
+    <Answer correct>justify-content: center and align-items: center</Answer>
+    <Answer>flex-center: true</Answer>
+  </Question>
+
+  <Question text="What does 'justify-content: space-between' do?">
+    <Answer>Adds equal space around all items</Answer>
+    <Answer correct>Spaces items evenly with first and last items touching edges</Answer>
+    <Answer>Centers all items</Answer>
+    <Answer>Adds space only between items, not at edges</Answer>
+  </Question>
+
+  <Question text="Which property allows flex items to wrap to new lines when they don't fit?">
+    <Answer>flex-break</Answer>
+    <Answer correct>flex-wrap</Answer>
+    <Answer>wrap</Answer>
+    <Answer>flex-overflow</Answer>
+  </Question>
+</Quiz>
+
+---
+
+**Excellent work!** 🎉 You now understand the fundamentals of CSS Flexbox. Next, you might want to explore:
+- **Intermediate Flexbox** - Learn about flex-grow, flex-shrink, flex-basis, and advanced patterns
+- **CSS Grid** - Master two-dimensional layouts for more complex designs
+- **Responsive Design** - Combine Flexbox with media queries for fully responsive layouts
+
+Flexbox is your new superpower for creating flexible, modern layouts!
+

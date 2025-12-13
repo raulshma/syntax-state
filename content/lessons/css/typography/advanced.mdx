@@ -1,0 +1,606 @@
+# CSS Typography - Advanced
+
+Welcome to advanced CSS Typography! In this lesson, you'll explore cutting-edge typography features including variable fonts, advanced OpenType features, performance optimization techniques, and modern CSS typography properties.
+
+These advanced techniques will help you create sophisticated, performant typography systems that rival native applications.
+
+<InfoBox type="tip" title="What You'll Master">
+- Variable fonts and their performance benefits
+- OpenType features for advanced typography
+- Font optimization and subsetting strategies
+- Modern CSS properties like font-variant and text-rendering
+- Responsive typography with clamp() and fluid scaling
+</InfoBox>
+
+<ProgressCheckpoint section="introduction" xpReward={10} />
+
+## Variable Fonts
+
+Variable fonts are a revolutionary font technology that allows a single font file to contain multiple variations (weights, widths, slants) instead of requiring separate files for each variation.
+
+### What Are Variable Fonts?
+
+Traditional fonts require separate files:
+- `font-regular.woff2` (400 weight)
+- `font-bold.woff2` (700 weight)
+- `font-black.woff2` (900 weight)
+
+Variable fonts contain **all variations in one file**, and you can access any value in between!
+
+### Using Variable Fonts
+
+```css
+@font-face {
+  font-family: 'InterVariable';
+  src: url('/fonts/inter-variable.woff2') format('woff2-variations');
+  font-weight: 100 900;  /* Supports any weight from 100 to 900 */
+  font-display: swap;
+}
+
+h1 {
+  font-family: 'InterVariable', sans-serif;
+  font-weight: 650;  /* Any value between 100-900! */
+}
+```
+
+<KeyConcept title="Variable Font Advantages">
+**Performance:**
+- One file instead of multiple (smaller total download)
+- Fewer HTTP requests
+- Faster font loading
+
+**Design Flexibility:**
+- Access any weight value (not just 400, 700)
+- Smooth animations between weights
+- Fine-tuned control over typography
+</KeyConcept>
+
+<BrowserCompatibility
+  feature="Variable Fonts"
+  minVersions={{
+    chrome: '62',
+    firefox: '62',
+    safari: '11',
+    edge: '17',
+  }}
+  showFallback={true}
+  showPrefixes={false}
+/>
+
+### Variable Font Axes
+
+Variable fonts can have multiple **axes** of variation:
+
+**Standard Axes:**
+- **wght** (weight): 100-900
+- **wdth** (width): 50-200 (percentage)
+- **slnt** (slant): -10 to 10 degrees
+- **ital** (italic): 0 or 1
+- **opsz** (optical size): Optimizes for different sizes
+
+**Using font-variation-settings:**
+
+```css
+h1 {
+  font-family: 'InterVariable', sans-serif;
+  font-variation-settings: 
+    'wght' 700,
+    'wdth' 120,
+    'slnt' -5;
+}
+```
+
+### Animating Variable Fonts
+
+One of the coolest features: smooth weight transitions!
+
+```css
+.animated-heading {
+  font-family: 'InterVariable', sans-serif;
+  font-weight: 400;
+  transition: font-weight 0.3s ease;
+}
+
+.animated-heading:hover {
+  font-weight: 900;
+}
+```
+
+<CssEditor
+  initialCss={`/* Simulating variable font behavior */
+h1 {
+  font-family: Arial, sans-serif;
+  font-size: 48px;
+  font-weight: 400;
+  transition: font-weight 0.3s ease, letter-spacing 0.3s ease;
+}
+
+h1:hover {
+  font-weight: 900;
+  letter-spacing: 2px;
+}
+
+.custom-weight {
+  font-weight: 650;
+}
+
+.custom-width {
+  font-stretch: 125%;
+}`}
+  initialHtml={`<h1>Hover Over Me!</h1>
+<p class="custom-weight">This text uses a custom weight of 650 (only possible with variable fonts).</p>
+<p class="custom-width">This text uses font-stretch to simulate width variation.</p>`}
+  height={350}
+/>
+
+<ProgressCheckpoint section="web-fonts" xpReward={15} />
+
+## OpenType Features
+
+OpenType fonts contain advanced typographic features like ligatures, small caps, and alternate characters. CSS lets you access these features!
+
+### font-variant-ligatures
+
+**Ligatures** are special combined characters that improve readability (like "fi" becoming a single glyph).
+
+```css
+p {
+  font-variant-ligatures: common-ligatures;
+}
+
+.no-ligatures {
+  font-variant-ligatures: none;
+}
+
+.discretionary {
+  font-variant-ligatures: discretionary-ligatures;
+}
+```
+
+### font-variant-numeric
+
+Control how numbers are displayed:
+
+```css
+.oldstyle-nums {
+  font-variant-numeric: oldstyle-nums;  /* 1234567890 with varying heights */
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;   /* Fixed-width numbers for tables */
+}
+
+.slashed-zero {
+  font-variant-numeric: slashed-zero;   /* 0 with a slash */
+}
+```
+
+<KeyConcept title="When to Use Tabular Numbers">
+Use `tabular-nums` for:
+- Financial tables
+- Countdown timers
+- Any numbers that need to align vertically
+
+This ensures all digits have the same width, preventing layout shifts.
+</KeyConcept>
+
+### font-variant-caps
+
+Display text in small caps or other capital variations:
+
+```css
+.small-caps {
+  font-variant-caps: small-caps;
+}
+
+.all-small-caps {
+  font-variant-caps: all-small-caps;
+}
+
+.petite-caps {
+  font-variant-caps: petite-caps;
+}
+```
+
+### font-feature-settings
+
+For fine-grained control over OpenType features:
+
+```css
+p {
+  font-feature-settings: 
+    'liga' 1,    /* Enable ligatures */
+    'kern' 1,    /* Enable kerning */
+    'calt' 1;    /* Enable contextual alternates */
+}
+```
+
+<CssEditor
+  initialCss={`h2 {
+  font-variant-caps: small-caps;
+  font-size: 24px;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+  font-family: 'Courier New', monospace;
+}
+
+.proportional {
+  font-variant-numeric: proportional-nums;
+}`}
+  initialHtml={`<h2>Small Caps Heading</h2>
+<p>Compare these numbers in tables:</p>
+<div class="tabular">
+  <div>Price: $1,234.56</div>
+  <div>Price: $9,876.54</div>
+  <div>Price: $111.11</div>
+</div>
+<p>Tabular numbers align perfectly in columns!</p>`}
+  height={350}
+/>
+
+<ProgressCheckpoint section="line-spacing" xpReward={15} />
+
+## Font Performance Optimization
+
+Advanced strategies for optimizing font loading and rendering performance.
+
+### Font Subsetting
+
+**Subsetting** removes unused characters from font files, dramatically reducing file size.
+
+**Tools for subsetting:**
+- **glyphhanger**: CLI tool for analyzing and subsetting fonts
+- **Font Squirrel**: Web-based font generator with subsetting
+- **fonttools**: Python library for font manipulation
+
+```bash
+# Example: Subset to Latin characters only
+glyphhanger --subset=font.ttf --latin
+```
+
+### Unicode-range in @font-face
+
+Load different font files for different character ranges:
+
+```css
+/* Latin characters */
+@font-face {
+  font-family: 'MyFont';
+  src: url('/fonts/myfont-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153;
+}
+
+/* Cyrillic characters */
+@font-face {
+  font-family: 'MyFont';
+  src: url('/fonts/myfont-cyrillic.woff2') format('woff2');
+  unicode-range: U+0400-045F, U+0490-0491;
+}
+```
+
+The browser only downloads the font file needed for the characters on the page!
+
+### Font Loading API
+
+JavaScript API for fine-grained control over font loading:
+
+```javascript
+// Check if a font is loaded
+document.fonts.ready.then(() => {
+  console.log('All fonts loaded!');
+});
+
+// Load a specific font
+const font = new FontFace('MyFont', 'url(/fonts/myfont.woff2)');
+font.load().then(() => {
+  document.fonts.add(font);
+  document.body.style.fontFamily = 'MyFont, sans-serif';
+});
+```
+
+### Critical FOIT/FOUT Mitigation
+
+**FOIT** (Flash of Invisible Text) and **FOUT** (Flash of Unstyled Text) can hurt user experience.
+
+**Strategy 1: font-display**
+```css
+@font-face {
+  font-family: 'MyFont';
+  src: url('/fonts/myfont.woff2') format('woff2');
+  font-display: swap;  /* Show fallback immediately */
+}
+```
+
+**Strategy 2: Preload critical fonts**
+```html
+<link rel="preload" href="/fonts/myfont.woff2" as="font" type="font/woff2" crossorigin>
+```
+
+**Strategy 3: Font loading classes**
+```css
+/* Before font loads */
+body {
+  font-family: Arial, sans-serif;
+}
+
+/* After font loads */
+body.fonts-loaded {
+  font-family: 'MyFont', Arial, sans-serif;
+}
+```
+
+<KeyConcept title="Performance Budget">
+**Font loading budget:**
+- **Critical fonts**: < 50KB (preload these)
+- **Total fonts**: < 200KB
+- **Number of font files**: < 4
+
+Exceeding these budgets can significantly impact page load time.
+</KeyConcept>
+
+<ProgressCheckpoint section="advanced-typography" xpReward={15} />
+
+## Responsive Typography
+
+Modern techniques for creating fluid, responsive typography that scales smoothly across all screen sizes.
+
+### Fluid Typography with clamp()
+
+The `clamp()` function creates typography that scales smoothly between minimum and maximum sizes:
+
+```css
+h1 {
+  font-size: clamp(2rem, 5vw, 4rem);
+  /* min: 2rem, preferred: 5vw, max: 4rem */
+}
+
+p {
+  font-size: clamp(1rem, 0.5rem + 1vw, 1.25rem);
+}
+```
+
+<KeyConcept title="How clamp() Works">
+`clamp(MIN, PREFERRED, MAX)`
+
+- **MIN**: Smallest allowed size
+- **PREFERRED**: Ideal size (usually viewport-based)
+- **MAX**: Largest allowed size
+
+The browser automatically calculates the size between min and max based on the viewport!
+</KeyConcept>
+
+### Viewport-based Typography
+
+Using viewport units for responsive scaling:
+
+```css
+/* Basic viewport units */
+h1 {
+  font-size: 5vw;  /* 5% of viewport width */
+}
+
+/* Combining with calc() */
+h2 {
+  font-size: calc(1.5rem + 1vw);
+}
+
+/* Container query units (modern browsers) */
+.card h3 {
+  font-size: 5cqw;  /* 5% of container width */
+}
+```
+
+### Responsive Line Height
+
+Line height should also adapt to screen size:
+
+```css
+p {
+  font-size: clamp(1rem, 0.5rem + 1vw, 1.25rem);
+  line-height: clamp(1.5, 1.4 + 0.2vw, 1.8);
+}
+```
+
+### Responsive Letter Spacing
+
+Adjust letter spacing based on font size:
+
+```css
+h1 {
+  font-size: clamp(2rem, 5vw, 4rem);
+  letter-spacing: clamp(-0.02em, -0.01em + 0.1vw, 0.02em);
+}
+```
+
+<CssEditor
+  initialCss={`h1 {
+  font-size: clamp(2rem, 5vw, 4rem);
+  line-height: 1.2;
+  margin-bottom: 1rem;
+}
+
+h2 {
+  font-size: clamp(1.5rem, 3vw, 2.5rem);
+  line-height: 1.3;
+  margin-bottom: 0.75rem;
+}
+
+p {
+  font-size: clamp(1rem, 0.5rem + 1vw, 1.25rem);
+  line-height: clamp(1.5, 1.4 + 0.2vw, 1.8);
+  margin-bottom: 1rem;
+}
+
+.responsive-spacing {
+  letter-spacing: clamp(-0.02em, 0em, 0.05em);
+}`}
+  initialHtml={`<h1>Fluid Typography</h1>
+<p>Resize your browser window to see how the text scales smoothly! This uses clamp() to create fluid typography that adapts to any screen size.</p>
+<h2>Responsive Subheading</h2>
+<p class="responsive-spacing">Even letter spacing can be responsive, adjusting based on viewport size for optimal readability.</p>`}
+  height={400}
+/>
+
+<ProgressCheckpoint section="summary" xpReward={15} />
+
+## Advanced Typography Patterns
+
+Professional patterns for complex typography systems.
+
+### Modular Scale with CSS Custom Properties
+
+Create a harmonious type scale using mathematical ratios:
+
+```css
+:root {
+  --ratio: 1.25;  /* Major third */
+  --base-size: 1rem;
+  
+  --size-xs: calc(var(--base-size) / var(--ratio) / var(--ratio));
+  --size-sm: calc(var(--base-size) / var(--ratio));
+  --size-base: var(--base-size);
+  --size-lg: calc(var(--base-size) * var(--ratio));
+  --size-xl: calc(var(--base-size) * var(--ratio) * var(--ratio));
+  --size-2xl: calc(var(--base-size) * var(--ratio) * var(--ratio) * var(--ratio));
+}
+```
+
+### Optical Sizing
+
+Adjust typography based on size for better readability:
+
+```css
+.display {
+  font-size: 4rem;
+  font-variation-settings: 'opsz' 72;  /* Optimized for large sizes */
+  letter-spacing: -0.02em;
+}
+
+.body {
+  font-size: 1rem;
+  font-variation-settings: 'opsz' 16;  /* Optimized for reading */
+}
+```
+
+### Text Rendering Optimization
+
+Control how browsers render text:
+
+```css
+body {
+  text-rendering: optimizeLegibility;  /* Better kerning and ligatures */
+  -webkit-font-smoothing: antialiased;  /* Smoother on macOS */
+  -moz-osx-font-smoothing: grayscale;
+}
+```
+
+<InfoBox type="warning" title="Use text-rendering Carefully">
+`text-rendering: optimizeLegibility` can impact performance on long pages. Use it selectively for headings or short text blocks.
+</InfoBox>
+
+### Hyphenation and Text Wrapping
+
+Control how text breaks across lines:
+
+```css
+p {
+  hyphens: auto;  /* Enable automatic hyphenation */
+  word-break: break-word;  /* Break long words */
+  overflow-wrap: break-word;  /* Prevent overflow */
+}
+
+.no-wrap {
+  white-space: nowrap;  /* Prevent line breaks */
+}
+
+.balance {
+  text-wrap: balance;  /* Balance line lengths (modern browsers) */
+}
+```
+
+### Advanced Text Effects
+
+```css
+.gradient-text {
+  background: linear-gradient(45deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.text-shadow {
+  text-shadow: 
+    0 1px 0 #ccc,
+    0 2px 0 #c9c9c9,
+    0 3px 0 #bbb,
+    0 4px 0 #b9b9b9,
+    0 5px 10px rgba(0,0,0,.3);
+}
+```
+
+<CssEditor
+  initialCss={`.gradient-text {
+  font-size: 48px;
+  font-weight: bold;
+  background: linear-gradient(45deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hyphenated {
+  hyphens: auto;
+  max-width: 200px;
+}
+
+.balanced {
+  text-wrap: balance;
+  max-width: 400px;
+}`}
+  initialHtml={`<h1 class="gradient-text">Gradient Text</h1>
+<p class="hyphenated">Supercalifragilisticexpialidocious is a very long word that demonstrates hyphenation.</p>
+<p class="balanced">This text uses text-wrap: balance to create more aesthetically pleasing line breaks.</p>`}
+  height={350}
+/>
+
+<ProgressCheckpoint section="summary" xpReward={10} />
+
+## Key Takeaways
+
+<KeyConcept title="Summary">
+**Variable Fonts:**
+- Single file contains multiple variations (weight, width, slant)
+- Better performance and smaller file sizes
+- Smooth animations between font variations
+- Use `font-variation-settings` for custom axes
+
+**OpenType Features:**
+- `font-variant-ligatures`: Control ligatures
+- `font-variant-numeric`: Tabular numbers for tables
+- `font-variant-caps`: Small caps and variants
+- `font-feature-settings`: Fine-grained control
+
+**Performance:**
+- Subset fonts to remove unused characters
+- Use `unicode-range` for smart loading
+- Implement font-display strategies
+- Keep total font weight under 200KB
+
+**Responsive Typography:**
+- Use `clamp()` for fluid scaling
+- Combine viewport units with calc()
+- Scale line-height and letter-spacing responsively
+- Consider container queries for component-based scaling
+
+**Advanced Patterns:**
+- Modular scales with CSS custom properties
+- Optical sizing for different text sizes
+- Text rendering optimization
+- Hyphenation and text wrapping control
+</KeyConcept>
+
+---
+
+**Congratulations!** 🎉 You've mastered advanced CSS typography! You now have the skills to create sophisticated, performant typography systems that rival native applications. Continue exploring other advanced CSS topics to complete your mastery!

@@ -3,6 +3,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { serialize } from 'next-mdx-remote/serialize';
+import { unstable_cache } from 'next/cache';
 import remarkGfm from 'remark-gfm';
 import rehypeSlug from 'rehype-slug';
 import type { ExperienceLevel } from '@/lib/db/schemas/lesson-progress';
@@ -41,25 +42,33 @@ export async function getLessonMetadata(lessonPath: string) {
 
 /**
  * Get MDX content for a specific lesson and experience level
+ * Cached for optimal performance - MDX compilation is expensive
  */
-export async function getLessonContent(lessonPath: string, level: ExperienceLevel) {
-  try {
-    const mdxPath = path.join(CONTENT_DIR, lessonPath, `${level}.mdx`);
-    const source = await fs.readFile(mdxPath, 'utf-8');
-    
-    const mdxSource = await serialize(source, {
-      mdxOptions: {
-        remarkPlugins: [remarkGfm],
-        rehypePlugins: [rehypeSlug],
-      },
-    });
-    
-    return mdxSource;
-  } catch (error) {
-    console.error('Failed to load lesson content:', error);
-    return null;
+export const getLessonContent = unstable_cache(
+  async (lessonPath: string, level: ExperienceLevel) => {
+    try {
+      const mdxPath = path.join(CONTENT_DIR, lessonPath, `${level}.mdx`);
+      const source = await fs.readFile(mdxPath, 'utf-8');
+      
+      const mdxSource = await serialize(source, {
+        mdxOptions: {
+          remarkPlugins: [remarkGfm],
+          rehypePlugins: [rehypeSlug],
+        },
+      });
+      
+      return mdxSource;
+    } catch (error) {
+      console.error('Failed to load lesson content:', error);
+      return null;
+    }
+  },
+  ['lesson-content'],
+  {
+    revalidate: 3600, // Cache for 1 hour in production
+    tags: ['lessons'],
   }
-}
+);
 
 /**
  * Check if a lesson exists
@@ -236,5 +245,103 @@ export async function getRoadmapLessonAvailability(
   );
   
   return results;
+}
+
+/**
+ * Normalize lesson path to full format (milestone/lesson)
+ */
+function normalizeLessonPath(prerequisite: string, currentMilestone: string): string {
+  // If it already contains a slash, it's a full path
+  if (prerequisite.includes('/')) {
+    return prerequisite;
+  }
+  // Otherwise, assume it's in the same milestone
+  return `${currentMilestone}/${prerequisite}`;
+}
+
+export interface NextLessonSuggestion {
+  lessonPath: string;
+  title: string;
+  description: string;
+  estimatedMinutes: number;
+  xpReward: number;
+}
+
+/**
+ * Get next lesson suggestion based on prerequisites
+ * Suggests lessons where all prerequisites are completed
+ */
+export async function getNextLessonSuggestion(
+  currentLessonPath: string,
+  currentLevel: ExperienceLevel,
+  completedLessons: Array<{ lessonId: string; experienceLevel: string }>
+): Promise<NextLessonSuggestion | null> {
+  try {
+    // Get current lesson metadata
+    const currentMetadata = await getLessonMetadata(currentLessonPath);
+    if (!currentMetadata) {
+      return null;
+    }
+
+    const [currentMilestone] = currentLessonPath.split('/');
+    
+    // Get all lessons in the same milestone
+    const milestoneLessons = await getLessonsForMilestone(currentMilestone);
+    
+    // Create a set of completed lesson paths for quick lookup
+    const completedPaths = new Set(
+      completedLessons
+        .filter(l => l.experienceLevel === currentLevel)
+        .map(l => l.lessonId)
+    );
+    
+    // Add current lesson to completed set
+    completedPaths.add(currentLessonPath);
+    
+    // Find lessons where:
+    // 1. All prerequisites are completed
+    // 2. The lesson itself is not completed
+    // 3. Order is higher than current lesson (natural progression)
+    const suggestions = milestoneLessons
+      .filter(lesson => {
+        const lessonPath = lesson.path;
+        
+        // Skip if already completed
+        if (completedPaths.has(lessonPath)) {
+          return false;
+        }
+        
+        // Skip if order is not higher (we want natural progression)
+        if (lesson.order <= currentMetadata.order) {
+          return false;
+        }
+        
+        // Check if all prerequisites are met
+        const allPrerequisitesMet = lesson.prerequisites.every(prereq => {
+          const normalizedPath = normalizeLessonPath(prereq, currentMilestone);
+          return completedPaths.has(normalizedPath);
+        });
+        
+        return allPrerequisitesMet;
+      })
+      .sort((a, b) => a.order - b.order); // Sort by order to get the next logical lesson
+    
+    // Return the first suggestion (next in sequence)
+    if (suggestions.length > 0) {
+      const nextLesson = suggestions[0];
+      return {
+        lessonPath: nextLesson.path,
+        title: nextLesson.title,
+        description: nextLesson.description,
+        estimatedMinutes: nextLesson.levels[currentLevel].estimatedMinutes,
+        xpReward: nextLesson.levels[currentLevel].xpReward,
+      };
+    }
+    
+    return null;
+  } catch (error) {
+    console.error('Failed to get next lesson suggestion:', error);
+    return null;
+  }
 }
 

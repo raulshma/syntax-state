@@ -11,6 +11,7 @@ import { ProgressCheckpoint as ProgressCheckpointBase } from './progress-checkpo
 import { KeyConcept as KeyConceptBase } from './key-concept';
 import { Comparison as ComparisonBase } from './comparison';
 import { CodeExample as CodeExampleBase } from './code-example';
+import { EnhancedCodeBlock as EnhancedCodeBlockBase } from './enhanced-code-block';
 
 // Wrap interactive components with error boundaries
 export const InfoBox = withErrorBoundary(InfoBoxBase, 'InfoBox');
@@ -21,6 +22,7 @@ export const ProgressCheckpoint = withErrorBoundary(ProgressCheckpointBase, 'Pro
 export const KeyConcept = withErrorBoundary(KeyConceptBase, 'KeyConcept');
 export const Comparison = withErrorBoundary(ComparisonBase, 'Comparison');
 export const CodeExample = withErrorBoundary(CodeExampleBase, 'CodeExample');
+export const EnhancedCodeBlock = withErrorBoundary(EnhancedCodeBlockBase, 'EnhancedCodeBlock');
 
 // Re-export non-wrapped components
 export { Question, Answer };

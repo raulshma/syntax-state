@@ -1,0 +1,634 @@
+# CSS Flexbox - Intermediate
+
+Now that you understand the basics of Flexbox, let's explore the powerful properties that give you fine-grained control over flex items: flex-grow, flex-shrink, flex-basis, align-content, and gap. These properties unlock Flexbox's true potential for creating sophisticated, responsive layouts.
+
+<InfoBox type="tip" title="What You'll Learn">
+In this lesson, you'll master the flex shorthand property, understand how flex items grow and shrink, learn to control multi-line flex layouts with align-content, and discover how gap simplifies spacing. These skills will help you build production-ready, flexible layouts with confidence.
+</InfoBox>
+
+<ProgressCheckpoint section="introduction" xpReward={15} />
+
+## Understanding flex-grow
+
+The `flex-grow` property controls how flex items expand to fill available space. It defines the growth factor relative to other flex items.
+
+```css
+.container {
+  display: flex;
+}
+
+.item-1 {
+  flex-grow: 1; /* Takes 1 part of available space */
+}
+
+.item-2 {
+  flex-grow: 2; /* Takes 2 parts of available space */
+}
+
+.item-3 {
+  flex-grow: 1; /* Takes 1 part of available space */
+}
+
+/* Item 2 will be twice as wide as items 1 and 3 */
+```
+
+**How flex-grow works:**
+1. The browser calculates available space (container width minus all items' base widths)
+2. It divides this space according to flex-grow values
+3. Each item gets its base width plus its share of available space
+
+<KeyConcept title="flex-grow: 0 vs flex-grow: 1">
+- **flex-grow: 0** (default) - Item doesn't grow, keeps its natural size
+- **flex-grow: 1** - Item grows to fill available space
+- **flex-grow: 2** - Item grows twice as much as items with flex-grow: 1
+</KeyConcept>
+
+<FlexboxPlayground
+  initialItems={3}
+  initialDirection="row"
+  initialJustifyContent="flex-start"
+  initialAlignItems="stretch"
+  initialGap={10}
+  showControls={true}
+/>
+
+Try adjusting flex-grow values in the playground above. Notice how items with larger flex-grow values take up more space.
+
+**Practical Example: Sidebar Layout**
+
+```css
+.layout {
+  display: flex;
+}
+
+.sidebar {
+  flex-grow: 0;  /* Don't grow */
+  width: 250px;  /* Fixed width */
+}
+
+.main-content {
+  flex-grow: 1;  /* Grow to fill remaining space */
+}
+```
+
+This creates a fixed-width sidebar with main content that fills the rest of the screen!
+
+<ProgressCheckpoint section="flex-grow" xpReward={15} />
+
+## Understanding flex-shrink
+
+The `flex-shrink` property controls how flex items shrink when there isn't enough space. It defines the shrink factor relative to other flex items.
+
+```css
+.container {
+  display: flex;
+  width: 500px;
+}
+
+.item-1 {
+  flex-shrink: 1; /* Shrinks normally (default) */
+  width: 300px;
+}
+
+.item-2 {
+  flex-shrink: 2; /* Shrinks twice as fast */
+  width: 300px;
+}
+
+.item-3 {
+  flex-shrink: 0; /* Never shrinks */
+  width: 200px;
+}
+```
+
+**How flex-shrink works:**
+1. When items overflow the container, the browser calculates the overflow amount
+2. It distributes the shrinkage according to flex-shrink values
+3. Items with higher flex-shrink values shrink more
+
+<KeyConcept title="Preventing Shrinkage">
+Set `flex-shrink: 0` on items that should maintain their size:
+
+```css
+.logo {
+  flex-shrink: 0;  /* Logo never shrinks */
+  width: 150px;
+}
+
+.nav-links {
+  flex-shrink: 1;  /* Links can shrink if needed */
+}
+```
+
+This is perfect for navigation bars where the logo should stay full-size!
+</KeyConcept>
+
+<ProgressCheckpoint section="flex-shrink" xpReward={15} />
+
+## Understanding flex-basis
+
+The `flex-basis` property sets the initial size of a flex item before growing or shrinking. Think of it as the "starting point" for the item's size.
+
+```css
+.item {
+  flex-basis: 200px;  /* Start at 200px */
+  flex-grow: 1;       /* Then grow if space available */
+}
+```
+
+**flex-basis vs width:**
+- `flex-basis` is the preferred way to set size in flex containers
+- It works along the main axis (width for row, height for column)
+- It's more flexible than width/height
+
+**Common flex-basis values:**
+- `auto` (default) - Use the item's width/height or content size
+- `0` - Ignore content size, distribute space purely by flex-grow
+- `200px` - Start at 200px, then grow/shrink
+- `50%` - Start at 50% of container, then grow/shrink
+
+```css
+/* Equal-width items regardless of content */
+.item {
+  flex-basis: 0;
+  flex-grow: 1;
+}
+
+/* Items start at 200px, then grow equally */
+.item {
+  flex-basis: 200px;
+  flex-grow: 1;
+}
+```
+
+<KeyConcept title="flex-basis: 0 vs flex-basis: auto">
+- **flex-basis: auto** - Size based on content, then grow/shrink
+- **flex-basis: 0** - Ignore content size, distribute space purely by flex-grow ratios
+
+Use `flex-basis: 0` when you want truly equal-width items!
+</KeyConcept>
+
+<ProgressCheckpoint section="flex-basis" xpReward={15} />
+
+## The flex Shorthand
+
+The `flex` property is a shorthand for `flex-grow`, `flex-shrink`, and `flex-basis`:
+
+```css
+.item {
+  flex: 1 1 200px;
+  /* flex-grow: 1, flex-shrink: 1, flex-basis: 200px */
+}
+```
+
+**Common flex patterns:**
+
+```css
+/* Don't grow or shrink, fixed size */
+.item {
+  flex: 0 0 200px;
+  /* Same as: flex-grow: 0; flex-shrink: 0; flex-basis: 200px; */
+}
+
+/* Grow to fill space, equal widths */
+.item {
+  flex: 1;
+  /* Same as: flex-grow: 1; flex-shrink: 1; flex-basis: 0; */
+}
+
+/* Grow to fill space, but start at content size */
+.item {
+  flex: 1 1 auto;
+  /* Same as: flex-grow: 1; flex-shrink: 1; flex-basis: auto; */
+}
+
+/* Grow but never shrink */
+.item {
+  flex: 1 0 auto;
+  /* Same as: flex-grow: 1; flex-shrink: 0; flex-basis: auto; */
+}
+```
+
+<KeyConcept title="Best Practice">
+Use the `flex` shorthand instead of individual properties. It's more concise and sets sensible defaults:
+
+```css
+/* Recommended */
+.item { flex: 1; }
+
+/* Instead of */
+.item {
+  flex-grow: 1;
+  flex-shrink: 1;
+  flex-basis: 0;
+}
+```
+</KeyConcept>
+
+<CssEditor
+  initialHtml={`<div class="container">
+  <div class="item fixed">Fixed (flex: 0 0 150px)</div>
+  <div class="item grow">Grow (flex: 1)</div>
+  <div class="item grow-2">Grow 2x (flex: 2)</div>
+</div>`}
+  initialCss={`.container {
+  display: flex;
+  gap: 10px;
+  padding: 20px;
+  background: #f3f4f6;
+}
+
+.item {
+  padding: 20px;
+  background: #3b82f6;
+  color: white;
+  text-align: center;
+}
+
+.fixed {
+  flex: 0 0 150px;
+}
+
+.grow {
+  flex: 1;
+}
+
+.grow-2 {
+  flex: 2;
+}`}
+  height={400}
+  showPreview={true}
+/>
+
+Experiment with different flex values in the editor above. Try:
+- Changing `flex: 1` to `flex: 0 0 200px`
+- Making all items `flex: 1` for equal widths
+- Using `flex: 2` on one item to make it twice as wide
+
+<ProgressCheckpoint section="flex-shorthand" xpReward={15} />
+
+## align-content: Multi-Line Alignment
+
+When you use `flex-wrap: wrap`, items can span multiple lines. The `align-content` property controls how those lines are spaced within the container.
+
+```css
+.container {
+  display: flex;
+  flex-wrap: wrap;
+  align-content: space-between;
+  height: 400px;
+}
+```
+
+**align-content options:**
+- `stretch` (default) - Lines stretch to fill the container
+- `flex-start` - Lines packed at the start
+- `flex-end` - Lines packed at the end
+- `center` - Lines centered
+- `space-between` - Lines evenly spaced, first and last touch edges
+- `space-around` - Lines evenly spaced with equal space around
+- `space-evenly` - Lines evenly spaced with equal space between
+
+<KeyConcept title="align-items vs align-content">
+- **align-items** - Aligns items within their line (single line or each line)
+- **align-content** - Aligns lines within the container (only works with multiple lines)
+
+You need `flex-wrap: wrap` and extra vertical space for align-content to have an effect!
+</KeyConcept>
+
+**Practical Example: Card Grid**
+
+```css
+.card-grid {
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;  /* Pack rows at the top */
+  gap: 20px;
+  min-height: 600px;
+}
+
+.card {
+  flex: 1 1 300px;  /* Grow, shrink, minimum 300px */
+}
+```
+
+<ProgressCheckpoint section="align-content" xpReward={15} />
+
+## gap: Simplified Spacing
+
+The `gap` property (also `row-gap` and `column-gap`) creates space between flex items without using margins. This is much cleaner than margin-based spacing!
+
+```css
+.container {
+  display: flex;
+  gap: 20px;  /* 20px space between all items */
+}
+
+/* Or specify row and column gaps separately */
+.container {
+  display: flex;
+  flex-wrap: wrap;
+  row-gap: 30px;     /* Vertical space between rows */
+  column-gap: 20px;  /* Horizontal space between items */
+}
+
+/* Shorthand: row-gap column-gap */
+.container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 30px 20px;
+}
+```
+
+**Why gap is better than margins:**
+
+```css
+/* Old way: margins create edge spacing issues */
+.container {
+  display: flex;
+  margin: -10px;  /* Negative margin hack */
+}
+
+.item {
+  margin: 10px;  /* Spacing between items */
+}
+
+/* New way: gap is cleaner */
+.container {
+  display: flex;
+  gap: 20px;  /* Perfect spacing, no edge issues! */
+}
+```
+
+<BrowserCompatibility
+  feature="Flexbox gap"
+  minVersions={{
+    chrome: '84',
+    firefox: '63',
+    safari: '14.1',
+    edge: '84',
+  }}
+  showFallback={true}
+  showPrefixes={false}
+/>
+
+<ProgressCheckpoint section="gap" xpReward={15} />
+
+## Practical Layout Patterns
+
+### Responsive Card Grid
+
+```css
+.card-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+}
+
+.card {
+  flex: 1 1 300px;  /* Grow, shrink, min 300px */
+  max-width: 400px; /* Don't grow too large */
+}
+```
+
+This creates a responsive grid that:
+- Wraps to new rows as needed
+- Maintains minimum card width of 300px
+- Grows cards to fill space
+- Limits maximum card width to 400px
+
+### Holy Grail Layout
+
+```css
+.page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.header {
+  flex: 0 0 auto;  /* Fixed height based on content */
+}
+
+.main {
+  display: flex;
+  flex: 1;  /* Grow to fill available space */
+}
+
+.sidebar {
+  flex: 0 0 250px;  /* Fixed width */
+}
+
+.content {
+  flex: 1;  /* Grow to fill remaining space */
+}
+
+.footer {
+  flex: 0 0 auto;  /* Fixed height based on content */
+}
+```
+
+### Navigation Bar
+
+```css
+.navbar {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 16px;
+}
+
+.logo {
+  flex: 0 0 auto;  /* Don't grow or shrink */
+}
+
+.nav-links {
+  display: flex;
+  gap: 16px;
+  flex: 1;  /* Grow to fill space */
+}
+
+.user-menu {
+  flex: 0 0 auto;  /* Don't grow or shrink */
+}
+```
+
+<CssEditor
+  initialHtml={`<div class="navbar">
+  <div class="logo">Logo</div>
+  <nav class="nav-links">
+    <a href="#">Home</a>
+    <a href="#">About</a>
+    <a href="#">Services</a>
+    <a href="#">Contact</a>
+  </nav>
+  <div class="user-menu">User</div>
+</div>`}
+  initialCss={`.navbar {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 16px;
+  background: #1f2937;
+  color: white;
+}
+
+.logo {
+  flex: 0 0 auto;
+  font-weight: bold;
+  font-size: 1.25rem;
+}
+
+.nav-links {
+  display: flex;
+  gap: 16px;
+  flex: 1;
+}
+
+.nav-links a {
+  color: white;
+  text-decoration: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+}
+
+.nav-links a:hover {
+  background: #374151;
+}
+
+.user-menu {
+  flex: 0 0 auto;
+  padding: 8px 16px;
+  background: #3b82f6;
+  border-radius: 4px;
+}`}
+  height={400}
+  showPreview={true}
+/>
+
+<ProgressCheckpoint section="practical-patterns" xpReward={15} />
+
+## Common Pitfalls and Solutions
+
+### Pitfall 1: Items Not Growing Equally
+
+**Problem:** Items with different content sizes don't grow equally
+
+**Solution:** Use `flex-basis: 0` instead of `flex-basis: auto`
+
+```css
+/* Items grow based on content size */
+.item { flex: 1 1 auto; }
+
+/* Items grow equally regardless of content */
+.item { flex: 1; }  /* Same as flex: 1 1 0 */
+```
+
+### Pitfall 2: Unwanted Shrinking
+
+**Problem:** Items shrink too much on small screens
+
+**Solution:** Set `flex-shrink: 0` or use `min-width`
+
+```css
+.item {
+  flex: 1 0 200px;  /* Don't shrink below 200px */
+  /* or */
+  flex: 1;
+  min-width: 200px;
+}
+```
+
+### Pitfall 3: gap Not Working
+
+**Problem:** gap property doesn't create spacing
+
+**Solution:** Check browser support or ensure display: flex is set
+
+```css
+.container {
+  display: flex;  /* Required! */
+  gap: 20px;
+}
+```
+
+### Pitfall 4: align-content Has No Effect
+
+**Problem:** align-content doesn't change layout
+
+**Solution:** Ensure you have `flex-wrap: wrap` and multiple lines
+
+```css
+.container {
+  display: flex;
+  flex-wrap: wrap;  /* Required for align-content */
+  align-content: space-between;
+  height: 500px;    /* Need extra height */
+}
+```
+
+<ProgressCheckpoint section="common-pitfalls" xpReward={15} />
+
+## Key Takeaways
+
+<KeyConcept title="Summary">
+- **flex-grow** controls how items expand to fill available space (default: 0)
+- **flex-shrink** controls how items shrink when space is limited (default: 1)
+- **flex-basis** sets the initial size before growing/shrinking (default: auto)
+- **flex shorthand** combines all three: `flex: grow shrink basis`
+- Common patterns: `flex: 1` (equal widths), `flex: 0 0 200px` (fixed size)
+- **align-content** controls spacing between lines in multi-line flex containers
+- **gap** creates clean spacing between items without margin hacks
+- Use `flex-basis: 0` for truly equal-width items
+- Set `flex-shrink: 0` to prevent items from shrinking
+- Combine flex properties with min-width/max-width for responsive layouts
+</KeyConcept>
+
+<ProgressCheckpoint section="summary" xpReward={10} />
+
+## Quick Quiz
+
+<Quiz>
+  <Question text="What does 'flex: 1' expand to?">
+    <Answer>flex-grow: 1; flex-shrink: 0; flex-basis: auto;</Answer>
+    <Answer correct>flex-grow: 1; flex-shrink: 1; flex-basis: 0;</Answer>
+    <Answer>flex-grow: 1; flex-shrink: 1; flex-basis: auto;</Answer>
+    <Answer>flex-grow: 1; flex-shrink: 0; flex-basis: 0;</Answer>
+  </Question>
+
+  <Question text="How do you create a fixed-width flex item that never grows or shrinks?">
+    <Answer>flex: 1 1 200px</Answer>
+    <Answer correct>flex: 0 0 200px</Answer>
+    <Answer>flex: 0 1 200px</Answer>
+    <Answer>flex: 1 0 200px</Answer>
+  </Question>
+
+  <Question text="What's the difference between flex-basis: 0 and flex-basis: auto?">
+    <Answer>No difference</Answer>
+    <Answer>flex-basis: 0 is invalid</Answer>
+    <Answer correct>flex-basis: 0 ignores content size, auto uses content size</Answer>
+    <Answer>flex-basis: auto ignores content size, 0 uses content size</Answer>
+  </Question>
+
+  <Question text="When does align-content have an effect?">
+    <Answer>Always in flex containers</Answer>
+    <Answer correct>Only with flex-wrap: wrap and multiple lines</Answer>
+    <Answer>Only with flex-direction: column</Answer>
+    <Answer>Only when align-items is set</Answer>
+  </Question>
+
+  <Question text="What's the advantage of using gap instead of margins for spacing?">
+    <Answer>gap is faster</Answer>
+    <Answer correct>gap doesn't create spacing at container edges</Answer>
+    <Answer>gap works with all browsers</Answer>
+    <Answer>gap can be negative</Answer>
+  </Question>
+</Quiz>
+
+---
+
+**Excellent progress!** 🎉 You now have advanced Flexbox skills. Ready for expert-level techniques? Check out:
+- **Advanced Flexbox** - Complex patterns, performance, and edge cases
+- **CSS Grid** - Two-dimensional layouts for even more layout power
+- **Responsive Design** - Combine Flexbox with media queries for fully responsive layouts
+

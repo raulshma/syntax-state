@@ -1,0 +1,566 @@
+# CSS Responsive Design - Intermediate
+
+Welcome back! Now that you understand media queries and viewport units, it's time to level up your responsive design skills. You'll learn strategic approaches to building responsive layouts and techniques that professional developers use every day.
+
+In this lesson, you'll master mobile-first vs desktop-first approaches, develop smart breakpoint strategies, and create fluid typography that scales beautifully across all screen sizes.
+
+<InfoBox type="tip" title="What You'll Learn">
+This lesson covers professional responsive design techniques used in production websites. You'll learn not just *how* to make things responsive, but *why* certain approaches work better than others.
+</InfoBox>
+
+<ProgressCheckpoint section="introduction" xpReward={10} />
+
+## Mobile-First vs Desktop-First
+
+One of the most important decisions in responsive design is choosing your approach: **mobile-first** or **desktop-first**. This isn't just about code - it's a design philosophy that affects your entire workflow.
+
+### Desktop-First Approach
+
+Desktop-first means you design for large screens first, then scale down for smaller devices using `max-width` media queries.
+
+```css
+/* Desktop styles (default) */
+.container {
+  width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 30px;
+}
+
+.sidebar {
+  grid-column: span 1;
+}
+
+.main-content {
+  grid-column: span 3;
+}
+
+/* Tablet: 1023px and below */
+@media (max-width: 1023px) {
+  .container {
+    width: 100%;
+    padding: 20px;
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .sidebar,
+  .main-content {
+    grid-column: span 2;
+  }
+}
+
+/* Mobile: 767px and below */
+@media (max-width: 767px) {
+  .container {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+}
+```
+
+<KeyConcept title="Desktop-First Characteristics">
+**Pros:**
+- ✅ Easier if you have desktop designs first
+- ✅ Can be more intuitive for desktop-focused sites
+
+**Cons:**
+- ❌ Requires overriding styles for mobile
+- ❌ Can lead to bloated CSS
+- ❌ Mobile users download unnecessary desktop styles
+- ❌ Goes against "mobile-first" web philosophy
+</KeyConcept>
+
+### Mobile-First Approach (Recommended!)
+
+Mobile-first means you design for small screens first, then enhance for larger devices using `min-width` media queries.
+
+```css
+/* Mobile styles (default) */
+.container {
+  width: 100%;
+  padding: 15px;
+}
+
+.card {
+  margin-bottom: 15px;
+}
+
+.sidebar {
+  display: none; /* Hide on mobile */
+}
+
+/* Tablet: 768px and up */
+@media (min-width: 768px) {
+  .container {
+    padding: 20px;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+  
+  .card {
+    margin-bottom: 0;
+  }
+}
+
+/* Desktop: 1024px and up */
+@media (min-width: 1024px) {
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    grid-template-columns: 250px 1fr;
+    gap: 30px;
+  }
+  
+  .sidebar {
+    display: block; /* Show on desktop */
+  }
+}
+```
+
+<KeyConcept title="Mobile-First Characteristics">
+**Pros:**
+- ✅ Better performance (mobile users don't download desktop styles)
+- ✅ Forces you to prioritize content
+- ✅ Easier to progressively enhance
+- ✅ Aligns with "mobile-first" web philosophy
+- ✅ Cleaner, more maintainable CSS
+
+**Cons:**
+- ❌ Requires mobile-first thinking from the start
+- ❌ Can be challenging if you only have desktop designs
+</KeyConcept>
+
+<InfoBox type="tip" title="Why Mobile-First Wins">
+**Over 60% of web traffic comes from mobile devices.** Mobile-first ensures your site loads fast and works great for the majority of users. Desktop users have faster connections and more powerful devices, so they can handle the extra CSS for enhancements.
+</InfoBox>
+
+<ProgressCheckpoint section="mobile-first-desktop-first" xpReward={15} />
+
+## Breakpoint Strategies
+
+Choosing the right breakpoints is crucial. Here are three common strategies:
+
+### Strategy 1: Device-Based Breakpoints
+
+Based on common device sizes:
+
+```css
+/* Mobile phones */
+@media (min-width: 320px) { }
+
+/* Large phones */
+@media (min-width: 480px) { }
+
+/* Tablets */
+@media (min-width: 768px) { }
+
+/* Laptops */
+@media (min-width: 1024px) { }
+
+/* Desktops */
+@media (min-width: 1280px) { }
+
+/* Large desktops */
+@media (min-width: 1536px) { }
+```
+
+**Pros:** Easy to remember, widely used
+**Cons:** Doesn't account for all devices, can be arbitrary
+
+### Strategy 2: Content-Based Breakpoints
+
+Add breakpoints where your content breaks:
+
+```css
+/* Start with mobile */
+.navigation {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Add breakpoint when navigation looks cramped */
+@media (min-width: 650px) {
+  .navigation {
+    flex-direction: row;
+  }
+}
+
+/* Add another when you have room for more features */
+@media (min-width: 920px) {
+  .navigation {
+    justify-content: space-between;
+  }
+  
+  .nav-extras {
+    display: block;
+  }
+}
+```
+
+**Pros:** Tailored to your specific design
+**Cons:** Can lead to many breakpoints, harder to maintain
+
+### Strategy 3: Hybrid Approach (Recommended!)
+
+Combine device-based and content-based:
+
+```css
+/* Use standard breakpoints as a foundation */
+:root {
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+}
+
+/* Mobile-first base styles */
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+/* Tablet: 2 columns */
+@media (min-width: 768px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+  }
+}
+
+/* Desktop: 3 columns */
+@media (min-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+  }
+}
+
+/* Add content-specific breakpoints as needed */
+@media (min-width: 850px) {
+  .special-component {
+    /* Adjust when this specific component needs it */
+  }
+}
+```
+
+<KeyConcept title="Breakpoint Best Practices">
+✅ **Start with 3-4 main breakpoints** (mobile, tablet, desktop, large desktop)
+
+✅ **Use mobile-first** with `min-width` queries
+
+✅ **Add content-specific breakpoints** only when needed
+
+✅ **Use CSS custom properties** to store breakpoint values
+
+✅ **Test on real devices**, not just browser dev tools
+
+❌ **Don't target specific devices** (iPhone X, iPad Pro, etc.)
+
+❌ **Don't use too many breakpoints** (makes maintenance hard)
+</KeyConcept>
+
+<ProgressCheckpoint section="breakpoint-strategies" xpReward={15} />
+
+## Fluid Typography
+
+Fluid typography means text that scales smoothly between screen sizes, rather than jumping at breakpoints.
+
+### The Problem with Fixed Breakpoints
+
+```css
+/* Traditional approach - text "jumps" at breakpoints */
+body {
+  font-size: 16px;
+}
+
+@media (min-width: 768px) {
+  body {
+    font-size: 18px; /* Sudden jump! */
+  }
+}
+
+@media (min-width: 1024px) {
+  body {
+    font-size: 20px; /* Another jump! */
+  }
+}
+```
+
+### Solution 1: Viewport Units
+
+```css
+/* Scales with viewport, but can get too small or too large */
+h1 {
+  font-size: 5vw;
+}
+
+/* Problem: On a 320px phone, 5vw = 16px (too small!)
+   On a 2560px monitor, 5vw = 128px (way too big!) */
+```
+
+### Solution 2: clamp() Function (Best!)
+
+The `clamp()` function lets you set a minimum, preferred, and maximum size:
+
+```css
+/* clamp(minimum, preferred, maximum) */
+h1 {
+  font-size: clamp(1.5rem, 4vw + 1rem, 3rem);
+}
+
+/* Breakdown:
+   - Minimum: 1.5rem (24px) - never smaller
+   - Preferred: 4vw + 1rem - scales with viewport
+   - Maximum: 3rem (48px) - never larger
+*/
+```
+
+<KeyConcept title="Understanding clamp()">
+```css
+font-size: clamp(MIN, PREFERRED, MAX);
+```
+
+**How it works:**
+1. Browser calculates the PREFERRED value
+2. If PREFERRED < MIN, use MIN
+3. If PREFERRED > MAX, use MAX
+4. Otherwise, use PREFERRED
+
+**Result:** Smooth scaling between MIN and MAX!
+</KeyConcept>
+
+### Practical Fluid Typography System
+
+```css
+/* Base font size */
+body {
+  font-size: clamp(1rem, 0.9rem + 0.5vw, 1.125rem);
+  line-height: 1.6;
+}
+
+/* Headings that scale smoothly */
+h1 {
+  font-size: clamp(2rem, 1.5rem + 2.5vw, 3.5rem);
+  line-height: 1.2;
+}
+
+h2 {
+  font-size: clamp(1.5rem, 1.2rem + 1.5vw, 2.5rem);
+  line-height: 1.3;
+}
+
+h3 {
+  font-size: clamp(1.25rem, 1rem + 1vw, 2rem);
+  line-height: 1.4;
+}
+
+/* Spacing that scales too */
+.section {
+  padding: clamp(2rem, 5vw, 6rem) clamp(1rem, 3vw, 3rem);
+}
+
+.container {
+  max-width: clamp(320px, 90vw, 1200px);
+  margin: 0 auto;
+}
+```
+
+<InfoBox type="tip" title="Calculating clamp() Values">
+A good formula for the middle value:
+```
+preferred = base + (target - base) * (100vw / viewport-range)
+```
+
+Example: Scale from 16px at 320px to 20px at 1200px:
+```css
+font-size: clamp(1rem, 0.95rem + 0.45vw, 1.25rem);
+```
+
+Use online calculators like [Modern Fluid Typography Editor](https://modern-fluid-typography.vercel.app/) to generate these values!
+</InfoBox>
+
+### Alternative: min() and max()
+
+```css
+/* max() - use the larger value */
+.container {
+  width: max(300px, 50vw);
+  /* Never smaller than 300px, but can grow to 50vw */
+}
+
+/* min() - use the smaller value */
+.image {
+  width: min(500px, 100%);
+  /* Never larger than 500px, but can shrink to 100% */
+}
+
+/* Combine them for flexible sizing */
+.card {
+  width: min(600px, 100% - 2rem);
+  /* Full width minus padding, but max 600px */
+}
+```
+
+<ProgressCheckpoint section="fluid-typography" xpReward={15} />
+
+## Hands-On Practice
+
+Let's build a responsive card layout using mobile-first approach and fluid typography:
+
+<CssEditor
+  initialHtml={`
+<div class="container">
+  <h1 class="title">Responsive Card Grid</h1>
+  <div class="grid">
+    <article class="card">
+      <h2>Card Title 1</h2>
+      <p>This card adapts beautifully to any screen size with fluid typography and responsive grid.</p>
+    </article>
+    <article class="card">
+      <h2>Card Title 2</h2>
+      <p>Notice how the text size scales smoothly as you resize the viewport.</p>
+    </article>
+    <article class="card">
+      <h2>Card Title 3</h2>
+      <p>The grid automatically adjusts from 1 to 2 to 3 columns based on available space.</p>
+    </article>
+  </div>
+</div>
+  `}
+  initialCss={`
+/* Mobile-first base styles */
+.container {
+  padding: clamp(1rem, 3vw, 2rem);
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.title {
+  font-size: clamp(1.75rem, 4vw, 2.5rem);
+  margin-bottom: clamp(1.5rem, 3vw, 2.5rem);
+  color: #1e40af;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: clamp(1rem, 2vw, 1.5rem);
+}
+
+.card {
+  background: #f0f9ff;
+  border: 2px solid #3b82f6;
+  border-radius: 8px;
+  padding: clamp(1rem, 3vw, 1.5rem);
+}
+
+.card h2 {
+  font-size: clamp(1.25rem, 2.5vw, 1.5rem);
+  color: #1e40af;
+  margin-bottom: 0.75rem;
+}
+
+.card p {
+  font-size: clamp(0.875rem, 1.5vw, 1rem);
+  line-height: 1.6;
+  color: #334155;
+}
+
+/* Tablet: 2 columns */
+@media (min-width: 768px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Desktop: 3 columns */
+@media (min-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+  `}
+  height={500}
+  showPreview={true}
+/>
+
+<InfoBox type="tip" title="Try This!">
+Resize your browser window and watch how:
+1. The grid changes from 1 → 2 → 3 columns
+2. Text sizes scale smoothly (no sudden jumps!)
+3. Spacing adjusts proportionally
+4. Everything stays readable at any size
+</InfoBox>
+
+<ProgressCheckpoint section="summary" xpReward={10} />
+
+## Key Takeaways
+
+<KeyConcept title="Intermediate Responsive Design">
+✅ **Mobile-first** is the recommended approach - start small, enhance for larger screens
+
+✅ **Use `min-width` queries** for mobile-first, `max-width` for desktop-first
+
+✅ **Breakpoint strategies**: Start with 3-4 standard breakpoints, add content-specific ones as needed
+
+✅ **Fluid typography** with `clamp()` creates smooth scaling between screen sizes
+
+✅ **clamp(min, preferred, max)** ensures text never gets too small or too large
+
+✅ **min()** and **max()** functions provide flexible sizing options
+
+✅ **Test on real devices** to ensure your responsive design works in practice
+</KeyConcept>
+
+<ProgressCheckpoint section="summary" xpReward={10} />
+
+## Quick Quiz
+
+<Quiz>
+  <Question text="What's the main advantage of mobile-first approach?">
+    <Answer>It's easier to code</Answer>
+    <Answer correct>Mobile users don't download unnecessary desktop styles</Answer>
+    <Answer>It works better on desktop</Answer>
+    <Answer>It requires fewer media queries</Answer>
+  </Question>
+
+  <Question text="Which media query syntax is used for mobile-first?">
+    <Answer>@media (max-width: 768px)</Answer>
+    <Answer correct>@media (min-width: 768px)</Answer>
+    <Answer>@media (width: 768px)</Answer>
+    <Answer>@media screen and (768px)</Answer>
+  </Question>
+
+  <Question text="What does clamp(1rem, 2vw, 3rem) do?">
+    <Answer>Sets font size to 2vw always</Answer>
+    <Answer>Sets font size between 1rem and 3rem randomly</Answer>
+    <Answer correct>Scales from 1rem to 3rem based on viewport, using 2vw as preferred</Answer>
+    <Answer>Sets font size to 1rem on mobile, 3rem on desktop</Answer>
+  </Question>
+
+  <Question text="What's the recommended number of main breakpoints?">
+    <Answer>1-2</Answer>
+    <Answer correct>3-4</Answer>
+    <Answer>7-8</Answer>
+    <Answer>As many as possible</Answer>
+  </Question>
+
+  <Question text="What does min(500px, 100%) do?">
+    <Answer>Always uses 500px</Answer>
+    <Answer>Always uses 100%</Answer>
+    <Answer correct>Uses whichever is smaller: 500px or 100%</Answer>
+    <Answer>Uses whichever is larger: 500px or 100%</Answer>
+  </Question>
+</Quiz>
+
+---
+
+**Great job!** 🎉 You've mastered intermediate responsive design techniques! You now understand mobile-first development, smart breakpoint strategies, and fluid typography.
+
+**Next Steps:**
+- Try the advanced level to learn about container queries and advanced patterns
+- Practice building mobile-first layouts with your new knowledge
+- Experiment with fluid typography in your projects

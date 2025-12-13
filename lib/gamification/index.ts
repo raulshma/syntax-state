@@ -164,6 +164,36 @@ export const BADGES = {
     icon: '⚛️',
     category: 'mastery',
   },
+  
+  // CSS milestone badges
+  CSS_SELECTOR_MASTER: {
+    id: 'css-selector-master',
+    name: 'CSS Selector Master',
+    description: 'Complete the CSS Selectors lesson at all levels',
+    icon: '🎯',
+    category: 'mastery',
+  },
+  LAYOUT_EXPERT: {
+    id: 'layout-expert',
+    name: 'Layout Expert',
+    description: 'Complete both Flexbox and Grid lessons at any level',
+    icon: '📐',
+    category: 'mastery',
+  },
+  ANIMATION_WIZARD: {
+    id: 'animation-wizard',
+    name: 'Animation Wizard',
+    description: 'Complete both Animations and Transforms lessons at any level',
+    icon: '✨',
+    category: 'mastery',
+  },
+  CSS_MASTER: {
+    id: 'css-master',
+    name: 'CSS Master',
+    description: 'Complete all CSS lessons at any level',
+    icon: '🎨',
+    category: 'mastery',
+  },
 } as const;
 
 export type BadgeId = keyof typeof BADGES;
@@ -320,6 +350,29 @@ export function checkNewBadges(stats: {
     newBadges.push('react-ranger');
   }
   
+  // Check CSS badges (Requirements 5.5, 5.6)
+  if (stats.cssLessonsCompleted !== undefined && 
+      stats.totalCssLessons !== undefined &&
+      stats.cssLessonsCompleted >= stats.totalCssLessons && 
+      !existingBadgeIds.includes('css-master')) {
+    newBadges.push('css-master');
+  }
+  
+  if (stats.cssSelectorAllLevelsCompleted && 
+      !existingBadgeIds.includes('css-selector-master')) {
+    newBadges.push('css-selector-master');
+  }
+  
+  if (stats.cssFlexboxAndGridCompleted && 
+      !existingBadgeIds.includes('layout-expert')) {
+    newBadges.push('layout-expert');
+  }
+  
+  if (stats.cssAnimationsAndTransformsCompleted && 
+      !existingBadgeIds.includes('animation-wizard')) {
+    newBadges.push('animation-wizard');
+  }
+  
   return newBadges;
 }
 
@@ -374,6 +427,23 @@ export const REACT_LESSON_IDS = [
   'react/performance-optimization',
   'react/error-boundaries',
   'react/server-components',
+];
+
+// Total number of CSS lessons for badge completion checks
+export const TOTAL_CSS_LESSONS = 10;
+
+// CSS lesson IDs for badge tracking
+export const CSS_LESSON_IDS = [
+  'css/selectors',
+  'css/box-model',
+  'css/positioning',
+  'css/flexbox',
+  'css/grid',
+  'css/typography',
+  'css/colors',
+  'css/responsive-design',
+  'css/animations',
+  'css/transforms',
 ];
 
 /**
@@ -440,6 +510,92 @@ export function checkReactMilestoneBadge(
   
   if (completedReactLessonIds.size >= TOTAL_REACT_LESSONS) {
     return 'react-ranger';
+  }
+  
+  return null;
+}
+
+/**
+ * Check if user has completed CSS Selectors lesson at all levels
+ * Returns 'css-selector-master' badge ID if completed at all levels
+ */
+export function checkCssSelectorMasterBadge(
+  completedLessons: Array<{ lessonId: string; experienceLevel: string }>
+): string | null {
+  const selectorLessonId = 'css/selectors';
+  const levels = ['beginner', 'intermediate', 'advanced'];
+  
+  const completedLevels = levels.filter(level =>
+    completedLessons.some(
+      lesson => lesson.lessonId === selectorLessonId && lesson.experienceLevel === level
+    )
+  );
+  
+  if (completedLevels.length === 3) {
+    return 'css-selector-master';
+  }
+  
+  return null;
+}
+
+/**
+ * Check if user has completed both Flexbox and Grid lessons at any level
+ * Returns 'layout-expert' badge ID if both are completed
+ */
+export function checkLayoutExpertBadge(
+  completedLessons: Array<{ lessonId: string; experienceLevel: string }>
+): string | null {
+  const flexboxCompleted = completedLessons.some(
+    lesson => lesson.lessonId === 'css/flexbox'
+  );
+  const gridCompleted = completedLessons.some(
+    lesson => lesson.lessonId === 'css/grid'
+  );
+  
+  if (flexboxCompleted && gridCompleted) {
+    return 'layout-expert';
+  }
+  
+  return null;
+}
+
+/**
+ * Check if user has completed both Animations and Transforms lessons at any level
+ * Returns 'animation-wizard' badge ID if both are completed
+ */
+export function checkAnimationWizardBadge(
+  completedLessons: Array<{ lessonId: string; experienceLevel: string }>
+): string | null {
+  const animationsCompleted = completedLessons.some(
+    lesson => lesson.lessonId === 'css/animations'
+  );
+  const transformsCompleted = completedLessons.some(
+    lesson => lesson.lessonId === 'css/transforms'
+  );
+  
+  if (animationsCompleted && transformsCompleted) {
+    return 'animation-wizard';
+  }
+  
+  return null;
+}
+
+/**
+ * Check if user has completed all CSS lessons at any level
+ * Returns 'css-master' badge ID if all lessons are completed
+ */
+export function checkCssMasterBadge(
+  completedLessons: Array<{ lessonId: string; experienceLevel: string }>
+): string | null {
+  // Get unique CSS lesson IDs that have been completed at any level
+  const completedCssLessonIds = new Set(
+    completedLessons
+      .filter(lesson => CSS_LESSON_IDS.includes(lesson.lessonId))
+      .map(lesson => lesson.lessonId)
+  );
+  
+  if (completedCssLessonIds.size >= TOTAL_CSS_LESSONS) {
+    return 'css-master';
   }
   
   return null;

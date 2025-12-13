@@ -1,0 +1,642 @@
+# CSS Positioning - Intermediate
+
+Now that you understand the basics of positioning, let's explore more advanced concepts: fixed and sticky positioning in detail, z-index and stacking contexts, and the crucial concept of containing blocks. These topics will help you build complex, layered interfaces with confidence.
+
+<InfoBox type="tip" title="What You'll Learn">
+In this lesson, you'll master the nuances of positioning that separate beginners from intermediate developers. You'll learn how stacking contexts work, why z-index sometimes doesn't behave as expected, and how to use sticky positioning effectively. These concepts are essential for building modern web applications with navigation bars, modals, tooltips, and complex layered interfaces.
+</InfoBox>
+
+<ProgressCheckpoint section="introduction" xpReward={15} />
+
+## Fixed Positioning in Depth
+
+Fixed positioning is incredibly powerful for creating UI elements that remain visible while scrolling. Let's explore its characteristics and common use cases in detail.
+
+### How Fixed Positioning Works
+
+When you set `position: fixed`, the element:
+1. Is removed from the normal document flow
+2. Is positioned relative to the viewport (browser window)
+3. Stays in the same position when scrolling
+4. Creates a new stacking context
+
+```css
+.fixed-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  background: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  z-index: 100;
+}
+```
+
+### Common Patterns with Fixed Positioning
+
+**1. Fixed Navigation Bar**
+
+```css
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  background: white;
+  z-index: 1000;
+}
+
+/* Don't forget to add padding to body! */
+body {
+  padding-top: 60px; /* Same as navbar height */
+}
+```
+
+**2. Fixed Sidebar**
+
+```css
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 250px;
+  height: 100vh;
+  overflow-y: auto;
+  background: #f3f4f6;
+}
+
+.main-content {
+  margin-left: 250px; /* Same as sidebar width */
+}
+```
+
+**3. Fixed Footer**
+
+```css
+.footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 20px;
+  background: #1f2937;
+  color: white;
+}
+```
+
+<KeyConcept title="Important Consideration">
+When using fixed positioning, remember that the element is removed from the document flow. You often need to add padding or margin to other elements to prevent content from being hidden behind the fixed element.
+</KeyConcept>
+
+<PositioningDemo
+  initialPosition="fixed"
+  initialOffsets={{ top: 0, left: 0, right: 0 }}
+  showControls={true}
+  showScrollDemo={true}
+/>
+
+<ProgressCheckpoint section="fixed-positioning" xpReward={15} />
+
+## Sticky Positioning in Depth
+
+Sticky positioning is a hybrid that combines the best of relative and fixed positioning. It's perfect for elements that should scroll normally until they reach a certain point, then "stick" in place.
+
+### How Sticky Positioning Works
+
+An element with `position: sticky`:
+1. Acts like `position: relative` initially
+2. Becomes "stuck" when it reaches the specified offset during scrolling
+3. Only sticks within its parent container
+4. Returns to normal flow when the parent scrolls out of view
+
+```css
+.sticky-header {
+  position: sticky;
+  top: 0;
+  background: white;
+  z-index: 10;
+}
+```
+
+### Requirements for Sticky to Work
+
+Sticky positioning can be tricky. For it to work, you need:
+
+1. **A threshold value** (top, right, bottom, or left)
+2. **Room to stick** - The parent must be taller than the sticky element
+3. **No overflow hidden** on ancestors (in most cases)
+4. **A positioned ancestor** doesn't interfere (unlike absolute)
+
+```css
+/* ✅ This works */
+.container {
+  height: 2000px; /* Tall enough for scrolling */
+}
+
+.sticky-element {
+  position: sticky;
+  top: 20px; /* Threshold specified */
+}
+
+/* ❌ This doesn't work */
+.container {
+  height: 100px; /* Too short! */
+  overflow: hidden; /* Prevents sticking */
+}
+
+.sticky-element {
+  position: sticky;
+  top: 20px;
+}
+```
+
+### Common Patterns with Sticky Positioning
+
+**1. Sticky Section Headers**
+
+```css
+.section {
+  margin-bottom: 40px;
+}
+
+.section-header {
+  position: sticky;
+  top: 0;
+  background: white;
+  padding: 10px 0;
+  border-bottom: 2px solid #e5e7eb;
+  z-index: 10;
+}
+```
+
+**2. Sticky Table Headers**
+
+```css
+thead th {
+  position: sticky;
+  top: 0;
+  background: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+```
+
+**3. Sticky Sidebar Navigation**
+
+```css
+.sidebar-nav {
+  position: sticky;
+  top: 80px; /* Below fixed header */
+  max-height: calc(100vh - 100px);
+  overflow-y: auto;
+}
+```
+
+<PositioningDemo
+  initialPosition="sticky"
+  initialOffsets={{ top: 20 }}
+  showControls={true}
+  showScrollDemo={true}
+/>
+
+<KeyConcept title="Sticky vs Fixed">
+**Use sticky when:** You want an element to scroll normally until it reaches a threshold, then stick within its container.
+
+**Use fixed when:** You want an element to always stay in the same position relative to the viewport, regardless of scrolling.
+
+Sticky is great for section headers and table headers. Fixed is better for navigation bars and floating action buttons.
+</KeyConcept>
+
+<BrowserCompatibility
+  feature="Position: sticky"
+  minVersions={{
+    chrome: '56',
+    firefox: '32',
+    safari: '13',
+    edge: '16',
+  }}
+  showFallback={true}
+  showPrefixes={false}
+/>
+
+<ProgressCheckpoint section="sticky-positioning" xpReward={15} />
+
+## Understanding Stacking Contexts
+
+Stacking contexts are one of the most misunderstood concepts in CSS. They determine how elements layer on top of each other and why z-index sometimes doesn't work as expected.
+
+### What is a Stacking Context?
+
+A stacking context is a three-dimensional conceptualization of HTML elements along an imaginary z-axis. Elements within a stacking context are layered according to specific rules.
+
+### What Creates a Stacking Context?
+
+Many CSS properties create a new stacking context:
+
+1. The root element (`<html>`)
+2. Elements with `position: absolute` or `relative` and `z-index` other than `auto`
+3. Elements with `position: fixed` or `sticky`
+4. Elements with `opacity` less than 1
+5. Elements with `transform`, `filter`, `perspective`, or `clip-path`
+6. Flex items with `z-index` other than `auto`
+7. Grid items with `z-index` other than `auto`
+
+```css
+/* These all create stacking contexts */
+.context-1 { position: relative; z-index: 1; }
+.context-2 { opacity: 0.99; }
+.context-3 { transform: translateZ(0); }
+.context-4 { position: fixed; }
+```
+
+### How Stacking Contexts Affect Z-Index
+
+Here's the crucial point: **z-index only works within the same stacking context**. You can't use z-index to move an element above an element in a different stacking context.
+
+```css
+.parent-1 {
+  position: relative;
+  z-index: 1;
+}
+
+.child-1 {
+  position: relative;
+  z-index: 9999; /* Can't go above .parent-2! */
+}
+
+.parent-2 {
+  position: relative;
+  z-index: 2; /* This wins */
+}
+
+.child-2 {
+  position: relative;
+  z-index: 1;
+}
+```
+
+In this example, `.child-2` will appear above `.child-1` because `.parent-2` has a higher z-index than `.parent-1`. The children's z-index values only matter within their own parent's stacking context.
+
+<KeyConcept title="Stacking Context Rules">
+1. Elements in the same stacking context are layered according to their z-index
+2. If z-index is the same, elements later in the HTML appear on top
+3. Child elements cannot escape their parent's stacking context
+4. A child with `z-index: 9999` in a parent with `z-index: 1` will appear below a sibling with `z-index: 2`
+</KeyConcept>
+
+### Debugging Stacking Context Issues
+
+When z-index doesn't work as expected:
+
+1. **Check if elements are positioned** - z-index only works on positioned elements
+2. **Look for stacking contexts** - Check if parent elements create stacking contexts
+3. **Use browser DevTools** - Inspect the computed z-index and stacking context
+4. **Simplify** - Remove properties that create stacking contexts to isolate the issue
+
+```css
+/* Common fix: Remove unnecessary stacking contexts */
+.parent {
+  /* Remove these if not needed: */
+  /* transform: translateZ(0); */
+  /* opacity: 0.99; */
+  /* position: relative; z-index: 1; */
+}
+```
+
+<PositioningDemo
+  showZIndexDemo={true}
+  showStackingContext={true}
+  showControls={true}
+/>
+
+<ProgressCheckpoint section="z-index" xpReward={15} />
+
+## Containing Blocks
+
+The "containing block" is the reference point for positioning and sizing. Understanding containing blocks is crucial for predicting how positioned elements will behave.
+
+### What is a Containing Block?
+
+A containing block is the ancestor element that a positioned element uses as its reference for:
+- Position offsets (top, right, bottom, left)
+- Percentage-based dimensions (width, height)
+- Percentage-based margins and padding
+
+### Containing Block for Different Position Values
+
+**position: static, relative, sticky**
+- Containing block is the content box of the nearest block-level ancestor
+
+**position: absolute**
+- Containing block is the padding box of the nearest positioned ancestor (position other than static)
+- If no positioned ancestor exists, it's the initial containing block (viewport)
+
+**position: fixed**
+- Containing block is always the viewport (browser window)
+- Exception: If an ancestor has `transform`, `perspective`, or `filter`, that becomes the containing block
+
+```css
+/* Absolute positioning example */
+.container {
+  position: relative; /* Creates containing block */
+  width: 500px;
+  height: 300px;
+  padding: 20px;
+}
+
+.absolute-child {
+  position: absolute;
+  top: 0;    /* 0px from top of .container's padding box */
+  right: 0;  /* 0px from right of .container's padding box */
+  width: 50%; /* 50% of .container's width */
+}
+```
+
+### Percentage Values and Containing Blocks
+
+Percentage values are calculated relative to the containing block:
+
+```css
+.container {
+  width: 400px;
+  height: 300px;
+  padding: 20px;
+}
+
+.child {
+  position: absolute;
+  width: 50%;  /* 50% of 400px = 200px */
+  height: 50%; /* 50% of 300px = 150px */
+  top: 10%;    /* 10% of 300px = 30px */
+  left: 10%;   /* 10% of 400px = 40px */
+}
+```
+
+<KeyConcept title="Transform and Fixed Positioning">
+This is a common gotcha: If a fixed element has an ancestor with `transform`, `perspective`, or `filter`, that ancestor becomes the containing block instead of the viewport. This can cause unexpected behavior.
+
+```css
+.parent {
+  transform: translateZ(0); /* Creates containing block */
+}
+
+.fixed-child {
+  position: fixed;
+  /* Now positioned relative to .parent, not viewport! */
+}
+```
+</KeyConcept>
+
+<ProgressCheckpoint section="containing-blocks" xpReward={15} />
+
+## Practical Examples
+
+### Creating a Modal Overlay
+
+```css
+/* Overlay that covers entire viewport */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Modal centered in overlay */
+.modal {
+  position: relative;
+  width: 90%;
+  max-width: 500px;
+  background: white;
+  border-radius: 8px;
+  padding: 24px;
+  z-index: 1001;
+}
+
+/* Close button in top-right */
+.modal-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+}
+```
+
+### Sticky Navigation with Offset
+
+```css
+/* Fixed header */
+.site-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  background: white;
+  z-index: 100;
+}
+
+/* Sticky sidebar that accounts for header */
+.sidebar {
+  position: sticky;
+  top: 80px; /* 60px header + 20px gap */
+  max-height: calc(100vh - 100px);
+  overflow-y: auto;
+}
+```
+
+### Tooltip Positioning
+
+```css
+.tooltip-container {
+  position: relative;
+  display: inline-block;
+}
+
+.tooltip {
+  position: absolute;
+  bottom: 100%; /* Above the container */
+  left: 50%;
+  transform: translateX(-50%); /* Center horizontally */
+  margin-bottom: 8px;
+  padding: 8px 12px;
+  background: #1f2937;
+  color: white;
+  border-radius: 4px;
+  white-space: nowrap;
+  z-index: 10;
+}
+
+/* Arrow pointing down */
+.tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: #1f2937;
+}
+```
+
+<CssEditor
+  initialHtml={`<div class="container">
+  <div class="sticky-header">Sticky Header</div>
+  <div class="content">
+    <p>Scroll down to see the sticky header in action...</p>
+    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+    <p>Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+    <p>Ut enim ad minim veniam, quis nostrud exercitation ullamco.</p>
+    <p>Duis aute irure dolor in reprehenderit in voluptate velit.</p>
+    <p>Excepteur sint occaecat cupidatat non proident.</p>
+  </div>
+</div>`}
+  initialCss={`.container {
+  height: 300px;
+  overflow-y: scroll;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+}
+
+.sticky-header {
+  position: sticky;
+  top: 0;
+  background: #3b82f6;
+  color: white;
+  padding: 16px;
+  font-weight: bold;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+}
+
+.content {
+  padding: 20px;
+}
+
+.content p {
+  margin: 20px 0;
+  line-height: 1.6;
+}`}
+  height={400}
+  showPreview={true}
+/>
+
+<ProgressCheckpoint section="practical-examples" xpReward={15} />
+
+## Common Pitfalls and Solutions
+
+### Pitfall 1: Z-Index Not Working
+
+**Problem:** Setting a high z-index doesn't bring element to front
+
+**Solution:** 
+1. Ensure element is positioned (not static)
+2. Check for stacking contexts created by parent elements
+3. Adjust z-index on parent stacking context instead
+
+### Pitfall 2: Sticky Not Sticking
+
+**Problem:** Element with position: sticky doesn't stick
+
+**Solution:**
+1. Ensure you've set a threshold (top, bottom, left, or right)
+2. Check that parent is tall enough for scrolling
+3. Remove `overflow: hidden` from ancestors
+4. Ensure element isn't at the edge of its container
+
+### Pitfall 3: Fixed Element Scrolls with Page
+
+**Problem:** Fixed element scrolls when it shouldn't
+
+**Solution:**
+1. Check for `transform`, `perspective`, or `filter` on ancestors
+2. These properties change the containing block for fixed elements
+3. Remove these properties or restructure your HTML
+
+### Pitfall 4: Content Hidden Behind Fixed Elements
+
+**Problem:** Content is hidden behind fixed header/footer
+
+**Solution:**
+Add padding to body or main container equal to the fixed element's height
+
+```css
+body {
+  padding-top: 60px; /* Height of fixed header */
+  padding-bottom: 80px; /* Height of fixed footer */
+}
+```
+
+<ProgressCheckpoint section="common-pitfalls" xpReward={15} />
+
+## Key Takeaways
+
+<KeyConcept title="Summary">
+- **Fixed positioning** removes elements from flow and positions them relative to the viewport
+- **Sticky positioning** is a hybrid that sticks when scrolling past a threshold, but only within its container
+- **Stacking contexts** are created by many CSS properties and control how z-index works
+- **Z-index only works within the same stacking context** - children can't escape their parent's context
+- **Containing blocks** determine the reference point for positioning and percentage-based sizing
+- Fixed elements with transformed ancestors use that ancestor as the containing block, not the viewport
+- Always account for fixed elements by adding padding to prevent content from being hidden
+- Sticky requires a threshold value and sufficient parent height to work properly
+</KeyConcept>
+
+<ProgressCheckpoint section="summary" xpReward={10} />
+
+## Quick Quiz
+
+<Quiz>
+  <Question text="What happens to a fixed element if its ancestor has transform applied?">
+    <Answer>Nothing changes</Answer>
+    <Answer correct>The ancestor becomes the containing block instead of the viewport</Answer>
+    <Answer>The element becomes absolute</Answer>
+    <Answer>The transform is ignored</Answer>
+  </Question>
+
+  <Question text="Why might z-index: 9999 not bring an element to the front?">
+    <Answer>The value is too high</Answer>
+    <Answer correct>The element is in a different stacking context with a lower z-index parent</Answer>
+    <Answer>Z-index doesn't work on that element type</Answer>
+    <Answer>Browser doesn't support it</Answer>
+  </Question>
+
+  <Question text="What is required for sticky positioning to work?">
+    <Answer>A positioned parent</Answer>
+    <Answer correct>A threshold value (top, bottom, left, or right)</Answer>
+    <Answer>A z-index value</Answer>
+    <Answer>Transform property</Answer>
+  </Question>
+
+  <Question text="Which creates a new stacking context?">
+    <Answer>position: static</Answer>
+    <Answer>margin: auto</Answer>
+    <Answer correct>opacity: 0.99</Answer>
+    <Answer>display: block</Answer>
+  </Question>
+
+  <Question text="For an absolutely positioned element, what is the containing block?">
+    <Answer>Always the viewport</Answer>
+    <Answer>Always the parent element</Answer>
+    <Answer correct>The nearest positioned ancestor's padding box</Answer>
+    <Answer>The body element</Answer>
+  </Question>
+</Quiz>
+
+---
+
+**Excellent progress!** 🎉 You now have a deep understanding of positioning nuances. Ready for advanced topics? Check out:
+- **Advanced Positioning** - Complex stacking scenarios and performance
+- **CSS Transforms** - Rotate, scale, and move elements in 3D space
+- **CSS Animations** - Bring your positioned elements to life
+

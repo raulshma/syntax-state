@@ -1,0 +1,51 @@
+{
+  "id": "flexbox",
+  "title": "CSS Flexbox",
+  "description": "Master CSS Flexbox - the powerful one-dimensional layout system for creating flexible, responsive layouts with ease",
+  "milestone": "css",
+  "order": 4,
+  "sections": [
+    "introduction",
+    "flex-container",
+    "flex-direction",
+    "justify-content",
+    "align-items",
+    "flex-items",
+    "flex-wrap",
+    "summary"
+  ],
+  "levels": {
+    "beginner": {
+      "estimatedMinutes": 40,
+      "xpReward": 50
+    },
+    "intermediate": {
+      "estimatedMinutes": 55,
+      "xpReward": 100
+    },
+    "advanced": {
+      "estimatedMinutes": 70,
+      "xpReward": 200
+    }
+  },
+  "prerequisites": ["positioning"],
+  "tags": ["css", "flexbox", "layout", "responsive", "flex"],
+  "cssProperties": [
+    "display",
+    "flex-direction",
+    "flex-wrap",
+    "flex-flow",
+    "justify-content",
+    "align-items",
+    "align-content",
+    "gap",
+    "row-gap",
+    "column-gap",
+    "flex-grow",
+    "flex-shrink",
+    "flex-basis",
+    "flex",
+    "align-self",
+    "order"
+  ]
+}

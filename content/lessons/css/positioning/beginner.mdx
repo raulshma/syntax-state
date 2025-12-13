@@ -1,0 +1,326 @@
+# CSS Positioning
+
+Welcome to CSS Positioning! Positioning is one of the most powerful tools in CSS for controlling exactly where elements appear on the page. While the normal document flow is great for most content, sometimes you need to break free and place elements exactly where you want them.
+
+Think of positioning like arranging furniture in a room. Most furniture sits on the floor in the normal flow (static positioning), but sometimes you want to hang a picture on the wall (absolute positioning) or install a ceiling fan that stays in place even when you walk around (fixed positioning).
+
+<InfoBox type="tip" title="Why Learn This?">
+Positioning is essential for creating modern web layouts. Whether you're building navigation bars that stick to the top of the page, tooltips that appear next to buttons, or modals that overlay content, you'll need to understand CSS positioning. It's the key to breaking free from the normal document flow and placing elements exactly where you need them.
+</InfoBox>
+
+<ProgressCheckpoint section="introduction" xpReward={10} />
+
+## Understanding the Position Property
+
+The `position` property determines how an element is positioned in the document. There are five main values:
+
+1. **static** - The default; element follows normal document flow
+2. **relative** - Positioned relative to its normal position
+3. **absolute** - Positioned relative to its nearest positioned ancestor
+4. **fixed** - Positioned relative to the viewport (browser window)
+5. **sticky** - Switches between relative and fixed based on scroll position
+
+Once you set a position value (other than static), you can use four offset properties to move the element:
+- **top** - Distance from the top
+- **right** - Distance from the right
+- **bottom** - Distance from the bottom
+- **left** - Distance from the left
+
+<ProgressCheckpoint section="static-positioning" xpReward={10} />
+
+## Static Positioning (The Default)
+
+Static positioning is the default for all elements. Elements with `position: static` follow the normal document flow - they appear one after another, just like text in a paragraph.
+
+```css
+.box {
+  position: static;
+  /* This is the default - you rarely need to write this */
+}
+```
+
+**Key Points:**
+- Elements appear in the order they're written in the HTML
+- Block elements stack vertically
+- Inline elements flow horizontally
+- The offset properties (top, right, bottom, left) have **no effect** on static elements
+
+<KeyConcept title="Normal Document Flow">
+The "normal document flow" is how elements naturally arrange themselves on the page. Block elements (like `<div>`, `<p>`, `<h1>`) stack vertically, taking up the full width available. Inline elements (like `<span>`, `<a>`, `<strong>`) flow horizontally, wrapping to the next line when they run out of space.
+</KeyConcept>
+
+<ProgressCheckpoint section="relative-positioning" xpReward={10} />
+
+## Relative Positioning
+
+Relative positioning lets you move an element from its normal position, but the space it originally occupied is still reserved. It's like moving a book on a shelf - the book moves, but the gap where it was stays there.
+
+```css
+.box {
+  position: relative;
+  top: 20px;    /* Move down 20px from normal position */
+  left: 30px;   /* Move right 30px from normal position */
+}
+```
+
+**Key Points:**
+- The element is positioned relative to where it would normally be
+- The original space is still reserved (other elements don't move)
+- You can use top, right, bottom, left to offset the element
+- Other elements behave as if the element is still in its original position
+
+<PositioningDemo
+  initialPosition="relative"
+  initialOffsets={{ top: 20, left: 30 }}
+  showControls={true}
+/>
+
+Try adjusting the offsets above to see how relative positioning works. Notice how:
+- The element moves from its original position
+- The space where it was originally is still there (shown in outline)
+- Other elements don't shift to fill the gap
+
+**Common Use Cases:**
+- Fine-tuning element positions
+- Creating a positioning context for absolutely positioned children
+- Slight adjustments without affecting layout
+
+<ProgressCheckpoint section="absolute-positioning" xpReward={10} />
+
+## Absolute Positioning
+
+Absolute positioning removes an element from the normal document flow entirely. It's positioned relative to its nearest positioned ancestor (an ancestor with position set to anything other than static). If no positioned ancestor exists, it's positioned relative to the document body.
+
+```css
+.container {
+  position: relative; /* Creates positioning context */
+}
+
+.box {
+  position: absolute;
+  top: 20px;    /* 20px from top of container */
+  right: 10px;  /* 10px from right of container */
+}
+```
+
+**Key Points:**
+- The element is removed from the normal flow
+- Other elements act as if it doesn't exist
+- Positioned relative to the nearest positioned ancestor
+- If no positioned ancestor, positioned relative to the document body
+
+<PositioningDemo
+  initialPosition="absolute"
+  initialOffsets={{ top: 20, right: 10 }}
+  showControls={true}
+  showContainer={true}
+/>
+
+Notice how:
+- The absolutely positioned element doesn't take up space in the flow
+- Other elements move up to fill the gap
+- The element is positioned relative to its container (the blue box)
+
+<KeyConcept title="Positioning Context">
+A "positioning context" is created by any element with `position: relative`, `absolute`, `fixed`, or `sticky`. Absolutely positioned children will be positioned relative to this context. This is why you often see `position: relative` on containers with absolutely positioned children - it creates the positioning context without moving the container itself.
+</KeyConcept>
+
+**Common Use Cases:**
+- Tooltips and popovers
+- Dropdown menus
+- Badges and notification indicators
+- Overlays and modals
+- Icon positioning within buttons
+
+<ProgressCheckpoint section="fixed-positioning" xpReward={10} />
+
+## Fixed Positioning
+
+Fixed positioning is like absolute positioning, but the element is positioned relative to the viewport (browser window) instead of a positioned ancestor. The element stays in the same place even when you scroll.
+
+```css
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  /* Stays at top of viewport when scrolling */
+}
+```
+
+**Key Points:**
+- Positioned relative to the viewport (browser window)
+- Stays in place when scrolling
+- Removed from normal document flow
+- Other elements act as if it doesn't exist
+
+<PositioningDemo
+  initialPosition="fixed"
+  initialOffsets={{ top: 0, left: 0 }}
+  showControls={true}
+  showScrollDemo={true}
+/>
+
+Try scrolling in the demo above. Notice how:
+- The fixed element stays in the same position relative to the viewport
+- It doesn't scroll with the page content
+- Other content scrolls behind it
+
+**Common Use Cases:**
+- Navigation bars that stick to the top
+- "Back to top" buttons
+- Chat widgets
+- Cookie consent banners
+- Floating action buttons
+
+<KeyConcept title="Fixed vs Absolute">
+**Fixed:** Positioned relative to the viewport (browser window). Stays in place when scrolling.
+
+**Absolute:** Positioned relative to the nearest positioned ancestor. Scrolls with the page.
+
+Choose fixed when you want something to stay visible while scrolling, and absolute when you want something positioned relative to a container.
+</KeyConcept>
+
+<ProgressCheckpoint section="sticky-positioning" xpReward={10} />
+
+## Sticky Positioning
+
+Sticky positioning is a hybrid between relative and fixed. The element acts like it's relatively positioned until you scroll past a certain point, then it "sticks" and acts like it's fixed.
+
+```css
+.section-header {
+  position: sticky;
+  top: 0;
+  /* Acts relative until scrolled to top, then sticks */
+}
+```
+
+**Key Points:**
+- Starts as relatively positioned
+- "Sticks" when you scroll past the specified offset
+- Only sticks within its parent container
+- Returns to normal flow when parent scrolls out of view
+
+<PositioningDemo
+  initialPosition="sticky"
+  initialOffsets={{ top: 0 }}
+  showControls={true}
+  showScrollDemo={true}
+/>
+
+Scroll in the demo above to see sticky positioning in action. Notice how:
+- The element scrolls normally at first
+- When it reaches the top, it "sticks" in place
+- It only sticks within its parent container
+
+**Common Use Cases:**
+- Section headers that stick while scrolling through content
+- Table headers that stay visible
+- Sidebar navigation that sticks after scrolling
+- Sticky footers within sections
+
+<ProgressCheckpoint section="z-index" xpReward={10} />
+
+## Understanding Z-Index
+
+When elements overlap (which happens with positioned elements), the `z-index` property controls which element appears on top. Think of it like layers in a drawing app - higher z-index values appear on top of lower values.
+
+```css
+.bottom-layer {
+  position: relative;
+  z-index: 1;
+}
+
+.top-layer {
+  position: absolute;
+  z-index: 10;
+  /* Appears on top of .bottom-layer */
+}
+```
+
+**Key Points:**
+- Only works on positioned elements (not static)
+- Higher values appear on top
+- Default z-index is `auto` (same as 0)
+- Negative values are allowed (element goes behind)
+
+<PositioningDemo
+  initialPosition="absolute"
+  showZIndexDemo={true}
+  showControls={true}
+/>
+
+Try adjusting the z-index values above to see how they affect stacking order.
+
+<KeyConcept title="Z-Index Rules">
+1. Z-index only works on positioned elements (position other than static)
+2. Higher z-index values appear on top
+3. If z-index is the same, elements later in the HTML appear on top
+4. Z-index creates "stacking contexts" (we'll learn more in intermediate level)
+</KeyConcept>
+
+<ProgressCheckpoint section="summary" xpReward={10} />
+
+## Key Takeaways
+
+<KeyConcept title="Summary">
+- **position: static** - Default; follows normal document flow
+- **position: relative** - Positioned relative to its normal position; original space is reserved
+- **position: absolute** - Removed from flow; positioned relative to nearest positioned ancestor
+- **position: fixed** - Removed from flow; positioned relative to viewport; stays in place when scrolling
+- **position: sticky** - Hybrid of relative and fixed; sticks when scrolled past threshold
+- **Offset properties** (top, right, bottom, left) move positioned elements
+- **z-index** controls stacking order of overlapping elements
+- Positioned elements (except static) create positioning contexts for their children
+</KeyConcept>
+
+## Quick Quiz
+
+Test your understanding of CSS positioning:
+
+<Quiz>
+  <Question text="Which position value is the default for all elements?">
+    <Answer>Relative</Answer>
+    <Answer correct>Static</Answer>
+    <Answer>Absolute</Answer>
+    <Answer>Fixed</Answer>
+  </Question>
+
+  <Question text="What happens to the space an element occupied when you set position: absolute?">
+    <Answer>The space is reserved</Answer>
+    <Answer correct>Other elements move up to fill the space</Answer>
+    <Answer>The space becomes a margin</Answer>
+    <Answer>Nothing changes</Answer>
+  </Question>
+
+  <Question text="Which position value keeps an element in the same place when scrolling?">
+    <Answer>Static</Answer>
+    <Answer>Relative</Answer>
+    <Answer>Absolute</Answer>
+    <Answer correct>Fixed</Answer>
+  </Question>
+
+  <Question text="What does position: relative create for its children?">
+    <Answer>A fixed container</Answer>
+    <Answer correct>A positioning context</Answer>
+    <Answer>A scroll container</Answer>
+    <Answer>A flex container</Answer>
+  </Question>
+
+  <Question text="Which property controls the stacking order of overlapping elements?">
+    <Answer>stack-order</Answer>
+    <Answer>layer</Answer>
+    <Answer correct>z-index</Answer>
+    <Answer>depth</Answer>
+  </Question>
+</Quiz>
+
+---
+
+**Excellent work!** 🎉 You now understand the fundamentals of CSS positioning. Next, you might want to explore:
+- **Flexbox** - Master modern one-dimensional layouts
+- **Grid** - Create complex two-dimensional layouts
+- **CSS Transforms** - Learn how to rotate, scale, and move elements
+
+Positioning is a powerful tool - use it wisely to create engaging, interactive layouts!
+
