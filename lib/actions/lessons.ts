@@ -13,11 +13,31 @@ import { objectiveToLessonSlug, getObjectiveTitle, getObjectiveLessonId } from '
 const CONTENT_DIR = path.join(process.cwd(), 'content', 'lessons');
 
 /**
+ * Sanitize and validate a lesson path to prevent path traversal attacks.
+ * Returns the safe absolute path if valid, or null if the path is malicious.
+ */
+function sanitizeLessonPath(userPath: string, ...additionalSegments: string[]): string | null {
+  // Normalize and resolve the full path
+  const resolvedPath = path.resolve(CONTENT_DIR, userPath, ...additionalSegments);
+  
+  // Ensure the resolved path is within CONTENT_DIR (prevent path traversal)
+  if (!resolvedPath.startsWith(CONTENT_DIR + path.sep) && resolvedPath !== CONTENT_DIR) {
+    console.error('Path traversal attempt detected:', userPath);
+    return null;
+  }
+  
+  return resolvedPath;
+}
+
+/**
  * Get lesson metadata from JSON file
  */
 export async function getLessonMetadata(lessonPath: string) {
   try {
-    const metadataPath = path.join(CONTENT_DIR, lessonPath, 'metadata.json');
+    const metadataPath = sanitizeLessonPath(lessonPath, 'metadata.json');
+    if (!metadataPath) {
+      return null;
+    }
     const content = await fs.readFile(metadataPath, 'utf-8');
     return JSON.parse(content) as {
       id: string;
@@ -47,7 +67,17 @@ export async function getLessonMetadata(lessonPath: string) {
 export const getLessonContent = unstable_cache(
   async (lessonPath: string, level: ExperienceLevel) => {
     try {
-      const mdxPath = path.join(CONTENT_DIR, lessonPath, `${level}.mdx`);
+      // Validate the experience level to prevent injection in filename
+      const validLevels: ExperienceLevel[] = ['beginner', 'intermediate', 'advanced'];
+      if (!validLevels.includes(level)) {
+        console.error('Invalid experience level:', level);
+        return null;
+      }
+      
+      const mdxPath = sanitizeLessonPath(lessonPath, `${level}.mdx`);
+      if (!mdxPath) {
+        return null;
+      }
       const source = await fs.readFile(mdxPath, 'utf-8');
       
       const mdxSource = await serialize(source, {
@@ -75,7 +105,10 @@ export const getLessonContent = unstable_cache(
  */
 export async function lessonExists(lessonPath: string): Promise<boolean> {
   try {
-    const metadataPath = path.join(CONTENT_DIR, lessonPath, 'metadata.json');
+    const metadataPath = sanitizeLessonPath(lessonPath, 'metadata.json');
+    if (!metadataPath) {
+      return false;
+    }
     await fs.access(metadataPath);
     return true;
   } catch {
@@ -88,7 +121,10 @@ export async function lessonExists(lessonPath: string): Promise<boolean> {
  */
 export async function getLessonsForMilestone(milestoneId: string) {
   try {
-    const milestonePath = path.join(CONTENT_DIR, milestoneId);
+    const milestonePath = sanitizeLessonPath(milestoneId);
+    if (!milestonePath) {
+      return [];
+    }
     const entries = await fs.readdir(milestonePath, { withFileTypes: true });
     
     const lessons = [];

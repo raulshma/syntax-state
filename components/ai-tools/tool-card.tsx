@@ -239,7 +239,7 @@ export function AIToolSelector({ userPlan, onToolSelect, className }: AIToolSele
                     }}
                     className="w-full flex items-center gap-3 p-2 rounded-md hover:bg-accent text-left transition-colors"
                   >
-                    <div className={cn('p-1.5 rounded', tool.color.replace('bg-', 'bg-').replace('-500', '-500/10'))}>
+                    <div className={cn('p-1.5 rounded', tool.color.replace('-500', '-500/10'))}>
                       <Icon className={cn('h-4 w-4', tool.color.replace('bg-', 'text-'))} />
                     </div>
                     <div className="flex-1 min-w-0">

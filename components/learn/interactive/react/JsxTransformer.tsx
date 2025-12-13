@@ -104,7 +104,7 @@ function transformJsxToCreateElement(jsx: string, indent: number = 0): string {
     if (jsx.startsWith('{') && jsx.endsWith('}')) {
       return `${indentStr}${jsx.slice(1, -1)}`;
     }
-    return `${indentStr}"${jsx.replace(/"/g, '\\"').replace(/\n/g, '\\n')}"`;
+    return `${indentStr}"${jsx.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\n/g, '\\n')}"`;
   }
   
   const [, tagName, attrsStr, children] = elementMatch;
