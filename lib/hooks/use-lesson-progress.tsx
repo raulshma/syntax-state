@@ -72,49 +72,54 @@ export function ProgressProvider({
   persistToStorage = true,
   initialState,
 }: ProgressProviderProps) {
-  const [progress, setProgress] = useState<LessonProgressState>(() => {
-    // 1. Try to load from local storage first if enabled
-    if (persistToStorage) {
-      try {
-        const storageKey = getStorageKey(lessonId, level);
-        const stored = typeof window !== 'undefined' ? localStorage.getItem(storageKey) : null;
-        
-        if (stored) {
-          const parsed = JSON.parse(stored);
-          // Restore dates
-          return {
-            ...parsed,
-            startedAt: new Date(parsed.startedAt),
-            lastActivityAt: new Date(parsed.lastActivityAt),
-            completedSections: parsed.completedSections.map((s: any) => ({
-              ...s,
-              completedAt: new Date(s.completedAt),
-            })),
-          };
-        }
-      } catch (e) {
-        console.error('Failed to parse stored progress:', e);
+  // Track if we've hydrated from localStorage (using ref to avoid re-renders)
+  const isHydratedRef = useRef(false);
+  
+  // Helper to get initial progress from localStorage (called only once on mount)
+  const getInitialProgressFromStorage = useCallback((): LessonProgressState | null => {
+    if (!persistToStorage || typeof window === 'undefined') return null;
+    
+    try {
+      const storageKey = getStorageKey(lessonId, level);
+      const stored = localStorage.getItem(storageKey);
+      
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        return {
+          ...parsed,
+          startedAt: new Date(parsed.startedAt),
+          lastActivityAt: new Date(parsed.lastActivityAt),
+          completedSections: parsed.completedSections.map((s: any) => ({
+            ...s,
+            completedAt: new Date(s.completedAt),
+          })),
+        };
       }
+    } catch (e) {
+      console.error('Failed to parse stored progress:', e);
     }
-
-    // 2. If we have initialState from server with completed sections
+    return null;
+  }, [lessonId, level, persistToStorage]);
+  
+  // Initialize with server data only (no localStorage) to prevent hydration mismatch
+  const [progress, setProgress] = useState<LessonProgressState>(() => {
+    // Only use initialState from server for SSR-safe initial render
     if (initialState && initialState.completedSections.length > 0) {
       return {
         lessonId,
         level,
         completedSections: initialState.completedSections.map(id => ({
           sectionId: id,
-          completedAt: new Date(), // Approximation
+          completedAt: new Date(),
           timeSpentSeconds: 0 
         })),
         startedAt: new Date(),
         lastActivityAt: new Date(),
-        // If server says completed, respect it
         isComplete: initialState.isCompleted, 
       };
     }
 
-    // 3. Default to empty progress (not null) so sections can be marked complete
+    // Default to empty progress
     return {
       lessonId,
       level,
@@ -127,10 +132,33 @@ export function ProgressProvider({
 
   const sectionStartTimeRef = useRef<Record<string, number>>({});
 
-
-
-  // Save progress to storage whenever it changes
+  // Hydrate from localStorage on client mount (after initial render to avoid hydration mismatch)
+  // Using useEffect with a ref guard ensures this runs once and doesn't cause cascading renders
   useEffect(() => {
+    if (isHydratedRef.current) return;
+    isHydratedRef.current = true;
+    
+    const storedProgress = getInitialProgressFromStorage();
+    if (!storedProgress) return;
+    
+    // Only update if localStorage has more progress than server data
+    const storedCompletedCount = storedProgress.completedSections?.length ?? 0;
+    
+    // eslint-disable-next-line -- Legitimate hydration pattern: syncing state from external storage (localStorage) on mount requires setState in effect
+    setProgress(currentProgress => {
+      const currentCompletedCount = currentProgress.completedSections.length;
+      if (storedCompletedCount > currentCompletedCount) {
+        return storedProgress;
+      }
+      return currentProgress;
+    });
+  }, [getInitialProgressFromStorage]);
+
+  // Save progress to storage whenever it changes (skip initial save before hydration completes)
+  useEffect(() => {
+    // Only save after component has mounted and hydrated
+    if (!isHydratedRef.current) return;
+    
     if (progress && persistToStorage) {
       const storageKey = getStorageKey(lessonId, level);
       localStorage.setItem(storageKey, JSON.stringify(progress));

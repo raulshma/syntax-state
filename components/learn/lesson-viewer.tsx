@@ -4,7 +4,14 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft, BookOpen, CheckCircle2 } from 'lucide-react';
 import Link from 'next/link';
-import { MDXRemote, MDXRemoteSerializeResult } from 'next-mdx-remote';
+import dynamic from 'next/dynamic';
+import type { MDXRemoteSerializeResult } from 'next-mdx-remote';
+
+// Dynamic import to prevent SSR issues with React 19 + next-mdx-remote
+const MDXRemote = dynamic(
+  () => import('next-mdx-remote').then((mod) => mod.MDXRemote),
+  { ssr: false }
+);
 import { Button } from '@/components/ui/button';
 import { ExperienceSelector } from './experience-selector';
 import { ProgressTracker } from './progress-tracker';

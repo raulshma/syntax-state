@@ -63,7 +63,7 @@ const boxStyles: Record<InfoBoxType, {
 };
 
 export function InfoBox({ type = 'info', title, children }: InfoBoxProps) {
-  const style = boxStyles[type];
+  const style = boxStyles[type] ?? boxStyles.info;
   const Icon = style.icon;
   const displayTitle = title || style.defaultTitle;
 

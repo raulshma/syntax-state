@@ -3,7 +3,10 @@
 Welcome to Vite! If you've ever waited impatiently for your development server to start, Vite is about to change your life.
 
 <InfoBox type="tip" title="The Food Truck Analogy">
-Imagine two restaurants: A traditional one that cooks your entire 10-course meal before serving anything, and a food truck that starts serving immediately - cooking each dish only when you order it. Vite is the food truck! It serves your code instantly and only processes what you actually need.
+  Imagine two restaurants: A traditional one that cooks your entire 10-course
+  meal before serving anything, and a food truck that starts serving immediately
+  - cooking each dish only when you order it. Vite is the food truck! It serves
+  your code instantly and only processes what you actually need.
 </InfoBox>
 
 <ProgressCheckpoint section="introduction" xpReward={10} />
@@ -20,7 +23,9 @@ Time: 30 seconds to several minutes for large projects
 ```
 
 <KeyConcept title="The Problem Vite Solves">
-Traditional bundlers like Webpack must process your ENTIRE application before you can see anything in the browser. As projects grow, startup times become painfully slow - sometimes taking minutes just to see a simple change!
+  Traditional bundlers like Webpack must process your ENTIRE application before
+  you can see anything in the browser. As projects grow, startup times become
+  painfully slow - sometimes taking minutes just to see a simple change!
 </KeyConcept>
 
 <ProgressCheckpoint section="why-vite" xpReward={10} />
@@ -36,15 +41,18 @@ Vite uses a clever two-mode approach:
 // Vite leverages this to skip bundling during development
 
 // index.html
-<script type="module" src="/src/main.js"></script>
+<script type="module" src="/src/main.js"></script>;
 
 // main.js - Browser requests this directly
-import { createApp } from 'vue'  // Vite transforms on-the-fly
-import App from './App.vue'       // Only when requested!
+import { createApp } from "vue"; // Vite transforms on-the-fly
+import App from "./App.vue"; // Only when requested!
 ```
 
-<InfoBox type="analogy" title="Like a Smart Waiter">
-Think of Vite as a smart waiter. Instead of bringing the entire menu to your table, they only bring what you order. Need the appetizer? Here it is! Want dessert later? They'll get it when you ask. No wasted trips, no waiting for food you haven't ordered yet.
+<InfoBox type="tip" title="Like a Smart Waiter">
+  Think of Vite as a smart waiter. Instead of bringing the entire menu to your
+  table, they only bring what you order. Need the appetizer? Here it is! Want
+  dessert later? They'll get it when you ask. No wasted trips, no waiting for
+  food you haven't ordered yet.
 </InfoBox>
 
 <ViteDevServerDemo />
@@ -86,7 +94,9 @@ my-app/
 ```
 
 <InfoBox type="tip" title="index.html is Special">
-Unlike other bundlers, Vite treats `index.html` as the entry point. It lives in your project root, not a public folder. This is intentional - Vite processes it directly!
+  Unlike other bundlers, Vite treats `index.html` as the entry point. It lives
+  in your project root, not a public folder. This is intentional - Vite
+  processes it directly!
 </InfoBox>
 
 <ProgressCheckpoint section="getting-started" xpReward={10} />
@@ -97,21 +107,21 @@ Vite works great with zero configuration, but here's what a simple config looks 
 
 ```javascript
 // vite.config.js
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
 
 export default defineConfig({
   plugins: [react()],
-  
+
   server: {
-    port: 3000,        // Dev server port
-    open: true,        // Open browser automatically
+    port: 3000, // Dev server port
+    open: true, // Open browser automatically
   },
-  
+
   build: {
-    outDir: 'dist',    // Output directory
+    outDir: "dist", // Output directory
   },
-})
+});
 ```
 
 <ViteConfigExplorer />
@@ -125,7 +135,7 @@ export default defineConfig({
 ```javascript
 // Change this component...
 function Button() {
-  return <button>Click me!</button>
+  return <button>Click me!</button>;
 }
 
 // ...and see the update in ~50ms, not seconds!
@@ -167,14 +177,14 @@ npm run build
     <Answer>It skips all code transformations</Answer>
     <Answer>It only works with small projects</Answer>
   </Question>
-  
+
   <Question text="Where does index.html live in a Vite project?">
     <Answer>In the public folder</Answer>
     <Answer>In the src folder</Answer>
     <Answer correct>In the project root</Answer>
     <Answer>In the dist folder</Answer>
   </Question>
-  
+
   <Question text="What does Vite use for production builds?">
     <Answer>Webpack</Answer>
     <Answer>esbuild only</Answer>
