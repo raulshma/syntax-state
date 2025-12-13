@@ -276,7 +276,7 @@ export function PerformanceProfiler({
       <Card className="p-4 bg-primary/5 border-primary/20">
         <p className="text-sm text-muted-foreground">
           <strong className="text-foreground">React DevTools Profiler:</strong> This simulates the React DevTools Profiler.
-          Click "Start Profiling" to capture a render and see which components take the longest to render.
+          Click &quot;Start Profiling&quot; to capture a render and see which components take the longest to render.
         </p>
       </Card>
 
@@ -340,7 +340,7 @@ export function PerformanceProfiler({
         <Card className="p-8 text-center">
           <Activity className="w-12 h-12 mx-auto text-muted-foreground/50 mb-4" />
           <p className="text-muted-foreground">
-            Click "Start Profiling" to capture a render and analyze performance.
+            Click &quot;Start Profiling&quot; to capture a render and analyze performance.
           </p>
         </Card>
       )}

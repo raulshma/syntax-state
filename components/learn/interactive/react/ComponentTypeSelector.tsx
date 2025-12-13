@@ -202,7 +202,7 @@ export function ComponentTypeSelector({
           </p>
           <div className="mb-6">
             {score.correct === score.total ? (
-              <p className="text-green-500">🎉 Perfect score! You're a Server/Client Component expert!</p>
+              <p className="text-green-500">🎉 Perfect score! You&apos;re a Server/Client Component expert!</p>
             ) : score.correct >= score.total * 0.7 ? (
               <p className="text-blue-500">👍 Great job! You understand the basics well.</p>
             ) : (
@@ -393,7 +393,7 @@ export function ComponentTypeSelector({
 
       {/* Tips */}
       <div className="text-xs text-muted-foreground">
-        💡 When in doubt, start with Server Components. Only add 'use client' when you need interactivity or browser APIs.
+        💡 When in doubt, start with Server Components. Only add &apos;use client&apos; when you need interactivity or browser APIs.
       </div>
     </div>
   );

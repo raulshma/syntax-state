@@ -380,7 +380,7 @@ export function ErrorPropagationVisualizer({
         <h4 className="font-medium mb-2">How Error Propagation Works</h4>
         <ol className="text-sm text-muted-foreground space-y-1 list-decimal list-inside">
           <li>An error is thrown in a component during rendering</li>
-          <li>The error "bubbles up" through the component tree (like DOM events)</li>
+          <li>The error &quot;bubbles up&quot; through the component tree (like DOM events)</li>
           <li>The nearest error boundary catches the error</li>
           <li>The boundary renders its fallback UI instead of the crashed subtree</li>
           <li>Components outside the boundary continue working normally</li>

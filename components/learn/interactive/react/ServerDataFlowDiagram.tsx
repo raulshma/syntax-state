@@ -455,7 +455,7 @@ export function ServerDataFlowDiagram({
               Server Rendering
             </strong>
             <p className="text-xs text-muted-foreground mt-1">
-              React renders Server Components on the server, generating HTML that's sent to the browser.
+              React renders Server Components on the server, generating HTML that&apos;s sent to the browser.
             </p>
           </div>
           {showStreaming && (

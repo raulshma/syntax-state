@@ -412,7 +412,7 @@ export function ServerClientBoundaryVisualizer({
                       )}
                       {node.hasUseClient && (
                         <span className="text-[10px] px-1 py-0.5 rounded bg-orange-500/20 text-orange-500">
-                          'use client'
+                          &apos;use client&apos;
                         </span>
                       )}
                     </motion.div>
@@ -506,7 +506,7 @@ export function ServerClientBoundaryVisualizer({
                     </p>
                     {selectedNode.hasUseClient && (
                       <p className="text-orange-500">
-                        📝 Marked with 'use client' directive
+                        📝 Marked with &apos;use client&apos; directive
                       </p>
                     )}
                     {selectedNode.hasInteractivity && (
@@ -543,7 +543,7 @@ export function ServerClientBoundaryVisualizer({
             <strong className="text-orange-500">Client Components</strong>
             <p className="text-xs text-muted-foreground mt-1">
               Run in the browser. Required for interactivity (onClick, useState), 
-              browser APIs, and effects. Add 'use client' at the top of the file.
+              browser APIs, and effects. Add &apos;use client&apos; at the top of the file.
             </p>
           </div>
         </div>

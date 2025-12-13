@@ -384,7 +384,7 @@ export function FallbackUIBuilder({
                           Error details
                         </summary>
                         <pre className="mt-2 p-2 rounded bg-secondary/50 text-xs overflow-auto font-mono">
-                          TypeError: Cannot read property 'map' of undefined
+                          TypeError: Cannot read property &apos;map&apos; of undefined
                         </pre>
                       </details>
                     )}

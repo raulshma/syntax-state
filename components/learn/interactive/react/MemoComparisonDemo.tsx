@@ -166,7 +166,7 @@ export function MemoComparisonDemo({
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium">Child Prop</span>
               <span className="text-xs px-2 py-1 rounded bg-blue-500/20 text-blue-500 font-mono">
-                "{childProp}"
+                &quot;{childProp}&quot;
               </span>
             </div>
             <Button onClick={handleChildPropChange} variant="outline" size="sm" className="w-full gap-2">
@@ -275,7 +275,7 @@ export function MemoComparisonDemo({
               {savedRenders > 0 ? (
                 <>
                   React.memo saved <strong className="text-green-500">{savedRenders} render{savedRenders !== 1 ? 's' : ''}</strong> by
-                  preventing unnecessary re-renders when props haven't changed.
+                  preventing unnecessary re-renders when props haven&apos;t changed.
                 </>
               ) : (
                 'Click the buttons above to see how React.memo prevents unnecessary re-renders.'
@@ -347,7 +347,7 @@ function SimulatedComponent({
         {isMemoized && <span className="text-purple-500">memo(</span>}
         &lt;{name}
         {propValue !== undefined && (
-          <span className="text-blue-500"> message="{propValue}"</span>
+          <span className="text-blue-500"> message=&quot;{propValue}&quot;</span>
         )}
         /&gt;
         {isMemoized && <span className="text-purple-500">)</span>}
