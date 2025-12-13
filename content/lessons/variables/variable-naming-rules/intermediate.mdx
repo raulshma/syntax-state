@@ -1,0 +1,279 @@
+# Variable Naming Rules: Syntactic and Semantic Guidelines
+
+Understanding JavaScript's naming rules goes beyond just avoiding syntax errors. This lesson covers the complete set of rules and industry-standard conventions.
+
+## JavaScript Identifier Rules
+
+A **variable identifier** must follow specific syntax rules defined by the ECMAScript specification.
+
+### Valid Identifier Characters
+
+| Position        | Allowed Characters                                   |
+| :-------------- | :--------------------------------------------------- |
+| First character | Letters (a-z, A-Z), underscore (\_), dollar sign ($) |
+| Subsequent      | All above + digits (0-9)                             |
+
+```javascript
+// Valid identifiers
+let name; // Letter start
+let _private; // Underscore start
+let $element; // Dollar sign start
+let camelCase123; // Mix of valid characters
+
+// Invalid identifiers
+// let 123abc;      // Cannot start with digit
+// let my-var;      // Hyphen not allowed
+// let my var;      // Spaces not allowed
+// let class;       // Reserved word
+```
+
+<ProgressCheckpoint section="naming-basics" xpReward={10} />
+
+## Unicode Identifiers
+
+JavaScript supports Unicode letters, allowing identifiers in various languages:
+
+```javascript
+// Unicode letters are valid
+let имя = "Russian name";
+let 名前 = "Japanese name";
+let número = 42;
+let café = "coffee";
+
+// Unicode escapes work too
+let A = 65; // Same as: let A = 65;
+```
+
+### Unicode Categories Allowed:
+
+- **Lu**: Uppercase letters (A-Z, and international)
+- **Ll**: Lowercase letters (a-z, and international)
+- **Lt**: Titlecase letters
+- **Lm**: Modifier letters
+- **Lo**: Other letters
+- **Nl**: Letter numbers
+- **Mn, Mc, Nd, Pc**: Various combiners and connectors
+
+<CodePlayground 
+  code={`// Unicode in action
+let grüß = "German greeting ü";
+let 你好 = "Chinese hello";
+let prísmeno = "Slovak letter";
+
+console.log(grüß);
+console.log(你好);
+console.log(prísmeno);
+
+// Emoji are NOT valid (they're symbols, not letters)
+// let 😊 = "smile"; // SyntaxError!`}
+title="Unicode Identifiers"
+/>
+
+<ProgressCheckpoint section="valid-characters" xpReward={10} />
+
+## Reserved Words
+
+JavaScript reserves certain words for language features. These cannot be used as identifiers.
+
+### Always Reserved:
+
+```javascript
+// Keywords (always reserved)
+const keywords = [
+  "break",
+  "case",
+  "catch",
+  "continue",
+  "debugger",
+  "default",
+  "delete",
+  "do",
+  "else",
+  "finally",
+  "for",
+  "function",
+  "if",
+  "in",
+  "instanceof",
+  "new",
+  "return",
+  "switch",
+  "this",
+  "throw",
+  "try",
+  "typeof",
+  "var",
+  "void",
+  "while",
+  "with",
+];
+
+// ES6+ additions
+const es6Keywords = [
+  "class",
+  "const",
+  "let",
+  "super",
+  "yield",
+  "export",
+  "import",
+  "extends",
+  "static",
+];
+
+// Literals
+const literals = ["null", "true", "false"];
+```
+
+### Future Reserved (Strict Mode):
+
+```javascript
+"use strict";
+
+// These are reserved in strict mode:
+// implements, interface, package, private, protected, public
+// let implements = 1; // SyntaxError in strict mode
+```
+
+### Contextually Reserved:
+
+```javascript
+// These are reserved only in certain contexts:
+let await; // OK in non-async context
+// let await; // Error inside async function
+
+async function test() {
+  // let await = 1; // SyntaxError!
+  // let yield = 1; // SyntaxError in generators!
+}
+```
+
+<ProgressCheckpoint section="reserved-words" xpReward={10} />
+
+## Naming Conventions by Context
+
+### Variables and Functions: camelCase
+
+```javascript
+// Variables
+let userName = "alice";
+let itemCount = 5;
+let isAuthenticated = false;
+
+// Functions
+function getUserById(id) {}
+function calculateTotalPrice(items) {}
+function validateEmailFormat(email) {}
+```
+
+### Constants: SCREAMING_SNAKE_CASE
+
+```javascript
+// Configuration constants
+const MAX_RETRY_ATTEMPTS = 3;
+const API_BASE_URL = "https://api.example.com";
+const DEFAULT_TIMEOUT_MS = 5000;
+
+// Note: This is for truly constant values
+// Regular const variables use camelCase
+const userPreferences = { theme: "dark" }; // Object can change
+```
+
+### Classes and Constructors: PascalCase
+
+```javascript
+class UserAccount {}
+class ShoppingCart {}
+class DatabaseConnection {}
+
+function LegacyConstructor() {} // Old-style constructors
+```
+
+### Private Conventions:
+
+```javascript
+// Underscore prefix for "private" (convention only)
+class Example {
+  _privateField; // Convention: don't access externally
+  #reallyPrivate; // ES2022: True private field
+
+  _privateMethod() {} // Convention
+  #truePrivate() {} // True private
+}
+```
+
+<ProgressCheckpoint section="naming-conventions" xpReward={10} />
+
+## Semantic Naming Patterns
+
+### Boolean Variables
+
+```javascript
+// Prefix with is, has, can, should, will
+let isActive = true;
+let hasPermission = false;
+let canEdit = true;
+let shouldRefresh = false;
+let willExpire = true;
+
+// Avoid
+let active = true; // Less clear it's a boolean
+let permission = false; // Ambiguous
+```
+
+### Array Variables
+
+```javascript
+// Use plural nouns
+let users = [];
+let orderItems = [];
+let selectedIds = [];
+
+// Describe the collection
+let activeUsers = users.filter((u) => u.isActive);
+let completedOrders = orders.filter((o) => o.status === "complete");
+```
+
+### Functions and Methods
+
+```javascript
+// Action verbs for functions
+function getUserData() {} // get - retrieves
+function setUserStatus() {} // set - assigns
+function updateProfile() {} // update - modifies
+function deleteRecord() {} // delete - removes
+function validateInput() {} // validate - checks
+function parseJSON() {} // parse - transforms
+function renderComponent() {} // render - displays
+
+// Event handlers
+function handleClick() {}
+function onSubmit() {}
+function beforeUpdate() {}
+```
+
+<Quiz id="naming-rules-intermediate">
+  <Question id="q1" text="Which of these is a valid JavaScript identifier?">
+    <Answer id="a" text="123start" />
+    <Answer id="b" text="my-variable" />
+    <Answer id="c" text="你好" isCorrect />
+    <Answer id="d" text="class" />
+  </Question>
+  <Question
+    id="q2"
+    text="What naming convention is best for constants like API keys?"
+  >
+    <Answer id="a" text="camelCase" />
+    <Answer id="b" text="PascalCase" />
+    <Answer id="c" text="SCREAMING_SNAKE_CASE" isCorrect />
+    <Answer id="d" text="snake_case" />
+  </Question>
+  <Question id="q3" text="Which prefix is best for a boolean variable?">
+    <Answer id="a" text="get" />
+    <Answer id="b" text="is, has, can" isCorrect />
+    <Answer id="c" text="set" />
+    <Answer id="d" text="do" />
+  </Question>
+</Quiz>
+
+<ProgressCheckpoint section="best-practices" xpReward={10} />

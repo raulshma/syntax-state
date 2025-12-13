@@ -1,0 +1,30 @@
+{
+  "id": "hoisting",
+  "title": "Hoisting",
+  "description": "Understand how JavaScript moves declarations to the top and what the Temporal Dead Zone means.",
+  "milestone": "variables",
+  "order": 2,
+  "sections": [
+    "what-is-hoisting",
+    "var-hoisting",
+    "let-const-hoisting",
+    "function-hoisting",
+    "practical-implications"
+  ],
+  "levels": {
+    "beginner": {
+      "estimatedMinutes": 10,
+      "xpReward": 30
+    },
+    "intermediate": {
+      "estimatedMinutes": 15,
+      "xpReward": 50
+    },
+    "advanced": {
+      "estimatedMinutes": 20,
+      "xpReward": 80
+    }
+  },
+  "prerequisites": ["variable-declarations"],
+  "tags": ["javascript", "variables", "hoisting", "temporal-dead-zone", "TDZ"]
+}

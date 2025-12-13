@@ -33,6 +33,8 @@ import { EventBubblingPlayground as EventBubblingPlaygroundBase } from './EventB
 import { EventLoopVisualizer as EventLoopVisualizerBase } from './EventLoopVisualizer';
 import { PromiseChainBuilder as PromiseChainBuilderBase } from './PromiseChainBuilder';
 import { AsyncTimeline as AsyncTimelineBase } from './AsyncTimeline';
+import { CallbackVisualizer as CallbackVisualizerBase } from './CallbackVisualizer';
+import { TimerPlayground as TimerPlaygroundBase } from './TimerPlayground';
 
 // Error Handling/Debugging components
 import { ErrorTypeExplorer as ErrorTypeExplorerBase } from './ErrorTypeExplorer';
@@ -57,6 +59,14 @@ import { JsUseCaseExplorer as JsUseCaseExplorerBase } from './JsUseCaseExplorer'
 import { JsTimelineExplorer as JsTimelineExplorerBase } from './JsTimelineExplorer';
 import { EcmaScriptVersionExplorer as EcmaScriptVersionExplorerBase } from './EcmaScriptVersionExplorer';
 
+// Data Types components
+import { TypeVisualizer as TypeVisualizerBase } from './TypeVisualizer';
+import { TypeofExplorer as TypeofExplorerBase } from './TypeofExplorer';
+import { BuiltInObjectExplorer as BuiltInObjectExplorerBase } from './BuiltInObjectExplorer';
+
+// Variable Naming Validator component
+import { VariableNamingValidator as VariableNamingValidatorBase } from './VariableNamingValidator';
+
 // Wrap all interactive components with error boundaries
 export const CodePlayground = withErrorBoundary(CodePlaygroundBase, 'CodePlayground');
 export const VariableVisualizer = withErrorBoundary(VariableVisualizerBase, 'VariableVisualizer');
@@ -75,6 +85,8 @@ export const EventBubblingPlayground = withErrorBoundary(EventBubblingPlayground
 export const EventLoopVisualizer = withErrorBoundary(EventLoopVisualizerBase, 'EventLoopVisualizer');
 export const PromiseChainBuilder = withErrorBoundary(PromiseChainBuilderBase, 'PromiseChainBuilder');
 export const AsyncTimeline = withErrorBoundary(AsyncTimelineBase, 'AsyncTimeline');
+export const CallbackVisualizer = withErrorBoundary(CallbackVisualizerBase, 'CallbackVisualizer');
+export const TimerPlayground = withErrorBoundary(TimerPlaygroundBase, 'TimerPlayground');
 export const ErrorTypeExplorer = withErrorBoundary(ErrorTypeExplorerBase, 'ErrorTypeExplorer');
 export const DebugSimulator = withErrorBoundary(DebugSimulatorBase, 'DebugSimulator');
 export const StackTraceAnalyzer = withErrorBoundary(StackTraceAnalyzerBase, 'StackTraceAnalyzer');
@@ -88,6 +100,14 @@ export const StorageComparison = withErrorBoundary(StorageComparisonBase, 'Stora
 export const JsUseCaseExplorer = withErrorBoundary(JsUseCaseExplorerBase, 'JsUseCaseExplorer');
 export const JsTimelineExplorer = withErrorBoundary(JsTimelineExplorerBase, 'JsTimelineExplorer');
 export const EcmaScriptVersionExplorer = withErrorBoundary(EcmaScriptVersionExplorerBase, 'EcmaScriptVersionExplorer');
+
+// Data Types components
+export const TypeVisualizer = withErrorBoundary(TypeVisualizerBase, 'TypeVisualizer');
+export const TypeofExplorer = withErrorBoundary(TypeofExplorerBase, 'TypeofExplorer');
+export const BuiltInObjectExplorer = withErrorBoundary(BuiltInObjectExplorerBase, 'BuiltInObjectExplorer');
+
+// Variable Naming Validator
+export const VariableNamingValidator = withErrorBoundary(VariableNamingValidatorBase, 'VariableNamingValidator');
 
 // Re-export types
 export type {
@@ -196,6 +216,15 @@ export type {
 } from './AsyncTimeline';
 
 export type {
+  CallbackVisualizerProps,
+  CallbackStep,
+} from './CallbackVisualizer';
+
+export type {
+  TimerPlaygroundProps,
+} from './TimerPlayground';
+
+export type {
   ErrorTypeExplorerProps,
   ErrorTypeInfo,
 } from './ErrorTypeExplorer';
@@ -285,6 +314,8 @@ export { EventBubblingPlaygroundBase };
 export { EventLoopVisualizerBase };
 export { PromiseChainBuilderBase };
 export { AsyncTimelineBase };
+export { CallbackVisualizerBase };
+export { TimerPlaygroundBase };
 export { ErrorTypeExplorerBase };
 export { DebugSimulatorBase };
 export { StackTraceAnalyzerBase };
@@ -298,3 +329,7 @@ export { StorageComparisonBase };
 export { JsUseCaseExplorerBase };
 export { JsTimelineExplorerBase };
 export { EcmaScriptVersionExplorerBase };
+export { TypeVisualizerBase };
+export { TypeofExplorerBase };
+export { BuiltInObjectExplorerBase };
+export { VariableNamingValidatorBase };

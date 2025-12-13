@@ -1,0 +1,203 @@
+# Variable Declarations: var, let, and const
+
+JavaScript provides three keywords for declaring variables: `var`, `let`, and `const`. Each has distinct characteristics that affect how your code behaves.
+
+## Understanding Variable Declaration
+
+When you declare a variable, you're telling JavaScript to reserve a space in memory and associate it with a name. The keyword you choose determines:
+
+1. **Scope** - Where the variable is accessible
+2. **Reassignment** - Whether you can change the value
+3. **Hoisting behavior** - How the declaration is processed
+
+<ProgressCheckpoint section="intro-declarations" xpReward={10} />
+
+## The `var` Keyword
+
+`var` was the original variable declaration keyword in JavaScript. It has **function scope**, meaning it's accessible throughout the entire function where it's declared.
+
+```javascript
+function example() {
+  var x = 10;
+
+  if (true) {
+    var y = 20; // Same scope as x!
+    console.log(x); // 10
+  }
+
+  console.log(y); // 20 - accessible outside the if block!
+}
+```
+
+### Key Characteristics of var:
+
+- **Function-scoped**: Not block-scoped
+- **Can be redeclared**: `var x = 1; var x = 2;` is valid
+- **Hoisted with undefined**: Declaration moves to top, but not initialization
+- **No temporal dead zone**: Can be accessed before declaration (as undefined)
+
+<CodePlayground 
+  code={`function demoVar() {
+  console.log("Before:", message); // undefined (hoisted)
+  
+  var message = "Hello";
+  console.log("After:", message); // "Hello"
+  
+  if (true) {
+    var innerVar = "I escape blocks!";
+  }
+  console.log("Escaped:", innerVar); // Works!
+}
+
+demoVar();`}
+title="var Behavior Demo"
+/>
+
+<ProgressCheckpoint section="var-keyword" xpReward={10} />
+
+## The `let` Keyword
+
+Introduced in ES6 (2015), `let` addresses many quirks of `var` by providing **block scope**.
+
+```javascript
+function example() {
+  let x = 10;
+
+  if (true) {
+    let y = 20; // Only accessible in this block
+    console.log(x); // 10
+  }
+
+  // console.log(y); // ReferenceError! y is not defined
+}
+```
+
+### Key Characteristics of let:
+
+- **Block-scoped**: Contained within `{}` blocks
+- **Cannot be redeclared** in the same scope
+- **Hoisted but not initialized**: Temporal Dead Zone (TDZ)
+- **Preferred for mutable variables**
+
+<CodePlayground 
+  code={`function demoLet() {
+  // console.log(message); // ReferenceError: TDZ!
+  
+  let message = "Hello";
+  console.log("Message:", message);
+  
+  // Reassignment is allowed
+  message = "Updated";
+  console.log("Updated:", message);
+  
+  // Block scoping
+  if (true) {
+    let blockScoped = "Only here";
+    console.log("Inside block:", blockScoped);
+  }
+  // blockScoped is not accessible here
+}
+
+demoLet();`}
+title="let Behavior Demo"
+/>
+
+<ProgressCheckpoint section="let-keyword" xpReward={10} />
+
+## The `const` Keyword
+
+Also introduced in ES6, `const` declares variables that cannot be reassigned. It shares block-scoping behavior with `let`.
+
+```javascript
+const API_URL = "https://api.example.com";
+const MAX_RETRIES = 3;
+
+// API_URL = "new-url"; // TypeError: Assignment to constant variable
+```
+
+### Key Characteristics of const:
+
+- **Block-scoped**: Same as `let`
+- **Must be initialized**: `const x;` is a SyntaxError
+- **Cannot be reassigned**: The binding is immutable
+- **Objects/Arrays can be mutated**: Only the reference is constant
+
+<CodePlayground 
+  code={`// Constants for primitive values
+const PI = 3.14159;
+const APP_VERSION = "2.0.0";
+
+// Object mutation is allowed
+const config = {
+debug: true,
+theme: "dark"
+};
+
+config.debug = false; // OK - mutating property
+config.newProp = "value"; // OK - adding property
+console.log(config);
+
+// Array mutation is allowed
+const numbers = [1, 2, 3];
+numbers.push(4); // OK
+console.log(numbers);
+
+// But reassignment fails:
+// config = {}; // TypeError!`}
+title="const Behavior Demo"
+/>
+
+<ProgressCheckpoint section="const-keyword" xpReward={10} />
+
+## Comparison and Best Practices
+
+<VariableVisualizer />
+
+| Feature         | var             | let       | const     |
+| :-------------- | :-------------- | :-------- | :-------- |
+| Scope           | Function        | Block     | Block     |
+| Reassignment    | Yes             | Yes       | No        |
+| Redeclaration   | Yes             | No        | No        |
+| Hoisting        | Yes (undefined) | Yes (TDZ) | Yes (TDZ) |
+| Must initialize | No              | No        | Yes       |
+
+### Modern Best Practices:
+
+1. **Use `const` by default** - Makes intent clear, prevents accidental reassignment
+2. **Use `let` when reassignment is needed** - For counters, accumulators, or mutable state
+3. **Avoid `var`** - Only for legacy compatibility or specific hoisting behavior
+
+<InfoBox type="tip" title="ESLint Rules">
+  Many teams enforce these practices with ESLint rules like `prefer-const` and
+  `no-var`.
+</InfoBox>
+
+<Quiz id="var-let-const-intermediate">
+  <Question
+    id="q1"
+    text="What happens when you access a let variable before its declaration?"
+  >
+    <Answer id="a" text="Returns undefined" />
+    <Answer id="b" text="Returns null" />
+    <Answer id="c" text="Throws a ReferenceError (TDZ)" isCorrect />
+    <Answer id="d" text="Returns the hoisted value" />
+  </Question>
+  <Question
+    id="q2"
+    text="Can you modify properties of an object declared with const?"
+  >
+    <Answer id="a" text="No, const makes everything immutable" />
+    <Answer id="b" text="Yes, only the binding is constant" isCorrect />
+    <Answer id="c" text="Only in strict mode" />
+  </Question>
+  <Question
+    id="q3"
+    text="What is the scope of a var declaration inside an if block?"
+  >
+    <Answer id="a" text="Block scope (inside the if only)" />
+    <Answer id="b" text="Function scope (entire function)" isCorrect />
+    <Answer id="c" text="Global scope" />
+  </Question>
+</Quiz>
+
+<ProgressCheckpoint section="comparison" xpReward={10} />

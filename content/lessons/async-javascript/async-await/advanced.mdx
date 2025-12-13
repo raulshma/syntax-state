@@ -1,0 +1,264 @@
+# async/await Under the Hood
+
+Understanding how async/await works internally helps you write more efficient code and debug complex async scenarios.
+
+## Generators: The Foundation
+
+async/await is built on generators, which can pause and resume execution:
+
+```javascript
+// Generator function
+function* numberGenerator() {
+  console.log("Start");
+  yield 1; // Pause, return 1
+  console.log("After 1");
+  yield 2; // Pause, return 2
+  console.log("End");
+  return 3;
+}
+
+const gen = numberGenerator();
+gen.next(); // { value: 1, done: false }, logs 'Start'
+gen.next(); // { value: 2, done: false }, logs 'After 1'
+gen.next(); // { value: 3, done: true }, logs 'End'
+```
+
+## How async/await Transforms
+
+Conceptually, this:
+
+```javascript
+async function fetchData() {
+  const response = await fetch("/api");
+  const data = await response.json();
+  return data;
+}
+```
+
+Becomes something like:
+
+```javascript
+function fetchData() {
+  return new Promise((resolve, reject) => {
+    const gen = (function* () {
+      try {
+        const response = yield fetch("/api");
+        const data = yield response.json();
+        resolve(data);
+      } catch (err) {
+        reject(err);
+      }
+    })();
+
+    function step(value) {
+      const result = gen.next(value);
+      if (!result.done) {
+        Promise.resolve(result.value).then(step, reject);
+      }
+    }
+    step();
+  });
+}
+```
+
+<AsyncTimeline />
+
+## Top-Level await (ES2022)
+
+In ES modules, you can now use await at the top level:
+
+```javascript
+// module.mjs
+const config = await fetch("/config.json").then((r) => r.json());
+
+export const apiUrl = config.apiUrl;
+```
+
+**Implications**:
+
+- Module loading becomes async
+- Importing modules with TLA blocks until resolved
+- Should be used carefully to avoid slow loading
+
+## The Async Iterator Protocol
+
+For async iteration, use `for await...of`:
+
+```javascript
+async function* asyncGenerator() {
+  yield await Promise.resolve(1);
+  yield await Promise.resolve(2);
+  yield await Promise.resolve(3);
+}
+
+async function consume() {
+  for await (const value of asyncGenerator()) {
+    console.log(value); // 1, 2, 3
+  }
+}
+```
+
+Real-world example - streaming:
+
+```javascript
+async function readStream(stream) {
+  const reader = stream.getReader();
+
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      console.log("Chunk:", value);
+    }
+  } finally {
+    reader.releaseLock();
+  }
+}
+```
+
+## Advanced Error Patterns
+
+### AggregateError with Promise.any
+
+```javascript
+async function fetchFromMultipleSources(urls) {
+  try {
+    return await Promise.any(urls.map((url) => fetch(url)));
+  } catch (error) {
+    if (error instanceof AggregateError) {
+      console.log("All failed:", error.errors);
+    }
+    throw error;
+  }
+}
+```
+
+### Unhandled Rejection Handling
+
+```javascript
+// Global handler
+window.addEventListener("unhandledrejection", (event) => {
+  console.error("Unhandled rejection:", event.reason);
+  event.preventDefault(); // Prevents console error
+});
+
+// Node.js
+process.on("unhandledRejection", (reason, promise) => {
+  console.error("Unhandled rejection at:", promise, "reason:", reason);
+});
+```
+
+## Performance Considerations
+
+### Avoid Unnecessary await
+
+```javascript
+// ❌ Unnecessary - adds microtask overhead
+async function getData() {
+  return await fetch("/api").then((r) => r.json());
+}
+
+// ✅ Better - return the promise directly
+async function getData() {
+  return fetch("/api").then((r) => r.json());
+}
+
+// Exception: needed for try/catch
+async function getDataSafe() {
+  try {
+    return await fetch("/api").then((r) => r.json());
+  } catch (e) {
+    return null;
+  }
+}
+```
+
+### Concurrent Limit Pattern
+
+```javascript
+async function mapLimit(items, limit, fn) {
+  const results = [];
+  const executing = new Set();
+
+  for (const item of items) {
+    const p = Promise.resolve().then(() => fn(item));
+    results.push(p);
+    executing.add(p);
+
+    const clean = () => executing.delete(p);
+    p.then(clean, clean);
+
+    if (executing.size >= limit) {
+      await Promise.race(executing);
+    }
+  }
+
+  return Promise.all(results);
+}
+
+// Usage: process 100 items, max 5 concurrent
+await mapLimit(items, 5, async (item) => {
+  return await processItem(item);
+});
+```
+
+## Testing Async Code
+
+```javascript
+// Jest/Vitest
+describe("async functions", () => {
+  it("should fetch data", async () => {
+    const data = await fetchData();
+    expect(data).toBeDefined();
+  });
+
+  it("should handle errors", async () => {
+    await expect(fetchBadUrl()).rejects.toThrow("Not found");
+  });
+
+  it("should respect timeout", async () => {
+    jest.useFakeTimers();
+    const promise = delayedOperation();
+    jest.advanceTimersByTime(1000);
+    await expect(promise).resolves.toBe("done");
+  });
+});
+```
+
+## Common Gotchas
+
+```javascript
+// 1. forEach doesn't await
+items.forEach(async (item) => {
+  await process(item); // These run in parallel, not sequence!
+});
+
+// Fix: use for...of
+for (const item of items) {
+  await process(item);
+}
+
+// 2. map returns array of promises
+const results = items.map(async (item) => await process(item));
+// results is Promise[], not values
+
+// Fix: await the Promise.all
+const results = await Promise.all(items.map((item) => process(item)));
+
+// 3. Mixing callbacks and async
+element.addEventListener("click", async () => {
+  // Errors here don't propagate to the DOM
+  await riskyOperation(); // Uncaught if throws!
+});
+
+// Fix: handle errors explicitly
+element.addEventListener("click", async () => {
+  try {
+    await riskyOperation();
+  } catch (e) {
+    showError(e);
+  }
+});
+```
+
+<ProgressCheckpoint section="async-patterns" xpReward={55} />

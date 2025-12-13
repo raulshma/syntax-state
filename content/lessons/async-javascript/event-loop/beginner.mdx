@@ -1,0 +1,39 @@
+# The Event Loop
+
+Imagine you're at a busy restaurant. The chef (JavaScript) can only cook one dish at a time, but somehow the restaurant serves hundreds of customers without anyone waiting too long. How? The secret is the **event loop** - JavaScript's magical system for managing tasks!
+
+## The Restaurant Analogy
+
+Think of JavaScript like a restaurant kitchen:
+
+- **The Chef** = JavaScript engine (can only do one thing at a time)
+- **Order Tickets** = Tasks waiting to be done
+- **The Kitchen Counter** = Call Stack (where work happens)
+- **The Order Queue** = Event Loop (manages which ticket is next)
+
+> When a customer orders toast (a quick task), the chef makes it right away.
+> When someone orders a slow-cooked roast (like fetching data from a server), the chef puts the ticket aside and works on other orders while waiting!
+
+## Why This Matters
+
+Without the event loop, your website would **freeze** every time it waited for:
+
+- Data from a server
+- A user to click a button
+- A timer to finish
+
+Instead, JavaScript keeps running smoothly while waiting!
+
+<EventLoopVisualizer />
+
+## Key Takeaways
+
+| Concept        | Think of it as...             |
+| :------------- | :---------------------------- |
+| **Call Stack** | The chef's current task       |
+| **Event Loop** | The manager organizing orders |
+| **Task Queue** | Orders waiting their turn     |
+
+The event loop is why your web pages feel smooth and responsive - JavaScript never stops!
+
+<ProgressCheckpoint section="event-loop-basics" xpReward={25} />

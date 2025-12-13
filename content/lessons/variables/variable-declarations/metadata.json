@@ -1,0 +1,30 @@
+{
+  "id": "variable-declarations",
+  "title": "Variable Declarations (var, let, const)",
+  "description": "Learn the three ways to declare variables in JavaScript and when to use each one.",
+  "milestone": "variables",
+  "order": 1,
+  "sections": [
+    "intro-declarations",
+    "var-keyword",
+    "let-keyword",
+    "const-keyword",
+    "comparison"
+  ],
+  "levels": {
+    "beginner": {
+      "estimatedMinutes": 10,
+      "xpReward": 30
+    },
+    "intermediate": {
+      "estimatedMinutes": 15,
+      "xpReward": 50
+    },
+    "advanced": {
+      "estimatedMinutes": 20,
+      "xpReward": 80
+    }
+  },
+  "prerequisites": [],
+  "tags": ["javascript", "variables", "var", "let", "const", "declarations"]
+}

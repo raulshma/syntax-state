@@ -1,0 +1,121 @@
+# Primitive Types Deep Dive
+
+Now that you know the seven primitive types, let's explore their **behaviors** and some important distinctions that will help you write better code.
+
+## Primitives Are Immutable
+
+This is crucial: **you cannot change a primitive value**. You can only replace it with a new one.
+
+```javascript
+let greeting = "hello";
+greeting[0] = "H"; // This does NOTHING
+console.log(greeting); // Still "hello"
+
+// To change it, you must reassign:
+greeting = "Hello"; // Now it's "Hello"
+```
+
+Strings, numbers, booleans - once created, the actual value in memory cannot be modified.
+
+## Copy by Value
+
+When you assign a primitive to another variable, you get a **completely independent copy**.
+
+```javascript
+let a = 42;
+let b = a; // b gets a COPY of 42
+
+a = 100; // Changing a...
+console.log(b); // Still 42! b is independent
+```
+
+This is different from objects (which we'll learn later) that are copied by reference.
+
+<TypeVisualizer mode="intermediate" showMemory={true} />
+
+## Null vs Undefined: Know the Difference
+
+| Aspect                 | undefined            | null                 |
+| :--------------------- | :------------------- | :------------------- |
+| **Meaning**            | Not yet assigned     | Intentionally empty  |
+| **Who sets it?**       | JavaScript (default) | You (the programmer) |
+| **typeof result**      | "undefined"          | "object" (quirk!)    |
+| **In boolean context** | Falsy                | Falsy                |
+
+```javascript
+let x; // undefined - never assigned
+let y = null; // null - explicitly empty
+
+// Both are "falsy" in conditions:
+if (!x) console.log("x is falsy"); // ✅ Runs
+if (!y) console.log("y is falsy"); // ✅ Runs
+```
+
+> ⚠️ `typeof null === "object"` is a famous JavaScript bug from 1995 that can never be fixed for backwards compatibility!
+
+## Symbol: Unique Identifiers
+
+Symbols are guaranteed to be **unique**, even with the same description:
+
+```javascript
+const id1 = Symbol("id");
+const id2 = Symbol("id");
+
+console.log(id1 === id2); // false! Each Symbol is unique
+```
+
+### When to Use Symbols?
+
+- Creating unique property keys that won't clash
+- Defining "hidden" object properties
+- Using well-known symbols (Symbol.iterator, etc.)
+
+```javascript
+const SECRET = Symbol("secret");
+
+const user = {
+  name: "Alice",
+  [SECRET]: "hidden value", // Symbol as key
+};
+
+console.log(Object.keys(user)); // ["name"] - Symbol not listed!
+```
+
+## BigInt: Beyond Safe Integers
+
+JavaScript numbers have a limit for safe integers:
+
+```javascript
+console.log(Number.MAX_SAFE_INTEGER); // 9007199254740991
+
+// Beyond this, precision is lost:
+console.log(9007199254740992 === 9007199254740993); // true! 😱
+```
+
+**BigInt** solves this by supporting integers of any size:
+
+```javascript
+const huge = 9007199254740992n; // Note the 'n' suffix
+const huger = huge + 1n;
+
+console.log(huge === huger); // false ✅
+```
+
+### BigInt Rules
+
+1. Must end with `n` or use `BigInt()` constructor
+2. Cannot mix with regular numbers in operations
+3. No decimals - integers only
+
+```javascript
+10n + 5; // ❌ TypeError!
+10n + BigInt(5); // ✅ 15n
+10n / 3n; // ✅ 3n (truncated, no decimals)
+```
+
+<InfoBox type="tip" title="Pro Tip">
+  Use BigInt when working with large IDs from databases, cryptography, or
+  financial calculations where precision matters.
+</InfoBox>
+
+<ProgressCheckpoint section="primitives-deep-dive" xpReward={40} />

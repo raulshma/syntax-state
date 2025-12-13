@@ -1,0 +1,30 @@
+{
+  "id": "variable-scopes",
+  "title": "Variable Scopes",
+  "description": "Understand where variables can be accessed in your code - global, function, and block scope.",
+  "milestone": "variables",
+  "order": 4,
+  "sections": [
+    "what-is-scope",
+    "global-scope",
+    "function-scope",
+    "block-scope",
+    "scope-chain"
+  ],
+  "levels": {
+    "beginner": {
+      "estimatedMinutes": 10,
+      "xpReward": 30
+    },
+    "intermediate": {
+      "estimatedMinutes": 15,
+      "xpReward": 50
+    },
+    "advanced": {
+      "estimatedMinutes": 20,
+      "xpReward": 80
+    }
+  },
+  "prerequisites": ["variable-declarations", "hoisting"],
+  "tags": ["javascript", "variables", "scope", "global", "local", "block", "closure"]
+}

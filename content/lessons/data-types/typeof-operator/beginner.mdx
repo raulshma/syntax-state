@@ -1,0 +1,82 @@
+# What Type Is This?
+
+Imagine you're sorting laundry. Before you wash something, you need to know: Is this a shirt? Pants? A towel? You check each item to know how to handle it.
+
+JavaScript works the same way! The **typeof** operator helps you check what type of data you're working with.
+
+## Using typeof
+
+The syntax is simple - just put `typeof` before any value:
+
+```javascript
+typeof "Hello"; // "string"
+typeof 42; // "number"
+typeof true; // "boolean"
+typeof undefined; // "undefined"
+```
+
+> **Think of it like:** Asking "What kind of thing is this?" and getting a label back.
+
+## How to Read the Result
+
+`typeof` always returns a **string** that tells you the type:
+
+| Expression         | Result      |
+| :----------------- | :---------- |
+| `typeof "hello"`   | "string"    |
+| `typeof 100`       | "number"    |
+| `typeof true`      | "boolean"   |
+| `typeof undefined` | "undefined" |
+| `typeof Symbol()`  | "symbol"    |
+| `typeof 123n`      | "bigint"    |
+| `typeof {}`        | "object"    |
+| `typeof []`        | "object"    |
+
+<TypeofExplorer mode="beginner" />
+
+## Real-World Example
+
+Here's how you might use `typeof` in actual code:
+
+```javascript
+function greet(name) {
+  // Make sure name is actually a string
+  if (typeof name === "string") {
+    console.log("Hello, " + name + "!");
+  } else {
+    console.log("Please provide a valid name");
+  }
+}
+
+greet("Alice"); // "Hello, Alice!"
+greet(123); // "Please provide a valid name"
+```
+
+## Quick Reference
+
+Here's what `typeof` returns for each type:
+
+| Type      | typeof returns    |
+| :-------- | :---------------- |
+| String    | "string"          |
+| Number    | "number"          |
+| Boolean   | "boolean"         |
+| Undefined | "undefined"       |
+| Null      | "object" (quirk!) |
+| Symbol    | "symbol"          |
+| BigInt    | "bigint"          |
+| Object    | "object"          |
+| Array     | "object"          |
+| Function  | "function"        |
+
+> 💡 Notice that arrays return "object" - we'll learn why later!
+
+<Quiz>
+  <Question>What does typeof "42" return?</Question>
+  <Answer correct>"string"</Answer>
+  <Answer>"number"</Answer>
+  <Answer>42</Answer>
+  <Answer>"42"</Answer>
+</Quiz>
+
+<ProgressCheckpoint section="typeof-basics" xpReward={20} />

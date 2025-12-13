@@ -1,0 +1,206 @@
+# Working with JavaScript Timers
+
+`setTimeout` and `setInterval` are fundamental tools for scheduling code execution. Understanding their behavior and patterns is essential for building responsive applications.
+
+## setTimeout Deep Dive
+
+### Basic Syntax
+
+```javascript
+const timerId = setTimeout(callback, delay, arg1, arg2, ...);
+```
+
+- `callback`: Function to execute
+- `delay`: Time in milliseconds (minimum, not guaranteed)
+- `arg1, arg2, ...`: Optional arguments passed to callback
+
+```javascript
+function greet(name, greeting) {
+  console.log(`${greeting}, ${name}!`);
+}
+
+setTimeout(greet, 1000, "Alice", "Hello");
+// After 1 second: "Hello, Alice!"
+```
+
+<TimerPlayground initialDelay={1500} intervalMode={false} />
+
+## setInterval Deep Dive
+
+### Basic Syntax
+
+```javascript
+const intervalId = setInterval(callback, delay, arg1, arg2, ...);
+```
+
+Same parameters as setTimeout, but runs repeatedly.
+
+```javascript
+let seconds = 0;
+
+const counterId = setInterval(() => {
+  seconds++;
+  console.log(`${seconds} seconds`);
+
+  if (seconds >= 5) {
+    clearInterval(counterId);
+    console.log("Done!");
+  }
+}, 1000);
+```
+
+<TimerPlayground initialDelay={1000} intervalMode={true} />
+
+## Useful Patterns
+
+### Debouncing
+
+Rate-limit rapid function calls (e.g., search input):
+
+```javascript
+function debounce(func, delay) {
+  let timeoutId;
+
+  return function (...args) {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => {
+      func.apply(this, args);
+    }, delay);
+  };
+}
+
+// Usage
+const searchInput = document.querySelector("#search");
+searchInput.addEventListener(
+  "input",
+  debounce((e) => {
+    fetchSearchResults(e.target.value);
+  }, 300)
+);
+```
+
+### Throttling
+
+Ensure function runs at most once per interval:
+
+```javascript
+function throttle(func, limit) {
+  let inThrottle = false;
+
+  return function (...args) {
+    if (!inThrottle) {
+      func.apply(this, args);
+      inThrottle = true;
+      setTimeout(() => (inThrottle = false), limit);
+    }
+  };
+}
+
+// Usage: scroll handler runs max once per 100ms
+window.addEventListener(
+  "scroll",
+  throttle(() => {
+    console.log("Scroll position:", window.scrollY);
+  }, 100)
+);
+```
+
+### Countdown Timer
+
+```javascript
+function countdown(seconds, onTick, onComplete) {
+  let remaining = seconds;
+
+  const intervalId = setInterval(() => {
+    remaining--;
+    onTick(remaining);
+
+    if (remaining <= 0) {
+      clearInterval(intervalId);
+      onComplete();
+    }
+  }, 1000);
+
+  return () => clearInterval(intervalId); // Cancel function
+}
+
+// Usage
+const cancel = countdown(
+  10,
+  (s) => console.log(`${s}...`),
+  () => console.log("Blast off! 🚀")
+);
+
+// cancel(); // Call to stop early
+```
+
+### Polling
+
+Check for updates periodically:
+
+```javascript
+function pollForUpdates(url, interval, callback) {
+  async function check() {
+    try {
+      const response = await fetch(url);
+      const data = await response.json();
+      callback(null, data);
+    } catch (error) {
+      callback(error, null);
+    }
+  }
+
+  check(); // Initial check
+  const intervalId = setInterval(check, interval);
+
+  return () => clearInterval(intervalId);
+}
+
+// Usage
+const stopPolling = pollForUpdates("/api/status", 5000, (err, data) => {
+  if (data?.complete) {
+    stopPolling();
+    console.log("Task completed!");
+  }
+});
+```
+
+## Common Pitfalls
+
+### 1. Forgetting to Clear Intervals
+
+```javascript
+// ❌ Memory leak - interval keeps running
+function startAnimation() {
+  setInterval(() => {
+    updateAnimation();
+  }, 16);
+}
+
+// ✅ Always provide a way to stop
+function startAnimation() {
+  const id = setInterval(() => {
+    updateAnimation();
+  }, 16);
+  return () => clearInterval(id);
+}
+```
+
+### 2. Drift in setInterval
+
+```javascript
+// setInterval doesn't account for execution time
+setInterval(() => {
+  doHeavyWork(); // Takes 100ms
+  // Next tick is 1000ms from START, not from END
+}, 1000);
+```
+
+| Pattern   | Use Case                         |
+| :-------- | :------------------------------- |
+| Debounce  | Search input, resize handlers    |
+| Throttle  | Scroll handlers, mouse move      |
+| Countdown | Timers, session expiry           |
+| Polling   | Real-time updates, status checks |
+
+<ProgressCheckpoint section="timer-patterns" xpReward={35} />

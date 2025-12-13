@@ -1,0 +1,250 @@
+# Timer Internals and Advanced Patterns
+
+Understanding timer precision, the minimum delay, and alternatives helps you build more accurate timing solutions.
+
+## Timer Precision and Limitations
+
+### The 4ms Minimum
+
+After 5 nested timeouts, browsers enforce a minimum 4ms delay:
+
+```javascript
+let start = Date.now();
+
+function nested(depth) {
+  if (depth > 0) {
+    setTimeout(() => {
+      console.log(`Depth ${depth}: ${Date.now() - start}ms`);
+      nested(depth - 1);
+    }, 0);
+  }
+}
+
+nested(10);
+// Depth 10: ~0ms
+// Depth 9: ~1ms
+// ...
+// Depth 5: ~4ms (clamping kicks in)
+// Depth 4: ~8ms
+// Depth 3: ~12ms
+```
+
+This is per the HTML spec to prevent excessive CPU usage.
+
+### Background Tab Throttling
+
+Browsers throttle timers in background tabs:
+
+- **Chrome**: Minimum 1000ms for `setInterval` in background
+- **Firefox**: Similar behavior
+- **Safari**: Aggressive throttling
+
+```javascript
+// Solution: use requestVisibilityState
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) {
+    pauseAnimations();
+  } else {
+    resumeAnimations();
+  }
+});
+```
+
+<EventLoopVisualizer />
+
+## requestAnimationFrame: The Better Choice
+
+For visual updates, use `requestAnimationFrame` instead of timers:
+
+```javascript
+// ❌ Timer-based animation (inconsistent, wasteful)
+setInterval(() => {
+  element.style.left = `${position++}px`;
+}, 16);
+
+// ✅ requestAnimationFrame (synced with display refresh)
+function animate() {
+  element.style.left = `${position++}px`;
+  requestAnimationFrame(animate);
+}
+requestAnimationFrame(animate);
+```
+
+### Benefits of requestAnimationFrame
+
+| Feature           | setTimeout/setInterval | requestAnimationFrame |
+| :---------------- | :--------------------- | :-------------------- |
+| Frame sync        | No                     | Yes (60fps)           |
+| Background pause  | No                     | Yes                   |
+| Power efficient   | No                     | Yes                   |
+| Smooth animations | Sometimes              | Always                |
+
+## Drift-Free Intervals
+
+Standard `setInterval` drifts because it doesn't account for execution time:
+
+```javascript
+// ❌ Drifts over time
+setInterval(() => {
+  doWork(); // Takes variable time
+}, 1000);
+
+// ✅ Self-correcting timer
+function accurateInterval(callback, interval) {
+  let expected = Date.now() + interval;
+
+  function step() {
+    const drift = Date.now() - expected;
+    callback();
+    expected += interval;
+    setTimeout(step, Math.max(0, interval - drift));
+  }
+
+  setTimeout(step, interval);
+  return { clear: () => clearTimeout(step) };
+}
+
+// Usage - maintains accuracy over long periods
+accurateInterval(() => {
+  console.log(new Date().toISOString());
+}, 1000);
+```
+
+## Web Workers for Accurate Timing
+
+Timers in Web Workers aren't throttled in background tabs:
+
+```javascript
+// timer-worker.js
+let intervalId = null;
+
+self.onmessage = (e) => {
+  if (e.data.command === "start") {
+    intervalId = setInterval(() => {
+      self.postMessage({ tick: Date.now() });
+    }, e.data.interval);
+  } else if (e.data.command === "stop") {
+    clearInterval(intervalId);
+  }
+};
+
+// main.js
+const worker = new Worker("timer-worker.js");
+worker.postMessage({ command: "start", interval: 1000 });
+worker.onmessage = (e) => {
+  updateUI(e.data.tick);
+};
+```
+
+## High-Resolution Timing
+
+For precise measurements, use `performance.now()`:
+
+```javascript
+// ❌ Date.now() - millisecond precision
+const start1 = Date.now();
+doSomething();
+console.log(`Took ${Date.now() - start1}ms`);
+
+// ✅ performance.now() - microsecond precision
+const start2 = performance.now();
+doSomething();
+console.log(`Took ${performance.now() - start2}ms`);
+```
+
+## AbortController for Timer Cleanup
+
+Modern pattern for cancellable timers:
+
+```javascript
+function cancellableTimeout(callback, delay) {
+  const controller = new AbortController();
+
+  const timeoutId = setTimeout(() => {
+    if (!controller.signal.aborted) {
+      callback();
+    }
+  }, delay);
+
+  controller.signal.addEventListener("abort", () => {
+    clearTimeout(timeoutId);
+  });
+
+  return controller;
+}
+
+// Usage
+const controller = cancellableTimeout(() => {
+  console.log("Executed!");
+}, 5000);
+
+// Cancel later
+controller.abort();
+```
+
+## Timer-Free Alternatives
+
+### requestIdleCallback
+
+Run code when browser is idle:
+
+```javascript
+requestIdleCallback(
+  (deadline) => {
+    while (deadline.timeRemaining() > 0) {
+      doLowPriorityWork();
+    }
+  },
+  { timeout: 2000 }
+); // Max wait time
+```
+
+### Scheduler API (Experimental)
+
+Priority-based scheduling:
+
+```javascript
+// Chrome 94+
+scheduler.postTask(
+  () => {
+    doImportantWork();
+  },
+  { priority: "user-blocking" }
+);
+
+scheduler.postTask(
+  () => {
+    doBackgroundWork();
+  },
+  { priority: "background" }
+);
+```
+
+## Performance Best Practices
+
+```javascript
+// 1. Use one timer for multiple animations
+const animations = [];
+
+function animationLoop() {
+  animations.forEach((anim) => anim.update());
+  requestAnimationFrame(animationLoop);
+}
+requestAnimationFrame(animationLoop);
+
+// 2. Clear timers on component unmount (React example)
+useEffect(() => {
+  const id = setInterval(tick, 1000);
+  return () => clearInterval(id);
+}, []);
+
+// 3. Use performance.now() for accurate elapsed time
+const start = performance.now();
+function update() {
+  const elapsed = performance.now() - start;
+  // Use elapsed for smooth animation calculations
+  requestAnimationFrame(update);
+}
+```
+
+<ProgressCheckpoint section="timer-precision" xpReward={50} />

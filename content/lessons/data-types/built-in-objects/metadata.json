@@ -1,0 +1,24 @@
+{
+  "id": "built-in-objects",
+  "title": "Built-in Objects",
+  "description": "Explore JavaScript's built-in objects like Math, Date, JSON, and more - ready-made tools that extend your coding capabilities.",
+  "milestone": "data-types",
+  "order": 4,
+  "sections": ["builtin-intro", "builtin-essential", "builtin-advanced"],
+  "levels": {
+    "beginner": {
+      "estimatedMinutes": 10,
+      "xpReward": 25
+    },
+    "intermediate": {
+      "estimatedMinutes": 15,
+      "xpReward": 40
+    },
+    "advanced": {
+      "estimatedMinutes": 22,
+      "xpReward": 55
+    }
+  },
+  "prerequisites": ["javascript/object-type"],
+  "tags": ["javascript", "built-in-objects", "Math", "Date", "JSON"]
+}

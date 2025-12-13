@@ -1,0 +1,336 @@
+# Variable Naming: Deep Dive and Edge Cases
+
+This lesson explores the ECMAScript specification for identifiers, Unicode edge cases, and advanced naming patterns used in production codebases.
+
+## ECMAScript Identifier Specification
+
+According to the ECMAScript specification, identifiers use **Unicode Standard Annex #31** (UAX31) with modifications.
+
+### IdentifierName Grammar
+
+```
+IdentifierName ::
+  IdentifierStart
+  IdentifierName IdentifierPart
+
+IdentifierStart ::
+  UnicodeIDStart
+  $
+  _
+  \ UnicodeEscapeSequence
+
+IdentifierPart ::
+  UnicodeIDContinue
+  $
+  \ UnicodeEscapeSequence
+  <ZWNJ>  // Zero Width Non-Joiner
+  <ZWJ>   // Zero Width Joiner
+```
+
+### UnicodeIDStart and UnicodeIDContinue
+
+These are defined by Unicode derived properties:
+
+- **ID_Start**: Letters (Lu, Ll, Lt, Lm, Lo, Nl)
+- **ID_Continue**: ID_Start + marks, digits, connectors (Mn, Mc, Nd, Pc)
+
+<ProgressCheckpoint section="naming-basics" xpReward={15} />
+
+## Unicode Edge Cases
+
+### Well-Formed vs Ill-Formed Identifiers
+
+```javascript
+// Well-formed Unicode
+let café = "coffee";
+let naïve = "innocent";
+
+// Normalization matters!
+// "café" can be written two ways:
+// 1. é as single character (U+00E9)
+// 2. e + combining acute accent (U+0065 + U+0301)
+
+const café1 = "c\u00e9fe"; // Single character
+const café2 = "cafe\u0301"; // Composed character
+// These are different variable names!
+console.log(café1 === café2); // true (values equal)
+// But as identifiers, they may be different!
+```
+
+### Zero-Width Characters
+
+```javascript
+// Zero-width joiner (ZWJ) and non-joiner (ZWNJ) are valid in IdentifierPart
+let a‍ = 1; // Valid: a + ZWJ
+let b‌ = 2; // Valid: b + ZWNJ
+
+// These create visually identical but different identifiers!
+// This can be a security concern (homograph attacks)
+```
+
+### Right-to-Left Characters
+
+```javascript
+// Hebrew, Arabic are valid
+let עברית = "Hebrew";
+let عربي = "Arabic";
+
+// But mixing can cause display issues
+let mixedשלום = "confusing"; // Renders oddly in some editors
+```
+
+<CodePlayground 
+  code={`// Unicode identifier exploration
+let température = 25;
+let количество = 10;
+let 数量 = 5;
+
+console.log("French:", température);
+console.log("Russian:", количество);
+console.log("Chinese:", 数量);
+
+// Unicode escape sequences
+let \\u0041\\u0042\\u0043 = "ABC";
+console.log(ABC); // "ABC" - the escapes resolve to letters
+
+// Private use area (PUA) characters work too
+let \\uE000 = "private use";`}
+title="Unicode Identifiers in Depth"
+/>
+
+<ProgressCheckpoint section="valid-characters" xpReward={15} />
+
+## Reserved Words Deep Dive
+
+### Contextual Keywords
+
+Some words are only reserved in specific grammatical contexts:
+
+```javascript
+// 'let' in different contexts
+let let = 1;  // SyntaxError (strict mode) or confusing (sloppy mode)
+
+// In non-strict mode, some work:
+var undefined = 5;    // Works but terrible idea
+var NaN = "not a number"; // Works but terrible
+
+// 'async' and 'await' are contextual
+let async = 1;        // Valid outside async function
+async function test() {
+  // let await = 1;   // SyntaxError here
+}
+
+// 'yield' is contextual to generators
+let yield = 1;        // Valid outside generator
+function* gen() {
+  // let yield = 1;   // SyntaxError here
+}
+```
+
+### Future Reserved Words Analysis
+
+```javascript
+"use strict";
+
+// These are reserved for potential future use:
+const futureReserved = [
+  "implements", // OOP
+  "interface", // TypeScript uses this
+  "package", // Module systems
+  "private", // Class members
+  "protected", // Class members
+  "public", // Class members
+];
+
+// They work in non-strict mode:
+// var implements = 1; // OK in sloppy mode
+
+// Modern best practice: Always use strict mode
+// and avoid these as identifiers entirely
+```
+
+### The eval and arguments Special Cases
+
+```javascript
+"use strict";
+
+// In strict mode, these cannot be reassigned:
+// eval = 1;       // SyntaxError
+// arguments = 1;  // SyntaxError
+
+// They also can't be used as parameter names:
+// function test(eval) { }  // SyntaxError
+// const x = (arguments) => { };  // SyntaxError
+
+// But in non-strict mode:
+function sloppy() {
+  var arguments = "overwritten!"; // Works (don't do this)
+}
+```
+
+<ProgressCheckpoint section="reserved-words" xpReward={15} />
+
+## Advanced Naming Patterns
+
+### Domain-Driven Design Naming
+
+```javascript
+// Ubiquitous language from the domain
+class OrderAggregate {
+  #items = [];
+  #customerId;
+
+  addLineItem(product, quantity) {}
+  applyDiscount(discountCode) {}
+  submitForFulfillment() {}
+}
+
+// Value objects with descriptive names
+class Money {
+  constructor(amount, currency) {}
+  add(other) {}
+  multiply(factor) {}
+}
+
+class EmailAddress {
+  constructor(value) {
+    this.#validate(value);
+  }
+}
+```
+
+### Naming for Testability
+
+```javascript
+// Test-friendly naming patterns
+function shouldCalculateTotalWithTax() {}
+function givenUserIsLoggedIn_whenDashboardLoads_thenShowWelcome() {}
+
+// Factory functions
+function createMockUser(overrides = {}) {
+  return { id: 1, name: "Test", ...overrides };
+}
+
+function givenProduct({ price = 100, taxRate = 0.2 } = {}) {
+  return { price, taxRate };
+}
+```
+
+### TypeScript-Influenced Patterns
+
+```javascript
+// Type hint prefixes (from Hungarian notation, adapted)
+/** @type {HTMLElement} */
+let elContainer;
+
+/** @type {Function} */
+let fnCallback;
+
+// Generic placeholders
+function identity(value) {
+  return value;
+}
+// TypeScript: function identity<T>(value: T): T
+
+// Interface-like naming for duck-typed objects
+const ILogger = {
+  log: (msg) => console.log(msg),
+  error: (msg) => console.error(msg),
+  warn: (msg) => console.warn(msg),
+};
+```
+
+<ProgressCheckpoint section="naming-conventions" xpReward={15} />
+
+## Security and Obfuscation Concerns
+
+### Homograph Attacks
+
+```javascript
+// These look identical but are different:
+const coοkie = "greek omicron"; // ο is Greek
+const cookie = "latin o"; // o is Latin
+
+// Malicious code could exploit this:
+// An attacker might define coοkie to shadow cookie
+
+// Prevention: Use ASCII-only in security-critical code
+// Many linters (ESLint) can enforce this
+```
+
+### Minification and Name Mangling
+
+```javascript
+// Original code:
+function calculateTotalPriceWithTax(basePrice, taxRate) {
+  const priceWithTax = basePrice * (1 + taxRate);
+  return priceWithTax;
+}
+
+// After minification:
+function a(b, c) {
+  return b * (1 + c);
+}
+
+// Names that survive minification:
+// - Object property access via strings: obj["propertyName"]
+// - API contracts and external interfaces
+// - Dynamically accessed properties
+```
+
+### Debug-Friendly Names
+
+```javascript
+// Anonymous functions are harder to debug:
+const handlers = {
+  click: function () {}, // Shows as "click" in stack traces (ES2015+)
+  hover: () => {}, // Shows as "hover" in most engines
+};
+
+// Named function expressions help:
+const factorial = function fact(n) {
+  if (n <= 1) return 1;
+  return n * fact(n - 1); // Can self-reference
+};
+
+// In stack traces, you'll see "fact" not "anonymous"
+```
+
+<Quiz id="naming-rules-advanced">
+  <Question
+    id="q1"
+    text="Which Unicode character category is valid in IdentifierStart?"
+  >
+    <Answer id="a" text="Emoji (Symbol)" />
+    <Answer id="b" text="Punctuation" />
+    <Answer id="c" text="Letters (Lu, Ll, Lo)" isCorrect />
+    <Answer id="d" text="Control characters" />
+  </Question>
+  <Question id="q2" text="What is a homograph attack in variable naming?">
+    <Answer id="a" text="Using the same name twice" />
+    <Answer id="b" text="Using visually similar Unicode characters" isCorrect />
+    <Answer id="c" text="Using very long variable names" />
+    <Answer id="d" text="Using reserved words" />
+  </Question>
+  <Question
+    id="q3"
+    text="In strict mode, which of these CANNOT be used as an identifier?"
+  >
+    <Answer id="a" text="async" />
+    <Answer id="b" text="implements" isCorrect />
+    <Answer id="c" text="undefined" />
+    <Answer id="d" text="$" />
+  </Question>
+  <Question id="q4" text="Why might café1 and café2 be different identifiers?">
+    <Answer id="a" text="JavaScript is case-sensitive" />
+    <Answer
+      id="b"
+      text="Unicode normalization differences (composed vs decomposed)"
+      isCorrect
+    />
+    <Answer id="c" text="One is a keyword" />
+    <Answer id="d" text="They have different types" />
+  </Question>
+</Quiz>
+
+<ProgressCheckpoint section="best-practices" xpReward={20} />

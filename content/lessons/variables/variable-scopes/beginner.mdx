@@ -1,0 +1,191 @@
+# Variable Scopes: Where Can Variables See?
+
+Imagine you live in a house with different rooms. Some things are in every room (like air!), but your toothbrush is only in the bathroom. **Scope** is about where your variables can be "seen" or used!
+
+## What is Scope? 🏠
+
+**Scope** answers the question: "Where can I use this variable?"
+
+Think of it like visibility:
+
+- Some variables can be seen **everywhere** (global scope)
+- Some can only be seen in **one room** (local scope)
+
+```javascript
+let globalFriend = "Everyone knows me!"; // Can be seen everywhere
+
+function myRoom() {
+  let privateSecret = "Only I know this!"; // Only inside this function
+}
+```
+
+<ProgressCheckpoint section="what-is-scope" xpReward={10} />
+
+## Global Scope: The Whole House 🌍
+
+Variables declared **outside all functions and blocks** are in the **global scope**. They can be used anywhere!
+
+```javascript
+let appName = "My Cool App"; // Global - everyone can see
+
+function showName() {
+  console.log(appName); // ✅ Works! Can see global variable
+}
+
+function changeName() {
+  appName = "Even Cooler App"; // ✅ Can also change it
+}
+
+showName(); // "My Cool App"
+changeName();
+showName(); // "Even Cooler App"
+```
+
+> **Warning:** Too many global variables can cause problems! It's like leaving your stuff everywhere in the house - things get messy!
+
+<CodePlayground 
+  code={`// Global variable
+let housePet = "Dog";
+
+function livingRoom() {
+console.log("Living room sees:", housePet);
+}
+
+function bedroom() {
+console.log("Bedroom sees:", housePet);
+}
+
+function kitchen() {
+console.log("Kitchen sees:", housePet);
+}
+
+// Everyone can see the house pet!
+livingRoom();
+bedroom();
+kitchen();`}
+title="Global Scope Example"
+/>
+
+<ProgressCheckpoint section="global-scope" xpReward={10} />
+
+## Function Scope: Your Private Room 🚪
+
+Variables created inside a function are **private** to that function. Other functions can't see them!
+
+```javascript
+function myBedroom() {
+  let diary = "My secret thoughts"; // Only exists in myBedroom
+  console.log(diary); // ✅ Works
+}
+
+function yourBedroom() {
+  // console.log(diary); // ❌ ERROR! Can't see my diary
+}
+
+myBedroom();
+// console.log(diary); // ❌ ERROR! diary doesn't exist out here
+```
+
+> **Analogy:** Your bedroom has things that belong ONLY to you. Your sibling can't just walk into your room and take your diary!
+
+<ScopeChainVisualizer />
+
+<ProgressCheckpoint section="function-scope" xpReward={10} />
+
+## Block Scope: Even Smaller Spaces 📦
+
+With `let` and `const`, you can create even smaller private spaces inside **blocks** (anything in curly braces `{}`).
+
+```javascript
+if (true) {
+  let blockSecret = "Only here!"; // Only exists in this block
+  console.log(blockSecret); // ✅ Works
+}
+
+// console.log(blockSecret); // ❌ ERROR! Doesn't exist out here
+```
+
+Think of blocks like **boxes inside rooms**:
+
+- A function is a room
+- An `if` block or loop is a box inside that room
+- Things in the box stay in the box!
+
+<CodePlayground 
+  code={`let outside = "I'm everywhere!";
+
+function myFunction() {
+let functionLevel = "I'm in the function";
+
+if (true) {
+let blockLevel = "I'm only in this block";
+console.log(outside); // ✅
+console.log(functionLevel); // ✅
+console.log(blockLevel); // ✅
+}
+
+console.log(outside); // ✅
+console.log(functionLevel); // ✅
+// console.log(blockLevel); // ❌ Block level is gone!
+}
+
+myFunction();`}
+title="Block Scope Example"
+/>
+
+<ProgressCheckpoint section="block-scope" xpReward={10} />
+
+## Looking Up: The Scope Chain 🔗
+
+When JavaScript looks for a variable, it starts in the current scope and looks **upward** (never down!).
+
+```javascript
+let floor1 = "Ground floor"; // Global
+
+function elevator() {
+  let floor2 = "Second floor"; // Function scope
+
+  function penthouse() {
+    let floor3 = "Top floor"; // Inner function
+
+    // Can see all floors below!
+    console.log(floor3); // ✅ "Top floor"
+    console.log(floor2); // ✅ "Second floor"
+    console.log(floor1); // ✅ "Ground floor"
+  }
+
+  penthouse();
+}
+
+elevator();
+```
+
+> **Remember:** You can look DOWN from a high floor, but you can't look UP from downstairs!
+
+<Quiz id="scope-basics">
+  <Question
+    id="q1"
+    text="A variable declared at the top of your file is in which scope?"
+  >
+    <Answer id="a" text="Function scope" />
+    <Answer id="b" text="Block scope" />
+    <Answer id="c" text="Global scope" isCorrect />
+    <Answer id="d" text="No scope" />
+  </Question>
+  <Question id="q2" text="Can a function access variables from outside itself?">
+    <Answer id="a" text="No, never" />
+    <Answer id="b" text="Yes, if they're in a higher/outer scope" isCorrect />
+    <Answer id="c" text="Only if they use var" />
+  </Question>
+  <Question
+    id="q3"
+    text="If you declare a variable with 'let' inside an 'if' block, where can you use it?"
+  >
+    <Answer id="a" text="Anywhere in the file" />
+    <Answer id="b" text="Anywhere in the function" />
+    <Answer id="c" text="Only inside that if block" isCorrect />
+    <Answer id="d" text="Nowhere" />
+  </Question>
+</Quiz>
+
+<ProgressCheckpoint section="scope-chain" xpReward={10} />

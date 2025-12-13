@@ -1,0 +1,24 @@
+{
+  "id": "typeof-operator",
+  "title": "typeof Operator",
+  "description": "Learn to use the typeof operator for type checking, understand its quirks, and master type detection strategies.",
+  "milestone": "data-types",
+  "order": 3,
+  "sections": ["typeof-basics", "typeof-quirks", "typeof-mastery"],
+  "levels": {
+    "beginner": {
+      "estimatedMinutes": 8,
+      "xpReward": 20
+    },
+    "intermediate": {
+      "estimatedMinutes": 12,
+      "xpReward": 35
+    },
+    "advanced": {
+      "estimatedMinutes": 18,
+      "xpReward": 50
+    }
+  },
+  "prerequisites": ["javascript/primitive-types"],
+  "tags": ["javascript", "data-types", "typeof", "type-checking"]
+}

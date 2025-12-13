@@ -1,0 +1,97 @@
+# The Building Blocks of Data
+
+Imagine you're building with LEGO bricks. Before you can create a castle or a spaceship, you need to understand the basic pieces - the simple bricks that everything else is made from.
+
+In JavaScript, **primitive types** are like those basic LEGO bricks. They're the simplest, most fundamental pieces of data that everything else is built upon.
+
+## What is a Type?
+
+Think of a grocery store. Everything is organized into categories:
+
+- 🍎 Fruits go in one section
+- 🥛 Dairy in another
+- 🍞 Bread somewhere else
+
+**Types** in programming work the same way - they tell JavaScript what _kind_ of data we're working with.
+
+## The 7 Primitive Types
+
+JavaScript has exactly **7 primitive types**. Let's meet each one:
+
+| Type          | What It Stores             | Example           |
+| :------------ | :------------------------- | :---------------- |
+| **string**    | Text (words, sentences)    | "Hello, World!"   |
+| **number**    | Numbers (whole or decimal) | 42, 3.14          |
+| **boolean**   | True or false              | true, false       |
+| **null**      | "Nothing" (on purpose)     | null              |
+| **undefined** | "Not set yet"              | undefined         |
+| **symbol**    | Unique identifier          | Symbol("id")      |
+| **bigint**    | Really huge numbers        | 9999999999999999n |
+
+<TypeVisualizer mode="beginner" />
+
+## Understanding Each Type
+
+### Strings - Text Values 📝
+
+Anything in quotes is a **string**. It's just text!
+
+```javascript
+let name = "Alice";
+let greeting = "Hello!";
+let message = `Welcome, ${name}!`;
+```
+
+> **Think of it like:** A sticky note with words written on it.
+
+### Numbers - Numeric Values 🔢
+
+All numbers in JavaScript are the **number** type - whether they're whole numbers or decimals.
+
+```javascript
+let age = 25;
+let price = 19.99;
+let temperature = -5;
+```
+
+> **Think of it like:** A calculator display showing a value.
+
+### Booleans - True or False 💡
+
+Booleans are like light switches - they can only be **on** (true) or **off** (false).
+
+```javascript
+let isLoggedIn = true;
+let hasPermission = false;
+```
+
+> **Think of it like:** A yes/no question. There's no "maybe"!
+
+### Null & Undefined - Empty Values ❓📦
+
+These two represent "nothing," but in different ways:
+
+- **undefined** = "I haven't been given a value yet"
+- **null** = "I was intentionally set to empty"
+
+```javascript
+let notSet; // This is undefined
+let empty = null; // This is null (on purpose)
+```
+
+> **Think of it like:**
+>
+> - **undefined** is an empty box that was never filled
+> - **null** is a box you deliberately emptied
+
+<Quiz>
+  <Question>
+    If you declare a variable but don't give it a value, what type is it?
+  </Question>
+  <Answer correct>undefined</Answer>
+  <Answer>null</Answer>
+  <Answer>string</Answer>
+  <Answer>number</Answer>
+</Quiz>
+
+<ProgressCheckpoint section="primitives-intro" xpReward={25} />

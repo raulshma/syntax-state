@@ -1,0 +1,123 @@
+# Callback Patterns and Best Practices
+
+Callbacks are functions passed as arguments to be executed after an asynchronous operation completes. They're the original building block of async JavaScript.
+
+## Anatomy of a Callback
+
+```javascript
+// Higher-order function that accepts a callback
+function fetchData(url, callback) {
+  // Simulate async operation
+  setTimeout(() => {
+    const data = { user: "John", id: 1 };
+    callback(data); // Invoke the callback with result
+  }, 1000);
+}
+
+// Using the callback
+fetchData("/api/user", function (result) {
+  console.log("Got data:", result);
+});
+```
+
+## Error-First Callbacks (Node.js Convention)
+
+The standard pattern in Node.js: first parameter is the error (if any), second is the result.
+
+```javascript
+function readFile(path, callback) {
+  setTimeout(() => {
+    if (!path) {
+      callback(new Error("Path is required"), null);
+      return;
+    }
+    callback(null, "File contents here");
+  }, 500);
+}
+
+// Usage
+readFile("/my-file.txt", function (error, data) {
+  if (error) {
+    console.error("Failed:", error.message);
+    return;
+  }
+  console.log("Success:", data);
+});
+```
+
+<CallbackVisualizer mode="simple" />
+
+## Common Callback Patterns
+
+### 1. Event Handlers
+
+```javascript
+document.getElementById("btn").addEventListener("click", function (event) {
+  console.log("Clicked at:", event.clientX, event.clientY);
+});
+```
+
+### 2. Array Methods
+
+```javascript
+const numbers = [1, 2, 3, 4, 5];
+
+// forEach - callback for each element
+numbers.forEach(function (num) {
+  console.log(num * 2);
+});
+
+// map - callback transforms each element
+const doubled = numbers.map(function (num) {
+  return num * 2;
+});
+
+// filter - callback determines inclusion
+const evens = numbers.filter(function (num) {
+  return num % 2 === 0;
+});
+```
+
+### 3. Timer Callbacks
+
+```javascript
+// One-time delay
+setTimeout(function () {
+  console.log("Executed once after 1 second");
+}, 1000);
+
+// Repeating interval
+const intervalId = setInterval(function () {
+  console.log("Executed every 2 seconds");
+}, 2000);
+
+// Stop the interval
+setTimeout(() => clearInterval(intervalId), 10000);
+```
+
+## The Callback Problem: Nesting
+
+When callbacks depend on each other, you get nesting:
+
+```javascript
+getUser(userId, function (user) {
+  getOrders(user.id, function (orders) {
+    getOrderDetails(orders[0].id, function (details) {
+      // Three levels deep already!
+      console.log(details);
+    });
+  });
+});
+```
+
+This is called **"Callback Hell"** or the **"Pyramid of Doom"**. We'll learn how Promises solve this!
+
+## Best Practices
+
+| Do                     | Don't                                    |
+| :--------------------- | :--------------------------------------- |
+| Use named functions    | Create deeply nested anonymous functions |
+| Handle errors first    | Ignore potential errors                  |
+| Keep callbacks focused | Put too much logic in one callback       |
+
+<ProgressCheckpoint section="callback-patterns" xpReward={35} />

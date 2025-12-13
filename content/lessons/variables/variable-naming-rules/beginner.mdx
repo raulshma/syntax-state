@@ -1,0 +1,173 @@
+# Variable Naming Rules: Choosing Good Names
+
+Naming variables is like naming your pets - you want names that make sense and are easy to remember! Let's learn the rules for naming variables in JavaScript.
+
+## The Basic Rules 📝
+
+Think of variable names like **name tags**. Not every name tag works! Here are the rules:
+
+### ✅ What You CAN Use:
+
+| Character Type | Examples               | Notes                  |
+| :------------- | :--------------------- | :--------------------- |
+| Letters        | `name`, `Age`, `myVar` | Start with letters!    |
+| Numbers        | `score1`, `player2`    | But NOT at the start!  |
+| Underscore     | `_secret`, `my_name`   | Common in some styles  |
+| Dollar sign    | `$price`, `total$`     | Used in some libraries |
+
+### ❌ What You CAN'T Use:
+
+| Bad Example | Why It's Wrong              |
+| :---------- | :-------------------------- |
+| `1stPlace`  | Can't start with a number   |
+| `my-name`   | Hyphens are not allowed     |
+| `my name`   | Spaces are not allowed      |
+| `@email`    | Special symbols not allowed |
+
+<ProgressCheckpoint section="naming-basics" xpReward={10} />
+
+## Good vs Bad Names
+
+Imagine you're looking at someone else's code. Which names are easier to understand?
+
+```javascript
+// 😕 Confusing names
+let x = 25;
+let temp = "John";
+let data = true;
+
+// 😊 Clear names
+let userAge = 25;
+let firstName = "John";
+let isLoggedIn = true;
+```
+
+> **Think of it like this:** Variable names are like labels on boxes. "Kitchen Stuff" is better than "Box 1"!
+
+<CodePlayground 
+  code={`// Try these valid names:
+let myName = "Alice";
+let age2024 = 25;
+let _privateValue = "secret";
+let $dollarAmount = 99.99;
+
+// These would cause errors:
+// let 123abc = "error!"; // Can't start with number
+// let my-variable = "oops"; // No hyphens
+// let my variable = "nope"; // No spaces
+
+console.log("Name:", myName);
+console.log("Age:", age2024);`}
+title="Valid Variable Names"
+/>
+
+<ProgressCheckpoint section="valid-characters" xpReward={10} />
+
+## Reserved Words - The VIP List 🚫
+
+Some words are **reserved** by JavaScript - you can't use them as variable names because they already mean something special!
+
+```javascript
+// ❌ These are reserved words:
+// let if = 5;       // ERROR! "if" is reserved
+// let function = 3; // ERROR! "function" is reserved
+// let return = 1;   // ERROR! "return" is reserved
+
+// ✅ But you can use them as part of a name:
+let ifCondition = true; // OK!
+let functionName = "test"; // OK!
+let returnValue = 42; // OK!
+```
+
+### Common Reserved Words:
+
+| Keywords                | What They Do |
+| :---------------------- | :----------- |
+| `if`, `else`            | Conditions   |
+| `for`, `while`          | Loops        |
+| `function`, `return`    | Functions    |
+| `let`, `const`, `var`   | Variables    |
+| `true`, `false`, `null` | Values       |
+| `class`, `new`          | Objects      |
+
+<ProgressCheckpoint section="reserved-words" xpReward={10} />
+
+## Naming Styles 🎨
+
+JavaScript developers use different styles for naming. The most popular is **camelCase**:
+
+### camelCase (Most Popular!) 🐪
+
+First word lowercase, then capitalize each new word:
+
+```javascript
+let firstName = "John";
+let userAge = 25;
+let isGameOver = false;
+let numberOfLives = 3;
+```
+
+> **Why camelCase?** It looks like a camel's humps! Each capital letter is a "hump."
+
+### Other Styles (You'll See These Too):
+
+```javascript
+// SCREAMING_SNAKE_CASE - for constants
+const MAX_PLAYERS = 4;
+const API_KEY = "abc123";
+
+// PascalCase - for classes
+class UserProfile {}
+class GameCharacter {}
+
+// snake_case - less common in JavaScript
+let user_name = "rare_in_js";
+```
+
+<ProgressCheckpoint section="naming-conventions" xpReward={10} />
+
+## Tips for Great Names 💡
+
+| Tip                     | Bad Example   | Good Example        |
+| :---------------------- | :------------ | :------------------ |
+| Be descriptive          | `d`           | `daysUntilBirthday` |
+| Avoid abbreviations     | `usrNm`       | `userName`          |
+| Use verbs for actions   | `data()`      | `getData()`         |
+| Use is/has for booleans | `login`       | `isLoggedIn`        |
+| Be consistent           | mixing styles | pick one style      |
+
+```javascript
+// Great variable names:
+let currentUserName = "Alice";
+let totalItemsInCart = 5;
+let hasCompletedTutorial = true;
+let isFirstVisit = false;
+
+// Good function names start with verbs:
+function calculateTotal() {}
+function validateEmail() {}
+function getUserById() {}
+```
+
+<Quiz id="naming-rules-basics">
+  <Question id="q1" text="Which variable name is INVALID?">
+    <Answer id="a" text="myAge" />
+    <Answer id="b" text="_secret" />
+    <Answer id="c" text="2ndPlace" isCorrect />
+    <Answer id="d" text="$price" />
+  </Question>
+  <Question id="q2" text="What naming style uses firstWordLowercase?">
+    <Answer id="a" text="snake_case" />
+    <Answer id="b" text="camelCase" isCorrect />
+    <Answer id="c" text="PascalCase" />
+    <Answer id="d" text="SCREAMING_CASE" />
+  </Question>
+  <Question id="q3" text="Which is the BEST variable name?">
+    <Answer id="a" text="x" />
+    <Answer id="b" text="data" />
+    <Answer id="c" text="userEmailAddress" isCorrect />
+    <Answer id="d" text="e" />
+  </Question>
+</Quiz>
+
+<ProgressCheckpoint section="best-practices" xpReward={10} />

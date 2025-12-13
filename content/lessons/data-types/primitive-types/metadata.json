@@ -1,0 +1,24 @@
+{
+  "id": "primitive-types",
+  "title": "Primitive Types",
+  "description": "Master JavaScript's seven primitive types: string, number, boolean, null, undefined, symbol, and bigint - the fundamental building blocks of all data.",
+  "milestone": "data-types",
+  "order": 1,
+  "sections": ["primitives-intro", "primitives-deep-dive", "primitives-mastery"],
+  "levels": {
+    "beginner": {
+      "estimatedMinutes": 12,
+      "xpReward": 25
+    },
+    "intermediate": {
+      "estimatedMinutes": 18,
+      "xpReward": 40
+    },
+    "advanced": {
+      "estimatedMinutes": 25,
+      "xpReward": 60
+    }
+  },
+  "prerequisites": ["intro-js/what-is-javascript"],
+  "tags": ["javascript", "data-types", "primitives", "fundamentals"]
+}

@@ -1,0 +1,272 @@
+# Variable Scopes: Understanding Visibility and Lifetime
+
+Scope determines where variables are accessible and how long they exist. JavaScript has three main types of scope: global, function, and block.
+
+## Scope Fundamentals
+
+Scope is the current context of execution in which values and expressions are "visible" or can be referenced. A variable's scope defines:
+
+1. **Visibility**: Where the variable can be accessed
+2. **Lifetime**: How long the variable exists in memory
+
+<ProgressCheckpoint section="what-is-scope" xpReward={10} />
+
+## Global Scope
+
+Variables declared outside any function or block are in the global scope. They're accessible throughout your entire program.
+
+```javascript
+// Global scope
+var globalVar = "I'm global (var)";
+let globalLet = "I'm global (let)";
+const globalConst = "I'm global (const)";
+
+function anyFunction() {
+  console.log(globalVar); // Accessible
+  console.log(globalLet); // Accessible
+  console.log(globalConst); // Accessible
+}
+```
+
+### Global Scope Differences: var vs let/const
+
+| Keyword | Added to globalThis? | Redeclarable? |
+| :------ | :------------------- | :------------ |
+| var     | Yes                  | Yes           |
+| let     | No                   | No            |
+| const   | No                   | No            |
+
+```javascript
+var varGlobal = "on window";
+let letGlobal = "not on window";
+
+// In browsers:
+console.log(window.varGlobal); // "on window"
+console.log(window.letGlobal); // undefined
+
+// Safer pattern - let/const don't pollute global object
+```
+
+<CodePlayground 
+  code={`// Global scope demonstration
+var varName = "var global";
+let letName = "let global";
+const constName = "const global";
+
+function checkGlobals() {
+console.log("Inside function:");
+console.log("varName:", varName);
+console.log("letName:", letName);
+console.log("constName:", constName);
+}
+
+checkGlobals();
+
+// Check globalThis attachment
+console.log("\\nOn globalThis:");
+console.log("varName:", 'varName' in globalThis);
+console.log("letName:", 'letName' in globalThis);`}
+title="Global Scope Behavior"
+/>
+
+<ProgressCheckpoint section="global-scope" xpReward={10} />
+
+## Function Scope
+
+Variables declared inside a function are scoped to that function. They're created when the function starts and destroyed when it ends.
+
+```javascript
+function processOrder(orderId) {
+  // These exist only inside processOrder
+  let orderTotal = 0;
+  var taxRate = 0.08;
+  const currency = "USD";
+
+  function calculateSubtotal(items) {
+    // Inner function can access outer function's variables
+    items.forEach((item) => {
+      orderTotal += item.price;
+    });
+  }
+
+  calculateSubtotal([{ price: 10 }, { price: 20 }]);
+  return orderTotal;
+}
+
+// orderTotal, taxRate, currency don't exist here
+```
+
+### var is Function-Scoped, Not Block-Scoped
+
+```javascript
+function example() {
+  if (true) {
+    var x = 10; // Scoped to function, not if-block
+    let y = 20; // Scoped to if-block
+  }
+
+  console.log(x); // 10 - var escapes the block!
+  // console.log(y); // ReferenceError - let is block-scoped
+}
+```
+
+<ProgressCheckpoint section="function-scope" xpReward={10} />
+
+## Block Scope
+
+ES6 introduced block scope with `let` and `const`. A block is any code wrapped in curly braces `{}`.
+
+```javascript
+// Block scope examples
+{
+  let blockLet = "scoped to this block";
+  const blockConst = "also scoped here";
+  // Both exist here
+}
+// Both are gone here
+
+// Common block contexts:
+if (condition) {
+  /* let/const scoped here */
+}
+for (let i = 0; i < 10; i++) {
+  /* i scoped here */
+}
+while (running) {
+  /* let/const scoped here */
+}
+switch (value /* let/const scoped here */) {
+}
+try {
+} catch (error) {
+  /* error scoped to catch */
+}
+```
+
+### Loop Variables and Block Scope
+
+```javascript
+// Classic var problem
+for (var i = 0; i < 3; i++) {
+  setTimeout(() => console.log("var:", i), 100);
+}
+// Logs: 3, 3, 3 (all reference same i)
+
+// let creates new binding per iteration
+for (let j = 0; j < 3; j++) {
+  setTimeout(() => console.log("let:", j), 100);
+}
+// Logs: 0, 1, 2 (each callback has its own j)
+```
+
+<ScopeChainVisualizer showClosures={true} />
+
+<ProgressCheckpoint section="block-scope" xpReward={10} />
+
+## The Scope Chain
+
+When JavaScript resolves a variable, it searches up the scope chain - from innermost to outermost scope.
+
+```javascript
+let global = "global";
+
+function outer() {
+  let outerVar = "outer";
+
+  function inner() {
+    let innerVar = "inner";
+
+    // Scope chain: inner -> outer -> global
+    console.log(innerVar); // Found in inner
+    console.log(outerVar); // Found in outer
+    console.log(global); // Found in global
+  }
+
+  inner();
+}
+
+outer();
+```
+
+### Variable Shadowing
+
+An inner scope can declare a variable with the same name as an outer scope, "shadowing" it:
+
+```javascript
+let name = "global";
+
+function example() {
+  let name = "function"; // Shadows global name
+
+  if (true) {
+    let name = "block"; // Shadows function name
+    console.log(name); // "block"
+  }
+
+  console.log(name); // "function"
+}
+
+example();
+console.log(name); // "global"
+```
+
+<CodePlayground 
+  code={`let level = "global";
+
+function outer() {
+let level = "outer";
+console.log("1. outer function:", level);
+
+function inner() {
+let level = "inner";
+console.log("2. inner function:", level);
+}
+
+inner();
+console.log("3. back in outer:", level);
+}
+
+outer();
+console.log("4. global:", level);
+
+// Each function has its own 'level'
+// They don't interfere with each other`}
+title="Variable Shadowing"
+/>
+
+<Quiz id="scope-intermediate">
+  <Question
+    id="q1"
+    text="Which keyword creates function-scoped (not block-scoped) variables?"
+  >
+    <Answer id="a" text="let" />
+    <Answer id="b" text="const" />
+    <Answer id="c" text="var" isCorrect />
+    <Answer id="d" text="auto" />
+  </Question>
+  <Question id="q2" text="What is 'shadowing' in JavaScript?">
+    <Answer id="a" text="Creating a variable that hides a compiler error" />
+    <Answer
+      id="b"
+      text="An inner variable with the same name as an outer one"
+      isCorrect
+    />
+    <Answer id="c" text="A deprecated ES5 feature" />
+    <Answer id="d" text="A way to delete variables" />
+  </Question>
+  <Question
+    id="q3"
+    text="In a for loop, 'for (let i = 0; ...)', where is i scoped?"
+  >
+    <Answer id="a" text="Global scope" />
+    <Answer id="b" text="Function scope" />
+    <Answer
+      id="c"
+      text="Loop block scope (new binding each iteration)"
+      isCorrect
+    />
+    <Answer id="d" text="No scope" />
+  </Question>
+</Quiz>
+
+<ProgressCheckpoint section="scope-chain" xpReward={10} />

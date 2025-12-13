@@ -1,0 +1,72 @@
+# Understanding the Event Loop
+
+JavaScript is **single-threaded**, meaning it can only execute one piece of code at a time. Yet it handles thousands of asynchronous operations seamlessly. The secret? The **event loop** architecture.
+
+## The Execution Model
+
+JavaScript runtime consists of three main components:
+
+1. **Call Stack** - LIFO (Last In, First Out) structure where function calls are tracked
+2. **Web APIs** - Browser-provided features (setTimeout, fetch, DOM events)
+3. **Task Queues** - Where callbacks wait to be executed
+
+```javascript
+console.log("Start"); // 1. Pushed to call stack, executed immediately
+
+setTimeout(() => {
+  console.log("Timeout"); // 4. Executed after stack is clear
+}, 0);
+
+console.log("End"); // 2. Pushed to call stack, executed
+
+// Output: Start → End → Timeout
+```
+
+## How the Event Loop Works
+
+The event loop follows a simple but powerful algorithm:
+
+1. Execute all synchronous code on the call stack
+2. Check if the call stack is empty
+3. If empty, check the **microtask queue** (Promise callbacks)
+4. Execute ALL microtasks
+5. Check the **macrotask queue** (setTimeout, setInterval)
+6. Execute ONE macrotask
+7. Repeat from step 3
+
+<EventLoopVisualizer />
+
+## Microtasks vs Macrotasks
+
+| Microtasks (Priority)      | Macrotasks             |
+| :------------------------- | :--------------------- |
+| Promise.then/catch/finally | setTimeout             |
+| queueMicrotask()           | setInterval            |
+| MutationObserver           | I/O operations         |
+| process.nextTick (Node.js) | setImmediate (Node.js) |
+
+```javascript
+console.log("1: Script start");
+
+setTimeout(() => console.log("4: Macrotask"), 0);
+
+Promise.resolve()
+  .then(() => console.log("2: Microtask 1"))
+  .then(() => console.log("3: Microtask 2"));
+
+console.log("5: Script end");
+
+// Output: 1, 5, 2, 3, 4
+```
+
+**Key insight**: Microtasks are processed completely before ANY macrotask runs!
+
+## Practical Implications
+
+Understanding the event loop helps you:
+
+- **Avoid blocking the main thread** - Long-running operations freeze the UI
+- **Predict execution order** - Critical for debugging async code
+- **Optimize performance** - Know when to use microtasks vs macrotasks
+
+<ProgressCheckpoint section="call-stack" xpReward={40} />

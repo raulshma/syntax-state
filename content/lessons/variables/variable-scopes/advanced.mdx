@@ -1,0 +1,372 @@
+# Variable Scopes: Lexical Environments and Closures
+
+This lesson explores the ECMAScript specification's Lexical Environment model, closure mechanics, and advanced scope patterns used in production code.
+
+## The Lexical Environment Model
+
+In the ECMAScript specification, scopes are implemented through **Lexical Environments** consisting of:
+
+1. **Environment Record**: Stores identifier bindings (variables, functions)
+2. **Outer Environment Reference**: Link to parent scope (null for global)
+
+```javascript
+// Conceptual representation
+GlobalEnvironment = {
+  EnvironmentRecord: {
+    globalVar: "value",
+  },
+  outer: null, // No parent
+};
+
+FunctionEnvironment = {
+  EnvironmentRecord: {
+    localVar: "value",
+  },
+  outer: GlobalEnvironment, // Points to parent
+};
+```
+
+<ProgressCheckpoint section="what-is-scope" xpReward={15} />
+
+## Environment Record Types
+
+The specification defines different Environment Record types:
+
+### Declarative Environment Record
+
+For function and block scopes - stores let, const, function declarations, class.
+
+### Object Environment Record
+
+For `with` statements and global var declarations - bindings are properties of an object.
+
+### Global Environment Record
+
+Special composite record for global scope, combining both types.
+
+```javascript
+// Global Environment Record contains both:
+var globalVar = 1; // In Object Environment Record (on globalThis)
+let globalLet = 2; // In Declarative Environment Record
+
+// Module Environment Record
+// Each ES module has its own lexical environment
+import { foo } from "./other.js"; // Creates immutable binding
+```
+
+<CodePlayground 
+  code={`// Demonstrating different binding types
+var varBinding = "on globalThis";
+let letBinding = "declarative record";
+
+console.log("varBinding on globalThis:",
+'varBinding' in globalThis);
+
+console.log("letBinding on globalThis:",
+'letBinding' in globalThis);
+
+// Function creates new Declarative Environment Record
+function demo() {
+var funcVar = "function var";
+let funcLet = "function let";
+
+// Both are in the function's Declarative ER
+console.log("\\nInside function:");
+console.log(funcVar, funcLet);
+}
+
+demo();`}
+title="Environment Record Types"
+/>
+
+<ProgressCheckpoint section="global-scope" xpReward={15} />
+
+## Closures: Capturing the Environment
+
+A **closure** is formed when a function retains access to its lexical environment even after the outer function has returned.
+
+```javascript
+function createCounter() {
+  let count = 0; // Captured in closure
+
+  return {
+    increment() {
+      return ++count;
+    },
+    decrement() {
+      return --count;
+    },
+    getCount() {
+      return count;
+    },
+  };
+}
+
+const counter = createCounter();
+// createCounter has finished, but count lives on!
+
+console.log(counter.increment()); // 1
+console.log(counter.increment()); // 2
+console.log(counter.getCount()); // 2
+```
+
+### Closure Memory Implications
+
+```javascript
+function createHeavyFunction() {
+  const hugeArray = new Array(1000000).fill("data");
+
+  return function () {
+    // Closure captures hugeArray even if not used!
+    return "Hello";
+  };
+}
+
+const fn = createHeavyFunction();
+// hugeArray may be retained in memory (depends on engine optimization)
+
+// Better pattern - don't capture what you don't need
+function createLightFunction() {
+  const hugeArray = new Array(1000000).fill("data");
+  const result = hugeArray.length; // Extract what you need
+
+  return function () {
+    return result; // Only captures 'result', not the array
+  };
+}
+```
+
+<ScopeChainVisualizer showClosures={true} animated={true} />
+
+<ProgressCheckpoint section="function-scope" xpReward={15} />
+
+## Per-Iteration Scope in Loops
+
+ES6's `let` creates a new binding for each loop iteration. This is specified in the ForStatement evaluation.
+
+```javascript
+// With let - each iteration gets a fresh binding
+const functions = [];
+for (let i = 0; i < 3; i++) {
+  functions.push(() => i);
+}
+console.log(functions.map((f) => f())); // [0, 1, 2]
+
+// With var - only one binding shared
+const funcsVar = [];
+for (var j = 0; j < 3; j++) {
+  funcsVar.push(() => j);
+}
+console.log(funcsVar.map((f) => f())); // [3, 3, 3]
+
+// The let behavior is equivalent to:
+const funcsExplicit = [];
+for (let k = 0; k < 3; k++) {
+  let kCopy = k; // Conceptually, a new binding each iteration
+  funcsExplicit.push(() => kCopy);
+}
+```
+
+### for...in and for...of Bindings
+
+```javascript
+const obj = { a: 1, b: 2, c: 3 };
+const closures = [];
+
+for (const key in obj) {
+  // 'key' is fresh each iteration (even const works!)
+  closures.push(() => key);
+}
+
+console.log(closures.map((f) => f())); // ["a", "b", "c"]
+```
+
+<ProgressCheckpoint section="block-scope" xpReward={15} />
+
+## Advanced Scope Patterns
+
+### Module Pattern (Pre-ES6)
+
+```javascript
+const Module = (function () {
+  // Private scope
+  let privateVar = 0;
+
+  function privateMethod() {
+    return ++privateVar;
+  }
+
+  // Public interface
+  return {
+    increment: privateMethod,
+    getValue() {
+      return privateVar;
+    },
+  };
+})();
+
+Module.increment();
+console.log(Module.getValue()); // 1
+// privateVar is truly private
+```
+
+### Revealing Module Pattern
+
+```javascript
+const Calculator = (function () {
+  let result = 0;
+
+  function add(x) {
+    result += x;
+    return this;
+  }
+  function subtract(x) {
+    result -= x;
+    return this;
+  }
+  function multiply(x) {
+    result *= x;
+    return this;
+  }
+  function getResult() {
+    return result;
+  }
+  function reset() {
+    result = 0;
+    return this;
+  }
+
+  return { add, subtract, multiply, getResult, reset };
+})();
+
+Calculator.add(10).multiply(2).subtract(5);
+console.log(Calculator.getResult()); // 15
+```
+
+### Factory Functions with Private State
+
+```javascript
+function createUser(name, role) {
+  // Private
+  let loginAttempts = 0;
+  const maxAttempts = 3;
+
+  // Private methods
+  function isLocked() {
+    return loginAttempts >= maxAttempts;
+  }
+
+  // Public interface
+  return {
+    getName() {
+      return name;
+    },
+    getRole() {
+      return role;
+    },
+
+    login(password) {
+      if (isLocked()) {
+        throw new Error("Account locked");
+      }
+      if (password === "secret") {
+        loginAttempts = 0;
+        return true;
+      }
+      loginAttempts++;
+      return false;
+    },
+
+    getAttempts() {
+      return loginAttempts;
+    },
+  };
+}
+
+const user = createUser("Alice", "admin");
+// loginAttempts and maxAttempts are truly private
+```
+
+<CodePlayground 
+  code={`// Common interview: What's the output?
+for (var i = 0; i < 3; i++) {
+  setTimeout(function() {
+    console.log("var loop:", i);
+  }, 100);
+}
+
+// Fix #1: let
+for (let j = 0; j < 3; j++) {
+setTimeout(function() {
+console.log("let loop:", j);
+}, 200);
+}
+
+// Fix #2: IIFE (pre-ES6 pattern)
+for (var k = 0; k < 3; k++) {
+(function(captured) {
+setTimeout(function() {
+console.log("IIFE loop:", captured);
+}, 300);
+})(k);
+}
+
+// Fix #3: bind (less common)
+for (var l = 0; l < 3; l++) {
+setTimeout(function(captured) {
+console.log("bind loop:", captured);
+}.bind(null, l), 400);
+}`}
+title="Classic Closure Interview Question"
+/>
+
+<Quiz id="scope-advanced">
+  <Question id="q1" text="What creates a closure in JavaScript?">
+    <Answer id="a" text="Using the 'closure' keyword" />
+    <Answer
+      id="b"
+      text="A function retaining access to its lexical environment"
+      isCorrect
+    />
+    <Answer id="c" text="Using Object.freeze()" />
+    <Answer id="d" text="Declaring variables with const" />
+  </Question>
+  <Question
+    id="q2"
+    text="In the for loop (let i = 0; i < 3; i++), why does each setTimeout get correct i?"
+  >
+    <Answer id="a" text="setTimeout makes a copy of i" />
+    <Answer
+      id="b"
+      text="let creates a new binding for each loop iteration"
+      isCorrect
+    />
+    <Answer id="c" text="let doesn't get hoisted" />
+    <Answer id="d" text="The engine detects the closure pattern" />
+  </Question>
+  <Question
+    id="q3"
+    text="What's in a Lexical Environment according to the spec?"
+  >
+    <Answer id="a" text="Just variable names" />
+    <Answer
+      id="b"
+      text="Environment Record + Outer Environment Reference"
+      isCorrect
+    />
+    <Answer id="c" text="The call stack" />
+    <Answer id="d" text="The global object" />
+  </Question>
+  <Question id="q4" text="Why might closures cause memory issues?">
+    <Answer id="a" text="Closures are always slow" />
+    <Answer
+      id="b"
+      text="Closures can retain references to large objects"
+      isCorrect
+    />
+    <Answer id="c" text="JavaScript doesn't garbage collect closures" />
+    <Answer id="d" text="Closures use the heap instead of stack" />
+  </Question>
+</Quiz>
+
+<ProgressCheckpoint section="scope-chain" xpReward={20} />

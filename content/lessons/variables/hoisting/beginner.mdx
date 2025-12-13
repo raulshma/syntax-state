@@ -1,0 +1,153 @@
+# Hoisting: The Elevator Effect
+
+Have you ever wondered why some code works even when it seems "out of order"? Welcome to the magical world of **hoisting** - where declarations take an elevator ride to the top!
+
+## What is Hoisting?
+
+Imagine you're on the ground floor of a building. Before you can use any room, someone has already taken an **elevator** to move all the room labels (declarations) to the top floor. That's hoisting!
+
+> **Hoisting** = JavaScript moving your variable and function declarations to the top of their scope before running your code.
+
+But here's the twist: not all declarations ride the same elevator!
+
+<ProgressCheckpoint section="what-is-hoisting" xpReward={10} />
+
+## The `var` Elevator - First Class 🛗
+
+When you use `var`, your variable takes the **express elevator** all the way to the top. It arrives early, but with empty hands (the value is `undefined`).
+
+```javascript
+console.log(message); // undefined (variable exists but empty!)
+var message = "Hello!";
+console.log(message); // "Hello!" (now it has a value)
+```
+
+Think of it like this:
+
+> **var** is like a guest who arrives at the party early, but forgets to bring their gift. They're there, but they have nothing to give you until later!
+
+<CodePlayground 
+  code={`// What you write:
+console.log(greeting);
+var greeting = "Hello, World!";
+
+// What JavaScript sees:
+// var greeting = undefined; (hoisted to top!)
+// console.log(greeting); (logs undefined)
+// greeting = "Hello, World!";`}
+title="var Hoisting Example"
+/>
+
+<ProgressCheckpoint section="var-hoisting" xpReward={10} />
+
+## The `let` and `const` Elevator - Strict Security 🚫
+
+`let` and `const` also get hoisted, but they wait in a **"No Entry Zone"** until their turn. This is called the **Temporal Dead Zone (TDZ)**.
+
+Try to use them before their declaration? You get an error!
+
+```javascript
+// console.log(name); // ❌ ERROR! Can't access before declaration
+let name = "Alice";
+console.log(name); // ✅ "Alice"
+```
+
+Think of it like this:
+
+> **let** and **const** are like VIP guests. They're technically registered at the party, but they're in a private waiting room. You can't talk to them until they officially enter!
+
+<HoistingSimulator showPhases={true} />
+
+<ProgressCheckpoint section="let-const-hoisting" xpReward={10} />
+
+## Function Hoisting - The Super VIP 🌟
+
+Regular functions (using the `function` keyword) are **fully hoisted** - both their name AND their code!
+
+```javascript
+// This works perfectly!
+sayHello(); // "Hello!"
+
+function sayHello() {
+  console.log("Hello!");
+}
+```
+
+But arrow functions (`=>`) and function expressions are NOT fully hoisted:
+
+```javascript
+// This does NOT work!
+// greet(); // ❌ ERROR!
+
+const greet = () => {
+  console.log("Hi!");
+};
+
+greet(); // ✅ "Hi!" (only works after declaration)
+```
+
+<CodePlayground 
+  code={`// Functions are fully hoisted!
+welcome();  // This works!
+
+function welcome() {
+console.log("Welcome to the party!");
+}
+
+// Arrow functions are NOT fully hoisted
+// tryArrow(); // Would cause error!
+
+const tryArrow = () => {
+console.log("I'm an arrow function!");
+};
+
+tryArrow(); // Works here!`}
+title="Function Hoisting"
+/>
+
+<ProgressCheckpoint section="function-hoisting" xpReward={10} />
+
+## The Golden Rules 📜
+
+Here's a simple way to remember hoisting:
+
+| Declaration Type | Hoisted?  | Value Available? | When to Use?       |
+| :--------------- | :-------- | :--------------- | :----------------- |
+| `var`            | Yes ✅    | `undefined`      | Old code only      |
+| `let`            | Yes ✅    | No (TDZ) ❌      | When value changes |
+| `const`          | Yes ✅    | No (TDZ) ❌      | Default choice     |
+| `function`       | Yes ✅    | Yes ✅           | Regular functions  |
+| Arrow `=>`       | Depends\* | No ❌            | Modern code        |
+
+> **Pro Tip:** Always declare your variables at the top of your code! This makes your code easier to read and avoids hoisting surprises.
+
+<Quiz id="hoisting-basics">
+  <Question
+    id="q1"
+    text="What value does a var variable have before its assignment?"
+  >
+    <Answer id="a" text="null" />
+    <Answer id="b" text="undefined" isCorrect />
+    <Answer id="c" text="0" />
+    <Answer id="d" text="ERROR" />
+  </Question>
+  <Question
+    id="q2"
+    text="Can you call a regular function before it's defined in the code?"
+  >
+    <Answer id="a" text="No, never" />
+    <Answer id="b" text="Yes, functions are fully hoisted" isCorrect />
+    <Answer id="c" text="Only in strict mode" />
+  </Question>
+  <Question id="q3" text="What is the Temporal Dead Zone?">
+    <Answer id="a" text="A place where old code goes" />
+    <Answer
+      id="b"
+      text="The time between let/const hoisting and initialization"
+      isCorrect
+    />
+    <Answer id="c" text="A JavaScript error type" />
+  </Question>
+</Quiz>
+
+<ProgressCheckpoint section="practical-implications" xpReward={10} />

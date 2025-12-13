@@ -1,0 +1,231 @@
+# Objects: Internals and Advanced Patterns
+
+Let's explore how JavaScript objects work under the hood - from memory layout to property descriptors to V8's optimization strategies.
+
+## Memory Model: Heap vs Stack
+
+JavaScript uses two types of memory:
+
+| Stack                      | Heap                    |
+| :------------------------- | :---------------------- |
+| Fixed size, fast access    | Dynamic size, flexible  |
+| Primitives stored directly | Objects stored here     |
+| Variable references stored | Accessed via references |
+
+```javascript
+let num = 42; // 42 on stack
+let obj = { x: 1 }; // Reference on stack, object on heap
+```
+
+When you assign an object to a variable:
+
+1. The object is created on the heap
+2. A memory address (reference) is stored on the stack
+3. The variable points to that address
+
+## Property Descriptors
+
+Every object property has hidden **attributes** that control its behavior:
+
+```javascript
+const obj = { name: "Alice" };
+
+console.log(Object.getOwnPropertyDescriptor(obj, "name"));
+// {
+//   value: "Alice",
+//   writable: true,      // Can change value?
+//   enumerable: true,    // Shows in for...in loops?
+//   configurable: true   // Can delete or modify descriptor?
+// }
+```
+
+### Defining Properties
+
+Use `Object.defineProperty()` for fine-grained control:
+
+```javascript
+const user = {};
+
+Object.defineProperty(user, "id", {
+  value: 12345,
+  writable: false, // Can't change
+  enumerable: false, // Won't show in loops
+  configurable: false, // Can't delete
+});
+
+user.id = 99999; // Silently fails (or throws in strict mode)
+console.log(user.id); // Still 12345
+console.log(Object.keys(user)); // [] (not enumerable)
+```
+
+### Getters and Setters
+
+Properties can be computed dynamically:
+
+```javascript
+const person = {
+  firstName: "John",
+  lastName: "Doe",
+
+  get fullName() {
+    return `${this.firstName} ${this.lastName}`;
+  },
+
+  set fullName(value) {
+    [this.firstName, this.lastName] = value.split(" ");
+  },
+};
+
+console.log(person.fullName); // "John Doe"
+person.fullName = "Jane Smith";
+console.log(person.firstName); // "Jane"
+```
+
+## Object Immutability Levels
+
+<TypeVisualizer mode="advanced" showMemory={true} />
+
+### Object.preventExtensions()
+
+Prevents adding new properties:
+
+```javascript
+const obj = { a: 1 };
+Object.preventExtensions(obj);
+
+obj.b = 2; // Silently fails
+obj.a = 10; // Works - can still modify existing
+console.log(obj); // { a: 10 }
+```
+
+### Object.seal()
+
+Prevents adding/removing properties:
+
+```javascript
+const obj = { a: 1 };
+Object.seal(obj);
+
+obj.b = 2; // Fails - can't add
+delete obj.a; // Fails - can't delete
+obj.a = 10; // Works - can modify values
+```
+
+### Object.freeze()
+
+Complete immutability (shallow):
+
+```javascript
+const obj = { a: 1, nested: { b: 2 } };
+Object.freeze(obj);
+
+obj.a = 10; // Fails
+obj.nested.b = 20; // Works! (nested not frozen)
+
+// For deep freeze, you need recursion
+function deepFreeze(obj) {
+  Object.freeze(obj);
+  Object.values(obj).forEach((val) => {
+    if (typeof val === "object" && val !== null) {
+      deepFreeze(val);
+    }
+  });
+  return obj;
+}
+```
+
+## V8 Hidden Classes
+
+V8 optimizes objects using **hidden classes** (also called "shapes" or "maps"):
+
+```javascript
+// Good: Consistent shape
+function Point(x, y) {
+  this.x = x;
+  this.y = y;
+}
+const p1 = new Point(1, 2);
+const p2 = new Point(3, 4);
+// Both share the same hidden class → fast!
+
+// Bad: Dynamic shape changes
+const obj = {};
+obj.a = 1; // Transition to class {a}
+obj.b = 2; // Transition to class {a, b}
+delete obj.a; // Transition again → slow!
+```
+
+### Optimization Tips
+
+1. **Initialize all properties in constructors**
+2. **Always add properties in the same order**
+3. **Avoid `delete` on objects** (use `null` assignment instead)
+4. **Use object literals for static structures**
+
+## Object vs Map
+
+For key-value storage, consider `Map` vs plain objects:
+
+| Feature     | Object                      | Map                            |
+| :---------- | :-------------------------- | :----------------------------- |
+| Key types   | Strings/Symbols only        | Any value (objects, functions) |
+| Key order   | Mostly preserved            | Guaranteed insertion order     |
+| Size        | Manual count                | `.size` property               |
+| Performance | Fast for small, static data | Better for frequent add/remove |
+| Prototype   | Has inherited properties    | Clean, no inheritance          |
+| JSON        | Native support              | Must convert manually          |
+
+```javascript
+// When to use Map:
+const userPermissions = new Map();
+userPermissions.set(userObject, ["read", "write"]);
+userPermissions.set(anotherUser, ["read"]);
+console.log(userPermissions.get(userObject)); // ["read", "write"]
+
+// When to use Object:
+const config = {
+  apiUrl: "https://api.example.com",
+  timeout: 5000,
+};
+```
+
+## Object Creation Patterns
+
+### Object.create()
+
+Create objects with specific prototype:
+
+```javascript
+const animal = {
+  speak() {
+    console.log(`${this.name} makes a sound`);
+  },
+};
+
+const dog = Object.create(animal);
+dog.name = "Rex";
+dog.speak(); // "Rex makes a sound"
+```
+
+### Factory Functions
+
+```javascript
+function createUser(name, age) {
+  return {
+    name,
+    age,
+    greet() {
+      return `Hi, I'm ${this.name}`;
+    },
+  };
+}
+
+const user = createUser("Alice", 25);
+```
+
+<InfoBox type="tip" title="Performance Insight">
+  For hot paths, prefer object literals with consistent shapes. Use Map for
+  dynamic key-value pairs where you need to frequently add/remove entries.
+</InfoBox>
+
+<ProgressCheckpoint section="object-internals" xpReward={55} />

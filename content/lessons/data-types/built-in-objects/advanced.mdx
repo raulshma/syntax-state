@@ -1,0 +1,262 @@
+# Advanced Built-in Objects
+
+Let's explore the more specialized built-in objects that power advanced JavaScript patterns - from internationalization to metaprogramming.
+
+<BuiltInObjectExplorer mode="advanced" />
+
+## Intl: Internationalization API
+
+The `Intl` object enables language-sensitive string comparison, number formatting, and date/time formatting.
+
+### Number Formatting
+
+```javascript
+// Currency formatting
+const usd = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
+});
+usd.format(1234.56); // "$1,234.56"
+
+const eur = new Intl.NumberFormat("de-DE", {
+  style: "currency",
+  currency: "EUR",
+});
+eur.format(1234.56); // "1.234,56 €"
+
+// Percentage
+const percent = new Intl.NumberFormat("en-US", {
+  style: "percent",
+  minimumFractionDigits: 1,
+});
+percent.format(0.127); // "12.7%"
+
+// Compact notation
+const compact = new Intl.NumberFormat("en-US", {
+  notation: "compact",
+  compactDisplay: "short",
+});
+compact.format(1500000); // "1.5M"
+```
+
+### Date/Time Formatting
+
+```javascript
+const date = new Date("2024-12-25T10:30:00");
+
+// Different locales
+new Intl.DateTimeFormat("en-US").format(date); // "12/25/2024"
+new Intl.DateTimeFormat("de-DE").format(date); // "25.12.2024"
+new Intl.DateTimeFormat("ja-JP").format(date); // "2024/12/25"
+
+// With options
+new Intl.DateTimeFormat("en-US", {
+  weekday: "long",
+  year: "numeric",
+  month: "long",
+  day: "numeric",
+}).format(date); // "Wednesday, December 25, 2024"
+```
+
+### Relative Time
+
+```javascript
+const rtf = new Intl.RelativeTimeFormat("en", { numeric: "auto" });
+
+rtf.format(-1, "day"); // "yesterday"
+rtf.format(1, "day"); // "tomorrow"
+rtf.format(-3, "month"); // "3 months ago"
+rtf.format(2, "year"); // "in 2 years"
+```
+
+### List Formatting
+
+```javascript
+const list = new Intl.ListFormat("en", {
+  style: "long",
+  type: "conjunction",
+});
+list.format(["Apple", "Banana", "Orange"]);
+// "Apple, Banana, and Orange"
+
+const orList = new Intl.ListFormat("en", { type: "disjunction" });
+orList.format(["Red", "Blue", "Green"]);
+// "Red, Blue, or Green"
+```
+
+## Reflect: Metaprogramming
+
+`Reflect` provides methods for interceptable JavaScript operations.
+
+```javascript
+const obj = { x: 1 };
+
+// Property operations
+Reflect.get(obj, "x"); // 1
+Reflect.set(obj, "y", 2); // true
+Reflect.has(obj, "x"); // true
+Reflect.deleteProperty(obj, "x"); // true
+Reflect.ownKeys(obj); // ['y']
+
+// Object operations
+Reflect.isExtensible(obj); // true
+Reflect.preventExtensions(obj); // true
+Reflect.getPrototypeOf(obj); // Object.prototype
+```
+
+### Reflect with Proxy
+
+```javascript
+const handler = {
+  get(target, prop, receiver) {
+    console.log(`Getting ${prop}`);
+    return Reflect.get(target, prop, receiver);
+  },
+  set(target, prop, value, receiver) {
+    console.log(`Setting ${prop} = ${value}`);
+    return Reflect.set(target, prop, value, receiver);
+  },
+};
+
+const proxy = new Proxy({ count: 0 }, handler);
+proxy.count; // Logs: "Getting count"
+proxy.count = 5; // Logs: "Setting count = 5"
+```
+
+## Proxy: Object Interception
+
+Create custom behavior for fundamental object operations:
+
+```javascript
+// Validation proxy
+const validator = {
+  set(obj, prop, value) {
+    if (prop === "age" && (!Number.isInteger(value) || value < 0)) {
+      throw new TypeError("Age must be a positive integer");
+    }
+    obj[prop] = value;
+    return true;
+  },
+};
+
+const person = new Proxy({}, validator);
+person.age = 25; // Works
+person.age = -5; // Throws TypeError
+```
+
+### Practical Proxy Use Cases
+
+```javascript
+// Default values
+const withDefaults = (target, defaults) =>
+  new Proxy(target, {
+    get(obj, prop) {
+      return prop in obj ? obj[prop] : defaults[prop];
+    },
+  });
+
+const config = withDefaults({}, { timeout: 3000, retries: 3 });
+config.timeout; // 3000 (default)
+config.custom; // undefined
+```
+
+## WeakMap and WeakSet
+
+These allow garbage collection of keys:
+
+```javascript
+// WeakMap: keys must be objects
+const cache = new WeakMap();
+let user = { id: 1, name: "Alice" };
+
+cache.set(user, "cached data");
+cache.get(user); // "cached data"
+
+user = null; // The entry can now be garbage collected
+
+// Use case: Private data
+const privateData = new WeakMap();
+class Counter {
+  constructor() {
+    privateData.set(this, { count: 0 });
+  }
+  increment() {
+    privateData.get(this).count++;
+  }
+  getCount() {
+    return privateData.get(this).count;
+  }
+}
+```
+
+## ArrayBuffer and TypedArrays
+
+For working with binary data:
+
+```javascript
+// Create a 16-byte buffer
+const buffer = new ArrayBuffer(16);
+
+// View as 32-bit integers (4 integers)
+const int32View = new Int32Array(buffer);
+int32View[0] = 42;
+int32View[1] = 100;
+
+// View same buffer as 8-bit integers (16 bytes)
+const uint8View = new Uint8Array(buffer);
+console.log(uint8View[0]); // 42 (low byte of first int32)
+
+// Typed array types
+new Int8Array(buffer); // -128 to 127
+new Uint8Array(buffer); // 0 to 255
+new Int16Array(buffer); // -32768 to 32767
+new Uint32Array(buffer); // 0 to 4294967295
+new Float32Array(buffer); // 32-bit floats
+new Float64Array(buffer); // 64-bit floats
+```
+
+## globalThis
+
+The universal way to access the global object:
+
+```javascript
+// Works everywhere (browser, Node.js, workers)
+globalThis.setTimeout;
+globalThis.console;
+
+// Before globalThis, you needed:
+// Browser: window
+// Node.js: global
+// Workers: self
+```
+
+## WeakRef and FinalizationRegistry (ES2021)
+
+Advanced memory management primitives:
+
+```javascript
+// WeakRef: Hold a weak reference
+let obj = { data: "important" };
+const ref = new WeakRef(obj);
+
+// Check if still available
+ref.deref(); // { data: "important" } or undefined
+
+// FinalizationRegistry: Cleanup callbacks
+const registry = new FinalizationRegistry((heldValue) => {
+  console.log(`Cleaning up: ${heldValue}`);
+});
+
+let resource = { id: 123 };
+registry.register(resource, "resource-123");
+
+resource = null; // Eventually logs: "Cleaning up: resource-123"
+```
+
+<InfoBox type="warning" title="Use With Caution">
+  WeakRef and FinalizationRegistry should be used sparingly. They add complexity
+  and their timing is non-deterministic. Only use them for caching or cleanup
+  scenarios where other approaches don't work.
+</InfoBox>
+
+<ProgressCheckpoint section="builtin-advanced" xpReward={55} />

@@ -1,0 +1,124 @@
+# Objects: Containers for Related Data
+
+Imagine you have a box where you can store different things, and each thing has a label on it. That's exactly what a JavaScript **object** is!
+
+## What is an Object?
+
+An object is like a labeled container that holds multiple pieces of information together.
+
+Think about a contact card:
+
+- **Name:** Alice Johnson
+- **Phone:** 555-1234
+- **Email:** alice@example.com
+
+In JavaScript, we'd write this as:
+
+```javascript
+const contact = {
+  name: "Alice Johnson",
+  phone: "555-1234",
+  email: "alice@example.com",
+};
+```
+
+## Key-Value Pairs
+
+Objects store data as **key-value pairs**:
+
+- The **key** is the label (like "name")
+- The **value** is the data (like "Alice Johnson")
+
+```javascript
+{
+  key: value,
+  anotherKey: anotherValue
+}
+```
+
+> **Think of it like:** A filing cabinet where each drawer (key) contains specific documents (values).
+
+## Creating Objects
+
+The most common way is using **object literal** syntax - curly braces `{}`:
+
+```javascript
+// An empty object
+const empty = {};
+
+// An object with data
+const person = {
+  firstName: "Bob",
+  age: 30,
+  isStudent: false,
+};
+```
+
+<ObjectExplorer mode="beginner" />
+
+## Accessing Properties
+
+There are two ways to get values from an object:
+
+### Dot Notation (Most Common)
+
+```javascript
+const car = {
+  brand: "Toyota",
+  year: 2023,
+};
+
+console.log(car.brand); // "Toyota"
+console.log(car.year); // 2023
+```
+
+### Bracket Notation
+
+Use this when the key has special characters or comes from a variable:
+
+```javascript
+console.log(car["brand"]); // "Toyota"
+
+// Useful with variables:
+const propName = "year";
+console.log(car[propName]); // 2023
+```
+
+## Adding and Changing Properties
+
+You can add new properties or change existing ones:
+
+```javascript
+const user = {
+  name: "Charlie",
+};
+
+// Add a new property
+user.age = 25;
+
+// Change an existing property
+user.name = "Charles";
+
+console.log(user);
+// { name: "Charles", age: 25 }
+```
+
+## Objects vs Primitives
+
+| Primitives               | Objects                         |
+| :----------------------- | :------------------------------ |
+| Store a single value     | Store multiple values           |
+| Immutable (can't change) | Mutable (can change)            |
+| Examples: string, number | Examples: {}, arrays, functions |
+
+<Quiz>
+  <Question>
+    How do you access the "color" property of an object called "box"?
+  </Question>
+  <Answer correct>box.color</Answer>
+  <Answer>box(color)</Answer>
+  <Answer>box->color</Answer>
+  <Answer>box::color</Answer>
+</Quiz>
+
+<ProgressCheckpoint section="object-intro" xpReward={25} />

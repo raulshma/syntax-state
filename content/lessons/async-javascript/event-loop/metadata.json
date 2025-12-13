@@ -1,0 +1,28 @@
+{
+  "id": "event-loop",
+  "title": "Event Loop",
+  "description": "Understand how JavaScript handles asynchronous operations through the event loop, call stack, and task queues.",
+  "milestone": "async-javascript",
+  "order": 1,
+  "sections": [
+    "event-loop-basics",
+    "call-stack",
+    "task-queues"
+  ],
+  "levels": {
+    "beginner": {
+      "estimatedMinutes": 10,
+      "xpReward": 25
+    },
+    "intermediate": {
+      "estimatedMinutes": 15,
+      "xpReward": 40
+    },
+    "advanced": {
+      "estimatedMinutes": 20,
+      "xpReward": 60
+    }
+  },
+  "prerequisites": [],
+  "tags": ["javascript", "async", "event-loop", "concurrency"]
+}

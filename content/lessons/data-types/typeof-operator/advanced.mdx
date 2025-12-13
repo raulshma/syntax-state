@@ -1,0 +1,235 @@
+# typeof: Specification Deep Dive
+
+Let's explore exactly how `typeof` works according to the ECMAScript specification, and learn advanced type checking strategies used in production.
+
+## The ECMAScript Algorithm
+
+According to the spec, `typeof` follows this algorithm:
+
+<TypeofExplorer mode="advanced" showSpecification={true} />
+
+```
+1. Let val be the result of evaluating UnaryExpression
+2. If Type(val) is Reference and IsUnresolvableReference(val) is true:
+   - Return "undefined"
+3. Let val be GetValue(val)
+4. Return a string according to the table below
+```
+
+| Type of val                  | Result      |
+| :--------------------------- | :---------- |
+| Undefined                    | "undefined" |
+| Null                         | "object"    |
+| Boolean                      | "boolean"   |
+| Number                       | "number"    |
+| String                       | "string"    |
+| Symbol                       | "symbol"    |
+| BigInt                       | "bigint"    |
+| Object (not callable)        | "object"    |
+| Object (callable - [[Call]]) | "function"  |
+
+## Why typeof null === "object"
+
+This bug dates back to the first JavaScript implementation in 1995:
+
+```c
+// Original V8-style type tags (simplified)
+// 000: object
+// 001: int
+// 010: double
+// 100: string
+// 110: boolean
+
+// null was represented as NULL pointer (0x00)
+// So it matched the "object" tag pattern!
+```
+
+The TC39 committee considered fixing this in ES6, but too much existing code depended on the behavior:
+
+```javascript
+// Legacy code pattern (still common)
+if (value && typeof value === "object") {
+  // Handles both null check and object check
+}
+```
+
+## Advanced Type Detection
+
+### Object.prototype.toString
+
+The most reliable type detection method:
+
+```javascript
+const toString = Object.prototype.toString;
+
+toString.call(undefined); // "[object Undefined]"
+toString.call(null); // "[object Null]"
+toString.call([1, 2]); // "[object Array]"
+toString.call({}); // "[object Object]"
+toString.call(new Date()); // "[object Date]"
+toString.call(/regex/); // "[object RegExp]"
+toString.call(new Map()); // "[object Map]"
+toString.call(new Set()); // "[object Set]"
+toString.call(function () {}); // "[object Function]"
+toString.call(Promise.resolve()); // "[object Promise]"
+```
+
+### Building a Robust getType Function
+
+```javascript
+function getType(value) {
+  // Handle null and undefined
+  if (value === null) return "null";
+  if (value === undefined) return "undefined";
+
+  // Use Object.prototype.toString for everything else
+  const result = Object.prototype.toString.call(value);
+  // Extract type from "[object Type]"
+  return result.slice(8, -1).toLowerCase();
+}
+
+getType(null); // "null"
+getType([]); // "array"
+getType({}); // "object"
+getType(new Date()); // "date"
+getType(/regex/); // "regexp"
+getType(new Map()); // "map"
+getType(Promise.resolve()); // "promise"
+```
+
+## Symbol.toStringTag
+
+You can customize `Object.prototype.toString` output for custom classes:
+
+```javascript
+class Database {
+  get [Symbol.toStringTag]() {
+    return "Database";
+  }
+}
+
+const db = new Database();
+Object.prototype.toString.call(db); // "[object Database]"
+```
+
+This is how built-in objects identify themselves:
+
+```javascript
+// Built-in toStringTag values
+Map.prototype[Symbol.toStringTag]; // "Map"
+Set.prototype[Symbol.toStringTag]; // "Set"
+Promise.prototype[Symbol.toStringTag]; // "Promise"
+```
+
+## typeof vs instanceof
+
+Different tools for different purposes:
+
+| Feature             | typeof      | instanceof           |
+| :------------------ | :---------- | :------------------- |
+| Returns             | String type | Boolean              |
+| Works across frames | Yes         | No                   |
+| Primitives          | Yes         | No (with exceptions) |
+| Custom classes      | No          | Yes                  |
+| Prototype chain     | No          | Yes                  |
+
+```javascript
+// typeof: type as string
+typeof []; // "object"
+typeof ""; // "string"
+
+// instanceof: checks prototype chain
+[] instanceof Array; // true
+[] instanceof Object; // true (arrays inherit from Object)
+
+// Caveat: instanceof fails across frames/realms
+// Array from iframe !== Array from parent
+```
+
+### Cross-Realm Safe Checks
+
+```javascript
+// Use these for cross-frame safety:
+Array.isArray(value); // Arrays
+Number.isNaN(value); // NaN
+Number.isFinite(value); // Finite numbers
+ArrayBuffer.isView(value); // TypedArrays
+```
+
+## Type Guards Pattern (TypeScript-style)
+
+Even in JavaScript, you can use type guard patterns:
+
+```javascript
+function isString(value) {
+  return typeof value === "string";
+}
+
+function isNumber(value) {
+  return typeof value === "number" && !Number.isNaN(value);
+}
+
+function isPlainObject(value) {
+  return (
+    value !== null &&
+    typeof value === "object" &&
+    !Array.isArray(value) &&
+    Object.getPrototypeOf(value) === Object.prototype
+  );
+}
+
+function isPromise(value) {
+  return (
+    value !== null &&
+    typeof value === "object" &&
+    typeof value.then === "function"
+  );
+}
+
+// Usage
+function processValue(value) {
+  if (isString(value)) {
+    return value.toUpperCase();
+  }
+  if (isNumber(value)) {
+    return value * 2;
+  }
+  if (isPlainObject(value)) {
+    return JSON.stringify(value);
+  }
+}
+```
+
+## Duck Typing
+
+JavaScript often uses "duck typing" - if it walks like a duck and quacks like a duck, it's a duck:
+
+```javascript
+function isIterable(value) {
+  return value != null && typeof value[Symbol.iterator] === "function";
+}
+
+function isArrayLike(value) {
+  return (
+    value != null &&
+    typeof value.length === "number" &&
+    value.length >= 0 &&
+    Number.isInteger(value.length)
+  );
+}
+
+// Works with any iterable:
+for (const item of "hello") {
+} // Strings are iterable
+for (const item of [1, 2]) {
+} // Arrays are iterable
+for (const item of new Set([1, 2])) {
+} // Sets are iterable
+```
+
+<InfoBox type="warning" title="Performance Note">
+  `Object.prototype.toString.call()` is slower than `typeof`. Use `typeof` for
+  hot paths, and the more robust methods only when needed.
+</InfoBox>
+
+<ProgressCheckpoint section="typeof-mastery" xpReward={50} />

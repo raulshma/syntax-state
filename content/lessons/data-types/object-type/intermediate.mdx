@@ -1,0 +1,139 @@
+# Objects: Reference Types
+
+Now that you understand basic objects, let's explore one of the most important concepts: how objects are **stored and copied** differently from primitives.
+
+## Reference vs Value
+
+This is crucial to understand:
+
+- **Primitives** are copied by **value** (you get an independent copy)
+- **Objects** are copied by **reference** (you get a pointer to the same object)
+
+```javascript
+// Primitives: copied by value
+let a = 5;
+let b = a; // b gets a copy
+a = 10;
+console.log(b); // Still 5 ✅
+
+// Objects: copied by reference
+let obj1 = { count: 5 };
+let obj2 = obj1; // obj2 points to SAME object
+obj1.count = 10;
+console.log(obj2.count); // 10! 😮
+```
+
+<TypeVisualizer mode="intermediate" showReferences={true} />
+
+## Understanding References
+
+Think of a reference like a **home address**:
+
+- The object is the house
+- The variable is a slip of paper with the address
+- Copying the variable is like copying the address (same house!)
+
+```javascript
+const house = { rooms: 3 };
+const address1 = house;
+const address2 = house;
+
+// All three point to the same house:
+address1.rooms = 4;
+console.log(house.rooms); // 4
+console.log(address2.rooms); // 4
+```
+
+## Object Mutation
+
+Because multiple references point to the same object, changing it through one variable affects all references:
+
+```javascript
+function addProperty(obj) {
+  obj.newProp = "I was added!";
+}
+
+const original = { name: "Test" };
+addProperty(original);
+
+console.log(original);
+// { name: "Test", newProp: "I was added!" }
+```
+
+> ⚠️ **Watch out!** This is a common source of bugs. When you pass an object to a function, the function can modify your original object.
+
+## Nested Objects
+
+Objects can contain other objects, creating a hierarchy:
+
+```javascript
+const company = {
+  name: "TechCorp",
+  address: {
+    street: "123 Main St",
+    city: "San Francisco",
+    country: "USA",
+  },
+  employees: [
+    { name: "Alice", role: "Developer" },
+    { name: "Bob", role: "Designer" },
+  ],
+};
+
+// Accessing nested properties
+console.log(company.address.city); // "San Francisco"
+console.log(company.employees[0].name); // "Alice"
+```
+
+## Comparing Objects
+
+Objects are compared by **reference**, not by contents:
+
+```javascript
+const obj1 = { value: 1 };
+const obj2 = { value: 1 };
+const obj3 = obj1;
+
+console.log(obj1 === obj2); // false (different objects!)
+console.log(obj1 === obj3); // true (same reference)
+```
+
+To compare contents, you need to compare each property or use `JSON.stringify()`:
+
+```javascript
+// Simple content comparison
+JSON.stringify(obj1) === JSON.stringify(obj2); // true
+```
+
+## Creating True Copies
+
+To get an independent copy, use the **spread operator** or `Object.assign()`:
+
+```javascript
+const original = { a: 1, b: 2 };
+
+// Spread operator (shallow copy)
+const copy1 = { ...original };
+
+// Object.assign (shallow copy)
+const copy2 = Object.assign({}, original);
+
+copy1.a = 999;
+console.log(original.a); // Still 1 ✅
+```
+
+<InfoBox type="warning" title="Shallow vs Deep Copy">
+  Spread and Object.assign only create **shallow copies**. Nested objects are
+  still shared references! For deep copying, use `structuredClone()` or
+  libraries like Lodash.
+</InfoBox>
+
+```javascript
+// Deep copy with structuredClone (modern browsers)
+const deep = { nested: { value: 1 } };
+const deepCopy = structuredClone(deep);
+deepCopy.nested.value = 999;
+console.log(deep.nested.value); // Still 1 ✅
+```
+
+<ProgressCheckpoint section="object-references" xpReward={40} />

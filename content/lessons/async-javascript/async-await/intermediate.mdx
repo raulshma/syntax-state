@@ -1,0 +1,187 @@
+# Mastering async/await
+
+The `async/await` syntax, introduced in ES2017, provides syntactic sugar over Promises. It makes asynchronous code look and behave like synchronous code while maintaining non-blocking execution.
+
+## Understanding async Functions
+
+An `async` function always returns a Promise:
+
+```javascript
+async function getValue() {
+  return 42;
+}
+
+getValue().then(console.log); // 42
+
+// Equivalent to:
+function getValue() {
+  return Promise.resolve(42);
+}
+```
+
+If you throw inside an async function, the returned Promise rejects:
+
+```javascript
+async function throwError() {
+  throw new Error("Oops!");
+}
+
+throwError().catch(console.error); // Error: Oops!
+```
+
+## The await Keyword
+
+`await` pauses execution until the Promise resolves:
+
+```javascript
+async function fetchUser() {
+  console.log("Fetching...");
+  const response = await fetch("/api/user"); // Pauses here
+  console.log("Got response!");
+  const user = await response.json(); // Pauses here
+  console.log("Parsed!");
+  return user;
+}
+```
+
+<AsyncTimeline />
+
+## Error Handling Patterns
+
+### try/catch Block
+
+```javascript
+async function loadData() {
+  try {
+    const response = await fetch("/api/data");
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+    return await response.json();
+  } catch (error) {
+    console.error("Load failed:", error.message);
+    return null; // Return fallback
+  } finally {
+    console.log("Cleanup runs either way");
+  }
+}
+```
+
+### Catching at Call Site
+
+```javascript
+async function riskyOperation() {
+  const result = await mightFail();
+  return result;
+}
+
+// Handle error when calling
+riskyOperation().then(handleSuccess).catch(handleError);
+```
+
+### Wrapper Function
+
+```javascript
+// Utility to avoid try/catch everywhere
+async function to(promise) {
+  try {
+    const result = await promise;
+    return [null, result];
+  } catch (error) {
+    return [error, null];
+  }
+}
+
+// Usage
+const [error, data] = await to(fetch("/api/data"));
+if (error) {
+  console.error(error);
+  return;
+}
+console.log(data);
+```
+
+## Sequential vs Parallel Execution
+
+### Sequential (One after another)
+
+```javascript
+async function sequential() {
+  const user = await getUser(); // Wait...
+  const posts = await getPosts(); // Then wait...
+  const comments = await getComments(); // Then wait...
+  return { user, posts, comments };
+}
+// Total time: user + posts + comments
+```
+
+### Parallel (All at once)
+
+```javascript
+async function parallel() {
+  const [user, posts, comments] = await Promise.all([
+    getUser(),
+    getPosts(),
+    getComments(),
+  ]);
+  return { user, posts, comments };
+}
+// Total time: max(user, posts, comments)
+```
+
+### Start Parallel, Await Later
+
+```javascript
+async function hybrid() {
+  // Start all requests immediately
+  const userPromise = getUser();
+  const postsPromise = getPosts();
+
+  // Await when you need them
+  const user = await userPromise;
+  const posts = await postsPromise;
+
+  return { user, posts };
+}
+```
+
+## Common Patterns
+
+### Loop with await
+
+```javascript
+// Sequential processing
+async function processSequentially(items) {
+  const results = [];
+  for (const item of items) {
+    const result = await processItem(item);
+    results.push(result);
+  }
+  return results;
+}
+
+// Parallel processing
+async function processParallel(items) {
+  return Promise.all(items.map((item) => processItem(item)));
+}
+```
+
+### Conditional await
+
+```javascript
+async function getData(useCache) {
+  if (useCache) {
+    const cached = await getFromCache();
+    if (cached) return cached;
+  }
+  return await fetchFromServer();
+}
+```
+
+| Pattern    | When to Use                                 |
+| :--------- | :------------------------------------------ |
+| Sequential | When order matters, or need previous result |
+| Parallel   | Independent operations, want speed          |
+| Hybrid     | Start early, await late                     |
+
+<ProgressCheckpoint section="error-handling" xpReward={40} />

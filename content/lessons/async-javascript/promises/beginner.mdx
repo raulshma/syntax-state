@@ -1,0 +1,75 @@
+# Promises: A Receipt for the Future
+
+Imagine you order food at a restaurant. The waiter gives you a **receipt** - a promise that your food will arrive. That receipt can have three states:
+
+1. **Pending** ⏳ - Still cooking
+2. **Fulfilled** ✅ - Food is ready!
+3. **Rejected** ❌ - Kitchen is out of ingredients
+
+A JavaScript **Promise** works exactly the same way!
+
+## The Food Order Analogy
+
+```javascript
+// You place an order (make a promise)
+const myOrder = new Promise((resolve, reject) => {
+  // The kitchen is working...
+  setTimeout(() => {
+    const success = true;
+
+    if (success) {
+      resolve("🍕 Pizza is ready!"); // Fulfilled!
+    } else {
+      reject("😢 Out of pizza dough"); // Rejected!
+    }
+  }, 2000);
+});
+```
+
+## Getting Your Order
+
+Just like waiting for your food, you use `.then()` to handle the result:
+
+```javascript
+myOrder
+  .then((food) => {
+    console.log("Yay!", food); // "Yay! 🍕 Pizza is ready!"
+  })
+  .catch((problem) => {
+    console.log("Oh no!", problem); // Handle the rejection
+  });
+```
+
+## Why Promises Are Better Than Callbacks
+
+| Callbacks                 | Promises               |
+| :------------------------ | :--------------------- |
+| Nested pyramid 🔺         | Flat chain ➡️          |
+| Error handling everywhere | One `.catch()` for all |
+| Hard to read              | Reads like a story     |
+
+<PromiseChainBuilder />
+
+## Promise States
+
+| State         | Meaning              | Example                  |
+| :------------ | :------------------- | :----------------------- |
+| **Pending**   | Waiting for result   | Order placed, waiting... |
+| **Fulfilled** | Success!             | Food delivered! 🎉       |
+| **Rejected**  | Something went wrong | Order cancelled 😞       |
+
+> Once a promise is fulfilled or rejected, it's **settled** and can never change!
+
+## A Simple Real Example
+
+```javascript
+// Fetching data from the internet
+fetch("https://api.example.com/user")
+  .then((response) => response.json())
+  .then((user) => console.log("Hello,", user.name))
+  .catch((error) => console.log("Failed to load user"));
+```
+
+Promises make async code readable and manageable!
+
+<ProgressCheckpoint section="promise-basics" xpReward={25} />

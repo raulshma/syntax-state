@@ -1,0 +1,209 @@
+# Essential Built-in Objects
+
+Let's dive deeper into JavaScript's most commonly used built-in objects and learn techniques you'll use every day.
+
+<BuiltInObjectExplorer
+  mode="intermediate"
+  categories={["Math", "Date", "JSON", "Error"]}
+/>
+
+## Math in Depth
+
+### Math Constants
+
+```javascript
+Math.PI; // 3.141592653589793
+Math.E; // 2.718281828459045 (Euler's number)
+Math.SQRT2; // 1.4142135623730951
+Math.LN2; // 0.6931471805599453
+Math.LOG10E; // 0.4342944819032518
+```
+
+### Power and Roots
+
+```javascript
+Math.pow(2, 8); // 256 (2 to the power of 8)
+Math.sqrt(16); // 4
+Math.cbrt(27); // 3 (cube root)
+
+// Modern exponentiation operator (ES2016)
+2 ** 8; // 256
+```
+
+### Useful Math Methods
+
+```javascript
+// Absolute value
+Math.abs(-10); // 10
+
+// Sign of a number
+Math.sign(-5); // -1
+Math.sign(0); // 0
+Math.sign(5); // 1
+
+// Truncate (remove decimals)
+Math.trunc(4.7); // 4
+Math.trunc(-4.7); // -4
+
+// Trigonometry
+Math.sin(Math.PI / 2); // 1
+Math.cos(0); // 1
+```
+
+## Date: Working with Timestamps
+
+### Creating Specific Dates
+
+```javascript
+// From a string
+new Date("2024-12-25");
+new Date("December 25, 2024");
+
+// From components (month is 0-indexed!)
+new Date(2024, 11, 25); // December 25, 2024
+new Date(2024, 11, 25, 10, 30); // Dec 25, 2024 10:30
+
+// From timestamp (milliseconds since Jan 1, 1970)
+new Date(1703462400000);
+```
+
+### Getting and Setting
+
+```javascript
+const date = new Date("2024-06-15");
+
+// Get parts
+date.getFullYear(); // 2024
+date.getMonth(); // 5 (June - remember 0-indexed!)
+date.getDate(); // 15
+date.getDay(); // 6 (Saturday - 0 is Sunday)
+
+// Set parts
+date.setFullYear(2025);
+date.setMonth(0); // Change to January
+date.setDate(1); // Change to 1st
+```
+
+### Date Calculations
+
+```javascript
+// Difference between dates
+const start = new Date("2024-01-01");
+const end = new Date("2024-12-31");
+const diffMs = end - start;
+const diffDays = diffMs / (1000 * 60 * 60 * 24);
+console.log(diffDays); // 365
+
+// Add days
+const today = new Date();
+const nextWeek = new Date(today);
+nextWeek.setDate(today.getDate() + 7);
+```
+
+### Formatting Dates
+
+```javascript
+const date = new Date();
+
+date.toLocaleDateString(); // "12/14/2024" (locale-dependent)
+date.toLocaleTimeString(); // "10:30:45 AM"
+date.toLocaleString(); // Both date and time
+date.toISOString(); // "2024-12-14T10:30:45.000Z"
+date.toDateString(); // "Sat Dec 14 2024"
+```
+
+## JSON: Data Exchange Format
+
+JSON (JavaScript Object Notation) is the standard for data exchange on the web.
+
+### Converting to JSON (stringify)
+
+```javascript
+const user = {
+  name: "Alice",
+  age: 25,
+  hobbies: ["reading", "coding"],
+};
+
+const jsonString = JSON.stringify(user);
+// '{"name":"Alice","age":25,"hobbies":["reading","coding"]}'
+
+// Pretty-printed
+JSON.stringify(user, null, 2);
+/*
+{
+  "name": "Alice",
+  "age": 25,
+  "hobbies": [
+    "reading",
+    "coding"
+  ]
+}
+*/
+```
+
+### Parsing JSON
+
+```javascript
+const jsonStr = '{"name":"Bob","score":100}';
+const data = JSON.parse(jsonStr);
+
+console.log(data.name); // "Bob"
+console.log(data.score); // 100
+```
+
+### JSON Gotchas
+
+```javascript
+// Functions and undefined are not preserved
+JSON.stringify({ fn: function () {}, val: undefined });
+// '{}'
+
+// Dates become strings
+JSON.stringify({ date: new Date() });
+// '{"date":"2024-12-14T10:30:45.000Z"}'
+
+// Circular references throw errors
+const obj = {};
+obj.self = obj;
+JSON.stringify(obj); // TypeError: Converting circular structure
+```
+
+## Error Objects
+
+JavaScript has built-in error types for different situations:
+
+```javascript
+throw new Error("Something went wrong");
+throw new TypeError("Expected a string");
+throw new RangeError("Number out of range");
+throw new ReferenceError("Variable not defined");
+throw new SyntaxError("Invalid code");
+```
+
+### Error Properties
+
+```javascript
+const err = new Error("Oops!");
+console.log(err.name); // "Error"
+console.log(err.message); // "Oops!"
+console.log(err.stack); // Stack trace
+```
+
+<InfoBox type="tip" title="Pro Tip">
+  Always check if data is valid before using JSON.parse(). Invalid JSON will
+  throw a SyntaxError.
+</InfoBox>
+
+```javascript
+function safeParse(jsonString) {
+  try {
+    return JSON.parse(jsonString);
+  } catch (e) {
+    console.error("Invalid JSON:", e.message);
+    return null;
+  }
+}
+```
+
+<ProgressCheckpoint section="builtin-essential" xpReward={40} />

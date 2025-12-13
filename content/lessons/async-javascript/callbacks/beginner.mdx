@@ -1,0 +1,57 @@
+# Callbacks: "Call Me Back!"
+
+Imagine you're at a busy coffee shop. You order your latte, but instead of waiting at the counter, the barista says:
+
+> "I'll **call you** when your drink is ready!"
+
+That's exactly what a **callback** is in JavaScript - a function you provide that will be "called back" when something finishes.
+
+## What is a Callback?
+
+A callback is simply a function that you pass to another function. It gets executed later, when a task completes.
+
+```javascript
+// You're telling the button: "When someone clicks, call this function!"
+button.addEventListener("click", function () {
+  alert("You clicked me!");
+});
+```
+
+## Real-Life Analogy
+
+Think about ordering food online:
+
+1. 🛒 You place your order (start the task)
+2. 📱 You give them your phone number (the callback)
+3. ⏳ You go do other things (JavaScript keeps running)
+4. 📞 They call you when food arrives (callback is invoked!)
+
+Without callbacks, you'd have to stand at the door waiting!
+
+<CallbackVisualizer mode="simple" />
+
+## Common Callbacks in Action
+
+| Scenario       | What Happens                |
+| :------------- | :-------------------------- |
+| Click a button | Callback runs when clicked  |
+| Page loads     | Callback runs when ready    |
+| Timer finishes | Callback runs after delay   |
+| Data arrives   | Callback runs with the data |
+
+## A Simple Example
+
+```javascript
+// Set a reminder for 3 seconds
+setTimeout(function () {
+  console.log("Time is up!");
+}, 3000);
+
+console.log("Timer started...");
+// Output: "Timer started..." (immediately)
+// Then after 3 seconds: "Time's up!"
+```
+
+The magic? JavaScript didn't wait! It kept running while the timer counted down.
+
+<ProgressCheckpoint section="callback-basics" xpReward={20} />

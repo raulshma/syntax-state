@@ -1,0 +1,93 @@
+# async/await: Magic Waiting
+
+Remember how you used to wait in line for coffee? Now imagine you could say "I'll **wait** here, but time keeps moving normally for everyone else." That's what `await` does in JavaScript!
+
+## The Magic Words
+
+JavaScript has two special words that make async code beautiful:
+
+- **`async`** - "This function does something that takes time"
+- **`await`** - "Wait here until this is done"
+
+## Before and After
+
+### The Old Way (Promises)
+
+```javascript
+function getWeather() {
+  fetch("/api/weather")
+    .then((response) => response.json())
+    .then((data) => {
+      console.log("Temperature:", data.temp);
+    });
+}
+```
+
+### The New Way (async/await)
+
+```javascript
+async function getWeather() {
+  const response = await fetch("/api/weather");
+  const data = await response.json();
+  console.log("Temperature:", data.temp);
+}
+```
+
+Much cleaner! It reads just like normal code. ✨
+
+<AsyncTimeline />
+
+## The Recipe Analogy
+
+Think of an `async` function like following a recipe:
+
+1. **Get ingredients** → `await getIngredients()` ⏳ wait...
+2. **Mix them** → `await mix(ingredients)` ⏳ wait...
+3. **Bake** → `await bake(mixture)` ⏳ wait...
+4. **Enjoy cake!** 🎂
+
+Each step waits for the previous one to finish, but JavaScript can do other things while waiting!
+
+## Basic Rules
+
+| Rule                                    | Example                            |
+| :-------------------------------------- | :--------------------------------- |
+| Use `async` before the function         | `async function doStuff()`         |
+| Use `await` only inside async functions | `const result = await something()` |
+| `await` works with Promises             | `await fetch(url)`                 |
+
+## A Real Example
+
+```javascript
+async function showUserProfile() {
+  // Wait for user data
+  const user = await getUser();
+
+  // Wait for their posts
+  const posts = await getPosts(user.id);
+
+  // Display everything
+  console.log(`${user.name} has ${posts.length} posts!`);
+}
+
+showUserProfile(); // Call the async function
+```
+
+## What If Something Goes Wrong?
+
+Just like a try-catch in regular code:
+
+```javascript
+async function loadData() {
+  try {
+    const data = await fetch("/api/data");
+    console.log("Got it!", data);
+  } catch (error) {
+    console.log("Oops!", error.message);
+  }
+}
+```
+
+Now you can write async code that reads like a story! 📖
+
+<ProgressCheckpoint section="async-await-basics" xpReward={25} />

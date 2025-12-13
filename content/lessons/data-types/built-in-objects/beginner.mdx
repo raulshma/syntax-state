@@ -1,0 +1,98 @@
+# JavaScript's Toolbox
+
+Imagine moving into a new apartment and finding the kitchen already stocked with all the tools you need - pots, pans, knives, and appliances. That's what **built-in objects** are in JavaScript!
+
+## What Are Built-in Objects?
+
+JavaScript comes with pre-made objects that have useful methods ready to use. You don't need to install anything or write complex code - they're just there!
+
+> **Think of it like:** A toolbox that comes with your programming toolkit. Just open it and use what you need.
+
+## The Most Common Built-in Objects
+
+| Object    | What It Does                                 |
+| :-------- | :------------------------------------------- |
+| `Math`    | Math calculations (rounding, random numbers) |
+| `Date`    | Working with dates and times                 |
+| `console` | Printing messages for debugging              |
+| `JSON`    | Converting data to/from text format          |
+
+<BuiltInObjectExplorer mode="beginner" />
+
+## Math: Your Calculator
+
+`Math` is like a super-powered calculator:
+
+```javascript
+// Round a number
+Math.round(4.7); // 5
+Math.round(4.4); // 4
+
+// Round down (floor)
+Math.floor(4.9); // 4
+
+// Round up (ceiling)
+Math.ceil(4.1); // 5
+
+// Get a random number (0 to 1)
+Math.random(); // 0.7234... (different each time)
+
+// Find the biggest/smallest
+Math.max(5, 10, 3); // 10
+Math.min(5, 10, 3); // 3
+```
+
+### Random Number in a Range
+
+Want a random number between 1 and 10?
+
+```javascript
+// Random integer from 1 to 10
+Math.floor(Math.random() * 10) + 1;
+```
+
+## Date: Working with Time
+
+`Date` helps you work with dates and times:
+
+```javascript
+// Get the current date and time
+const now = new Date();
+console.log(now); // Current date and time
+
+// Get specific parts
+now.getFullYear(); // 2024
+now.getMonth(); // 0-11 (0 = January)
+now.getDate(); // 1-31 (day of month)
+now.getHours(); // 0-23
+now.getMinutes(); // 0-59
+```
+
+## console: Your Debugging Friend
+
+`console` helps you see what's happening in your code:
+
+```javascript
+// Print a message
+console.log("Hello!");
+
+// Print a warning
+console.warn("Be careful!");
+
+// Print an error
+console.error("Something went wrong!");
+```
+
+> 💡 Open your browser's Developer Tools (F12) to see console messages!
+
+<Quiz>
+  <Question>
+    Which built-in object would you use to round a number down?
+  </Question>
+  <Answer correct>Math</Answer>
+  <Answer>Date</Answer>
+  <Answer>console</Answer>
+  <Answer>JSON</Answer>
+</Quiz>
+
+<ProgressCheckpoint section="builtin-intro" xpReward={25} />

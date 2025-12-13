@@ -1,0 +1,28 @@
+{
+  "id": "callbacks",
+  "title": "Callbacks",
+  "description": "Learn how callbacks work as the foundation of asynchronous JavaScript and understand common patterns.",
+  "milestone": "async-javascript",
+  "order": 2,
+  "sections": [
+    "callback-basics",
+    "callback-patterns",
+    "callback-hell"
+  ],
+  "levels": {
+    "beginner": {
+      "estimatedMinutes": 8,
+      "xpReward": 20
+    },
+    "intermediate": {
+      "estimatedMinutes": 12,
+      "xpReward": 35
+    },
+    "advanced": {
+      "estimatedMinutes": 18,
+      "xpReward": 55
+    }
+  },
+  "prerequisites": ["async-javascript/event-loop"],
+  "tags": ["javascript", "async", "callbacks", "functions"]
+}

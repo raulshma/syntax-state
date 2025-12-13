@@ -1,0 +1,30 @@
+{
+  "id": "variable-naming-rules",
+  "title": "Variable Naming Rules",
+  "description": "Learn the rules and best practices for naming variables in JavaScript.",
+  "milestone": "variables",
+  "order": 3,
+  "sections": [
+    "naming-basics",
+    "valid-characters",
+    "reserved-words",
+    "naming-conventions",
+    "best-practices"
+  ],
+  "levels": {
+    "beginner": {
+      "estimatedMinutes": 8,
+      "xpReward": 25
+    },
+    "intermediate": {
+      "estimatedMinutes": 12,
+      "xpReward": 40
+    },
+    "advanced": {
+      "estimatedMinutes": 18,
+      "xpReward": 70
+    }
+  },
+  "prerequisites": ["variable-declarations"],
+  "tags": ["javascript", "variables", "naming", "conventions", "best-practices"]
+}

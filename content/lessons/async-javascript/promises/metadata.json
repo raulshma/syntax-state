@@ -1,0 +1,28 @@
+{
+  "id": "promises",
+  "title": "Promises",
+  "description": "Master JavaScript Promises for handling asynchronous operations with clean, chainable syntax.",
+  "milestone": "async-javascript",
+  "order": 3,
+  "sections": [
+    "promise-basics",
+    "promise-chaining",
+    "promise-methods"
+  ],
+  "levels": {
+    "beginner": {
+      "estimatedMinutes": 10,
+      "xpReward": 25
+    },
+    "intermediate": {
+      "estimatedMinutes": 15,
+      "xpReward": 40
+    },
+    "advanced": {
+      "estimatedMinutes": 20,
+      "xpReward": 60
+    }
+  },
+  "prerequisites": ["async-javascript/callbacks"],
+  "tags": ["javascript", "async", "promises", "es6"]
+}

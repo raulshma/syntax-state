@@ -1,0 +1,125 @@
+# Variable Declarations: var, let, and const
+
+Welcome to the world of JavaScript variables! Think of variables as **labeled storage boxes** where you can keep things. Let's explore the three types of boxes JavaScript gives us.
+
+## The Three Magic Boxes
+
+Imagine you have three types of storage boxes:
+
+| Box Type  | Real-World Analogy            | What It Does                             |
+| :-------- | :---------------------------- | :--------------------------------------- |
+| **var**   | A magic box that can teleport | Old-school, can move around unexpectedly |
+| **let**   | A regular box with a lid      | Modern, stays where you put it           |
+| **const** | A locked safe                 | Cannot change what's inside              |
+
+<ProgressCheckpoint section="intro-declarations" xpReward={10} />
+
+## The `var` Keyword - The Old Way
+
+`var` is like a **magic box that can teleport** to the top of your code. It was the original way to create variables in JavaScript.
+
+```javascript
+var greeting = "Hello!";
+var age = 25;
+var isHappy = true;
+```
+
+> **Think of it like this:** When you use `var`, JavaScript takes your box and moves it to the very top of the room (this is called "hoisting"). This can sometimes cause confusion!
+
+<CodePlayground 
+  code={`// Even though we use greeting before declaring it,
+// var hoists it to the top!
+console.log(greeting); // undefined, not an error!
+
+var greeting = "Hello, World!";
+console.log(greeting); // "Hello, World!"`}
+title="var Example"
+/>
+
+<ProgressCheckpoint section="var-keyword" xpReward={10} />
+
+## The `let` Keyword - The Modern Choice
+
+`let` is like a **regular storage box** that stays exactly where you put it. It was introduced in 2015 to fix the confusing parts of `var`.
+
+```javascript
+let name = "Alice";
+let score = 100;
+let isPlaying = false;
+```
+
+> **The key difference:** If you try to use a `let` variable before declaring it, JavaScript will give you an error. This is actually helpful because it catches mistakes!
+
+<CodePlayground 
+  code={`// This will cause an error!
+// console.log(name); // ReferenceError!
+
+let name = "Bob";
+console.log(name); // "Bob"
+
+// You CAN change what's inside
+name = "Charlie";
+console.log(name); // "Charlie"`}
+title="let Example"
+/>
+
+<ProgressCheckpoint section="let-keyword" xpReward={10} />
+
+## The `const` Keyword - The Locked Safe
+
+`const` is like a **locked safe** - once you put something in, the label stays attached to that thing forever!
+
+```javascript
+const PI = 3.14159;
+const APP_NAME = "My Cool App";
+const MAX_USERS = 100;
+```
+
+> **Important:** With `const`, you cannot reassign the variable to a different value. But if the value is an object or array, you CAN still change properties inside it!
+
+<CodePlayground 
+  code={`const myName = "Diana";
+// myName = "Eve"; // ERROR! Cannot reassign!
+
+// But objects can have properties changed:
+const person = { name: "Frank" };
+person.name = "Grace"; // This works!
+console.log(person.name); // "Grace"`}
+title="const Example"
+/>
+
+<ProgressCheckpoint section="const-keyword" xpReward={10} />
+
+## Quick Comparison
+
+<VariableVisualizer />
+
+| Feature       |  var   |      let       |          const          |
+| :------------ | :----: | :------------: | :---------------------: |
+| Can reassign? |  Yes   |      Yes       |           No            |
+| Block scoped? |   No   |      Yes       |           Yes           |
+| Hoisted?      |  Yes   |      No\*      |          No\*           |
+| When to use?  | Rarely | Default choice | When value won't change |
+
+> **Pro Tip:** In modern JavaScript, use `const` by default. Only use `let` when you need to reassign. Avoid `var` unless you're working with old code!
+
+<Quiz id="var-let-const-basics">
+  <Question
+    id="q1"
+    text="Which keyword should you use for a value that will never change?"
+  >
+    <Answer id="a" text="var" />
+    <Answer id="b" text="let" />
+    <Answer id="c" text="const" isCorrect />
+  </Question>
+  <Question
+    id="q2"
+    text="Which keyword is the oldest way to declare variables?"
+  >
+    <Answer id="a" text="var" isCorrect />
+    <Answer id="b" text="let" />
+    <Answer id="c" text="const" />
+  </Question>
+</Quiz>
+
+<ProgressCheckpoint section="comparison" xpReward={10} />

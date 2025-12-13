@@ -1,0 +1,28 @@
+{
+  "id": "async-await",
+  "title": "async/await",
+  "description": "Learn modern async/await syntax for writing cleaner asynchronous code that looks synchronous.",
+  "milestone": "async-javascript",
+  "order": 4,
+  "sections": [
+    "async-await-basics",
+    "error-handling",
+    "async-patterns"
+  ],
+  "levels": {
+    "beginner": {
+      "estimatedMinutes": 10,
+      "xpReward": 25
+    },
+    "intermediate": {
+      "estimatedMinutes": 15,
+      "xpReward": 40
+    },
+    "advanced": {
+      "estimatedMinutes": 18,
+      "xpReward": 55
+    }
+  },
+  "prerequisites": ["async-javascript/promises"],
+  "tags": ["javascript", "async", "await", "es2017"]
+}

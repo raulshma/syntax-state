@@ -76,6 +76,12 @@ import { StorageComparison } from '@/components/learn/interactive/javascript/Sto
 import { JsUseCaseExplorer } from '@/components/learn/interactive/javascript/JsUseCaseExplorer';
 import { JsTimelineExplorer } from '@/components/learn/interactive/javascript/JsTimelineExplorer';
 import { EcmaScriptVersionExplorer } from '@/components/learn/interactive/javascript/EcmaScriptVersionExplorer';
+import { TypeVisualizer } from '@/components/learn/interactive/javascript/TypeVisualizer';
+import { TypeofExplorer } from '@/components/learn/interactive/javascript/TypeofExplorer';
+import { BuiltInObjectExplorer } from '@/components/learn/interactive/javascript/BuiltInObjectExplorer';
+import { CallbackVisualizer } from '@/components/learn/interactive/javascript/CallbackVisualizer';
+import { TimerPlayground } from '@/components/learn/interactive/javascript/TimerPlayground';
+import { VariableNamingValidator } from '@/components/learn/interactive/javascript/VariableNamingValidator';
 
 // React Lesson Components
 import {
@@ -232,6 +238,12 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
     JsUseCaseExplorer,
     JsTimelineExplorer,
     EcmaScriptVersionExplorer,
+    TypeVisualizer,
+    TypeofExplorer,
+    BuiltInObjectExplorer,
+    CallbackVisualizer,
+    TimerPlayground,
+    VariableNamingValidator,
 
     // React Lesson Components
     ReactPlayground,

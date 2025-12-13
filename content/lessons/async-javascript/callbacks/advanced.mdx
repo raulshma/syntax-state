@@ -1,0 +1,205 @@
+# Advanced Callback Patterns
+
+Callbacks were JavaScript's original async mechanism. Understanding their limitations and advanced patterns is essential for working with legacy code and mastering async programming.
+
+## The Problem: Inversion of Control
+
+When you pass a callback to a third-party function, you're trusting that function to:
+
+1. Call your callback exactly once
+2. Call it at the right time
+3. Pass the right parameters
+4. Handle errors properly
+
+```javascript
+// What if this library calls your callback twice? Or never?
+thirdPartyLibrary.doSomething(data, function (result) {
+  // You've lost control!
+  chargeCustomerCreditCard(result.amount);
+});
+```
+
+This "inversion of control" is a fundamental issue with callbacks.
+
+## Callback Hell Visualized
+
+<CallbackVisualizer mode="hell" />
+
+## Solutions to Callback Hell
+
+### 1. Named Functions
+
+```javascript
+// Instead of nesting...
+getUser(userId, function (user) {
+  getOrders(user.id, function (orders) {
+    getDetails(orders[0].id, function (details) {
+      console.log(details);
+    });
+  });
+});
+
+// Use named functions:
+function handleDetails(details) {
+  console.log(details);
+}
+
+function handleOrders(orders) {
+  getDetails(orders[0].id, handleDetails);
+}
+
+function handleUser(user) {
+  getOrders(user.id, handleOrders);
+}
+
+getUser(userId, handleUser);
+```
+
+<CallbackVisualizer mode="flat" />
+
+### 2. Modular Design
+
+```javascript
+// Break into composable modules
+const userModule = {
+  getUser(id, cb) {
+    /* ... */
+  },
+  getOrders(userId, cb) {
+    /* ... */
+  },
+};
+
+const orderModule = {
+  getDetails(orderId, cb) {
+    /* ... */
+  },
+  processOrder(details, cb) {
+    /* ... */
+  },
+};
+```
+
+### 3. Control Flow Libraries (Historical)
+
+Before Promises, libraries like `async.js` helped manage callbacks:
+
+```javascript
+// async.js waterfall pattern (pre-Promise era)
+async.waterfall(
+  [
+    function (callback) {
+      getUser(userId, callback);
+    },
+    function (user, callback) {
+      getOrders(user.id, callback);
+    },
+    function (orders, callback) {
+      getDetails(orders[0].id, callback);
+    },
+  ],
+  function (err, result) {
+    if (err) return handleError(err);
+    console.log(result);
+  }
+);
+```
+
+## Implementing Robust Callbacks
+
+### Ensuring Single Invocation
+
+```javascript
+function once(fn) {
+  let called = false;
+  return function (...args) {
+    if (called) return;
+    called = true;
+    return fn.apply(this, args);
+  };
+}
+
+// Usage
+someAsyncOp(
+  once(function (result) {
+    // Guaranteed to run only once
+    processResult(result);
+  })
+);
+```
+
+### Timeout Protection
+
+```javascript
+function withTimeout(callback, timeout) {
+  let timedOut = false;
+
+  const timer = setTimeout(() => {
+    timedOut = true;
+    callback(new Error("Operation timed out"));
+  }, timeout);
+
+  return function (...args) {
+    if (timedOut) return;
+    clearTimeout(timer);
+    callback(...args);
+  };
+}
+
+// Usage
+fetchData(
+  url,
+  withTimeout(function (err, data) {
+    if (err) return handleError(err);
+    processData(data);
+  }, 5000)
+);
+```
+
+## Thunks: Deferred Computation
+
+A thunk is a function that wraps an async operation, delaying its execution:
+
+```javascript
+// Thunk creator
+function getDataThunk(url) {
+  return function (callback) {
+    fetch(url)
+      .then((res) => res.json())
+      .then((data) => callback(null, data))
+      .catch((err) => callback(err));
+  };
+}
+
+// Create thunks (no execution yet)
+const userThunk = getDataThunk("/api/user");
+const postsThunk = getDataThunk("/api/posts");
+
+// Execute when needed
+userThunk((err, user) => {
+  if (err) return;
+  console.log(user);
+});
+```
+
+## When to Still Use Callbacks
+
+| Use Callbacks           | Use Promises/Async-Await         |
+| :---------------------- | :------------------------------- |
+| Event handlers          | Sequential async operations      |
+| Array methods           | Error handling across operations |
+| Simple one-off async    | Parallel async operations        |
+| Legacy code integration | Modern API design                |
+
+## The Evolution
+
+```
+Callbacks → Promises → Async/Await
+   ↓           ↓           ↓
+ Manual     Chainable    Readable
+ Control    Flow         Sync-like
+```
+
+Callbacks are still everywhere (event handlers, array methods), but for complex async flows, Promises and async/await are the modern solution.
+
+<ProgressCheckpoint section="callback-hell" xpReward={55} />

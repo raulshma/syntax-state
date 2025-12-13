@@ -1,0 +1,210 @@
+# Primitive Types: Under the Hood
+
+Let's explore how JavaScript handles primitive types at a deeper level - from wrapper objects to memory optimization to IEEE 754 edge cases.
+
+## Primitive Wrapper Objects
+
+When you call a method on a primitive, JavaScript performs **autoboxing**:
+
+```javascript
+"hello".toUpperCase(); // "HELLO"
+```
+
+Behind the scenes:
+
+1. JavaScript creates a temporary `String` object wrapper
+2. Calls the method on that object
+3. Returns the result
+4. Discards the wrapper (garbage collected)
+
+```javascript
+// What JavaScript does internally:
+new String("hello").toUpperCase();
+// Then the String object is discarded
+```
+
+> ⚠️ **Never use `new String()`, `new Number()`, or `new Boolean()`** to create values. They create objects, not primitives!
+
+```javascript
+typeof "hello"; // "string"
+typeof new String("hello"); // "object" - NOT the same!
+```
+
+<TypeVisualizer mode="advanced" showMemory={true} showOptimization={true} />
+
+## Number Precision: IEEE 754
+
+JavaScript uses **64-bit double-precision floating-point** format (IEEE 754) for all numbers.
+
+### Structure of a 64-bit Float
+
+| Sign  | Exponent | Mantissa |
+| :---- | :------- | :------- |
+| 1 bit | 11 bits  | 52 bits  |
+
+This leads to some famous precision issues:
+
+```javascript
+0.1 + 0.2 === 0.3; // false!
+0.1 + 0.2; // 0.30000000000000004
+```
+
+### Integer Safety
+
+The 52-bit mantissa means safe integers are limited:
+
+```javascript
+Number.MAX_SAFE_INTEGER; // 2^53 - 1 = 9007199254740991
+Number.MIN_SAFE_INTEGER; // -(2^53 - 1)
+
+// Testing safety:
+Number.isSafeInteger(9007199254740991); // true
+Number.isSafeInteger(9007199254740992); // false
+```
+
+### Special Number Values
+
+```javascript
+Infinity; // Positive infinity
+-Infinity; // Negative infinity
+NaN; // "Not a Number"
+
+// NaN quirks:
+NaN === NaN; // false! (only value not equal to itself)
+Number.isNaN(NaN); // true (use this to check)
+Object.is(NaN, NaN); // true (ES6 way)
+```
+
+## Symbol Deep Dive
+
+### Global Symbol Registry
+
+`Symbol.for()` creates or retrieves symbols from a global registry:
+
+```javascript
+// Creates in global registry
+const s1 = Symbol.for("app.id");
+const s2 = Symbol.for("app.id");
+
+s1 === s2; // true! Same key = same symbol
+
+// Get the key back:
+Symbol.keyFor(s1); // "app.id"
+Symbol.keyFor(Symbol("local")); // undefined (not in registry)
+```
+
+### Well-Known Symbols
+
+JavaScript defines several built-in symbols for internal operations:
+
+```javascript
+// Symbol.iterator - makes objects iterable
+const iterable = {
+  *[Symbol.iterator]() {
+    yield 1;
+    yield 2;
+  },
+};
+
+[...iterable]; // [1, 2]
+
+// Symbol.toStringTag - customizes Object.prototype.toString
+class MyClass {
+  get [Symbol.toStringTag]() {
+    return "MyClass";
+  }
+}
+
+Object.prototype.toString.call(new MyClass()); // "[object MyClass]"
+```
+
+## BigInt Internals
+
+### Limitations and Interoperability
+
+```javascript
+// Cannot mix with Number:
+10n + 5; // ❌ TypeError
+
+// Explicit conversion required:
+10n + BigInt(5); // ✅ 15n
+Number(10n) + 5; // ✅ 15 (may lose precision)
+
+// No Math methods:
+Math.sqrt(16n); // ❌ TypeError
+// Use libraries like BigInt-math for complex operations
+
+// No JSON.stringify:
+JSON.stringify({ id: 10n }); // ❌ TypeError
+JSON.stringify({ id: 10n.toString() }); // ✅ '{"id":"10"}'
+```
+
+### BigInt Performance
+
+BigInt operations are generally slower than Number operations because:
+
+- They can't use fixed-size CPU registers
+- Operations scale with the size of the number
+- No SIMD optimization
+
+```javascript
+// Benchmark example:
+console.time("Numbers");
+for (let i = 0; i < 1e6; i++) {
+  let x = i * 2;
+}
+console.timeEnd("Numbers"); // ~2ms
+
+console.time("BigInts");
+for (let i = 0n; i < 1000000n; i++) {
+  let x = i * 2n;
+}
+console.timeEnd("BigInts"); // ~150ms (much slower)
+```
+
+## Memory Optimization: V8 Internals
+
+### Small Integer (SMI) Optimization
+
+V8 stores small integers directly on the stack without heap allocation:
+
+```javascript
+// SMI range (32-bit): -2^31 to 2^31 - 1
+const small = 42; // Stored as SMI (fast)
+const big = 9007199254740991; // Heap-allocated double (slower)
+```
+
+### String Interning
+
+V8 interns short strings, meaning identical strings share memory:
+
+```javascript
+const a = "hello";
+const b = "hello";
+// Both may point to the same memory location
+
+const c = "a".repeat(100); // Too long, not interned
+```
+
+### Hidden Classes
+
+When primitives are stored in objects, V8 creates hidden classes for optimization:
+
+```javascript
+// Sequential property addition creates efficient hidden classes
+const obj = {};
+obj.x = 1; // Hidden class transition
+obj.y = 2; // Another transition
+
+// Out-of-order or dynamic property names are slower
+const obj2 = {};
+obj2.y = 2;
+obj2.x = 1; // Different hidden class path!
+```
+
+<InfoBox type="warning" title="Performance Insight">
+  For hot code paths, prefer primitives over wrapper objects, use small integers
+  when possible, and keep object shapes consistent.
+</InfoBox>
+
+<ProgressCheckpoint section="primitives-mastery" xpReward={60} />

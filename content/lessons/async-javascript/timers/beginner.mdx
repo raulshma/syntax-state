@@ -1,0 +1,85 @@
+# JavaScript Timers: Alarm Clocks for Your Code
+
+Imagine you're setting alarms on your phone. You might want:
+
+- **One alarm** for 7:00 AM (wake up once) → `setTimeout`
+- **Repeating alarm** every hour (snooze forever!) → `setInterval`
+
+JavaScript timers work exactly like this!
+
+## setTimeout: Do Something Later
+
+`setTimeout` runs code **once** after a delay:
+
+```javascript
+// Show a message after 3 seconds
+setTimeout(function () {
+  console.log("Hello! 3 seconds have passed!");
+}, 3000); // 3000 milliseconds = 3 seconds
+
+console.log("Timer started...");
+// Output: "Timer started..." immediately
+// Then after 3 seconds: "Hello! 3 seconds have passed!"
+```
+
+<TimerPlayground initialDelay={2000} />
+
+## setInterval: Do Something Repeatedly
+
+`setInterval` runs code **over and over** at regular intervals:
+
+```javascript
+// Count every second
+let count = 0;
+
+setInterval(function () {
+  count++;
+  console.log("Count:", count);
+}, 1000); // Every 1000ms = 1 second
+
+// Output: "Count: 1", "Count: 2", "Count: 3"... forever!
+```
+
+## The Difference
+
+| Timer           | How it Works    | Use For                     |
+| :-------------- | :-------------- | :-------------------------- |
+| **setTimeout**  | Runs once 🔂    | Delays, one-time actions    |
+| **setInterval** | Runs forever 🔄 | Clocks, animations, updates |
+
+## Stopping a Timer
+
+Every timer has an ID. Use it to stop the timer:
+
+```javascript
+// For setTimeout
+const timerId = setTimeout(() => {
+  console.log("This will run");
+}, 1000);
+
+clearTimeout(timerId); // Cancel it! Nothing happens.
+
+// For setInterval
+const intervalId = setInterval(() => {
+  console.log("Tick!");
+}, 1000);
+
+// Stop after 5 seconds
+setTimeout(() => {
+  clearInterval(intervalId);
+  console.log("Timer stopped!");
+}, 5000);
+```
+
+## Real-World Examples
+
+| Example                       | Timer Type  |
+| :---------------------------- | :---------- |
+| Show notification after delay | setTimeout  |
+| Auto-save every minute        | setInterval |
+| Countdown timer               | setInterval |
+| Debounce search input         | setTimeout  |
+
+> 💡 **Remember**: Always clear your intervals when done, or they run forever and waste resources!
+
+<ProgressCheckpoint section="timer-basics" xpReward={20} />

@@ -1,0 +1,137 @@
+# typeof Quirks and Edge Cases
+
+The `typeof` operator is incredibly useful, but it has some surprising behaviors that every JavaScript developer should know about.
+
+## The Famous Quirks
+
+<TypeofExplorer mode="intermediate" showQuirks={true} />
+
+### Quirk #1: typeof null === "object"
+
+This is perhaps JavaScript's most famous bug:
+
+```javascript
+typeof null; // "object" ❌
+
+// This is a bug from 1995 that can never be fixed
+// because too much code depends on it!
+```
+
+**How to properly check for null:**
+
+```javascript
+// Don't rely on typeof for null
+if (value === null) {
+  console.log("It's null");
+}
+```
+
+### Quirk #2: Functions are "function"
+
+Functions are technically objects, but `typeof` gives them special treatment:
+
+```javascript
+typeof function () {}; // "function"
+typeof (() => {}); // "function"
+typeof class {}; // "function" (classes are functions!)
+```
+
+### Quirk #3: Arrays are "object"
+
+Arrays don't get their own type:
+
+```javascript
+typeof []; // "object"
+typeof [1, 2, 3]; // "object"
+typeof new Array(); // "object"
+```
+
+**How to check for arrays:**
+
+```javascript
+// Use Array.isArray()
+Array.isArray([1, 2, 3]); // true
+Array.isArray("hello"); // false
+Array.isArray({}); // false
+```
+
+### Quirk #4: NaN is "number"
+
+This seems paradoxical, but NaN (Not a Number) is of type number:
+
+```javascript
+typeof NaN; // "number" 😅
+
+// NaN represents an invalid numeric operation
+0 / 0; // NaN
+"abc" * 2; // NaN
+```
+
+## The Complete typeof Table
+
+| Expression            | Result      | Notes                     |
+| :-------------------- | :---------- | :------------------------ |
+| `typeof undefined`    | "undefined" | ✅ Works correctly        |
+| `typeof null`         | "object"    | ⚠️ Bug - should be "null" |
+| `typeof true`         | "boolean"   | ✅                        |
+| `typeof 42`           | "number"    | ✅                        |
+| `typeof "text"`       | "string"    | ✅                        |
+| `typeof Symbol()`     | "symbol"    | ✅                        |
+| `typeof 1n`           | "bigint"    | ✅                        |
+| `typeof {}`           | "object"    | ✅                        |
+| `typeof []`           | "object"    | ⚠️ Use Array.isArray()    |
+| `typeof function(){}` | "function"  | ✅ Special case           |
+| `typeof NaN`          | "number"    | ⚠️ Confusing but correct  |
+
+## Combining Type Checks
+
+For robust type checking, combine `typeof` with other checks:
+
+```javascript
+function getType(value) {
+  // Handle null specially
+  if (value === null) return "null";
+
+  // Handle arrays
+  if (Array.isArray(value)) return "array";
+
+  // For everything else, typeof works
+  return typeof value;
+}
+
+getType(null); // "null" ✅
+getType([1, 2]); // "array" ✅
+getType({}); // "object" ✅
+getType("hello"); // "string" ✅
+```
+
+## Checking for Undefined Variables
+
+`typeof` has a unique superpower - it doesn't throw errors for undeclared variables:
+
+```javascript
+// This would throw ReferenceError:
+// console.log(undeclaredVariable);
+
+// But typeof handles it gracefully:
+typeof undeclaredVariable; // "undefined" (no error!)
+```
+
+This is useful for feature detection:
+
+```javascript
+if (typeof window !== "undefined") {
+  // We're in a browser
+}
+
+if (typeof process !== "undefined") {
+  // We're in Node.js
+}
+```
+
+<InfoBox type="tip" title="Pro Tip">
+  For production code, consider using TypeScript or runtime validation libraries
+  like Zod for more robust type checking.
+</InfoBox>
+
+<ProgressCheckpoint section="typeof-quirks" xpReward={35} />

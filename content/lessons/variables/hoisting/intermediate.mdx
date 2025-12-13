@@ -1,0 +1,265 @@
+# Hoisting: Understanding JavaScript's Compilation Phase
+
+Hoisting is a JavaScript mechanism where variable and function declarations are moved to the top of their containing scope during the compilation phase, before code execution.
+
+## How Hoisting Works
+
+JavaScript code execution happens in two phases:
+
+1. **Creation/Compilation Phase**: The engine scans for declarations
+2. **Execution Phase**: The code runs line by line
+
+During compilation, declarations are "hoisted" - but the behavior differs by declaration type.
+
+<ProgressCheckpoint section="what-is-hoisting" xpReward={10} />
+
+## var Hoisting Behavior
+
+`var` declarations are hoisted AND initialized with `undefined`:
+
+```javascript
+console.log(x); // undefined (not an error!)
+var x = 5;
+console.log(x); // 5
+
+// The engine processes this as:
+// 1. Creation phase: var x = undefined
+// 2. Execution phase: console.log(x), x = 5, console.log(x)
+```
+
+### Key Points About var Hoisting:
+
+- Declaration is moved to top of function (or global) scope
+- Initialized to `undefined` during creation phase
+- Assignment stays in place during execution phase
+- Can lead to confusing behavior if not understood
+
+<CodePlayground 
+  code={`function varHoistingDemo() {
+  console.log("a:", a); // undefined
+  console.log("b:", b); // undefined
+  
+  var a = 1;
+  var b = 2;
+  
+  console.log("a after:", a); // 1
+  console.log("b after:", b); // 2
+}
+
+varHoistingDemo();
+
+// What about nested scopes?
+function nestedVar() {
+console.log("outer x:", x); // undefined
+
+if (true) {
+var x = 10; // This is hoisted to function scope!
+console.log("inner x:", x); // 10
+}
+
+console.log("after if x:", x); // 10 (var ignores block scope)
+}
+
+nestedVar();`}
+title="var Hoisting Detailed"
+/>
+
+<ProgressCheckpoint section="var-hoisting" xpReward={10} />
+
+## let and const Hoisting: The Temporal Dead Zone
+
+`let` and `const` ARE hoisted, but they're not initialized. The time between hoisting and initialization is called the **Temporal Dead Zone (TDZ)**.
+
+```javascript
+// TDZ starts here for 'name'
+console.log(name); // ReferenceError: Cannot access 'name' before initialization
+let name = "Alice"; // TDZ ends here
+
+// For const, same behavior applies
+console.log(age); // ReferenceError
+const age = 30;
+```
+
+### Why TDZ Exists
+
+TDZ was introduced to:
+
+1. Catch bugs earlier (accessing uninitialized variables is usually a mistake)
+2. Make `const` work correctly (can't have an "undefined" period)
+3. Provide more predictable behavior
+
+<HoistingSimulator showPhases={true} highlightHoisted={true} />
+
+<CodePlayground 
+  code={`// TDZ example with blocks
+{
+  // TDZ for 'blockVar' starts here
+  
+  console.log(typeof blockVar); // ReferenceError! (even typeof throws in TDZ)
+  
+  let blockVar = "I'm block-scoped";
+  // TDZ ends here
+  
+  console.log(blockVar); // Works now!
+}
+
+// Compare with var
+{
+console.log(typeof oldVar); // "undefined" (no error!)
+var oldVar = "I escape blocks";
+}`}
+title="Temporal Dead Zone in Action"
+/>
+
+<ProgressCheckpoint section="let-const-hoisting" xpReward={10} />
+
+## Function Hoisting
+
+Function declarations are **fully hoisted** - both the name and the function body.
+
+```javascript
+// This works!
+greet(); // "Hello!"
+
+function greet() {
+  console.log("Hello!");
+}
+```
+
+### Function Expressions Are Not Fully Hoisted
+
+```javascript
+// Function expression with var
+console.log(sayHi); // undefined (var is hoisted, not the function)
+// sayHi(); // TypeError: sayHi is not a function
+
+var sayHi = function () {
+  console.log("Hi!");
+};
+
+// Function expression with let/const
+// console.log(sayBye); // ReferenceError (TDZ)
+
+const sayBye = function () {
+  console.log("Bye!");
+};
+```
+
+### Arrow Functions
+
+Arrow functions follow the same rules as their declaration keyword:
+
+```javascript
+// const arrow functions have TDZ
+// greetArrow(); // ReferenceError
+
+const greetArrow = () => {
+  console.log("Arrow greeting!");
+};
+
+greetArrow(); // Works after declaration
+```
+
+<CodePlayground 
+  code={`// Function declarations vs expressions
+regularFunc(); // Works!
+// expressionFunc(); // TypeError: not a function
+// arrowFunc(); // ReferenceError (TDZ)
+
+function regularFunc() {
+console.log("I'm fully hoisted!");
+}
+
+var expressionFunc = function() {
+console.log("I'm a function expression!");
+};
+
+const arrowFunc = () => {
+console.log("I'm an arrow function!");
+};
+
+// Now all work:
+regularFunc();
+expressionFunc();
+arrowFunc();`}
+title="Function Hoisting Comparison"
+/>
+
+<ProgressCheckpoint section="function-hoisting" xpReward={10} />
+
+## Practical Implications
+
+### Best Practice: Declare at the Top
+
+```javascript
+// Good: Clear declarations at top
+function processData(data) {
+  let result;
+  let processed = false;
+  const MAX_SIZE = 100;
+
+  // ... rest of function
+}
+
+// Avoid: Scattered declarations
+function confusingCode() {
+  console.log(x); // What is x?
+  // ... 50 lines of code ...
+  var x = 10; // Oh, there it is!
+}
+```
+
+### Common Gotcha: Loop Variables
+
+```javascript
+// Problem with var in loops
+for (var i = 0; i < 3; i++) {
+  setTimeout(() => {
+    console.log(i); // 3, 3, 3 (same i for all)
+  }, 100);
+}
+
+// Solution with let
+for (let j = 0; j < 3; j++) {
+  setTimeout(() => {
+    console.log(j); // 0, 1, 2 (new j each iteration)
+  }, 100);
+}
+```
+
+<Quiz id="hoisting-intermediate">
+  <Question
+    id="q1"
+    text="What happens during the 'creation phase' for var declarations?"
+  >
+    <Answer id="a" text="Nothing - var is not hoisted" />
+    <Answer id="b" text="Declaration is hoisted but not initialized" />
+    <Answer
+      id="c"
+      text="Declaration is hoisted and initialized to undefined"
+      isCorrect
+    />
+    <Answer id="d" text="The entire line is moved to the top" />
+  </Question>
+  <Question id="q2" text="What is the Temporal Dead Zone?">
+    <Answer id="a" text="A period where var variables are undefined" />
+    <Answer
+      id="b"
+      text="The time between let/const hoisting and initialization"
+      isCorrect
+    />
+    <Answer id="c" text="A type of garbage collection" />
+    <Answer id="d" text="A deprecated JavaScript feature" />
+  </Question>
+  <Question
+    id="q3"
+    text="Which of these is FULLY hoisted (both name and body)?"
+  >
+    <Answer id="a" text="Arrow functions" />
+    <Answer id="b" text="Function expressions" />
+    <Answer id="c" text="Function declarations" isCorrect />
+    <Answer id="d" text="All of the above" />
+  </Question>
+</Quiz>
+
+<ProgressCheckpoint section="practical-implications" xpReward={10} />
