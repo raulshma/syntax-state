@@ -1,0 +1,282 @@
+# Webpack: The Swiss Army Knife of Bundlers 🔧
+
+Welcome to Webpack! It's been around since 2012 and remains one of the most powerful and configurable bundlers in the JavaScript ecosystem.
+
+<InfoBox type="tip" title="The Professional Kitchen Analogy">
+If Vite is a food truck and esbuild is a race car, Webpack is a fully-equipped professional kitchen. It has every appliance imaginable - from basic ovens to molecular gastronomy equipment. It takes longer to learn and set up, but once configured, it can handle any recipe you throw at it.
+</InfoBox>
+
+<ProgressCheckpoint section="introduction" xpReward={10} />
+
+## Why Learn Webpack?
+
+Even with newer tools available, Webpack remains important:
+
+- **Legacy projects** - Many existing projects use Webpack
+- **Maximum flexibility** - Can handle any build requirement
+- **Huge ecosystem** - Thousands of loaders and plugins
+- **Enterprise adoption** - Standard in many companies
+
+<KeyConcept title="Webpack's Philosophy">
+Webpack treats everything as a module - JavaScript, CSS, images, fonts, even HTML. It builds a dependency graph of your entire application and bundles everything into optimized output files.
+</KeyConcept>
+
+<ProgressCheckpoint section="core-concepts" xpReward={10} />
+
+## The Five Core Concepts
+
+Webpack has five fundamental concepts you need to understand:
+
+### 1. Entry
+Where Webpack starts building the dependency graph.
+
+```javascript
+// webpack.config.js
+module.exports = {
+  entry: './src/index.js',
+  // Webpack starts here and follows all imports
+}
+```
+
+### 2. Output
+Where Webpack puts the bundled files.
+
+```javascript
+module.exports = {
+  output: {
+    filename: 'bundle.js',
+    path: '/dist',
+  },
+}
+```
+
+### 3. Loaders
+Transform files before they're added to the bundle.
+
+```javascript
+module.exports = {
+  module: {
+    rules: [
+      { test: /\.css$/, use: ['style-loader', 'css-loader'] },
+    ],
+  },
+}
+```
+
+### 4. Plugins
+Perform wider tasks like optimization and asset management.
+
+```javascript
+const HtmlWebpackPlugin = require('html-webpack-plugin')
+
+module.exports = {
+  plugins: [
+    new HtmlWebpackPlugin({ template: './src/index.html' }),
+  ],
+}
+```
+
+### 5. Mode
+Tells Webpack which optimizations to use.
+
+```javascript
+module.exports = {
+  mode: 'development', // or 'production'
+}
+```
+
+<WebpackConceptVisualizer level="beginner" />
+
+<ProgressCheckpoint section="entry-output" xpReward={10} />
+
+## Getting Started
+
+### Installation
+
+```bash
+# Install Webpack and CLI
+npm install webpack webpack-cli --save-dev
+```
+
+### Basic Configuration
+
+```javascript
+// webpack.config.js
+const path = require('path')
+
+module.exports = {
+  mode: 'development',
+  
+  // Entry point
+  entry: './src/index.js',
+  
+  // Output configuration
+  output: {
+    filename: 'bundle.js',
+    path: path.resolve(__dirname, 'dist'),
+    clean: true, // Clean dist folder before each build
+  },
+}
+```
+
+### Running Webpack
+
+```bash
+# Build once
+npx webpack
+
+# Watch mode
+npx webpack --watch
+
+# Production build
+npx webpack --mode production
+```
+
+### Package.json Scripts
+
+```json
+{
+  "scripts": {
+    "build": "webpack",
+    "build:prod": "webpack --mode production",
+    "watch": "webpack --watch"
+  }
+}
+```
+
+<ProgressCheckpoint section="loaders" xpReward={10} />
+
+## Understanding Loaders
+
+Loaders transform files. They work from right to left (or bottom to top):
+
+```javascript
+module.exports = {
+  module: {
+    rules: [
+      {
+        test: /\.css$/,           // Match .css files
+        use: [
+          'style-loader',         // 3. Inject CSS into DOM
+          'css-loader',           // 2. Resolve @import and url()
+          // If you had sass-loader, it would be here (1. Compile SCSS)
+        ],
+      },
+    ],
+  },
+}
+```
+
+<InfoBox type="analogy" title="Loaders are Like Assembly Line Workers">
+Imagine an assembly line where each worker does one specific task. The CSS file enters, the first worker (css-loader) processes imports, then passes it to the next worker (style-loader) who injects it into the page. Each loader does one thing well!
+</InfoBox>
+
+### Common Loaders
+
+| Loader | Purpose |
+|--------|---------|
+| `babel-loader` | Transpile modern JS |
+| `css-loader` | Process CSS imports |
+| `style-loader` | Inject CSS into DOM |
+| `file-loader` | Handle files (images, fonts) |
+| `ts-loader` | Compile TypeScript |
+
+<ProgressCheckpoint section="plugins" xpReward={10} />
+
+## Understanding Plugins
+
+Plugins are more powerful than loaders - they can modify the entire build process:
+
+```javascript
+const HtmlWebpackPlugin = require('html-webpack-plugin')
+const MiniCssExtractPlugin = require('mini-css-extract-plugin')
+
+module.exports = {
+  plugins: [
+    // Generate HTML file with script tags
+    new HtmlWebpackPlugin({
+      template: './src/index.html',
+      title: 'My App',
+    }),
+    
+    // Extract CSS into separate files
+    new MiniCssExtractPlugin({
+      filename: 'styles.css',
+    }),
+  ],
+}
+```
+
+### Common Plugins
+
+| Plugin | Purpose |
+|--------|---------|
+| `HtmlWebpackPlugin` | Generate HTML files |
+| `MiniCssExtractPlugin` | Extract CSS to files |
+| `DefinePlugin` | Define global constants |
+| `CopyWebpackPlugin` | Copy static files |
+
+<ProgressCheckpoint section="dev-server" xpReward={10} />
+
+## Development Server
+
+Webpack Dev Server provides live reloading:
+
+```bash
+npm install webpack-dev-server --save-dev
+```
+
+```javascript
+// webpack.config.js
+module.exports = {
+  devServer: {
+    static: './dist',
+    port: 3000,
+    open: true,        // Open browser automatically
+    hot: true,         // Hot Module Replacement
+  },
+}
+```
+
+```json
+{
+  "scripts": {
+    "start": "webpack serve"
+  }
+}
+```
+
+<BuildPipelineVisualizer />
+
+<ProgressCheckpoint section="hands-on" xpReward={10} />
+
+## Quick Quiz
+
+<Quiz>
+  <Question text="What are the five core concepts of Webpack?">
+    <Answer>Input, Output, Transform, Optimize, Deploy</Answer>
+    <Answer correct>Entry, Output, Loaders, Plugins, Mode</Answer>
+    <Answer>Source, Bundle, Minify, Serve, Watch</Answer>
+    <Answer>Config, Build, Test, Deploy, Monitor</Answer>
+  </Question>
+  
+  <Question text="In what order do loaders process files?">
+    <Answer>Left to right (first to last)</Answer>
+    <Answer correct>Right to left (last to first)</Answer>
+    <Answer>Alphabetically</Answer>
+    <Answer>In parallel</Answer>
+  </Question>
+  
+  <Question text="What's the difference between loaders and plugins?">
+    <Answer>Loaders are faster</Answer>
+    <Answer>Plugins are for CSS only</Answer>
+    <Answer correct>Loaders transform individual files, plugins affect the entire build</Answer>
+    <Answer>There is no difference</Answer>
+  </Question>
+</Quiz>
+
+<ProgressCheckpoint section="summary" xpReward={10} />
+
+---
+
+**Great start!** 🎉 You now understand Webpack's core concepts. In the intermediate level, we'll explore advanced configuration, code splitting, and optimization!

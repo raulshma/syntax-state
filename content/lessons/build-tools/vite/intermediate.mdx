@@ -1,0 +1,308 @@
+# Vite: Deep Dive into Configuration & Internals
+
+Now that you understand the basics, let's explore how Vite actually works under the hood and how to configure it for real-world projects.
+
+<InfoBox type="tip" title="The Assembly Line Analogy">
+Think of Vite's build process like a smart assembly line. In development, it's a "just-in-time" factory that builds parts only when ordered. In production, it transforms into a highly optimized batch processor that creates the most efficient final product.
+</InfoBox>
+
+<ProgressCheckpoint section="introduction" xpReward={15} />
+
+## Vite's Two-Mode Architecture
+
+### Development: Native ESM + esbuild
+
+```
+Browser Request → Vite Dev Server → Transform (esbuild) → Serve
+     ↓                  ↓                    ↓              ↓
+  /src/App.tsx    Intercept request    JSX → JS        Response
+                                       TS → JS         (< 50ms)
+```
+
+### Production: Rollup Bundle
+
+```
+Source Files → Rollup → Optimize → Output
+     ↓            ↓         ↓         ↓
+  All files   Bundle    Minify    dist/
+              + Split   + Tree    chunks
+                        Shake
+```
+
+<BuildPipelineVisualizer />
+
+<ProgressCheckpoint section="why-vite" xpReward={15} />
+
+## Understanding Dependency Pre-Bundling
+
+Vite pre-bundles dependencies using esbuild for two reasons:
+
+```javascript
+// Problem 1: CommonJS to ESM conversion
+// lodash-es has 600+ modules - too many HTTP requests!
+import { debounce } from 'lodash-es'
+
+// Problem 2: CommonJS packages don't work with native ESM
+import moment from 'moment' // CommonJS - needs conversion
+
+// Solution: Vite pre-bundles these into single ESM files
+// Stored in node_modules/.vite/
+```
+
+### Configuring Pre-Bundling
+
+```javascript
+// vite.config.js
+export default defineConfig({
+  optimizeDeps: {
+    // Force include packages that aren't auto-detected
+    include: ['linked-package', 'some-cjs-package'],
+    
+    // Exclude packages you want to keep as separate modules
+    exclude: ['your-local-package'],
+    
+    // esbuild options for pre-bundling
+    esbuildOptions: {
+      target: 'es2020',
+      supported: { bigint: true },
+    },
+  },
+})
+```
+
+<ProgressCheckpoint section="how-it-works" xpReward={15} />
+
+## Advanced Configuration
+
+<ViteConfigExplorer />
+
+### Environment Variables
+
+```javascript
+// .env files
+// .env                # Loaded in all cases
+// .env.local          # Loaded in all cases, ignored by git
+// .env.development    # Only in development
+// .env.production     # Only in production
+
+// .env
+VITE_API_URL=https://api.example.com
+VITE_APP_TITLE=My App
+
+// Access in code (must start with VITE_)
+console.log(import.meta.env.VITE_API_URL)
+console.log(import.meta.env.MODE) // 'development' or 'production'
+console.log(import.meta.env.DEV)  // true in dev
+console.log(import.meta.env.PROD) // true in prod
+```
+
+### Path Aliases
+
+```javascript
+// vite.config.js
+import { resolve } from 'path'
+
+export default defineConfig({
+  resolve: {
+    alias: {
+      '@': resolve(__dirname, 'src'),
+      '@components': resolve(__dirname, 'src/components'),
+      '@utils': resolve(__dirname, 'src/utils'),
+    },
+  },
+})
+
+// Now you can import like:
+import Button from '@components/Button'
+import { formatDate } from '@utils/date'
+```
+
+<ProgressCheckpoint section="getting-started" xpReward={15} />
+
+## Build Optimization
+
+### Code Splitting Strategies
+
+```javascript
+// vite.config.js
+export default defineConfig({
+  build: {
+    rollupOptions: {
+      output: {
+        // Manual chunk splitting
+        manualChunks: {
+          // Group React into its own chunk
+          'react-vendor': ['react', 'react-dom'],
+          
+          // Group UI library
+          'ui-vendor': ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu'],
+          
+          // Or use a function for dynamic splitting
+          // manualChunks(id) {
+          //   if (id.includes('node_modules')) {
+          //     return 'vendor'
+          //   }
+          // },
+        },
+      },
+    },
+    
+    // Chunk size warnings
+    chunkSizeWarningLimit: 500, // KB
+    
+    // CSS code splitting
+    cssCodeSplit: true,
+    
+    // Minification
+    minify: 'esbuild', // or 'terser' for more options
+    
+    // Source maps
+    sourcemap: true, // or 'hidden' for production
+  },
+})
+```
+
+### Asset Handling
+
+```javascript
+// vite.config.js
+export default defineConfig({
+  build: {
+    // Inline assets smaller than this (base64)
+    assetsInlineLimit: 4096, // 4kb
+    
+    // Asset file naming
+    rollupOptions: {
+      output: {
+        assetFileNames: 'assets/[name]-[hash][extname]',
+        chunkFileNames: 'chunks/[name]-[hash].js',
+        entryFileNames: '[name]-[hash].js',
+      },
+    },
+  },
+  
+  // Asset handling
+  assetsInclude: ['**/*.gltf', '**/*.glb'], // Include custom asset types
+})
+```
+
+<ProgressCheckpoint section="configuration" xpReward={15} />
+
+## Plugin System Basics
+
+Vite plugins extend both dev and build functionality:
+
+```javascript
+// A simple Vite plugin
+function myPlugin() {
+  return {
+    name: 'my-plugin',
+    
+    // Called when config is resolved
+    configResolved(config) {
+      console.log('Config:', config.mode)
+    },
+    
+    // Transform individual files
+    transform(code, id) {
+      if (id.endsWith('.custom')) {
+        return {
+          code: transformCustomFile(code),
+          map: null,
+        }
+      }
+    },
+    
+    // Modify the dev server
+    configureServer(server) {
+      server.middlewares.use((req, res, next) => {
+        // Custom middleware
+        next()
+      })
+    },
+  }
+}
+
+// Use it
+export default defineConfig({
+  plugins: [myPlugin()],
+})
+```
+
+### Popular Vite Plugins
+
+```javascript
+import react from '@vitejs/plugin-react'
+import legacy from '@vitejs/plugin-legacy'
+import { visualizer } from 'rollup-plugin-visualizer'
+
+export default defineConfig({
+  plugins: [
+    // React with Fast Refresh
+    react(),
+    
+    // Legacy browser support
+    legacy({
+      targets: ['defaults', 'not IE 11'],
+    }),
+    
+    // Bundle analysis
+    visualizer({
+      open: true,
+      gzipSize: true,
+    }),
+  ],
+})
+```
+
+<ProgressCheckpoint section="plugins" xpReward={15} />
+
+## Dependency Graph Visualization
+
+See how Vite resolves your imports:
+
+<DependencyGraphExplorer 
+  initialModules={[
+    { id: 'main', name: 'main.tsx', imports: ['app', 'react'], exports: [], size: 50 },
+    { id: 'app', name: 'App.tsx', imports: ['react', 'components', 'hooks'], exports: ['App'], size: 150 },
+    { id: 'react', name: 'react (pre-bundled)', imports: [], exports: ['useState', 'useEffect'], size: 100 },
+    { id: 'components', name: 'components/index.ts', imports: ['button', 'modal'], exports: ['Button', 'Modal'], size: 30 },
+    { id: 'button', name: 'Button.tsx', imports: ['react'], exports: ['Button'], size: 80 },
+    { id: 'modal', name: 'Modal.tsx', imports: ['react', 'button'], exports: ['Modal'], size: 120 },
+    { id: 'hooks', name: 'hooks/index.ts', imports: ['react'], exports: ['useAuth', 'useTheme'], size: 60 },
+  ]}
+  editable={true}
+/>
+
+<ProgressCheckpoint section="hands-on" xpReward={15} />
+
+## Quick Quiz
+
+<Quiz>
+  <Question text="Why does Vite pre-bundle dependencies?">
+    <Answer>To make them smaller</Answer>
+    <Answer correct>To convert CommonJS to ESM and reduce HTTP requests</Answer>
+    <Answer>To add TypeScript support</Answer>
+    <Answer>To enable hot reloading</Answer>
+  </Question>
+  
+  <Question text="What prefix must environment variables have to be exposed to client code?">
+    <Answer>REACT_APP_</Answer>
+    <Answer>NEXT_PUBLIC_</Answer>
+    <Answer correct>VITE_</Answer>
+    <Answer>PUBLIC_</Answer>
+  </Question>
+  
+  <Question text="What does Vite use for production bundling?">
+    <Answer>esbuild</Answer>
+    <Answer>Webpack</Answer>
+    <Answer correct>Rollup</Answer>
+    <Answer>Parcel</Answer>
+  </Question>
+</Quiz>
+
+<ProgressCheckpoint section="summary" xpReward={15} />
+
+---
+
+**Excellent!** 🚀 You now understand Vite's internals and configuration. In the advanced level, we'll build custom plugins and explore production optimization strategies!

@@ -1,0 +1,496 @@
+# Webpack: Advanced Patterns & Optimization
+
+Welcome to the advanced level! Here we'll master custom plugin development, performance optimization, and production-grade configurations.
+
+<InfoBox type="tip" title="The Master Chef Analogy">
+At this level, you're not just following recipes - you're creating them. You understand the chemistry of cooking (Webpack internals) and can invent new techniques (custom plugins) to achieve results others thought impossible.
+</InfoBox>
+
+<ProgressCheckpoint section="introduction" xpReward={25} />
+
+## The Tapable Plugin System
+
+Webpack's plugin system is built on Tapable - a library for creating hook-based architectures:
+
+```javascript
+// Understanding Webpack hooks
+const webpack = require('webpack')
+
+class MyPlugin {
+  apply(compiler) {
+    // Compiler hooks - affect the entire build
+    
+    // Sync hook - runs synchronously
+    compiler.hooks.compile.tap('MyPlugin', (params) => {
+      console.log('Compilation starting...')
+    })
+    
+    // Async hook - can be async
+    compiler.hooks.emit.tapAsync('MyPlugin', (compilation, callback) => {
+      // Modify assets before they're written
+      console.log('Assets:', Object.keys(compilation.assets))
+      callback()
+    })
+    
+    // Promise-based async hook
+    compiler.hooks.done.tapPromise('MyPlugin', async (stats) => {
+      await doSomethingAsync()
+      console.log('Build complete!')
+    })
+    
+    // Compilation hooks - affect individual compilations
+    compiler.hooks.compilation.tap('MyPlugin', (compilation) => {
+      // Access compilation-level hooks
+      compilation.hooks.processAssets.tap(
+        {
+          name: 'MyPlugin',
+          stage: webpack.Compilation.PROCESS_ASSETS_STAGE_OPTIMIZE,
+        },
+        (assets) => {
+          // Modify assets
+          for (const [name, asset] of Object.entries(assets)) {
+            console.log(`Asset: ${name}, Size: ${asset.size()}`)
+          }
+        }
+      )
+    })
+  }
+}
+
+module.exports = MyPlugin
+```
+
+<WebpackConceptVisualizer level="advanced" />
+
+<ProgressCheckpoint section="core-concepts" xpReward={25} />
+
+## Custom Plugin Examples
+
+### Build Manifest Plugin
+
+```javascript
+// plugins/BuildManifestPlugin.js
+const { Compilation } = require('webpack')
+
+class BuildManifestPlugin {
+  constructor(options = {}) {
+    this.filename = options.filename || 'manifest.json'
+  }
+  
+  apply(compiler) {
+    compiler.hooks.thisCompilation.tap('BuildManifestPlugin', (compilation) => {
+      compilation.hooks.processAssets.tap(
+        {
+          name: 'BuildManifestPlugin',
+          stage: Compilation.PROCESS_ASSETS_STAGE_SUMMARIZE,
+        },
+        (assets) => {
+          const manifest = {
+            buildTime: new Date().toISOString(),
+            chunks: {},
+            assets: [],
+          }
+          
+          // Collect chunk information
+          for (const chunk of compilation.chunks) {
+            manifest.chunks[chunk.name || chunk.id] = {
+              files: [...chunk.files],
+              size: [...chunk.files].reduce((acc, file) => {
+                return acc + (assets[file]?.size() || 0)
+              }, 0),
+            }
+          }
+          
+          // Collect all assets
+          for (const [name, asset] of Object.entries(assets)) {
+            manifest.assets.push({
+              name,
+              size: asset.size(),
+            })
+          }
+          
+          // Add manifest to output
+          compilation.emitAsset(
+            this.filename,
+            new compiler.webpack.sources.RawSource(
+              JSON.stringify(manifest, null, 2)
+            )
+          )
+        }
+      )
+    })
+  }
+}
+
+module.exports = BuildManifestPlugin
+```
+
+### Bundle Analyzer Plugin
+
+```javascript
+// plugins/SimpleBundleAnalyzer.js
+class SimpleBundleAnalyzer {
+  apply(compiler) {
+    compiler.hooks.done.tap('SimpleBundleAnalyzer', (stats) => {
+      const { assets, chunks } = stats.toJson({
+        assets: true,
+        chunks: true,
+      })
+      
+      console.log('\n📦 Bundle Analysis\n')
+      console.log('='.repeat(50))
+      
+      // Sort by size
+      const sortedAssets = assets
+        .filter(a => a.name.endsWith('.js'))
+        .sort((a, b) => b.size - a.size)
+      
+      let totalSize = 0
+      
+      for (const asset of sortedAssets) {
+        const kb = (asset.size / 1024).toFixed(2)
+        const bar = '█'.repeat(Math.min(Math.floor(asset.size / 10000), 30))
+        console.log(`${asset.name.padEnd(40)} ${kb.padStart(8)} KB ${bar}`)
+        totalSize += asset.size
+      }
+      
+      console.log('='.repeat(50))
+      console.log(`Total: ${(totalSize / 1024).toFixed(2)} KB`)
+      console.log()
+    })
+  }
+}
+
+module.exports = SimpleBundleAnalyzer
+```
+
+<ProgressCheckpoint section="entry-output" xpReward={25} />
+
+## Production Optimization
+
+### Complete Production Config
+
+```javascript
+// webpack.prod.js
+const path = require('path')
+const webpack = require('webpack')
+const HtmlWebpackPlugin = require('html-webpack-plugin')
+const MiniCssExtractPlugin = require('mini-css-extract-plugin')
+const CssMinimizerPlugin = require('css-minimizer-webpack-plugin')
+const TerserPlugin = require('terser-webpack-plugin')
+const CompressionPlugin = require('compression-webpack-plugin')
+const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer')
+
+module.exports = {
+  mode: 'production',
+  
+  entry: {
+    main: './src/index.tsx',
+  },
+  
+  output: {
+    path: path.resolve(__dirname, 'dist'),
+    filename: 'js/[name].[contenthash:8].js',
+    chunkFilename: 'js/[name].[contenthash:8].chunk.js',
+    assetModuleFilename: 'assets/[name].[contenthash:8][ext]',
+    clean: true,
+    publicPath: '/',
+  },
+  
+  optimization: {
+    minimize: true,
+    minimizer: [
+      new TerserPlugin({
+        terserOptions: {
+          compress: {
+            drop_console: true,
+            drop_debugger: true,
+            pure_funcs: ['console.log'],
+            passes: 2,
+          },
+          mangle: {
+            safari10: true,
+          },
+          format: {
+            comments: false,
+          },
+        },
+        extractComments: false,
+      }),
+      new CssMinimizerPlugin(),
+    ],
+    
+    splitChunks: {
+      chunks: 'all',
+      maxInitialRequests: 25,
+      minSize: 20000,
+      
+      cacheGroups: {
+        // React ecosystem
+        react: {
+          test: /[\\/]node_modules[\\/](react|react-dom|scheduler)[\\/]/,
+          name: 'react',
+          priority: 40,
+          enforce: true,
+        },
+        
+        // UI libraries
+        ui: {
+          test: /[\\/]node_modules[\\/](@radix-ui|@headlessui)[\\/]/,
+          name: 'ui-vendor',
+          priority: 30,
+        },
+        
+        // Other vendors
+        vendors: {
+          test: /[\\/]node_modules[\\/]/,
+          name: 'vendors',
+          priority: 20,
+        },
+        
+        // Shared code
+        common: {
+          minChunks: 2,
+          priority: 10,
+          reuseExistingChunk: true,
+        },
+      },
+    },
+    
+    // Stable module IDs for caching
+    moduleIds: 'deterministic',
+    
+    // Extract runtime
+    runtimeChunk: 'single',
+  },
+  
+  module: {
+    rules: [
+      {
+        test: /\.[jt]sx?$/,
+        exclude: /node_modules/,
+        use: {
+          loader: 'swc-loader',
+          options: {
+            jsc: {
+              parser: {
+                syntax: 'typescript',
+                tsx: true,
+              },
+              transform: {
+                react: {
+                  runtime: 'automatic',
+                },
+              },
+            },
+          },
+        },
+      },
+      {
+        test: /\.css$/,
+        use: [
+          MiniCssExtractPlugin.loader,
+          'css-loader',
+          'postcss-loader',
+        ],
+      },
+      {
+        test: /\.(png|jpg|gif|webp)$/,
+        type: 'asset',
+        parser: {
+          dataUrlCondition: { maxSize: 8 * 1024 },
+        },
+      },
+    ],
+  },
+  
+  plugins: [
+    new HtmlWebpackPlugin({
+      template: './public/index.html',
+      minify: {
+        removeComments: true,
+        collapseWhitespace: true,
+        removeAttributeQuotes: true,
+      },
+    }),
+    
+    new MiniCssExtractPlugin({
+      filename: 'css/[name].[contenthash:8].css',
+      chunkFilename: 'css/[name].[contenthash:8].chunk.css',
+    }),
+    
+    // Gzip compression
+    new CompressionPlugin({
+      algorithm: 'gzip',
+      test: /\.(js|css|html|svg)$/,
+      threshold: 10240,
+      minRatio: 0.8,
+    }),
+    
+    // Brotli compression
+    new CompressionPlugin({
+      algorithm: 'brotliCompress',
+      test: /\.(js|css|html|svg)$/,
+      threshold: 10240,
+      minRatio: 0.8,
+      filename: '[path][base].br',
+    }),
+    
+    // Define globals
+    new webpack.DefinePlugin({
+      'process.env.NODE_ENV': JSON.stringify('production'),
+    }),
+    
+    // Bundle analysis (optional)
+    process.env.ANALYZE && new BundleAnalyzerPlugin(),
+  ].filter(Boolean),
+  
+  resolve: {
+    extensions: ['.tsx', '.ts', '.jsx', '.js'],
+    alias: {
+      '@': path.resolve(__dirname, 'src'),
+    },
+  },
+  
+  // Performance hints
+  performance: {
+    hints: 'warning',
+    maxEntrypointSize: 250000,
+    maxAssetSize: 250000,
+  },
+  
+  devtool: 'source-map',
+}
+```
+
+<ProgressCheckpoint section="loaders" xpReward={25} />
+
+## Module Federation
+
+Share code between separate builds at runtime:
+
+```javascript
+// app1/webpack.config.js
+const { ModuleFederationPlugin } = require('webpack').container
+
+module.exports = {
+  plugins: [
+    new ModuleFederationPlugin({
+      name: 'app1',
+      filename: 'remoteEntry.js',
+      
+      // Expose modules to other apps
+      exposes: {
+        './Button': './src/components/Button',
+        './utils': './src/utils',
+      },
+      
+      // Share dependencies
+      shared: {
+        react: { singleton: true },
+        'react-dom': { singleton: true },
+      },
+    }),
+  ],
+}
+
+// app2/webpack.config.js
+module.exports = {
+  plugins: [
+    new ModuleFederationPlugin({
+      name: 'app2',
+      
+      // Consume modules from app1
+      remotes: {
+        app1: 'app1@http://localhost:3001/remoteEntry.js',
+      },
+      
+      shared: {
+        react: { singleton: true },
+        'react-dom': { singleton: true },
+      },
+    }),
+  ],
+}
+
+// Usage in app2
+import Button from 'app1/Button'
+```
+
+<ProgressCheckpoint section="plugins" xpReward={25} />
+
+## Custom Loader Development
+
+```javascript
+// loaders/markdown-loader.js
+const marked = require('marked')
+
+module.exports = function markdownLoader(source) {
+  // Enable caching
+  this.cacheable && this.cacheable()
+  
+  // Get loader options
+  const options = this.getOptions()
+  
+  // Transform markdown to HTML
+  const html = marked.parse(source, options)
+  
+  // Return as JavaScript module
+  return `export default ${JSON.stringify(html)}`
+}
+
+// Usage in webpack.config.js
+module.exports = {
+  module: {
+    rules: [
+      {
+        test: /\.md$/,
+        use: {
+          loader: path.resolve('./loaders/markdown-loader.js'),
+          options: {
+            gfm: true,
+            breaks: true,
+          },
+        },
+      },
+    ],
+  },
+}
+```
+
+<BuildPipelineVisualizer />
+
+<ProgressCheckpoint section="dev-server" xpReward={25} />
+
+## Quick Quiz
+
+<Quiz>
+  <Question text="What library powers Webpack's plugin system?">
+    <Answer>EventEmitter</Answer>
+    <Answer correct>Tapable</Answer>
+    <Answer>RxJS</Answer>
+    <Answer>Redux</Answer>
+  </Question>
+  
+  <Question text="What does moduleIds: 'deterministic' do?">
+    <Answer>Makes builds faster</Answer>
+    <Answer>Reduces bundle size</Answer>
+    <Answer correct>Creates stable module IDs for better long-term caching</Answer>
+    <Answer>Enables tree shaking</Answer>
+  </Question>
+  
+  <Question text="What is Module Federation used for?">
+    <Answer>Combining multiple configs</Answer>
+    <Answer correct>Sharing code between separate builds at runtime</Answer>
+    <Answer>Faster builds</Answer>
+    <Answer>Better source maps</Answer>
+  </Question>
+</Quiz>
+
+<ProgressCheckpoint section="hands-on" xpReward={25} />
+
+<ProgressCheckpoint section="summary" xpReward={25} />
+
+---
+
+**Congratulations!** 🏆 You've mastered Webpack at an advanced level. You can now build custom plugins, optimize production builds, and implement advanced patterns like Module Federation!

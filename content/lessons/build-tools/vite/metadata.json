@@ -1,0 +1,33 @@
+{
+  "id": "vite",
+  "title": "Vite: Next Generation Frontend Tooling",
+  "description": "Master Vite - the blazing fast build tool that revolutionizes frontend development with native ESM and instant HMR",
+  "milestone": "build-tools",
+  "order": 1,
+  "sections": [
+    "introduction",
+    "why-vite",
+    "how-it-works",
+    "getting-started",
+    "configuration",
+    "plugins",
+    "hands-on",
+    "summary"
+  ],
+  "levels": {
+    "beginner": {
+      "estimatedMinutes": 15,
+      "xpReward": 50
+    },
+    "intermediate": {
+      "estimatedMinutes": 25,
+      "xpReward": 100
+    },
+    "advanced": {
+      "estimatedMinutes": 40,
+      "xpReward": 200
+    }
+  },
+  "prerequisites": ["javascript/es6-and-modular-javascript"],
+  "tags": ["vite", "build-tools", "bundler", "esm", "hmr", "frontend"]
+}

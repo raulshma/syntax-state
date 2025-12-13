@@ -1,0 +1,331 @@
+# esbuild: Advanced Configuration & Build Scripts
+
+Now that you understand the basics, let's explore real-world build configurations and advanced esbuild features.
+
+<InfoBox type="tip" title="The Factory Assembly Line">
+Think of esbuild's build process like a highly optimized factory. Raw materials (source files) enter, get processed through multiple stations simultaneously (parallel processing), and finished products (bundles) emerge in record time.
+</InfoBox>
+
+<ProgressCheckpoint section="introduction" xpReward={15} />
+
+## Build Script Patterns
+
+### Development vs Production Builds
+
+```javascript
+// build.js
+import * as esbuild from 'esbuild'
+
+const isDev = process.env.NODE_ENV === 'development'
+
+const config = {
+  entryPoints: ['src/index.tsx'],
+  bundle: true,
+  outdir: 'dist',
+  
+  // Development settings
+  ...(isDev ? {
+    sourcemap: 'inline',
+    minify: false,
+  } : {
+    // Production settings
+    sourcemap: 'external',
+    minify: true,
+    drop: ['console', 'debugger'],
+  }),
+  
+  // Shared settings
+  target: ['es2020', 'chrome90', 'firefox88', 'safari14'],
+  format: 'esm',
+  splitting: true,
+  
+  // Define compile-time constants
+  define: {
+    'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
+    '__DEV__': JSON.stringify(isDev),
+  },
+}
+
+await esbuild.build(config)
+console.log(`Build complete! (${isDev ? 'development' : 'production'})`)
+```
+
+<ProgressCheckpoint section="why-fast" xpReward={15} />
+
+## Watch Mode & Incremental Builds
+
+### Using Context API
+
+```javascript
+// dev.js
+import * as esbuild from 'esbuild'
+
+// Create a build context for incremental builds
+const ctx = await esbuild.context({
+  entryPoints: ['src/index.tsx'],
+  bundle: true,
+  outdir: 'dist',
+  sourcemap: true,
+})
+
+// Watch for file changes
+await ctx.watch()
+console.log('Watching for changes...')
+
+// Optional: Start a dev server
+const { host, port } = await ctx.serve({
+  servedir: 'dist',
+  port: 3000,
+})
+console.log(`Server running at http://${host}:${port}`)
+
+// Clean up on exit
+process.on('SIGINT', async () => {
+  await ctx.dispose()
+  process.exit(0)
+})
+```
+
+### Live Reload Setup
+
+```javascript
+// dev-server.js
+import * as esbuild from 'esbuild'
+import http from 'http'
+
+const clients = []
+
+// Build with live reload injection
+const ctx = await esbuild.context({
+  entryPoints: ['src/index.tsx'],
+  bundle: true,
+  outdir: 'dist',
+  sourcemap: true,
+  banner: {
+    js: `(() => new EventSource('/esbuild').onmessage = () => location.reload())();`,
+  },
+})
+
+await ctx.watch()
+
+// Serve files with SSE endpoint for reload
+const { host, port } = await ctx.serve({
+  servedir: 'dist',
+  port: 3000,
+  onRequest: ({ remoteAddress, method, path, status, timeInMS }) => {
+    console.log(`${method} ${path} ${status} [${timeInMS}ms]`)
+  },
+})
+
+console.log(`Dev server: http://${host}:${port}`)
+```
+
+<EsbuildConfigDemo />
+
+<ProgressCheckpoint section="getting-started" xpReward={15} />
+
+## Code Splitting
+
+```javascript
+await esbuild.build({
+  entryPoints: ['src/index.tsx'],
+  bundle: true,
+  outdir: 'dist',
+  
+  // Enable code splitting (requires ESM format)
+  splitting: true,
+  format: 'esm',
+  
+  // Chunk naming
+  chunkNames: 'chunks/[name]-[hash]',
+  
+  // Entry point naming
+  entryNames: '[name]-[hash]',
+  
+  // Asset naming
+  assetNames: 'assets/[name]-[hash]',
+})
+```
+
+### Dynamic Imports
+
+```javascript
+// src/index.tsx
+// esbuild automatically splits dynamic imports into separate chunks
+
+async function loadFeature() {
+  // This creates a separate chunk
+  const { HeavyComponent } = await import('./HeavyComponent')
+  return HeavyComponent
+}
+
+// Route-based splitting
+const routes = {
+  '/dashboard': () => import('./pages/Dashboard'),
+  '/settings': () => import('./pages/Settings'),
+  '/profile': () => import('./pages/Profile'),
+}
+```
+
+<ProgressCheckpoint section="configuration" xpReward={15} />
+
+## External Dependencies
+
+```javascript
+await esbuild.build({
+  entryPoints: ['src/index.tsx'],
+  bundle: true,
+  outfile: 'dist/bundle.js',
+  
+  // Don't bundle these - they'll be provided at runtime
+  external: [
+    'react',
+    'react-dom',
+    'fsevents',  // Node.js native module
+    '/images/*', // Glob pattern
+  ],
+  
+  // Or mark all node_modules as external
+  packages: 'external',
+})
+```
+
+### Platform-Specific Builds
+
+```javascript
+// Browser build
+await esbuild.build({
+  entryPoints: ['src/client.tsx'],
+  bundle: true,
+  outfile: 'dist/client.js',
+  platform: 'browser',
+  format: 'esm',
+})
+
+// Node.js build
+await esbuild.build({
+  entryPoints: ['src/server.ts'],
+  bundle: true,
+  outfile: 'dist/server.js',
+  platform: 'node',
+  format: 'cjs',
+  target: 'node18',
+})
+
+// Neutral (works in both)
+await esbuild.build({
+  entryPoints: ['src/shared.ts'],
+  bundle: true,
+  outfile: 'dist/shared.js',
+  platform: 'neutral',
+  format: 'esm',
+})
+```
+
+<ProgressCheckpoint section="loaders" xpReward={15} />
+
+## Build Metadata & Analysis
+
+```javascript
+const result = await esbuild.build({
+  entryPoints: ['src/index.tsx'],
+  bundle: true,
+  outdir: 'dist',
+  metafile: true, // Generate build metadata
+})
+
+// Analyze the build
+const analysis = await esbuild.analyzeMetafile(result.metafile, {
+  verbose: true,
+})
+console.log(analysis)
+
+// Or get raw data
+console.log('Outputs:', Object.keys(result.metafile.outputs))
+
+for (const [file, data] of Object.entries(result.metafile.outputs)) {
+  console.log(`${file}: ${(data.bytes / 1024).toFixed(2)} KB`)
+}
+```
+
+### Custom Analysis Script
+
+```javascript
+// analyze.js
+function analyzeBundle(metafile) {
+  const outputs = metafile.outputs
+  
+  let totalSize = 0
+  const chunks = []
+  
+  for (const [path, output] of Object.entries(outputs)) {
+    if (path.endsWith('.js')) {
+      totalSize += output.bytes
+      chunks.push({
+        path,
+        size: output.bytes,
+        imports: output.imports.length,
+        exports: output.exports.length,
+      })
+    }
+  }
+  
+  chunks.sort((a, b) => b.size - a.size)
+  
+  console.log('\n📦 Bundle Analysis\n')
+  console.log(`Total JS size: ${(totalSize / 1024).toFixed(2)} KB\n`)
+  
+  console.log('Chunks by size:')
+  for (const chunk of chunks) {
+    const kb = (chunk.size / 1024).toFixed(2)
+    console.log(`  ${chunk.path}: ${kb} KB`)
+  }
+}
+```
+
+<DependencyGraphExplorer 
+  initialModules={[
+    { id: 'entry', name: 'index.tsx', imports: ['app', 'react'], exports: [], size: 50 },
+    { id: 'app', name: 'App.tsx', imports: ['react', 'utils', 'components'], exports: ['App'], size: 120 },
+    { id: 'react', name: 'react (external)', imports: [], exports: ['useState'], size: 0 },
+    { id: 'utils', name: 'utils/index.ts', imports: [], exports: ['format', 'parse'], size: 40 },
+    { id: 'components', name: 'components/index.ts', imports: ['button'], exports: ['Button'], size: 30 },
+    { id: 'button', name: 'Button.tsx', imports: ['react'], exports: ['Button'], size: 80 },
+  ]}
+  editable={true}
+/>
+
+<ProgressCheckpoint section="plugins" xpReward={15} />
+
+## Quick Quiz
+
+<Quiz>
+  <Question text="What API should you use for watch mode in esbuild?">
+    <Answer>esbuild.watch()</Answer>
+    <Answer correct>esbuild.context() then ctx.watch()</Answer>
+    <Answer>esbuild.build({ watch: true })</Answer>
+    <Answer>esbuild.serve()</Answer>
+  </Question>
+  
+  <Question text="What format is required for code splitting in esbuild?">
+    <Answer>CommonJS (cjs)</Answer>
+    <Answer>IIFE</Answer>
+    <Answer correct>ES Modules (esm)</Answer>
+    <Answer>UMD</Answer>
+  </Question>
+  
+  <Question text="How do you get build size information from esbuild?">
+    <Answer>Use the --verbose flag</Answer>
+    <Answer correct>Set metafile: true and analyze the result</Answer>
+    <Answer>Check the console output</Answer>
+    <Answer>Read the output files manually</Answer>
+  </Question>
+</Quiz>
+
+<ProgressCheckpoint section="hands-on" xpReward={15} />
+
+<ProgressCheckpoint section="summary" xpReward={15} />
+
+---
+
+**Excellent!** 🚀 You now understand advanced esbuild configuration. In the advanced level, we'll build custom plugins and explore production optimization!

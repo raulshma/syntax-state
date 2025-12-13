@@ -197,17 +197,19 @@ export const frontendRoadmap: CreateRoadmap = {
       type: 'milestone',
       position: { x: 600, y: 600 },
       learningObjectives: [
-        'Vite',
-        'esbuild',
-        'Webpack basics',
+        { title: 'Vite', lessonId: 'vite' },
+        { title: 'esbuild', lessonId: 'esbuild' },
+        { title: 'Webpack Basics', lessonId: 'webpack-basics' },
       ],
       resources: [
         { title: 'Vite Documentation', type: 'documentation', description: 'Next generation frontend tooling' },
+        { title: 'esbuild Documentation', type: 'documentation', description: 'Extremely fast bundler' },
+        { title: 'Webpack Documentation', type: 'documentation', description: 'Powerful module bundler' },
       ],
       estimatedMinutes: 180,
       difficulty: 5,
       skillCluster: 'frontend',
-      tags: ['vite', 'webpack', 'bundling'],
+      tags: ['vite', 'webpack', 'esbuild', 'bundling', 'build-tools'],
     },
 
     // === ROW 6: FRAMEWORKS (REACT + VUE + ANGULAR) ===

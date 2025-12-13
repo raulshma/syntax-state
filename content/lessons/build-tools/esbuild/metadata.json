@@ -1,0 +1,33 @@
+{
+  "id": "esbuild",
+  "title": "esbuild: The Extremely Fast Bundler",
+  "description": "Learn esbuild - the JavaScript bundler written in Go that's 10-100x faster than traditional bundlers",
+  "milestone": "build-tools",
+  "order": 2,
+  "sections": [
+    "introduction",
+    "why-fast",
+    "getting-started",
+    "configuration",
+    "loaders",
+    "plugins",
+    "hands-on",
+    "summary"
+  ],
+  "levels": {
+    "beginner": {
+      "estimatedMinutes": 15,
+      "xpReward": 50
+    },
+    "intermediate": {
+      "estimatedMinutes": 25,
+      "xpReward": 100
+    },
+    "advanced": {
+      "estimatedMinutes": 40,
+      "xpReward": 200
+    }
+  },
+  "prerequisites": ["javascript/es6-and-modular-javascript"],
+  "tags": ["esbuild", "build-tools", "bundler", "go", "performance", "frontend"]
+}

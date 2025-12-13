@@ -32,3 +32,19 @@ export type {
   TransformationApplied,
   TranspilationResult,
 } from './TranspilerDemo';
+
+// New Vite, esbuild, Webpack specific components
+export { ViteDevServerDemo } from './ViteDevServerDemo';
+export type { ViteDevServerDemoProps } from './ViteDevServerDemo';
+
+export { ViteConfigExplorer } from './ViteConfigExplorer';
+export type { ViteConfigExplorerProps } from './ViteConfigExplorer';
+
+export { EsbuildSpeedDemo } from './EsbuildSpeedDemo';
+export type { EsbuildSpeedDemoProps } from './EsbuildSpeedDemo';
+
+export { EsbuildConfigDemo } from './EsbuildConfigDemo';
+export type { EsbuildConfigDemoProps } from './EsbuildConfigDemo';
+
+export { WebpackConceptVisualizer } from './WebpackConceptVisualizer';
+export type { WebpackConceptVisualizerProps } from './WebpackConceptVisualizer';

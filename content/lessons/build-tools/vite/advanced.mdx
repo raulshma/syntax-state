@@ -1,0 +1,527 @@
+# Vite: Advanced Patterns & Production Optimization
+
+Welcome to the advanced level! Here we'll master custom plugin development, SSR configuration, and production-grade optimization strategies.
+
+<InfoBox type="tip" title="The Orchestra Conductor Analogy">
+At this level, you're not just playing an instrument - you're conducting the entire orchestra. You need to understand how each section (dev server, bundler, optimizer) works together and how to fine-tune the performance for a flawless production.
+</InfoBox>
+
+<ProgressCheckpoint section="introduction" xpReward={25} />
+
+## Custom Plugin Development
+
+### Plugin Hooks Lifecycle
+
+```typescript
+// vite-plugin-custom.ts
+import type { Plugin, ResolvedConfig, ViteDevServer } from 'vite'
+
+export function customPlugin(options: PluginOptions = {}): Plugin {
+  let config: ResolvedConfig
+  let server: ViteDevServer
+  
+  return {
+    name: 'vite-plugin-custom',
+    
+    // ===== CONFIG HOOKS =====
+    
+    // Modify config before resolution
+    config(userConfig, env) {
+      console.log('Mode:', env.mode) // 'development' | 'production'
+      return {
+        // Merge with user config
+        define: {
+          __PLUGIN_VERSION__: JSON.stringify('1.0.0'),
+        },
+      }
+    },
+    
+    // Access final resolved config
+    configResolved(resolvedConfig) {
+      config = resolvedConfig
+    },
+    
+    // ===== DEV SERVER HOOKS =====
+    
+    // Configure dev server
+    configureServer(_server) {
+      server = _server
+      
+      // Add custom middleware (runs before Vite's)
+      server.middlewares.use((req, res, next) => {
+        if (req.url === '/api/custom') {
+          res.end(JSON.stringify({ custom: true }))
+          return
+        }
+        next()
+      })
+      
+      // Return a post-hook (runs after Vite's middleware)
+      return () => {
+        server.middlewares.use((req, res, next) => {
+          // Post middleware
+          next()
+        })
+      }
+    },
+    
+    // ===== TRANSFORM HOOKS =====
+    
+    // Resolve custom module IDs
+    resolveId(id, importer) {
+      if (id === 'virtual:my-module') {
+        return '\0virtual:my-module' // \0 prefix = virtual module
+      }
+    },
+    
+    // Load virtual modules
+    load(id) {
+      if (id === '\0virtual:my-module') {
+        return `
+          export const buildTime = ${Date.now()}
+          export const mode = '${config.mode}'
+        `
+      }
+    },
+    
+    // Transform source code
+    transform(code, id) {
+      if (!id.endsWith('.special.js')) return null
+      
+      // Transform the code
+      const transformed = code.replace(
+        /__TIMESTAMP__/g,
+        String(Date.now())
+      )
+      
+      return {
+        code: transformed,
+        map: null, // Provide source map for debugging
+      }
+    },
+    
+    // ===== BUILD HOOKS =====
+    
+    // Modify Rollup options
+    buildStart() {
+      console.log('Build starting...')
+    },
+    
+    // Access generated bundle
+    generateBundle(options, bundle) {
+      for (const [fileName, chunk] of Object.entries(bundle)) {
+        if (chunk.type === 'chunk') {
+          console.log(`Chunk: ${fileName} (${chunk.code.length} bytes)`)
+        }
+      }
+    },
+    
+    // Final hook
+    closeBundle() {
+      console.log('Build complete!')
+    },
+  }
+}
+```
+
+### Real-World Plugin Example: Auto-Import Icons
+
+```typescript
+// vite-plugin-icons.ts
+import { Plugin } from 'vite'
+import { readFileSync, readdirSync } from 'fs'
+import { resolve } from 'path'
+
+export function iconsPlugin(iconsDir: string): Plugin {
+  const icons = new Map<string, string>()
+  
+  return {
+    name: 'vite-plugin-icons',
+    
+    buildStart() {
+      // Load all SVG icons
+      const files = readdirSync(iconsDir).filter(f => f.endsWith('.svg'))
+      
+      for (const file of files) {
+        const name = file.replace('.svg', '')
+        const content = readFileSync(resolve(iconsDir, file), 'utf-8')
+        icons.set(name, content)
+      }
+    },
+    
+    resolveId(id) {
+      if (id.startsWith('icon:')) {
+        return `\0${id}`
+      }
+    },
+    
+    load(id) {
+      if (id.startsWith('\0icon:')) {
+        const name = id.slice(6) // Remove '\0icon:'
+        const svg = icons.get(name)
+        
+        if (!svg) {
+          throw new Error(`Icon not found: ${name}`)
+        }
+        
+        // Return as React component
+        return `
+          export default function Icon(props) {
+            return (
+              <svg {...props} dangerouslySetInnerHTML={{ __html: \`${svg}\` }} />
+            )
+          }
+        `
+      }
+    },
+  }
+}
+
+// Usage:
+// import HomeIcon from 'icon:home'
+// <HomeIcon className="w-6 h-6" />
+```
+
+<ProgressCheckpoint section="why-vite" xpReward={25} />
+
+## Server-Side Rendering (SSR)
+
+### SSR Configuration
+
+```typescript
+// vite.config.ts
+export default defineConfig({
+  build: {
+    ssr: true, // or specify entry: 'src/entry-server.ts'
+  },
+  
+  ssr: {
+    // Externalize dependencies for SSR
+    external: ['react', 'react-dom'],
+    
+    // Force bundle these (don't externalize)
+    noExternal: ['my-ui-library'],
+    
+    // Target Node.js
+    target: 'node',
+  },
+})
+```
+
+### SSR Entry Points
+
+```typescript
+// src/entry-client.tsx
+import { hydrateRoot } from 'react-dom/client'
+import App from './App'
+
+hydrateRoot(document.getElementById('root')!, <App />)
+
+// src/entry-server.tsx
+import { renderToString } from 'react-dom/server'
+import App from './App'
+
+export function render() {
+  return renderToString(<App />)
+}
+```
+
+### Development Server for SSR
+
+```typescript
+// server.js
+import express from 'express'
+import { createServer as createViteServer } from 'vite'
+
+async function createServer() {
+  const app = express()
+  
+  const vite = await createViteServer({
+    server: { middlewareMode: true },
+    appType: 'custom',
+  })
+  
+  app.use(vite.middlewares)
+  
+  app.use('*', async (req, res) => {
+    const url = req.originalUrl
+    
+    try {
+      // Load and transform index.html
+      let template = readFileSync('index.html', 'utf-8')
+      template = await vite.transformIndexHtml(url, template)
+      
+      // Load server entry
+      const { render } = await vite.ssrLoadModule('/src/entry-server.tsx')
+      
+      // Render app
+      const appHtml = render()
+      
+      // Inject into template
+      const html = template.replace('<!--ssr-outlet-->', appHtml)
+      
+      res.status(200).set({ 'Content-Type': 'text/html' }).end(html)
+    } catch (e) {
+      vite.ssrFixStacktrace(e)
+      console.error(e)
+      res.status(500).end(e.message)
+    }
+  })
+  
+  app.listen(3000)
+}
+
+createServer()
+```
+
+<ProgressCheckpoint section="how-it-works" xpReward={25} />
+
+## Production Optimization Strategies
+
+### Advanced Build Configuration
+
+```typescript
+// vite.config.ts
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+import { visualizer } from 'rollup-plugin-visualizer'
+import viteCompression from 'vite-plugin-compression'
+
+export default defineConfig(({ mode }) => ({
+  plugins: [
+    react({
+      // Use SWC for faster builds
+      jsxRuntime: 'automatic',
+    }),
+    
+    // Gzip compression
+    viteCompression({
+      algorithm: 'gzip',
+      threshold: 10240, // Only compress files > 10kb
+    }),
+    
+    // Brotli compression
+    viteCompression({
+      algorithm: 'brotliCompress',
+      ext: '.br',
+    }),
+    
+    // Bundle analysis (only in analyze mode)
+    mode === 'analyze' && visualizer({
+      open: true,
+      gzipSize: true,
+      brotliSize: true,
+      filename: 'dist/stats.html',
+    }),
+  ],
+  
+  build: {
+    target: 'es2020',
+    
+    // Use Terser for better minification (slower but smaller)
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true,
+        pure_funcs: ['console.log', 'console.info'],
+        passes: 2,
+      },
+      mangle: {
+        safari10: true,
+      },
+      format: {
+        comments: false,
+      },
+    },
+    
+    rollupOptions: {
+      output: {
+        // Optimal chunking
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            // Split by package scope
+            if (id.includes('@radix-ui')) return 'radix'
+            if (id.includes('react')) return 'react-vendor'
+            if (id.includes('lodash')) return 'lodash'
+            if (id.includes('date-fns')) return 'date-fns'
+            return 'vendor'
+          }
+        },
+        
+        // Consistent naming for caching
+        chunkFileNames: 'assets/js/[name]-[hash].js',
+        entryFileNames: 'assets/js/[name]-[hash].js',
+        assetFileNames: 'assets/[ext]/[name]-[hash].[ext]',
+      },
+    },
+    
+    // Report sizes
+    reportCompressedSize: true,
+    
+    // Source maps for error tracking
+    sourcemap: 'hidden', // Generate but don't link
+  },
+  
+  // Optimize dependency pre-bundling
+  optimizeDeps: {
+    include: [
+      'react',
+      'react-dom',
+      'react-router-dom',
+      'lodash-es',
+    ],
+    esbuildOptions: {
+      target: 'es2020',
+    },
+  },
+}))
+```
+
+<ViteConfigExplorer advanced={true} />
+
+<ProgressCheckpoint section="getting-started" xpReward={25} />
+
+## Performance Monitoring
+
+### Build Analysis Script
+
+```typescript
+// scripts/analyze-build.ts
+import { build } from 'vite'
+import { gzipSync, brotliCompressSync } from 'zlib'
+import { readFileSync, readdirSync, statSync } from 'fs'
+import { join } from 'path'
+
+async function analyzeBuild() {
+  // Run build
+  await build()
+  
+  // Analyze output
+  const distDir = 'dist/assets'
+  const files = readdirSync(distDir)
+  
+  const analysis = files
+    .filter(f => f.endsWith('.js') || f.endsWith('.css'))
+    .map(file => {
+      const path = join(distDir, file)
+      const content = readFileSync(path)
+      const stat = statSync(path)
+      
+      return {
+        file,
+        raw: stat.size,
+        gzip: gzipSync(content).length,
+        brotli: brotliCompressSync(content).length,
+      }
+    })
+    .sort((a, b) => b.raw - a.raw)
+  
+  console.table(analysis.map(a => ({
+    File: a.file,
+    'Raw (KB)': (a.raw / 1024).toFixed(2),
+    'Gzip (KB)': (a.gzip / 1024).toFixed(2),
+    'Brotli (KB)': (a.brotli / 1024).toFixed(2),
+  })))
+  
+  const total = analysis.reduce((acc, a) => ({
+    raw: acc.raw + a.raw,
+    gzip: acc.gzip + a.gzip,
+    brotli: acc.brotli + a.brotli,
+  }), { raw: 0, gzip: 0, brotli: 0 })
+  
+  console.log('\nTotal:')
+  console.log(`  Raw: ${(total.raw / 1024).toFixed(2)} KB`)
+  console.log(`  Gzip: ${(total.gzip / 1024).toFixed(2)} KB`)
+  console.log(`  Brotli: ${(total.brotli / 1024).toFixed(2)} KB`)
+}
+
+analyzeBuild()
+```
+
+<ProgressCheckpoint section="configuration" xpReward={25} />
+
+## Library Mode
+
+Building a library with Vite:
+
+```typescript
+// vite.config.ts for library
+import { defineConfig } from 'vite'
+import { resolve } from 'path'
+import dts from 'vite-plugin-dts'
+
+export default defineConfig({
+  plugins: [
+    dts({ include: ['src'] }), // Generate .d.ts files
+  ],
+  
+  build: {
+    lib: {
+      entry: resolve(__dirname, 'src/index.ts'),
+      name: 'MyLibrary',
+      formats: ['es', 'cjs', 'umd'],
+      fileName: (format) => `my-library.${format}.js`,
+    },
+    
+    rollupOptions: {
+      // Externalize peer dependencies
+      external: ['react', 'react-dom'],
+      output: {
+        globals: {
+          react: 'React',
+          'react-dom': 'ReactDOM',
+        },
+      },
+    },
+    
+    // Don't minify library code
+    minify: false,
+    
+    // Generate source maps
+    sourcemap: true,
+  },
+})
+```
+
+<ProgressCheckpoint section="plugins" xpReward={25} />
+
+## Quick Quiz
+
+<Quiz>
+  <Question text="What prefix indicates a virtual module in Vite plugins?">
+    <Answer>virtual:</Answer>
+    <Answer correct>\0 (null character)</Answer>
+    <Answer>@virtual/</Answer>
+    <Answer>~</Answer>
+  </Question>
+  
+  <Question text="Which hook is used to transform source code in a Vite plugin?">
+    <Answer>load</Answer>
+    <Answer>resolveId</Answer>
+    <Answer correct>transform</Answer>
+    <Answer>buildStart</Answer>
+  </Question>
+  
+  <Question text="What's the benefit of using 'hidden' sourcemaps in production?">
+    <Answer>Smaller bundle size</Answer>
+    <Answer correct>Maps are generated but not linked, useful for error tracking services</Answer>
+    <Answer>Faster builds</Answer>
+    <Answer>Better security</Answer>
+  </Question>
+  
+  <Question text="When building a library, why externalize peer dependencies?">
+    <Answer>To make builds faster</Answer>
+    <Answer>To reduce configuration</Answer>
+    <Answer correct>To avoid bundling dependencies the consumer already has</Answer>
+    <Answer>To enable tree shaking</Answer>
+  </Question>
+</Quiz>
+
+<ProgressCheckpoint section="hands-on" xpReward={25} />
+
+<ProgressCheckpoint section="summary" xpReward={25} />
+
+---
+
+**Congratulations!** 🏆 You've mastered Vite at an advanced level. You can now build custom plugins, configure SSR, and optimize production builds like a pro!

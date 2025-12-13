@@ -199,7 +199,7 @@ export const BADGES = {
   BUILD_MASTER: {
     id: 'build-master',
     name: 'Build Master',
-    description: 'Complete the Build Tools lesson at all three levels',
+    description: 'Complete all Build Tools lessons (Vite, esbuild, Webpack)',
     icon: '🔧',
     category: 'mastery',
   },
@@ -289,6 +289,11 @@ export function checkNewBadges(stats: {
   totalJavaScriptLessons?: number;
   reactLessonsCompleted?: number;
   totalReactLessons?: number;
+  cssLessonsCompleted?: number;
+  totalCssLessons?: number;
+  cssSelectorAllLevelsCompleted?: boolean;
+  cssFlexboxAndGridCompleted?: boolean;
+  cssAnimationsAndTransformsCompleted?: boolean;
 }, existingBadgeIds: string[]): string[] {
   const newBadges: string[] = [];
   
@@ -455,8 +460,15 @@ export const CSS_LESSON_IDS = [
   'css/transforms',
 ];
 
-// Build Tools lesson ID for badge tracking
-export const BUILD_TOOLS_LESSON_ID = 'javascript/build-tools';
+// Build Tools lesson IDs for badge tracking
+export const BUILD_TOOLS_LESSON_IDS = [
+  'build-tools/vite',
+  'build-tools/esbuild',
+  'build-tools/webpack-basics',
+];
+
+// Total number of Build Tools lessons
+export const TOTAL_BUILD_TOOLS_LESSONS = 3;
 
 /**
  * Check if user has completed all Internet lessons at a specific level
@@ -614,21 +626,20 @@ export function checkCssMasterBadge(
 }
 
 /**
- * Check if user has completed Build Tools lesson at all three levels
- * Returns 'build-master' badge ID if completed at all levels
+ * Check if user has completed all Build Tools lessons at any level
+ * Returns 'build-master' badge ID if all lessons are completed
  */
 export function checkBuildToolsMilestoneBadge(
   completedLessons: Array<{ lessonId: string; experienceLevel: string }>
 ): string | null {
-  const levels = ['beginner', 'intermediate', 'advanced'];
-  
-  const completedLevels = levels.filter(level =>
-    completedLessons.some(
-      lesson => lesson.lessonId === BUILD_TOOLS_LESSON_ID && lesson.experienceLevel === level
-    )
+  // Get unique Build Tools lesson IDs that have been completed at any level
+  const completedBuildToolsLessonIds = new Set(
+    completedLessons
+      .filter(lesson => BUILD_TOOLS_LESSON_IDS.includes(lesson.lessonId))
+      .map(lesson => lesson.lessonId)
   );
   
-  if (completedLevels.length === 3) {
+  if (completedBuildToolsLessonIds.size >= TOTAL_BUILD_TOOLS_LESSONS) {
     return 'build-master';
   }
   

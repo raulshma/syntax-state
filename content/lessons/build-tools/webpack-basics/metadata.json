@@ -1,0 +1,33 @@
+{
+  "id": "webpack-basics",
+  "title": "Webpack Basics: The Swiss Army Knife of Bundlers",
+  "description": "Learn Webpack fundamentals - the most configurable and feature-rich JavaScript bundler",
+  "milestone": "build-tools",
+  "order": 3,
+  "sections": [
+    "introduction",
+    "core-concepts",
+    "entry-output",
+    "loaders",
+    "plugins",
+    "dev-server",
+    "hands-on",
+    "summary"
+  ],
+  "levels": {
+    "beginner": {
+      "estimatedMinutes": 20,
+      "xpReward": 50
+    },
+    "intermediate": {
+      "estimatedMinutes": 30,
+      "xpReward": 100
+    },
+    "advanced": {
+      "estimatedMinutes": 45,
+      "xpReward": 200
+    }
+  },
+  "prerequisites": ["javascript/es6-and-modular-javascript"],
+  "tags": ["webpack", "build-tools", "bundler", "loaders", "plugins", "frontend"]
+}

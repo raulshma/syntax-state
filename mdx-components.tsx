@@ -1,5 +1,4 @@
 import type { MDXComponents } from 'mdx/types';
-import { Suspense } from 'react';
 import {
   AnimatedDiagram,
   InteractiveDemo,
@@ -115,6 +114,11 @@ import {
   DependencyGraphExplorer,
   BundlerComparison,
   TranspilerDemo,
+  ViteDevServerDemo,
+  ViteConfigExplorer,
+  EsbuildSpeedDemo,
+  EsbuildConfigDemo,
+  WebpackConceptVisualizer,
 } from '@/components/learn/interactive/build-tools';
 
 /**
@@ -244,6 +248,11 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
     DependencyGraphExplorer,
     BundlerComparison,
     TranspilerDemo,
+    ViteDevServerDemo,
+    ViteConfigExplorer,
+    EsbuildSpeedDemo,
+    EsbuildConfigDemo,
+    WebpackConceptVisualizer,
 
     // Enhanced HTML elements with proper styling
     h1: ({ children, ...props }) => (

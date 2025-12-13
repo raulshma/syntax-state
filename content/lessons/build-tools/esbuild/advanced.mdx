@@ -1,0 +1,461 @@
+# esbuild: Custom Plugins & Production Optimization
+
+Welcome to the advanced level! Here we'll master custom plugin development and production-grade build configurations.
+
+<InfoBox type="tip" title="The Pit Crew Analogy">
+At this level, you're like a Formula 1 pit crew - every millisecond counts. You need to understand exactly how esbuild processes files so you can optimize every aspect of your build pipeline.
+</InfoBox>
+
+<ProgressCheckpoint section="introduction" xpReward={25} />
+
+## Plugin Architecture
+
+esbuild plugins use a simple but powerful callback-based system:
+
+```typescript
+// plugin-structure.ts
+import type { Plugin, OnResolveArgs, OnLoadArgs } from 'esbuild'
+
+const myPlugin: Plugin = {
+  name: 'my-plugin',
+  
+  setup(build) {
+    // Called once when plugin is initialized
+    // 'build' provides hooks to intercept the build process
+    
+    // Hook: Resolve module paths
+    build.onResolve({ filter: /.*/ }, (args: OnResolveArgs) => {
+      // args.path - the import path
+      // args.importer - file that contains the import
+      // args.namespace - virtual namespace
+      // args.resolveDir - directory to resolve from
+      
+      return {
+        path: '/resolved/path',
+        namespace: 'my-namespace',
+        external: false,
+      }
+    })
+    
+    // Hook: Load file contents
+    build.onLoad({ filter: /.*/ }, (args: OnLoadArgs) => {
+      // args.path - resolved path
+      // args.namespace - namespace from onResolve
+      
+      return {
+        contents: 'export default "hello"',
+        loader: 'js',
+        resolveDir: '/some/dir',
+      }
+    })
+    
+    // Hook: Build lifecycle
+    build.onStart(() => {
+      console.log('Build starting...')
+    })
+    
+    build.onEnd((result) => {
+      console.log(`Build finished with ${result.errors.length} errors`)
+    })
+  },
+}
+```
+
+<ProgressCheckpoint section="why-fast" xpReward={25} />
+
+## Real-World Plugin Examples
+
+### Environment Variables Plugin
+
+```typescript
+// plugins/env-plugin.ts
+import { Plugin } from 'esbuild'
+import { config } from 'dotenv'
+
+export function envPlugin(envFile = '.env'): Plugin {
+  return {
+    name: 'env-plugin',
+    
+    setup(build) {
+      // Load .env file
+      const env = config({ path: envFile }).parsed || {}
+      
+      // Create virtual module
+      build.onResolve({ filter: /^env$/ }, (args) => ({
+        path: args.path,
+        namespace: 'env-ns',
+      }))
+      
+      build.onLoad({ filter: /.*/, namespace: 'env-ns' }, () => ({
+        contents: JSON.stringify(env),
+        loader: 'json',
+      }))
+    },
+  }
+}
+
+// Usage in code:
+// import env from 'env'
+// console.log(env.API_URL)
+```
+
+### Glob Import Plugin
+
+```typescript
+// plugins/glob-plugin.ts
+import { Plugin } from 'esbuild'
+import { glob } from 'glob'
+import { readFileSync } from 'fs'
+import { basename, dirname, resolve } from 'path'
+
+export function globPlugin(): Plugin {
+  return {
+    name: 'glob-plugin',
+    
+    setup(build) {
+      // Match imports like: import * as icons from './icons/*.svg'
+      build.onResolve({ filter: /\*/ }, (args) => {
+        if (!args.path.includes('*')) return null
+        
+        return {
+          path: args.path,
+          namespace: 'glob-ns',
+          pluginData: { resolveDir: args.resolveDir },
+        }
+      })
+      
+      build.onLoad({ filter: /.*/, namespace: 'glob-ns' }, async (args) => {
+        const pattern = resolve(args.pluginData.resolveDir, args.path)
+        const files = await glob(pattern)
+        
+        const imports = files.map((file, i) => 
+          `import _${i} from '${file}'`
+        ).join('\n')
+        
+        const exports = files.map((file, i) => {
+          const name = basename(file).replace(/\.[^.]+$/, '')
+          return `  '${name}': _${i}`
+        }).join(',\n')
+        
+        return {
+          contents: `${imports}\nexport default {\n${exports}\n}`,
+          resolveDir: args.pluginData.resolveDir,
+          loader: 'js',
+        }
+      })
+    },
+  }
+}
+```
+
+### CSS Modules Plugin
+
+```typescript
+// plugins/css-modules-plugin.ts
+import { Plugin } from 'esbuild'
+import { readFileSync } from 'fs'
+import { createHash } from 'crypto'
+
+export function cssModulesPlugin(): Plugin {
+  return {
+    name: 'css-modules',
+    
+    setup(build) {
+      build.onLoad({ filter: /\.module\.css$/ }, async (args) => {
+        const css = readFileSync(args.path, 'utf8')
+        const classNames: Record<string, string> = {}
+        
+        // Simple class name transformation
+        const transformed = css.replace(
+          /\.([a-zA-Z_][a-zA-Z0-9_-]*)/g,
+          (match, className) => {
+            const hash = createHash('md5')
+              .update(args.path + className)
+              .digest('hex')
+              .slice(0, 8)
+            
+            const scopedName = `${className}_${hash}`
+            classNames[className] = scopedName
+            return `.${scopedName}`
+          }
+        )
+        
+        return {
+          contents: `
+            const style = document.createElement('style')
+            style.textContent = ${JSON.stringify(transformed)}
+            document.head.appendChild(style)
+            export default ${JSON.stringify(classNames)}
+          `,
+          loader: 'js',
+        }
+      })
+    },
+  }
+}
+```
+
+<EsbuildConfigDemo advanced={true} />
+
+<ProgressCheckpoint section="getting-started" xpReward={25} />
+
+## Production Build Configuration
+
+```typescript
+// build.prod.ts
+import * as esbuild from 'esbuild'
+import { gzipSync, brotliCompressSync } from 'zlib'
+import { writeFileSync, readFileSync, mkdirSync } from 'fs'
+import { join } from 'path'
+
+async function productionBuild() {
+  const startTime = Date.now()
+  
+  const result = await esbuild.build({
+    entryPoints: ['src/index.tsx'],
+    bundle: true,
+    outdir: 'dist',
+    
+    // Optimization
+    minify: true,
+    treeShaking: true,
+    
+    // Remove dead code
+    drop: ['console', 'debugger'],
+    pure: ['console.log', 'console.info'],
+    
+    // Ignore side effects for better tree shaking
+    ignoreAnnotations: false,
+    
+    // Target modern browsers
+    target: ['es2020', 'chrome90', 'firefox88', 'safari14'],
+    
+    // Code splitting
+    splitting: true,
+    format: 'esm',
+    
+    // Naming
+    entryNames: '[name]-[hash]',
+    chunkNames: 'chunks/[name]-[hash]',
+    assetNames: 'assets/[name]-[hash]',
+    
+    // Source maps (hidden for production)
+    sourcemap: 'external',
+    sourcesContent: false,
+    
+    // Legal comments
+    legalComments: 'none',
+    
+    // Metadata for analysis
+    metafile: true,
+    
+    // Define globals
+    define: {
+      'process.env.NODE_ENV': '"production"',
+      '__DEV__': 'false',
+      '__VERSION__': '"1.0.0"',
+    },
+    
+    // Loaders
+    loader: {
+      '.png': 'file',
+      '.jpg': 'file',
+      '.svg': 'file',
+      '.woff2': 'file',
+    },
+  })
+  
+  // Generate compressed versions
+  for (const [file, output] of Object.entries(result.metafile!.outputs)) {
+    if (file.endsWith('.js') || file.endsWith('.css')) {
+      const content = readFileSync(file)
+      
+      // Gzip
+      const gzipped = gzipSync(content, { level: 9 })
+      writeFileSync(`${file}.gz`, gzipped)
+      
+      // Brotli
+      const brotli = brotliCompressSync(content)
+      writeFileSync(`${file}.br`, brotli)
+      
+      console.log(`${file}:`)
+      console.log(`  Original: ${(content.length / 1024).toFixed(2)} KB`)
+      console.log(`  Gzip: ${(gzipped.length / 1024).toFixed(2)} KB`)
+      console.log(`  Brotli: ${(brotli.length / 1024).toFixed(2)} KB`)
+    }
+  }
+  
+  const buildTime = Date.now() - startTime
+  console.log(`\n✅ Build complete in ${buildTime}ms`)
+  
+  return result
+}
+
+productionBuild()
+```
+
+<ProgressCheckpoint section="configuration" xpReward={25} />
+
+## Library Bundling
+
+```typescript
+// build-library.ts
+import * as esbuild from 'esbuild'
+import { execSync } from 'child_process'
+
+async function buildLibrary() {
+  const shared = {
+    entryPoints: ['src/index.ts'],
+    bundle: true,
+    sourcemap: true,
+    external: ['react', 'react-dom'], // Peer dependencies
+  }
+  
+  // ESM build
+  await esbuild.build({
+    ...shared,
+    format: 'esm',
+    outfile: 'dist/index.esm.js',
+    target: 'es2020',
+  })
+  
+  // CommonJS build
+  await esbuild.build({
+    ...shared,
+    format: 'cjs',
+    outfile: 'dist/index.cjs.js',
+    target: 'node14',
+  })
+  
+  // UMD build (for CDN/script tags)
+  await esbuild.build({
+    ...shared,
+    format: 'iife',
+    globalName: 'MyLibrary',
+    outfile: 'dist/index.umd.js',
+    target: 'es2015',
+    minify: true,
+    footer: {
+      js: 'if(typeof module!=="undefined")module.exports=MyLibrary;',
+    },
+  })
+  
+  // Generate TypeScript declarations
+  execSync('tsc --emitDeclarationOnly --declaration --outDir dist/types')
+  
+  console.log('Library built successfully!')
+}
+
+buildLibrary()
+```
+
+### Package.json for Library
+
+```json
+{
+  "name": "my-library",
+  "version": "1.0.0",
+  "main": "dist/index.cjs.js",
+  "module": "dist/index.esm.js",
+  "types": "dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.esm.js",
+      "require": "./dist/index.cjs.js",
+      "types": "./dist/types/index.d.ts"
+    }
+  },
+  "files": ["dist"],
+  "peerDependencies": {
+    "react": ">=18",
+    "react-dom": ">=18"
+  }
+}
+```
+
+<ProgressCheckpoint section="loaders" xpReward={25} />
+
+## Incremental Builds & Caching
+
+```typescript
+// build-incremental.ts
+import * as esbuild from 'esbuild'
+import { watch } from 'chokidar'
+
+async function incrementalBuild() {
+  // Create context for incremental builds
+  const ctx = await esbuild.context({
+    entryPoints: ['src/index.tsx'],
+    bundle: true,
+    outdir: 'dist',
+    metafile: true,
+    
+    // These options enable better caching
+    write: true,
+    incremental: true,
+  })
+  
+  // Initial build
+  let result = await ctx.rebuild()
+  console.log('Initial build complete')
+  
+  // Watch for changes with debouncing
+  let buildTimeout: NodeJS.Timeout | null = null
+  
+  watch('src/**/*', { ignoreInitial: true }).on('all', async (event, path) => {
+    console.log(`File ${event}: ${path}`)
+    
+    // Debounce rapid changes
+    if (buildTimeout) clearTimeout(buildTimeout)
+    
+    buildTimeout = setTimeout(async () => {
+      const start = Date.now()
+      result = await ctx.rebuild()
+      console.log(`Rebuild complete in ${Date.now() - start}ms`)
+    }, 100)
+  })
+  
+  // Cleanup
+  process.on('SIGINT', async () => {
+    await ctx.dispose()
+    process.exit(0)
+  })
+}
+
+incrementalBuild()
+```
+
+<ProgressCheckpoint section="plugins" xpReward={25} />
+
+## Quick Quiz
+
+<Quiz>
+  <Question text="What are the two main hooks in esbuild plugins?">
+    <Answer>onStart and onEnd</Answer>
+    <Answer correct>onResolve and onLoad</Answer>
+    <Answer>transform and generate</Answer>
+    <Answer>parse and emit</Answer>
+  </Question>
+  
+  <Question text="How do you create a virtual module in esbuild?">
+    <Answer>Use the virtual: prefix</Answer>
+    <Answer correct>Return a custom namespace from onResolve and handle it in onLoad</Answer>
+    <Answer>Use the define option</Answer>
+    <Answer>Create a temporary file</Answer>
+  </Question>
+  
+  <Question text="What's the purpose of the 'pure' option in esbuild?">
+    <Answer>To enable strict mode</Answer>
+    <Answer>To validate code</Answer>
+    <Answer correct>To mark functions as side-effect-free for better tree shaking</Answer>
+    <Answer>To remove comments</Answer>
+  </Question>
+</Quiz>
+
+<ProgressCheckpoint section="hands-on" xpReward={25} />
+
+<ProgressCheckpoint section="summary" xpReward={25} />
+
+---
+
+**Congratulations!** 🏆 You've mastered esbuild at an advanced level. You can now build custom plugins and optimize production builds for maximum performance!

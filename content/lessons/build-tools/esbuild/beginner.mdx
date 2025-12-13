@@ -1,0 +1,231 @@
+# esbuild: The Speed Champion ⚡
+
+Welcome to esbuild! If you've ever waited for your build to finish, esbuild is about to blow your mind with its incredible speed.
+
+<InfoBox type="tip" title="The Race Car Analogy">
+If traditional bundlers are like fully-loaded SUVs with every feature imaginable, esbuild is a Formula 1 race car - stripped down, purpose-built for one thing: SPEED. It does fewer things, but does them incredibly fast.
+</InfoBox>
+
+<ProgressCheckpoint section="introduction" xpReward={10} />
+
+## Why esbuild is So Fast
+
+esbuild is 10-100x faster than traditional bundlers. Here's why:
+
+### 1. Written in Go, Not JavaScript
+
+```
+JavaScript Bundler:
+🐢 Single-threaded → Process files one by one → Slow
+
+esbuild (Go):
+🚀 Multi-threaded → Process files in parallel → FAST!
+```
+
+<KeyConcept title="The Language Advantage">
+JavaScript runs in a single thread and has garbage collection pauses. Go compiles to native machine code, uses all CPU cores simultaneously, and has minimal runtime overhead. This architectural difference makes esbuild fundamentally faster.
+</KeyConcept>
+
+### 2. Everything in One Pass
+
+```
+Traditional Bundler:
+Pass 1: Parse → Pass 2: Transform → Pass 3: Bundle → Pass 4: Minify
+(Each pass reads and writes the entire codebase)
+
+esbuild:
+Parse + Transform + Bundle + Minify (ALL AT ONCE!)
+(Single pass through the code)
+```
+
+<EsbuildSpeedDemo />
+
+<ProgressCheckpoint section="why-fast" xpReward={10} />
+
+## Speed Comparison
+
+Let's see how esbuild stacks up:
+
+| Bundler | Build Time (Large Project) |
+|---------|---------------------------|
+| Webpack | 30-60 seconds |
+| Rollup | 20-40 seconds |
+| Parcel | 15-30 seconds |
+| **esbuild** | **0.5-2 seconds** |
+
+<InfoBox type="analogy" title="Like Instant Coffee vs. Brewing">
+Traditional bundlers are like brewing coffee - you wait while it percolates. esbuild is like instant coffee - just add water and it's ready! The result might be slightly different, but the speed is incomparable.
+</InfoBox>
+
+<BundlerComparison bundlers={['webpack', 'esbuild']} />
+
+<ProgressCheckpoint section="getting-started" xpReward={10} />
+
+## Getting Started with esbuild
+
+### Installation
+
+```bash
+# Install esbuild
+npm install esbuild
+
+# Or globally
+npm install -g esbuild
+```
+
+### Your First Build
+
+```bash
+# Bundle a file (CLI)
+esbuild src/index.js --bundle --outfile=dist/bundle.js
+
+# With minification
+esbuild src/index.js --bundle --minify --outfile=dist/bundle.js
+
+# Watch mode
+esbuild src/index.js --bundle --watch --outfile=dist/bundle.js
+```
+
+### Using the JavaScript API
+
+```javascript
+// build.js
+import * as esbuild from 'esbuild'
+
+await esbuild.build({
+  entryPoints: ['src/index.js'],
+  bundle: true,
+  outfile: 'dist/bundle.js',
+})
+
+console.log('Build complete! ⚡')
+```
+
+Run it:
+```bash
+node build.js
+# Build complete! ⚡ (in milliseconds!)
+```
+
+<ProgressCheckpoint section="configuration" xpReward={10} />
+
+## Basic Configuration
+
+```javascript
+// build.js
+import * as esbuild from 'esbuild'
+
+await esbuild.build({
+  // Entry points (can be multiple)
+  entryPoints: ['src/index.js', 'src/worker.js'],
+  
+  // Bundle all imports into output
+  bundle: true,
+  
+  // Output location
+  outdir: 'dist',
+  
+  // Minify for production
+  minify: true,
+  
+  // Generate source maps
+  sourcemap: true,
+  
+  // Target environment
+  target: ['es2020', 'chrome80', 'firefox78'],
+  
+  // Output format: 'iife', 'cjs', or 'esm'
+  format: 'esm',
+})
+```
+
+<EsbuildConfigDemo />
+
+<ProgressCheckpoint section="loaders" xpReward={10} />
+
+## Handling Different File Types
+
+esbuild uses "loaders" to handle different file types:
+
+```javascript
+await esbuild.build({
+  entryPoints: ['src/index.tsx'],
+  bundle: true,
+  outfile: 'dist/bundle.js',
+  
+  loader: {
+    '.png': 'file',      // Copy to output, return URL
+    '.svg': 'dataurl',   // Inline as base64 data URL
+    '.json': 'json',     // Parse as JSON
+    '.css': 'css',       // Bundle CSS
+    '.txt': 'text',      // Import as string
+  },
+})
+```
+
+### Built-in Loaders
+
+| Loader | Description |
+|--------|-------------|
+| `js` | JavaScript (default for .js) |
+| `jsx` | JavaScript with JSX |
+| `ts` | TypeScript |
+| `tsx` | TypeScript with JSX |
+| `css` | CSS files |
+| `json` | JSON files |
+| `text` | Plain text (as string) |
+| `file` | Copy file, return URL |
+| `dataurl` | Inline as base64 |
+
+<ProgressCheckpoint section="plugins" xpReward={10} />
+
+## When to Use esbuild
+
+### ✅ Great For:
+- **Library bundling** - Fast builds, simple output
+- **Development tooling** - Powers Vite's dev server
+- **Simple applications** - When you don't need complex plugins
+- **TypeScript compilation** - Fastest TS → JS conversion
+
+### ⚠️ Consider Alternatives When:
+- You need complex code transformations
+- You require extensive plugin ecosystem
+- You need CSS Modules with scoped names
+- You need advanced code splitting strategies
+
+<InfoBox type="tip" title="esbuild + Other Tools">
+esbuild is often used as a component in other tools! Vite uses esbuild for dependency pre-bundling and TypeScript compilation. You get esbuild's speed without giving up other features.
+</InfoBox>
+
+<ProgressCheckpoint section="hands-on" xpReward={10} />
+
+## Quick Quiz
+
+<Quiz>
+  <Question text="Why is esbuild so much faster than traditional bundlers?">
+    <Answer>It skips minification</Answer>
+    <Answer>It only works with small files</Answer>
+    <Answer correct>It's written in Go with parallel processing and single-pass architecture</Answer>
+    <Answer>It doesn't actually bundle files</Answer>
+  </Question>
+  
+  <Question text="What loader would you use to inline an SVG as base64?">
+    <Answer>file</Answer>
+    <Answer>text</Answer>
+    <Answer correct>dataurl</Answer>
+    <Answer>svg</Answer>
+  </Question>
+  
+  <Question text="What output formats does esbuild support?">
+    <Answer>Only ESM</Answer>
+    <Answer>Only CommonJS</Answer>
+    <Answer correct>IIFE, CommonJS, and ESM</Answer>
+    <Answer>Only IIFE</Answer>
+  </Question>
+</Quiz>
+
+<ProgressCheckpoint section="summary" xpReward={10} />
+
+---
+
+**Awesome!** ⚡ You now understand why esbuild is revolutionizing build times. In the intermediate level, we'll explore advanced configuration and real-world build scripts!
