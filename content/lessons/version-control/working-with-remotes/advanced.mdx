@@ -14,6 +14,8 @@ git fetch --prune
 
 `--prune` removes remote-tracking refs for branches deleted on the server.
 
+<InteractiveDemo type="git-fetch-prune" title="Fetch --prune simulator" />
+
 <ProgressCheckpoint section="remote-tracking" xpReward={20} />
 
 ---
@@ -47,6 +49,8 @@ git push --force-with-lease
 ```
 
 This refuses to overwrite remote work you didn’t know about.
+
+<InteractiveDemo type="git-force-with-lease" title="Why force-with-lease is safer" />
 
 <InfoBox type="warning">
 Never force-push shared protected branches unless your team explicitly allows it.
