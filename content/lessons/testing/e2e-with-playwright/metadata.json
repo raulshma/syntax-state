@@ -1,0 +1,33 @@
+{
+  "id": "e2e-with-playwright",
+  "title": "E2E Testing with Playwright",
+  "description": "Build reliable end-to-end tests with Playwright - the modern browser automation framework",
+  "milestone": "testing",
+  "order": 3,
+  "sections": [
+    "introduction",
+    "why-e2e-testing",
+    "playwright-basics",
+    "locators-and-selectors",
+    "assertions-and-waits",
+    "page-object-model",
+    "best-practices",
+    "summary"
+  ],
+  "levels": {
+    "beginner": {
+      "estimatedMinutes": 25,
+      "xpReward": 50
+    },
+    "intermediate": {
+      "estimatedMinutes": 40,
+      "xpReward": 100
+    },
+    "advanced": {
+      "estimatedMinutes": 60,
+      "xpReward": 200
+    }
+  },
+  "prerequisites": ["component-testing"],
+  "tags": ["testing", "playwright", "e2e", "browser-automation", "integration-testing"]
+}

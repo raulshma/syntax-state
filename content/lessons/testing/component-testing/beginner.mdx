@@ -1,0 +1,316 @@
+# Component Testing with Testing Library
+
+Welcome to component testing! While unit tests verify individual functions, component tests ensure your React components work correctly from a user's perspective. This is where testing gets really practical and valuable.
+
+Think of component testing like test-driving a car. You don't just test the engine in isolation—you sit in the driver's seat and make sure everything works together the way a real driver would use it.
+
+<InfoBox type="tip" title="User-Centric Testing">
+Testing Library's philosophy is simple: test your components the way users interact with them. Don't test implementation details—test behavior!
+</InfoBox>
+
+<ProgressCheckpoint section="introduction" xpReward={10} />
+
+## Why Component Testing?
+
+Unit tests are great for pure functions, but React components are different. They:
+- Render UI elements
+- Respond to user interactions
+- Manage state
+- Fetch data
+- Have side effects
+
+Component tests verify all of this works together correctly.
+
+<TestPyramidExplorer highlightLayer="integration" showMetrics={true} />
+
+### The Testing Library Philosophy
+
+```
+Traditional Testing          Testing Library
+─────────────────────       ─────────────────────
+Test implementation         Test behavior
+Query by class/id           Query by role/text
+Check internal state        Check what user sees
+Brittle to refactoring      Resilient to changes
+```
+
+<KeyConcept title="Test Like a User">
+If a user can't see or interact with something, your test shouldn't either. Query elements the way users find them—by visible text, labels, and roles.
+</KeyConcept>
+
+<ProgressCheckpoint section="why-component-testing" xpReward={10} />
+
+## Setting Up Testing Library
+
+Testing Library works with Vitest out of the box. Here's a typical setup:
+
+```typescript
+// vitest.config.ts
+import { defineConfig } from 'vitest/config';
+import react from '@vitejs/plugin-react';
+
+export default defineConfig({
+  plugins: [react()],
+  test: {
+    environment: 'jsdom',
+    globals: true,
+    setupFiles: './test/setup.ts',
+  },
+});
+```
+
+```typescript
+// test/setup.ts
+import '@testing-library/jest-dom';
+```
+
+Now you have access to helpful matchers like `toBeInTheDocument()` and `toHaveTextContent()`.
+
+<ProgressCheckpoint section="testing-library-basics" xpReward={10} />
+
+## Your First Component Test
+
+Let's test a simple button component:
+
+```tsx
+// Button.tsx
+interface ButtonProps {
+  onClick: () => void;
+  children: React.ReactNode;
+}
+
+export function Button({ onClick, children }: ButtonProps) {
+  return (
+    <button onClick={onClick} className="btn-primary">
+      {children}
+    </button>
+  );
+}
+```
+
+```typescript
+// Button.test.tsx
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { Button } from './Button';
+
+test('calls onClick when clicked', async () => {
+  const handleClick = vi.fn();
+  
+  render(<Button onClick={handleClick}>Click me</Button>);
+  
+  await userEvent.click(screen.getByRole('button', { name: /click me/i }));
+  
+  expect(handleClick).toHaveBeenCalledTimes(1);
+});
+```
+
+<ComponentTestSimulator componentType="button" />
+
+Let's break down what's happening:
+
+1. **`render()`** - Renders the component into a virtual DOM
+2. **`screen`** - Provides queries to find elements
+3. **`getByRole()`** - Finds elements by their accessible role
+4. **`userEvent.click()`** - Simulates a real user click
+5. **`expect()`** - Verifies the expected behavior
+
+<ProgressCheckpoint section="querying-elements" xpReward={15} />
+
+## Finding Elements: The Query Priority
+
+Testing Library provides many ways to find elements. Use them in this priority order:
+
+### 1. Queries Accessible to Everyone
+
+```typescript
+// By role (best!) - how assistive tech sees elements
+screen.getByRole('button', { name: /submit/i });
+screen.getByRole('textbox', { name: /email/i });
+screen.getByRole('heading', { level: 1 });
+
+// By label - how users identify form fields
+screen.getByLabelText(/email address/i);
+
+// By placeholder
+screen.getByPlaceholderText(/enter your name/i);
+
+// By text content
+screen.getByText(/welcome back/i);
+
+// By display value (for inputs)
+screen.getByDisplayValue(/john@example.com/i);
+```
+
+### 2. Semantic Queries
+
+```typescript
+// By alt text (images)
+screen.getByAltText(/company logo/i);
+
+// By title attribute
+screen.getByTitle(/close/i);
+```
+
+### 3. Test IDs (Last Resort)
+
+```typescript
+// Only when other queries don't work
+screen.getByTestId('custom-element');
+```
+
+<InfoBox type="warning" title="Avoid Test IDs When Possible">
+Test IDs don't reflect how users interact with your app. If you need a test ID, it might indicate an accessibility issue—users and assistive tech can't find the element either!
+</InfoBox>
+
+<ProgressCheckpoint section="user-interactions" xpReward={15} />
+
+## Query Variants
+
+Each query comes in several variants:
+
+```typescript
+// getBy - throws if not found (use for elements that should exist)
+screen.getByRole('button'); // throws if no button
+
+// queryBy - returns null if not found (use for elements that might not exist)
+screen.queryByRole('button'); // returns null if no button
+
+// findBy - returns promise, waits for element (use for async)
+await screen.findByRole('button'); // waits up to 1 second
+
+// getAllBy, queryAllBy, findAllBy - for multiple elements
+screen.getAllByRole('listitem'); // returns array
+```
+
+### When to Use Each
+
+```typescript
+// Element should be there
+const button = screen.getByRole('button');
+
+// Element might not be there
+const error = screen.queryByText(/error/i);
+expect(error).not.toBeInTheDocument();
+
+// Element appears after async operation
+const data = await screen.findByText(/loaded/i);
+```
+
+<ProgressCheckpoint section="async-testing" xpReward={15} />
+
+## Simulating User Interactions
+
+Use `userEvent` for realistic user interactions:
+
+```typescript
+import userEvent from '@testing-library/user-event';
+
+test('form interactions', async () => {
+  const user = userEvent.setup();
+  
+  render(<LoginForm />);
+  
+  // Type in an input
+  await user.type(screen.getByLabelText(/email/i), 'test@example.com');
+  
+  // Click a button
+  await user.click(screen.getByRole('button', { name: /submit/i }));
+  
+  // Clear and type
+  await user.clear(screen.getByLabelText(/email/i));
+  await user.type(screen.getByLabelText(/email/i), 'new@example.com');
+  
+  // Keyboard interactions
+  await user.keyboard('{Enter}');
+  
+  // Tab navigation
+  await user.tab();
+});
+```
+
+<ComponentTestSimulator componentType="form" />
+
+<KeyConcept title="userEvent vs fireEvent">
+Always prefer `userEvent` over `fireEvent`. `userEvent` simulates real user behavior (focus, hover, then click), while `fireEvent` just dispatches events. `userEvent` catches more bugs!
+</KeyConcept>
+
+<ProgressCheckpoint section="best-practices" xpReward={10} />
+
+## Common Assertions
+
+Testing Library extends Jest/Vitest with helpful matchers:
+
+```typescript
+// Presence
+expect(element).toBeInTheDocument();
+expect(element).not.toBeInTheDocument();
+
+// Visibility
+expect(element).toBeVisible();
+expect(element).not.toBeVisible();
+
+// Content
+expect(element).toHaveTextContent(/hello/i);
+expect(input).toHaveValue('test@example.com');
+expect(input).toHaveDisplayValue('test@example.com');
+
+// Attributes
+expect(element).toHaveAttribute('href', '/home');
+expect(element).toHaveClass('active');
+
+// State
+expect(button).toBeDisabled();
+expect(button).toBeEnabled();
+expect(checkbox).toBeChecked();
+
+// Form validation
+expect(input).toBeRequired();
+expect(input).toBeValid();
+expect(input).toBeInvalid();
+```
+
+## Quick Quiz
+
+<Quiz id="component-testing-beginner-quiz">
+  <Question text="What's the recommended way to find a button in Testing Library?">
+    <Answer>screen.getByClassName('btn')</Answer>
+    <Answer>screen.getById('submit-btn')</Answer>
+    <Answer correct>screen.getByRole('button', { name: /submit/i })</Answer>
+    <Answer>document.querySelector('button')</Answer>
+  </Question>
+  
+  <Question text="When should you use queryBy instead of getBy?">
+    <Answer>When the element is inside a form</Answer>
+    <Answer correct>When the element might not exist</Answer>
+    <Answer>When testing async code</Answer>
+    <Answer>When the element has a test ID</Answer>
+  </Question>
+  
+  <Question text="Why is userEvent preferred over fireEvent?">
+    <Answer>It's faster</Answer>
+    <Answer>It works with more browsers</Answer>
+    <Answer correct>It simulates real user behavior more accurately</Answer>
+    <Answer>It's the only way to test clicks</Answer>
+  </Question>
+</Quiz>
+
+<ProgressCheckpoint section="summary" xpReward={10} />
+
+## Key Takeaways
+
+<KeyConcept title="Test User Behavior">
+Query elements the way users find them—by role, label, and text. Avoid implementation details like class names and IDs.
+</KeyConcept>
+
+<KeyConcept title="Query Priority">
+Use `getByRole` first, then `getByLabelText`, then `getByText`. Only use `getByTestId` as a last resort.
+</KeyConcept>
+
+<KeyConcept title="Realistic Interactions">
+Use `userEvent` to simulate how real users interact with your components. It catches bugs that `fireEvent` misses.
+</KeyConcept>
+
+---
+
+**Great start!** 🎉 You've learned the fundamentals of component testing. In the intermediate level, we'll explore testing forms, async operations, and component state.

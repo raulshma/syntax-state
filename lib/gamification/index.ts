@@ -203,6 +203,36 @@ export const BADGES = {
     icon: '🔧',
     category: 'mastery',
   },
+  
+  // Testing milestone badges
+  UNIT_TEST_HERO: {
+    id: 'unit-test-hero',
+    name: 'Unit Test Hero',
+    description: 'Complete the Unit Testing with Vitest lesson at all levels',
+    icon: '🧪',
+    category: 'mastery',
+  },
+  COMPONENT_TESTER: {
+    id: 'component-tester',
+    name: 'Component Tester',
+    description: 'Complete the Component Testing lesson at all levels',
+    icon: '⚛️',
+    category: 'mastery',
+  },
+  E2E_EXPLORER: {
+    id: 'e2e-explorer',
+    name: 'E2E Explorer',
+    description: 'Complete the E2E Testing with Playwright lesson at all levels',
+    icon: '🎭',
+    category: 'mastery',
+  },
+  TESTING_MASTER: {
+    id: 'testing-master',
+    name: 'Testing Master',
+    description: 'Complete all Testing lessons at any level',
+    icon: '✅',
+    category: 'mastery',
+  },
 } as const;
 
 export type BadgeId = keyof typeof BADGES;
@@ -294,6 +324,12 @@ export function checkNewBadges(stats: {
   cssSelectorAllLevelsCompleted?: boolean;
   cssFlexboxAndGridCompleted?: boolean;
   cssAnimationsAndTransformsCompleted?: boolean;
+  // Testing milestone stats
+  unitTestAllLevelsCompleted?: boolean;
+  componentTestAllLevelsCompleted?: boolean;
+  e2eTestAllLevelsCompleted?: boolean;
+  testingLessonsCompleted?: number;
+  totalTestingLessons?: number;
 }, existingBadgeIds: string[]): string[] {
   const newBadges: string[] = [];
   
@@ -387,6 +423,29 @@ export function checkNewBadges(stats: {
     newBadges.push('animation-wizard');
   }
   
+  // Check Testing milestone badges
+  if (stats.unitTestAllLevelsCompleted && 
+      !existingBadgeIds.includes('unit-test-hero')) {
+    newBadges.push('unit-test-hero');
+  }
+  
+  if (stats.componentTestAllLevelsCompleted && 
+      !existingBadgeIds.includes('component-tester')) {
+    newBadges.push('component-tester');
+  }
+  
+  if (stats.e2eTestAllLevelsCompleted && 
+      !existingBadgeIds.includes('e2e-explorer')) {
+    newBadges.push('e2e-explorer');
+  }
+  
+  if (stats.testingLessonsCompleted !== undefined && 
+      stats.totalTestingLessons !== undefined &&
+      stats.testingLessonsCompleted >= stats.totalTestingLessons && 
+      !existingBadgeIds.includes('testing-master')) {
+    newBadges.push('testing-master');
+  }
+  
   return newBadges;
 }
 
@@ -469,6 +528,16 @@ export const BUILD_TOOLS_LESSON_IDS = [
 
 // Total number of Build Tools lessons
 export const TOTAL_BUILD_TOOLS_LESSONS = 3;
+
+// Testing lesson IDs for badge tracking
+export const TESTING_LESSON_IDS = [
+  'testing/unit-testing-with-vitest',
+  'testing/component-testing',
+  'testing/e2e-with-playwright',
+];
+
+// Total number of Testing lessons
+export const TOTAL_TESTING_LESSONS = 3;
 
 /**
  * Check if user has completed all Internet lessons at a specific level
@@ -641,6 +710,96 @@ export function checkBuildToolsMilestoneBadge(
   
   if (completedBuildToolsLessonIds.size >= TOTAL_BUILD_TOOLS_LESSONS) {
     return 'build-master';
+  }
+  
+  return null;
+}
+
+/**
+ * Check if user has completed Unit Testing with Vitest lesson at all levels
+ * Returns 'unit-test-hero' badge ID if completed at all levels
+ */
+export function checkUnitTestHeroBadge(
+  completedLessons: Array<{ lessonId: string; experienceLevel: string }>
+): string | null {
+  const unitTestLessonId = 'testing/unit-testing-with-vitest';
+  const levels = ['beginner', 'intermediate', 'advanced'];
+  
+  const completedLevels = levels.filter(level =>
+    completedLessons.some(
+      lesson => lesson.lessonId === unitTestLessonId && lesson.experienceLevel === level
+    )
+  );
+  
+  if (completedLevels.length === 3) {
+    return 'unit-test-hero';
+  }
+  
+  return null;
+}
+
+/**
+ * Check if user has completed Component Testing lesson at all levels
+ * Returns 'component-tester' badge ID if completed at all levels
+ */
+export function checkComponentTesterBadge(
+  completedLessons: Array<{ lessonId: string; experienceLevel: string }>
+): string | null {
+  const componentTestLessonId = 'testing/component-testing';
+  const levels = ['beginner', 'intermediate', 'advanced'];
+  
+  const completedLevels = levels.filter(level =>
+    completedLessons.some(
+      lesson => lesson.lessonId === componentTestLessonId && lesson.experienceLevel === level
+    )
+  );
+  
+  if (completedLevels.length === 3) {
+    return 'component-tester';
+  }
+  
+  return null;
+}
+
+/**
+ * Check if user has completed E2E Testing with Playwright lesson at all levels
+ * Returns 'e2e-explorer' badge ID if completed at all levels
+ */
+export function checkE2EExplorerBadge(
+  completedLessons: Array<{ lessonId: string; experienceLevel: string }>
+): string | null {
+  const e2eLessonId = 'testing/e2e-with-playwright';
+  const levels = ['beginner', 'intermediate', 'advanced'];
+  
+  const completedLevels = levels.filter(level =>
+    completedLessons.some(
+      lesson => lesson.lessonId === e2eLessonId && lesson.experienceLevel === level
+    )
+  );
+  
+  if (completedLevels.length === 3) {
+    return 'e2e-explorer';
+  }
+  
+  return null;
+}
+
+/**
+ * Check if user has completed all Testing lessons at any level
+ * Returns 'testing-master' badge ID if all lessons are completed
+ */
+export function checkTestingMasterBadge(
+  completedLessons: Array<{ lessonId: string; experienceLevel: string }>
+): string | null {
+  // Get unique Testing lesson IDs that have been completed at any level
+  const completedTestingLessonIds = new Set(
+    completedLessons
+      .filter(lesson => TESTING_LESSON_IDS.includes(lesson.lessonId))
+      .map(lesson => lesson.lessonId)
+  );
+  
+  if (completedTestingLessonIds.size >= TOTAL_TESTING_LESSONS) {
+    return 'testing-master';
   }
   
   return null;

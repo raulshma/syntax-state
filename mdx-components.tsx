@@ -121,6 +121,18 @@ import {
   WebpackConceptVisualizer,
 } from '@/components/learn/interactive/build-tools';
 
+// Testing Lesson Components
+import {
+  TestRunnerSimulator,
+  TestPyramidExplorer,
+  MockingVisualizer,
+  AssertionPlayground,
+  ComponentTestSimulator,
+  E2EFlowVisualizer,
+  LocatorPlayground,
+  PageObjectModelDemo,
+} from '@/components/learn/interactive/testing';
+
 /**
  * MDX Components Configuration
  * This file provides custom components for MDX content rendering.
@@ -253,6 +265,16 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
     EsbuildSpeedDemo,
     EsbuildConfigDemo,
     WebpackConceptVisualizer,
+
+    // Testing Lesson Components
+    TestRunnerSimulator,
+    TestPyramidExplorer,
+    MockingVisualizer,
+    AssertionPlayground,
+    ComponentTestSimulator,
+    E2EFlowVisualizer,
+    LocatorPlayground,
+    PageObjectModelDemo,
 
     // Enhanced HTML elements with proper styling
     h1: ({ children, ...props }) => (

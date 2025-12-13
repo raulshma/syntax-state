@@ -1,0 +1,33 @@
+{
+  "id": "unit-testing-with-vitest",
+  "title": "Unit Testing with Vitest",
+  "description": "Master unit testing fundamentals using Vitest - the blazing fast testing framework powered by Vite",
+  "milestone": "testing",
+  "order": 1,
+  "sections": [
+    "introduction",
+    "why-unit-testing",
+    "vitest-basics",
+    "writing-tests",
+    "assertions",
+    "mocking",
+    "best-practices",
+    "summary"
+  ],
+  "levels": {
+    "beginner": {
+      "estimatedMinutes": 20,
+      "xpReward": 50
+    },
+    "intermediate": {
+      "estimatedMinutes": 35,
+      "xpReward": 100
+    },
+    "advanced": {
+      "estimatedMinutes": 50,
+      "xpReward": 200
+    }
+  },
+  "prerequisites": ["javascript-fundamentals", "es6-and-modular-javascript"],
+  "tags": ["testing", "vitest", "unit-testing", "tdd", "mocking", "assertions"]
+}

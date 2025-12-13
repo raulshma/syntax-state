@@ -1,0 +1,253 @@
+# Unit Testing with Vitest
+
+Welcome to the world of testing! Testing is like having a safety net for your code. It catches bugs before they reach your users and gives you confidence to make changes without breaking things.
+
+Think of tests like spell-check for your code. Just as spell-check catches typos before you send an email, tests catch bugs before you ship your app!
+
+<InfoBox type="tip" title="Why Learn Testing?">
+Testing is one of the most valuable skills for any developer. Companies love developers who write tests because it means fewer bugs, happier users, and more maintainable code. It's also a common interview topic!
+</InfoBox>
+
+<ProgressCheckpoint section="introduction" xpReward={10} />
+
+## Why Unit Testing?
+
+Imagine you're building a house of cards. Every time you add a new card, you hold your breath hoping the whole thing doesn't collapse. That's what coding without tests feels like!
+
+**Unit tests** are like testing each card individually before adding it to the structure. They verify that small pieces of your code work correctly in isolation.
+
+### The Testing Pyramid
+
+<TestPyramidExplorer highlightLayer="unit" showMetrics={true} />
+
+Unit tests form the foundation of the testing pyramid because they are:
+
+- **Fast** ⚡ - Run in milliseconds
+- **Cheap** 💰 - Easy to write and maintain
+- **Focused** 🎯 - Test one thing at a time
+- **Reliable** ✅ - Same result every time
+
+<KeyConcept title="What is a Unit?">
+A "unit" is the smallest testable piece of code - usually a function or a small component. If your function adds two numbers, that's a unit. If your component renders a button, that's a unit.
+</KeyConcept>
+
+<ProgressCheckpoint section="why-unit-testing" xpReward={10} />
+
+## Meet Vitest
+
+**Vitest** is a modern testing framework that's blazing fast and works seamlessly with Vite projects. Think of it as the cool, modern cousin of Jest!
+
+### Why Vitest?
+
+```
+Vitest vs Traditional Test Runners
+┌─────────────────────────────────────────┐
+│  🚀 Instant startup (uses Vite)         │
+│  ⚡ Super fast hot module replacement   │
+│  📦 Works with ESM out of the box       │
+│  🎯 Jest-compatible API                 │
+│  🔧 Zero config for Vite projects       │
+└─────────────────────────────────────────┘
+```
+
+<InfoBox type="info" title="Good News!">
+If you've used Jest before, you already know most of Vitest! The API is almost identical, so your knowledge transfers directly.
+</InfoBox>
+
+<ProgressCheckpoint section="vitest-basics" xpReward={10} />
+
+## Writing Your First Test
+
+Let's write a simple test! First, here's a function we want to test:
+
+```typescript
+// sum.ts
+export function sum(a: number, b: number): number {
+  return a + b;
+}
+```
+
+Now, let's test it:
+
+```typescript
+// sum.test.ts
+import { expect, test } from 'vitest';
+import { sum } from './sum';
+
+test('adds 1 + 2 to equal 3', () => {
+  expect(sum(1, 2)).toBe(3);
+});
+```
+
+That's it! Let's break down what's happening:
+
+1. **`test()`** - Defines a test case with a description
+2. **`expect()`** - Takes the value you want to check
+3. **`.toBe()`** - Checks if the value equals what you expect
+
+<TestRunnerSimulator showCode={true} />
+
+<ProgressCheckpoint section="writing-tests" xpReward={15} />
+
+## Understanding Assertions
+
+**Assertions** are the heart of testing. They're statements that check if something is true. If an assertion fails, the test fails.
+
+Think of assertions like a teacher grading homework:
+- ✅ "Is 2 + 2 equal to 4?" → PASS
+- ❌ "Is 2 + 2 equal to 5?" → FAIL
+
+### Common Assertions
+
+<AssertionPlayground assertionType="basic" />
+
+Here are the most common assertions you'll use:
+
+```typescript
+// Exact equality
+expect(2 + 2).toBe(4);
+
+// Object/array equality (deep comparison)
+expect({ name: 'Alice' }).toEqual({ name: 'Alice' });
+
+// Truthiness
+expect('hello').toBeTruthy();
+expect(0).toBeFalsy();
+expect(null).toBeNull();
+expect(undefined).toBeUndefined();
+
+// Numbers
+expect(10).toBeGreaterThan(5);
+expect(5).toBeLessThan(10);
+
+// Strings
+expect('hello world').toContain('world');
+expect('hello').toMatch(/ell/);
+
+// Arrays
+expect([1, 2, 3]).toContain(2);
+expect([1, 2, 3]).toHaveLength(3);
+```
+
+<KeyConcept title="toBe vs toEqual">
+Use `toBe()` for primitives (numbers, strings, booleans). Use `toEqual()` for objects and arrays. `toBe()` checks if two things are the exact same reference, while `toEqual()` checks if they have the same content.
+</KeyConcept>
+
+<ProgressCheckpoint section="assertions" xpReward={15} />
+
+## Organizing Tests with describe()
+
+As your tests grow, you'll want to organize them. The `describe()` function groups related tests together:
+
+```typescript
+import { describe, test, expect } from 'vitest';
+import { sum, subtract, multiply } from './math';
+
+describe('Math functions', () => {
+  describe('sum', () => {
+    test('adds positive numbers', () => {
+      expect(sum(1, 2)).toBe(3);
+    });
+
+    test('adds negative numbers', () => {
+      expect(sum(-1, -2)).toBe(-3);
+    });
+  });
+
+  describe('subtract', () => {
+    test('subtracts numbers', () => {
+      expect(subtract(5, 3)).toBe(2);
+    });
+  });
+});
+```
+
+This creates a nice hierarchy in your test output:
+
+```
+Math functions
+  sum
+    ✓ adds positive numbers
+    ✓ adds negative numbers
+  subtract
+    ✓ subtracts numbers
+```
+
+<ProgressCheckpoint section="mocking" xpReward={10} />
+
+## Best Practices for Beginners
+
+<InfoBox type="tip" title="The AAA Pattern">
+Structure your tests using **Arrange, Act, Assert**:
+- **Arrange**: Set up the test data
+- **Act**: Call the function you're testing
+- **Assert**: Check the result
+</InfoBox>
+
+```typescript
+test('calculates total price with discount', () => {
+  // Arrange
+  const price = 100;
+  const discount = 0.2;
+
+  // Act
+  const total = calculateTotal(price, discount);
+
+  // Assert
+  expect(total).toBe(80);
+});
+```
+
+### Tips for Writing Good Tests
+
+1. **Test one thing at a time** - Each test should verify one behavior
+2. **Use descriptive names** - "adds two numbers" is better than "test1"
+3. **Keep tests independent** - Tests shouldn't depend on each other
+4. **Test edge cases** - What happens with 0? Negative numbers? Empty strings?
+
+<ProgressCheckpoint section="best-practices" xpReward={10} />
+
+## Quick Quiz
+
+<Quiz id="unit-testing-beginner-quiz">
+  <Question text="What does the toBe() assertion check?">
+    <Answer>Deep equality of objects</Answer>
+    <Answer correct>Exact equality (same reference or primitive value)</Answer>
+    <Answer>If a value is truthy</Answer>
+    <Answer>If a value contains something</Answer>
+  </Question>
+  
+  <Question text="What is a 'unit' in unit testing?">
+    <Answer>The entire application</Answer>
+    <Answer>A database table</Answer>
+    <Answer correct>The smallest testable piece of code</Answer>
+    <Answer>A user interface component</Answer>
+  </Question>
+  
+  <Question text="Why are unit tests at the bottom of the testing pyramid?">
+    <Answer>They are the least important</Answer>
+    <Answer correct>They are fast, cheap, and you should have the most of them</Answer>
+    <Answer>They run last</Answer>
+    <Answer>They test the foundation of the app</Answer>
+  </Question>
+</Quiz>
+
+<ProgressCheckpoint section="summary" xpReward={10} />
+
+## Key Takeaways
+
+<KeyConcept title="Unit Tests = Safety Net">
+Unit tests catch bugs early, give you confidence to refactor, and serve as documentation for how your code should work.
+</KeyConcept>
+
+<KeyConcept title="Vitest = Fast & Modern">
+Vitest is a Jest-compatible testing framework that's optimized for Vite projects. Same familiar API, much faster execution.
+</KeyConcept>
+
+<KeyConcept title="Assertions = Expectations">
+Assertions like `toBe()`, `toEqual()`, and `toBeTruthy()` verify that your code produces the expected results.
+</KeyConcept>
+
+---
+
+**Great job!** 🎉 You've learned the fundamentals of unit testing with Vitest. In the intermediate level, we'll explore mocking, async testing, and more advanced patterns.

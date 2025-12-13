@@ -1,0 +1,343 @@
+# Unit Testing with Vitest - Intermediate
+
+Now that you understand the basics, let's dive deeper into the powerful features that make Vitest a professional-grade testing tool. We'll explore mocking, async testing, and patterns used in real-world applications.
+
+<InfoBox type="info" title="Building on Foundations">
+This lesson assumes you're comfortable with basic test structure, assertions, and the `describe`/`test` pattern. We'll now add the tools that handle real-world complexity.
+</InfoBox>
+
+<ProgressCheckpoint section="introduction" xpReward={15} />
+
+## The Art of Mocking
+
+In the real world, your code doesn't exist in isolation. Functions call APIs, read from databases, and depend on other modules. **Mocking** lets you replace these dependencies with controlled versions.
+
+### Why Mock?
+
+Imagine testing a function that sends emails. You don't want to:
+- Actually send emails during tests
+- Wait for network requests
+- Deal with external service failures
+
+Mocking solves all of this by replacing the real email service with a fake one you control.
+
+<MockingVisualizer mockType="function" showComparison={true} />
+
+<KeyConcept title="Mocking = Controlled Isolation">
+Mocking replaces real dependencies with fake versions. This makes tests faster, more reliable, and focused on the code you're actually testing.
+</KeyConcept>
+
+<ProgressCheckpoint section="why-unit-testing" xpReward={15} />
+
+## Creating Mock Functions with vi.fn()
+
+The `vi.fn()` function creates a mock that tracks how it's called:
+
+```typescript
+import { vi, test, expect } from 'vitest';
+
+test('mock function tracks calls', () => {
+  // Create a mock function
+  const mockFn = vi.fn();
+  
+  // Call it
+  mockFn('hello', 'world');
+  mockFn(42);
+  
+  // Check how it was called
+  expect(mockFn).toHaveBeenCalledTimes(2);
+  expect(mockFn).toHaveBeenCalledWith('hello', 'world');
+  expect(mockFn).toHaveBeenLastCalledWith(42);
+});
+```
+
+### Controlling Return Values
+
+```typescript
+const getUser = vi.fn();
+
+// Return a specific value
+getUser.mockReturnValue({ id: 1, name: 'Alice' });
+
+// Return different values on consecutive calls
+getUser
+  .mockReturnValueOnce({ id: 1, name: 'Alice' })
+  .mockReturnValueOnce({ id: 2, name: 'Bob' });
+
+// Return a promise
+getUser.mockResolvedValue({ id: 1, name: 'Alice' });
+getUser.mockRejectedValue(new Error('User not found'));
+```
+
+<ProgressCheckpoint section="vitest-basics" xpReward={15} />
+
+## Spying on Existing Functions
+
+Sometimes you don't want to replace a function entirely—you just want to watch it. That's where `vi.spyOn()` comes in:
+
+```typescript
+import { vi, test, expect } from 'vitest';
+
+const calculator = {
+  add: (a: number, b: number) => a + b,
+  multiply: (a: number, b: number) => a * b,
+};
+
+test('spy on existing method', () => {
+  // Create a spy - original function still works
+  const addSpy = vi.spyOn(calculator, 'add');
+  
+  // Call the real function
+  const result = calculator.add(2, 3);
+  
+  // Verify it was called AND check the real result
+  expect(addSpy).toHaveBeenCalledWith(2, 3);
+  expect(result).toBe(5);
+  
+  // Clean up
+  addSpy.mockRestore();
+});
+```
+
+<InfoBox type="tip" title="Spy vs Mock">
+**Spy**: Watches the real function, lets it execute normally  
+**Mock**: Replaces the function entirely with a fake
+</InfoBox>
+
+<ProgressCheckpoint section="writing-tests" xpReward={15} />
+
+## Mocking Modules
+
+Real applications import modules. Vitest lets you mock entire modules:
+
+```typescript
+import { vi, test, expect } from 'vitest';
+import { sendEmail } from './emailService';
+import { createUser } from './userService';
+
+// Mock the entire email module
+vi.mock('./emailService', () => ({
+  sendEmail: vi.fn().mockResolvedValue({ success: true }),
+}));
+
+test('createUser sends welcome email', async () => {
+  await createUser({ email: 'test@example.com', name: 'Test' });
+  
+  expect(sendEmail).toHaveBeenCalledWith(
+    expect.objectContaining({
+      to: 'test@example.com',
+      subject: expect.stringContaining('Welcome'),
+    })
+  );
+});
+```
+
+<MockingVisualizer mockType="api" showComparison={true} />
+
+<ProgressCheckpoint section="assertions" xpReward={15} />
+
+## Testing Async Code
+
+Modern JavaScript is full of async operations. Vitest handles them elegantly:
+
+### Testing Promises
+
+```typescript
+import { test, expect } from 'vitest';
+
+// Method 1: async/await (recommended)
+test('fetches user data', async () => {
+  const user = await fetchUser(1);
+  expect(user.name).toBe('Alice');
+});
+
+// Method 2: Using resolves/rejects
+test('promise resolves with user', async () => {
+  await expect(fetchUser(1)).resolves.toEqual({
+    id: 1,
+    name: 'Alice',
+  });
+});
+
+test('promise rejects for invalid id', async () => {
+  await expect(fetchUser(-1)).rejects.toThrow('Invalid user ID');
+});
+```
+
+### Testing Callbacks
+
+```typescript
+test('callback is called with data', () => {
+  return new Promise((resolve) => {
+    fetchDataWithCallback((data) => {
+      expect(data).toBeDefined();
+      resolve();
+    });
+  });
+});
+```
+
+<AssertionPlayground assertionType="async" />
+
+<ProgressCheckpoint section="mocking" xpReward={20} />
+
+## Mocking Timers
+
+Testing code with `setTimeout` or `setInterval`? Don't wait for real time to pass!
+
+<MockingVisualizer mockType="timer" showComparison={true} />
+
+```typescript
+import { vi, test, expect, beforeEach, afterEach } from 'vitest';
+
+beforeEach(() => {
+  vi.useFakeTimers();
+});
+
+afterEach(() => {
+  vi.useRealTimers();
+});
+
+test('debounce waits before calling', () => {
+  const callback = vi.fn();
+  const debouncedFn = debounce(callback, 1000);
+  
+  // Call the debounced function
+  debouncedFn();
+  
+  // Callback not called yet
+  expect(callback).not.toHaveBeenCalled();
+  
+  // Fast-forward time
+  vi.advanceTimersByTime(1000);
+  
+  // Now it's called!
+  expect(callback).toHaveBeenCalledTimes(1);
+});
+
+test('setInterval calls repeatedly', () => {
+  const callback = vi.fn();
+  setInterval(callback, 100);
+  
+  vi.advanceTimersByTime(350);
+  
+  expect(callback).toHaveBeenCalledTimes(3);
+});
+```
+
+<ProgressCheckpoint section="best-practices" xpReward={15} />
+
+## Setup and Teardown
+
+Use lifecycle hooks to prepare and clean up for tests:
+
+```typescript
+import { describe, test, beforeAll, afterAll, beforeEach, afterEach } from 'vitest';
+
+describe('Database tests', () => {
+  // Run once before all tests in this describe block
+  beforeAll(async () => {
+    await connectToTestDatabase();
+  });
+
+  // Run once after all tests
+  afterAll(async () => {
+    await disconnectFromDatabase();
+  });
+
+  // Run before each test
+  beforeEach(async () => {
+    await clearTestData();
+  });
+
+  // Run after each test
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
+
+  test('creates a user', async () => {
+    // Test with clean database state
+  });
+});
+```
+
+<InfoBox type="warning" title="Clean Up Your Mocks!">
+Always reset mocks between tests using `vi.clearAllMocks()` or `vi.resetAllMocks()`. Otherwise, mock state can leak between tests and cause confusing failures.
+</InfoBox>
+
+## Advanced Matchers
+
+Vitest provides powerful matchers for complex assertions:
+
+```typescript
+// Partial object matching
+expect(user).toMatchObject({
+  name: 'Alice',
+  // Don't care about other properties
+});
+
+// Expect any value of a type
+expect(callback).toHaveBeenCalledWith(
+  expect.any(String),
+  expect.any(Number)
+);
+
+// Array containing specific items
+expect(users).toEqual(
+  expect.arrayContaining([
+    expect.objectContaining({ name: 'Alice' }),
+  ])
+);
+
+// String matching
+expect(error.message).toEqual(
+  expect.stringContaining('not found')
+);
+```
+
+<AssertionPlayground assertionType="matchers" />
+
+## Quick Quiz
+
+<Quiz id="unit-testing-intermediate-quiz">
+  <Question text="What's the difference between vi.fn() and vi.spyOn()?">
+    <Answer correct>vi.fn() creates a new mock, vi.spyOn() watches an existing function</Answer>
+    <Answer>vi.fn() is faster than vi.spyOn()</Answer>
+    <Answer>vi.spyOn() can only be used with classes</Answer>
+    <Answer>There is no difference</Answer>
+  </Question>
+  
+  <Question text="How do you test a function that uses setTimeout without waiting?">
+    <Answer>You can't - you must wait for real time</Answer>
+    <Answer correct>Use vi.useFakeTimers() and vi.advanceTimersByTime()</Answer>
+    <Answer>Use vi.mockTimeout()</Answer>
+    <Answer>Set the timeout to 0</Answer>
+  </Question>
+  
+  <Question text="When should you use mockResolvedValue vs mockReturnValue?">
+    <Answer>They are interchangeable</Answer>
+    <Answer>mockResolvedValue is for sync, mockReturnValue is for async</Answer>
+    <Answer correct>mockResolvedValue is for promises, mockReturnValue is for sync returns</Answer>
+    <Answer>mockResolvedValue is deprecated</Answer>
+  </Question>
+</Quiz>
+
+<ProgressCheckpoint section="summary" xpReward={10} />
+
+## Key Takeaways
+
+<KeyConcept title="Mocking = Control">
+Use `vi.fn()` to create mocks, `vi.spyOn()` to watch existing functions, and `vi.mock()` to replace entire modules. This gives you complete control over dependencies.
+</KeyConcept>
+
+<KeyConcept title="Async Testing">
+Use `async/await` for promise-based code. Use `resolves` and `rejects` matchers for cleaner assertions on promises.
+</KeyConcept>
+
+<KeyConcept title="Fake Timers">
+`vi.useFakeTimers()` lets you control time in tests. No more waiting for real timeouts!
+</KeyConcept>
+
+---
+
+**Excellent progress!** 🚀 You now have the tools to test real-world code with dependencies, async operations, and timers. In the advanced level, we'll explore test coverage, property-based testing, and advanced patterns.

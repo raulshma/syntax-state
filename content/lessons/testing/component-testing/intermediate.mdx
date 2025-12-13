@@ -1,0 +1,460 @@
+# Component Testing - Intermediate
+
+Now that you understand the basics of Testing Library, let's tackle real-world scenarios: forms with validation, async data fetching, state management, and testing components that interact with context and hooks.
+
+<InfoBox type="info" title="Real-World Testing">
+This lesson covers patterns you'll use daily in production applications. We'll test components that fetch data, manage complex state, and handle user workflows.
+</InfoBox>
+
+<ProgressCheckpoint section="introduction" xpReward={15} />
+
+## Testing Forms
+
+Forms are central to most applications. Let's test a complete login form:
+
+```tsx
+// LoginForm.tsx
+export function LoginForm({ onSubmit }: { onSubmit: (data: LoginData) => void }) {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.includes('@')) {
+      setError('Invalid email address');
+      return;
+    }
+    if (password.length < 8) {
+      setError('Password must be at least 8 characters');
+      return;
+    }
+    onSubmit({ email, password });
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      {error && <div role="alert">{error}</div>}
+      <label>
+        Email
+        <input 
+          type="email" 
+          value={email} 
+          onChange={(e) => setEmail(e.target.value)} 
+        />
+      </label>
+      <label>
+        Password
+        <input 
+          type="password" 
+          value={password} 
+          onChange={(e) => setPassword(e.target.value)} 
+        />
+      </label>
+      <button type="submit">Log in</button>
+    </form>
+  );
+}
+```
+
+```typescript
+// LoginForm.test.tsx
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { LoginForm } from './LoginForm';
+
+describe('LoginForm', () => {
+  test('submits with valid data', async () => {
+    const handleSubmit = vi.fn();
+    const user = userEvent.setup();
+    
+    render(<LoginForm onSubmit={handleSubmit} />);
+    
+    await user.type(screen.getByLabelText(/email/i), 'test@example.com');
+    await user.type(screen.getByLabelText(/password/i), 'password123');
+    await user.click(screen.getByRole('button', { name: /log in/i }));
+    
+    expect(handleSubmit).toHaveBeenCalledWith({
+      email: 'test@example.com',
+      password: 'password123',
+    });
+  });
+
+  test('shows error for invalid email', async () => {
+    const user = userEvent.setup();
+    
+    render(<LoginForm onSubmit={vi.fn()} />);
+    
+    await user.type(screen.getByLabelText(/email/i), 'invalid-email');
+    await user.type(screen.getByLabelText(/password/i), 'password123');
+    await user.click(screen.getByRole('button', { name: /log in/i }));
+    
+    expect(screen.getByRole('alert')).toHaveTextContent(/invalid email/i);
+  });
+
+  test('shows error for short password', async () => {
+    const user = userEvent.setup();
+    
+    render(<LoginForm onSubmit={vi.fn()} />);
+    
+    await user.type(screen.getByLabelText(/email/i), 'test@example.com');
+    await user.type(screen.getByLabelText(/password/i), 'short');
+    await user.click(screen.getByRole('button', { name: /log in/i }));
+    
+    expect(screen.getByRole('alert')).toHaveTextContent(/at least 8 characters/i);
+  });
+});
+```
+
+<ComponentTestSimulator componentType="form" />
+
+<ProgressCheckpoint section="why-component-testing" xpReward={15} />
+
+## Testing Async Operations
+
+Most components fetch data. Here's how to test them:
+
+```tsx
+// UserProfile.tsx
+export function UserProfile({ userId }: { userId: string }) {
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchUser(userId)
+      .then(setUser)
+      .catch((e) => setError(e.message))
+      .finally(() => setLoading(false));
+  }, [userId]);
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div role="alert">Error: {error}</div>;
+  if (!user) return <div>User not found</div>;
+
+  return (
+    <div>
+      <h1>{user.name}</h1>
+      <p>{user.email}</p>
+    </div>
+  );
+}
+```
+
+```typescript
+// UserProfile.test.tsx
+import { render, screen, waitFor } from '@testing-library/react';
+import { UserProfile } from './UserProfile';
+import { fetchUser } from './api';
+
+// Mock the API module
+vi.mock('./api');
+
+describe('UserProfile', () => {
+  test('shows loading state initially', () => {
+    vi.mocked(fetchUser).mockImplementation(() => new Promise(() => {}));
+    
+    render(<UserProfile userId="1" />);
+    
+    expect(screen.getByText(/loading/i)).toBeInTheDocument();
+  });
+
+  test('displays user data after loading', async () => {
+    vi.mocked(fetchUser).mockResolvedValue({
+      id: '1',
+      name: 'Alice',
+      email: 'alice@example.com',
+    });
+    
+    render(<UserProfile userId="1" />);
+    
+    // Wait for the user name to appear
+    expect(await screen.findByRole('heading', { name: 'Alice' })).toBeInTheDocument();
+    expect(screen.getByText('alice@example.com')).toBeInTheDocument();
+    expect(screen.queryByText(/loading/i)).not.toBeInTheDocument();
+  });
+
+  test('shows error message on failure', async () => {
+    vi.mocked(fetchUser).mockRejectedValue(new Error('Network error'));
+    
+    render(<UserProfile userId="1" />);
+    
+    expect(await screen.findByRole('alert')).toHaveTextContent(/network error/i);
+  });
+});
+```
+
+<KeyConcept title="findBy for Async">
+Use `findBy` queries when waiting for elements that appear after async operations. They automatically wait and retry until the element appears or timeout.
+</KeyConcept>
+
+<ProgressCheckpoint section="testing-library-basics" xpReward={15} />
+
+## Testing with waitFor
+
+Sometimes you need more control over waiting:
+
+```typescript
+import { render, screen, waitFor } from '@testing-library/react';
+
+test('updates count after delay', async () => {
+  render(<DelayedCounter />);
+  
+  await userEvent.click(screen.getByRole('button', { name: /increment/i }));
+  
+  // Wait for a condition to be true
+  await waitFor(() => {
+    expect(screen.getByTestId('count')).toHaveTextContent('1');
+  });
+});
+
+test('removes item from list', async () => {
+  render(<TodoList items={['Item 1', 'Item 2']} />);
+  
+  await userEvent.click(screen.getByRole('button', { name: /delete item 1/i }));
+  
+  // Wait for element to be removed
+  await waitFor(() => {
+    expect(screen.queryByText('Item 1')).not.toBeInTheDocument();
+  });
+});
+```
+
+<ProgressCheckpoint section="querying-elements" xpReward={15} />
+
+## Testing Components with Context
+
+Many components depend on React Context. Wrap them in providers for testing:
+
+```tsx
+// ThemeContext.tsx
+export const ThemeContext = createContext<{
+  theme: 'light' | 'dark';
+  toggleTheme: () => void;
+}>({ theme: 'light', toggleTheme: () => {} });
+
+// ThemedButton.tsx
+export function ThemedButton({ children }: { children: React.ReactNode }) {
+  const { theme, toggleTheme } = useContext(ThemeContext);
+  return (
+    <button 
+      onClick={toggleTheme}
+      className={theme === 'dark' ? 'bg-gray-800' : 'bg-white'}
+    >
+      {children}
+    </button>
+  );
+}
+```
+
+```typescript
+// ThemedButton.test.tsx
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { ThemeContext } from './ThemeContext';
+import { ThemedButton } from './ThemedButton';
+
+// Custom render function with providers
+function renderWithTheme(
+  ui: React.ReactElement,
+  { theme = 'light', toggleTheme = vi.fn() } = {}
+) {
+  return render(
+    <ThemeContext.Provider value={{ theme, toggleTheme }}>
+      {ui}
+    </ThemeContext.Provider>
+  );
+}
+
+test('calls toggleTheme when clicked', async () => {
+  const toggleTheme = vi.fn();
+  
+  renderWithTheme(<ThemedButton>Toggle</ThemedButton>, { toggleTheme });
+  
+  await userEvent.click(screen.getByRole('button'));
+  
+  expect(toggleTheme).toHaveBeenCalled();
+});
+
+test('applies dark theme styles', () => {
+  renderWithTheme(<ThemedButton>Toggle</ThemedButton>, { theme: 'dark' });
+  
+  expect(screen.getByRole('button')).toHaveClass('bg-gray-800');
+});
+```
+
+<InfoBox type="tip" title="Create Custom Render Functions">
+Create a custom `render` function that wraps components with all necessary providers. This keeps your tests clean and consistent.
+</InfoBox>
+
+<ProgressCheckpoint section="user-interactions" xpReward={20} />
+
+## Testing Custom Hooks
+
+Test hooks using `renderHook` from Testing Library:
+
+```typescript
+// useCounter.ts
+export function useCounter(initialValue = 0) {
+  const [count, setCount] = useState(initialValue);
+  
+  const increment = () => setCount(c => c + 1);
+  const decrement = () => setCount(c => c - 1);
+  const reset = () => setCount(initialValue);
+  
+  return { count, increment, decrement, reset };
+}
+```
+
+```typescript
+// useCounter.test.ts
+import { renderHook, act } from '@testing-library/react';
+import { useCounter } from './useCounter';
+
+test('initializes with default value', () => {
+  const { result } = renderHook(() => useCounter());
+  expect(result.current.count).toBe(0);
+});
+
+test('initializes with custom value', () => {
+  const { result } = renderHook(() => useCounter(10));
+  expect(result.current.count).toBe(10);
+});
+
+test('increments count', () => {
+  const { result } = renderHook(() => useCounter());
+  
+  act(() => {
+    result.current.increment();
+  });
+  
+  expect(result.current.count).toBe(1);
+});
+
+test('resets to initial value', () => {
+  const { result } = renderHook(() => useCounter(5));
+  
+  act(() => {
+    result.current.increment();
+    result.current.increment();
+    result.current.reset();
+  });
+  
+  expect(result.current.count).toBe(5);
+});
+```
+
+<ComponentTestSimulator componentType="counter" />
+
+<ProgressCheckpoint section="async-testing" xpReward={15} />
+
+## Mocking API Calls with MSW
+
+Mock Service Worker (MSW) intercepts network requests for realistic API mocking:
+
+```typescript
+// mocks/handlers.ts
+import { http, HttpResponse } from 'msw';
+
+export const handlers = [
+  http.get('/api/users/:id', ({ params }) => {
+    return HttpResponse.json({
+      id: params.id,
+      name: 'Test User',
+      email: 'test@example.com',
+    });
+  }),
+  
+  http.post('/api/login', async ({ request }) => {
+    const body = await request.json();
+    if (body.email === 'test@example.com') {
+      return HttpResponse.json({ token: 'fake-token' });
+    }
+    return HttpResponse.json(
+      { error: 'Invalid credentials' },
+      { status: 401 }
+    );
+  }),
+];
+```
+
+```typescript
+// test/setup.ts
+import { setupServer } from 'msw/node';
+import { handlers } from './mocks/handlers';
+
+export const server = setupServer(...handlers);
+
+beforeAll(() => server.listen());
+afterEach(() => server.resetHandlers());
+afterAll(() => server.close());
+```
+
+```typescript
+// UserProfile.test.tsx
+import { server } from '../test/setup';
+import { http, HttpResponse } from 'msw';
+
+test('handles server error', async () => {
+  // Override handler for this specific test
+  server.use(
+    http.get('/api/users/:id', () => {
+      return HttpResponse.json(
+        { error: 'Server error' },
+        { status: 500 }
+      );
+    })
+  );
+  
+  render(<UserProfile userId="1" />);
+  
+  expect(await screen.findByRole('alert')).toBeInTheDocument();
+});
+```
+
+<ProgressCheckpoint section="best-practices" xpReward={15} />
+
+## Quick Quiz
+
+<Quiz id="component-testing-intermediate-quiz">
+  <Question text="How do you test a component that fetches data on mount?">
+    <Answer>Use setTimeout to wait for the data</Answer>
+    <Answer correct>Mock the API and use findBy queries to wait for content</Answer>
+    <Answer>Disable the useEffect hook</Answer>
+    <Answer>Test only the loading state</Answer>
+  </Question>
+  
+  <Question text="What's the purpose of the act() function in hook tests?">
+    <Answer>It makes tests run faster</Answer>
+    <Answer>It's required for all assertions</Answer>
+    <Answer correct>It wraps state updates to ensure React processes them</Answer>
+    <Answer>It mocks the hook implementation</Answer>
+  </Question>
+  
+  <Question text="Why use MSW instead of mocking fetch directly?">
+    <Answer>MSW is faster</Answer>
+    <Answer correct>MSW intercepts at the network level, testing more realistically</Answer>
+    <Answer>fetch can't be mocked</Answer>
+    <Answer>MSW works in production too</Answer>
+  </Question>
+</Quiz>
+
+<ProgressCheckpoint section="summary" xpReward={10} />
+
+## Key Takeaways
+
+<KeyConcept title="Test Async with findBy">
+Use `findBy` queries for elements that appear after async operations. They automatically wait and retry.
+</KeyConcept>
+
+<KeyConcept title="Custom Render Functions">
+Create wrapper functions that include providers (Context, Router, etc.) to keep tests clean and consistent.
+</KeyConcept>
+
+<KeyConcept title="MSW for API Mocking">
+Mock Service Worker provides realistic API mocking at the network level, making tests more reliable and closer to production behavior.
+</KeyConcept>
+
+---
+
+**Excellent progress!** 🚀 You can now test forms, async operations, and components with context. In the advanced level, we'll explore accessibility testing, snapshot testing, and advanced patterns.

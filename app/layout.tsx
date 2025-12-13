@@ -54,7 +54,7 @@ export default function RootLayout({
     <ClerkProvider>
       <html lang="en" className="dark" suppressHydrationWarning>
         <head>
-          {process.env.NODE_ENV === "development" && (
+          {/* {process.env.NODE_ENV === "development" && (
             <>
               <Script
                 src="//unpkg.com/react-grab/dist/index.global.js"
@@ -67,7 +67,7 @@ export default function RootLayout({
                 async
               />
             </>
-          )}
+          )} */}
         </head>
         <body className={`font-sans antialiased`}>
           <ThemeProvider

@@ -1,0 +1,435 @@
+# Component Testing - Advanced
+
+Welcome to advanced component testing! We'll explore accessibility testing, complex user flows, performance considerations, and patterns used in large-scale applications. These skills will help you write tests that truly ensure quality.
+
+<InfoBox type="info" title="Production-Ready Testing">
+This lesson covers techniques used by teams at companies like Meta, Airbnb, and Stripe. Master these patterns to write tests that catch real bugs and scale with your application.
+</InfoBox>
+
+<ProgressCheckpoint section="introduction" xpReward={20} />
+
+## Accessibility Testing
+
+Testing Library encourages accessible queries by design, but we can go further with explicit accessibility testing:
+
+```typescript
+import { render, screen } from '@testing-library/react';
+import { axe, toHaveNoViolations } from 'jest-axe';
+
+expect.extend(toHaveNoViolations);
+
+test('form has no accessibility violations', async () => {
+  const { container } = render(<LoginForm />);
+  
+  const results = await axe(container);
+  
+  expect(results).toHaveNoViolations();
+});
+```
+
+### Testing Keyboard Navigation
+
+```typescript
+test('can navigate form with keyboard', async () => {
+  const user = userEvent.setup();
+  render(<LoginForm />);
+  
+  // Tab to email field
+  await user.tab();
+  expect(screen.getByLabelText(/email/i)).toHaveFocus();
+  
+  // Tab to password field
+  await user.tab();
+  expect(screen.getByLabelText(/password/i)).toHaveFocus();
+  
+  // Tab to submit button
+  await user.tab();
+  expect(screen.getByRole('button', { name: /submit/i })).toHaveFocus();
+  
+  // Submit with Enter
+  await user.keyboard('{Enter}');
+});
+```
+
+### Testing ARIA Attributes
+
+```typescript
+test('dialog has correct ARIA attributes', () => {
+  render(<Modal isOpen={true} title="Confirm Action" />);
+  
+  const dialog = screen.getByRole('dialog');
+  
+  expect(dialog).toHaveAttribute('aria-modal', 'true');
+  expect(dialog).toHaveAttribute('aria-labelledby');
+  
+  const labelId = dialog.getAttribute('aria-labelledby');
+  expect(screen.getByText('Confirm Action')).toHaveAttribute('id', labelId);
+});
+
+test('error message is announced to screen readers', async () => {
+  const user = userEvent.setup();
+  render(<LoginForm />);
+  
+  await user.type(screen.getByLabelText(/email/i), 'invalid');
+  await user.click(screen.getByRole('button', { name: /submit/i }));
+  
+  const error = screen.getByRole('alert');
+  expect(error).toBeInTheDocument();
+  expect(error).toHaveAttribute('aria-live', 'polite');
+});
+```
+
+<KeyConcept title="Accessibility = Quality">
+Accessible components are easier to test AND better for users. If you can't find an element with accessible queries, it's a sign the component needs improvement.
+</KeyConcept>
+
+<ProgressCheckpoint section="why-component-testing" xpReward={20} />
+
+## Testing Complex User Flows
+
+Real applications have multi-step workflows. Test them end-to-end within your component tests:
+
+```typescript
+describe('Checkout Flow', () => {
+  test('complete checkout process', async () => {
+    const user = userEvent.setup();
+    const onComplete = vi.fn();
+    
+    render(<CheckoutWizard onComplete={onComplete} />);
+    
+    // Step 1: Shipping
+    expect(screen.getByRole('heading', { name: /shipping/i })).toBeInTheDocument();
+    await user.type(screen.getByLabelText(/address/i), '123 Main St');
+    await user.type(screen.getByLabelText(/city/i), 'New York');
+    await user.click(screen.getByRole('button', { name: /continue/i }));
+    
+    // Step 2: Payment
+    expect(await screen.findByRole('heading', { name: /payment/i })).toBeInTheDocument();
+    await user.type(screen.getByLabelText(/card number/i), '4242424242424242');
+    await user.type(screen.getByLabelText(/expiry/i), '12/25');
+    await user.click(screen.getByRole('button', { name: /continue/i }));
+    
+    // Step 3: Review
+    expect(await screen.findByRole('heading', { name: /review/i })).toBeInTheDocument();
+    expect(screen.getByText('123 Main St')).toBeInTheDocument();
+    expect(screen.getByText(/\*\*\*\*4242/)).toBeInTheDocument();
+    
+    // Complete
+    await user.click(screen.getByRole('button', { name: /place order/i }));
+    
+    await waitFor(() => {
+      expect(onComplete).toHaveBeenCalled();
+    });
+  });
+
+  test('can go back to previous steps', async () => {
+    const user = userEvent.setup();
+    render(<CheckoutWizard />);
+    
+    // Complete step 1
+    await user.type(screen.getByLabelText(/address/i), '123 Main St');
+    await user.click(screen.getByRole('button', { name: /continue/i }));
+    
+    // Go back
+    await user.click(screen.getByRole('button', { name: /back/i }));
+    
+    // Data should be preserved
+    expect(screen.getByLabelText(/address/i)).toHaveValue('123 Main St');
+  });
+});
+```
+
+<ProgressCheckpoint section="testing-library-basics" xpReward={20} />
+
+## Testing Error Boundaries
+
+Error boundaries catch JavaScript errors in components. Test that they work:
+
+```typescript
+// ErrorBoundary.test.tsx
+import { render, screen } from '@testing-library/react';
+
+// Component that throws
+function BrokenComponent() {
+  throw new Error('Test error');
+}
+
+// Suppress console.error for this test
+const originalError = console.error;
+beforeAll(() => {
+  console.error = vi.fn();
+});
+afterAll(() => {
+  console.error = originalError;
+});
+
+test('displays fallback UI when child throws', () => {
+  render(
+    <ErrorBoundary fallback={<div>Something went wrong</div>}>
+      <BrokenComponent />
+    </ErrorBoundary>
+  );
+  
+  expect(screen.getByText('Something went wrong')).toBeInTheDocument();
+});
+
+test('renders children when no error', () => {
+  render(
+    <ErrorBoundary fallback={<div>Something went wrong</div>}>
+      <div>Normal content</div>
+    </ErrorBoundary>
+  );
+  
+  expect(screen.getByText('Normal content')).toBeInTheDocument();
+  expect(screen.queryByText('Something went wrong')).not.toBeInTheDocument();
+});
+```
+
+<ProgressCheckpoint section="querying-elements" xpReward={20} />
+
+## Testing with React Router
+
+Components often depend on routing. Test them with a router wrapper:
+
+```typescript
+import { render, screen } from '@testing-library/react';
+import { MemoryRouter, Routes, Route } from 'react-router-dom';
+import userEvent from '@testing-library/user-event';
+
+function renderWithRouter(ui: React.ReactElement, { route = '/' } = {}) {
+  return render(
+    <MemoryRouter initialEntries={[route]}>
+      {ui}
+    </MemoryRouter>
+  );
+}
+
+test('navigates to user profile', async () => {
+  const user = userEvent.setup();
+  
+  renderWithRouter(
+    <Routes>
+      <Route path="/" element={<UserList />} />
+      <Route path="/users/:id" element={<UserProfile />} />
+    </Routes>
+  );
+  
+  await user.click(screen.getByRole('link', { name: /alice/i }));
+  
+  expect(await screen.findByRole('heading', { name: /alice/i })).toBeInTheDocument();
+});
+
+test('shows 404 for unknown routes', () => {
+  renderWithRouter(
+    <Routes>
+      <Route path="/" element={<Home />} />
+      <Route path="*" element={<NotFound />} />
+    </Routes>,
+    { route: '/unknown-page' }
+  );
+  
+  expect(screen.getByText(/page not found/i)).toBeInTheDocument();
+});
+```
+
+<ProgressCheckpoint section="user-interactions" xpReward={20} />
+
+## Snapshot Testing for Components
+
+Snapshots capture component output and alert you to changes:
+
+```typescript
+test('renders user card correctly', () => {
+  const { container } = render(
+    <UserCard 
+      user={{ name: 'Alice', email: 'alice@example.com', role: 'admin' }} 
+    />
+  );
+  
+  expect(container.firstChild).toMatchSnapshot();
+});
+
+// Inline snapshot for small outputs
+test('formats user name', () => {
+  render(<UserName first="Alice" last="Smith" />);
+  
+  expect(screen.getByTestId('full-name').textContent).toMatchInlineSnapshot(
+    `"Alice Smith"`
+  );
+});
+```
+
+<InfoBox type="warning" title="Snapshot Best Practices">
+- Keep snapshots small and focused
+- Don't snapshot entire pages
+- Review snapshot changes carefully in code review
+- Consider if a specific assertion would be better
+</InfoBox>
+
+<ProgressCheckpoint section="async-testing" xpReward={20} />
+
+## Testing Performance-Sensitive Components
+
+For components with performance requirements:
+
+```typescript
+test('virtualized list renders only visible items', () => {
+  const items = Array.from({ length: 10000 }, (_, i) => ({ id: i, name: `Item ${i}` }));
+  
+  render(<VirtualizedList items={items} height={500} itemHeight={50} />);
+  
+  // Should only render ~10 items (500px / 50px)
+  const renderedItems = screen.getAllByRole('listitem');
+  expect(renderedItems.length).toBeLessThan(20);
+  
+  // First items should be visible
+  expect(screen.getByText('Item 0')).toBeInTheDocument();
+  
+  // Items far down should not be rendered
+  expect(screen.queryByText('Item 9999')).not.toBeInTheDocument();
+});
+
+test('debounced search waits before searching', async () => {
+  vi.useFakeTimers();
+  const onSearch = vi.fn();
+  const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+  
+  render(<SearchInput onSearch={onSearch} debounceMs={300} />);
+  
+  await user.type(screen.getByRole('searchbox'), 'test');
+  
+  // Should not have searched yet
+  expect(onSearch).not.toHaveBeenCalled();
+  
+  // Advance time
+  vi.advanceTimersByTime(300);
+  
+  expect(onSearch).toHaveBeenCalledWith('test');
+  
+  vi.useRealTimers();
+});
+```
+
+<ProgressCheckpoint section="best-practices" xpReward={15} />
+
+## Creating a Test Utils Library
+
+For large applications, create reusable test utilities:
+
+```typescript
+// test/utils.tsx
+import { render, RenderOptions } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ThemeProvider } from './ThemeContext';
+import { AuthProvider } from './AuthContext';
+import { MemoryRouter } from 'react-router-dom';
+
+interface CustomRenderOptions extends Omit<RenderOptions, 'wrapper'> {
+  route?: string;
+  user?: User | null;
+  theme?: 'light' | 'dark';
+}
+
+function createTestQueryClient() {
+  return new QueryClient({
+    defaultOptions: {
+      queries: { retry: false },
+      mutations: { retry: false },
+    },
+  });
+}
+
+export function renderWithProviders(
+  ui: React.ReactElement,
+  {
+    route = '/',
+    user = null,
+    theme = 'light',
+    ...renderOptions
+  }: CustomRenderOptions = {}
+) {
+  const queryClient = createTestQueryClient();
+  
+  function Wrapper({ children }: { children: React.ReactNode }) {
+    return (
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider initialUser={user}>
+          <ThemeProvider initialTheme={theme}>
+            <MemoryRouter initialEntries={[route]}>
+              {children}
+            </MemoryRouter>
+          </ThemeProvider>
+        </AuthProvider>
+      </QueryClientProvider>
+    );
+  }
+  
+  return {
+    ...render(ui, { wrapper: Wrapper, ...renderOptions }),
+    queryClient,
+  };
+}
+
+// Re-export everything from testing-library
+export * from '@testing-library/react';
+export { renderWithProviders as render };
+```
+
+```typescript
+// Usage in tests
+import { render, screen } from '../test/utils';
+
+test('shows user dashboard', async () => {
+  render(<Dashboard />, {
+    user: { id: '1', name: 'Alice', role: 'admin' },
+    route: '/dashboard',
+  });
+  
+  expect(await screen.findByText(/welcome, alice/i)).toBeInTheDocument();
+});
+```
+
+## Quick Quiz
+
+<Quiz id="component-testing-advanced-quiz">
+  <Question text="What does jest-axe test for?">
+    <Answer>JavaScript syntax errors</Answer>
+    <Answer>Component performance</Answer>
+    <Answer correct>Accessibility violations</Answer>
+    <Answer>Memory leaks</Answer>
+  </Question>
+  
+  <Question text="When testing with React Router, what component should you use?">
+    <Answer>BrowserRouter</Answer>
+    <Answer correct>MemoryRouter</Answer>
+    <Answer>HashRouter</Answer>
+    <Answer>StaticRouter</Answer>
+  </Question>
+  
+  <Question text="What's the main benefit of creating custom render functions?">
+    <Answer>Tests run faster</Answer>
+    <Answer correct>Consistent provider setup across all tests</Answer>
+    <Answer>Better error messages</Answer>
+    <Answer>Automatic mocking</Answer>
+  </Question>
+</Quiz>
+
+<ProgressCheckpoint section="summary" xpReward={15} />
+
+## Key Takeaways
+
+<KeyConcept title="Accessibility Testing">
+Use jest-axe for automated accessibility checks and test keyboard navigation manually. Accessible components are better for everyone.
+</KeyConcept>
+
+<KeyConcept title="Test User Flows">
+Don't just test individual interactions—test complete user journeys through your components to catch integration issues.
+</KeyConcept>
+
+<KeyConcept title="Custom Test Utils">
+Create a test utilities library with custom render functions that include all your providers. This keeps tests clean and consistent.
+</KeyConcept>
+
+---
+
+**Congratulations!** 🏆 You've mastered advanced component testing. You can now write comprehensive tests that verify accessibility, complex flows, and real-world scenarios. Your components are production-ready!

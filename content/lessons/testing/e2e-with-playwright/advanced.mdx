@@ -1,0 +1,478 @@
+# E2E Testing with Playwright - Advanced
+
+Welcome to advanced E2E testing! We'll explore visual regression testing, debugging techniques, CI/CD integration, and performance testing. These skills will help you build a robust testing pipeline that catches bugs before they reach production.
+
+<InfoBox type="info" title="Production-Grade Testing">
+This lesson covers techniques used by teams shipping to millions of users. Master these patterns to build confidence in your deployments.
+</InfoBox>
+
+<ProgressCheckpoint section="introduction" xpReward={20} />
+
+## Visual Regression Testing
+
+Visual tests catch CSS bugs and layout issues that functional tests miss:
+
+```typescript
+import { test, expect } from '@playwright/test';
+
+test('homepage visual regression', async ({ page }) => {
+  await page.goto('/');
+  
+  // Full page screenshot
+  await expect(page).toHaveScreenshot('homepage.png');
+});
+
+test('button states', async ({ page }) => {
+  await page.goto('/components/button');
+  
+  const button = page.getByRole('button', { name: 'Submit' });
+  
+  // Default state
+  await expect(button).toHaveScreenshot('button-default.png');
+  
+  // Hover state
+  await button.hover();
+  await expect(button).toHaveScreenshot('button-hover.png');
+  
+  // Focus state
+  await button.focus();
+  await expect(button).toHaveScreenshot('button-focus.png');
+});
+```
+
+### Configuring Visual Tests
+
+```typescript
+// playwright.config.ts
+import { defineConfig } from '@playwright/test';
+
+export default defineConfig({
+  expect: {
+    toHaveScreenshot: {
+      // Maximum allowed pixel difference
+      maxDiffPixels: 100,
+      
+      // Or use percentage
+      maxDiffPixelRatio: 0.01,
+      
+      // Animation handling
+      animations: 'disabled',
+      
+      // Mask dynamic content
+      mask: [page.locator('.timestamp')],
+    },
+  },
+  
+  // Update snapshots
+  updateSnapshots: 'missing',
+});
+```
+
+### Handling Dynamic Content
+
+```typescript
+test('dashboard with dynamic data', async ({ page }) => {
+  await page.goto('/dashboard');
+  
+  // Mask elements that change
+  await expect(page).toHaveScreenshot('dashboard.png', {
+    mask: [
+      page.locator('.current-time'),
+      page.locator('.user-avatar'),
+      page.locator('[data-testid="random-quote"]'),
+    ],
+  });
+});
+
+// Or use CSS to hide dynamic elements
+test('with style modifications', async ({ page }) => {
+  await page.goto('/dashboard');
+  
+  await page.addStyleTag({
+    content: `
+      .timestamp, .avatar { visibility: hidden !important; }
+    `,
+  });
+  
+  await expect(page).toHaveScreenshot();
+});
+```
+
+<KeyConcept title="Visual Tests Catch What Others Miss">
+Functional tests verify behavior, visual tests verify appearance. A button might work perfectly but look completely wrong—visual tests catch this.
+</KeyConcept>
+
+<ProgressCheckpoint section="why-e2e-testing" xpReward={20} />
+
+## Debugging Techniques
+
+When tests fail, Playwright provides powerful debugging tools:
+
+### Trace Viewer
+
+```typescript
+// playwright.config.ts
+export default defineConfig({
+  use: {
+    // Record trace on first retry
+    trace: 'on-first-retry',
+    
+    // Or always record
+    trace: 'on',
+  },
+});
+```
+
+```bash
+# View trace after test failure
+npx playwright show-trace test-results/trace.zip
+```
+
+The trace viewer shows:
+- Screenshots at each step
+- DOM snapshots
+- Network requests
+- Console logs
+- Action timeline
+
+### Debug Mode
+
+```bash
+# Run with debugger
+npx playwright test --debug
+
+# Debug specific test
+npx playwright test tests/login.spec.ts:10 --debug
+```
+
+### Using page.pause()
+
+```typescript
+test('debug this test', async ({ page }) => {
+  await page.goto('/');
+  
+  // Pause here and open inspector
+  await page.pause();
+  
+  await page.getByRole('button').click();
+});
+```
+
+### Console Logging
+
+```typescript
+test('with logging', async ({ page }) => {
+  // Log browser console messages
+  page.on('console', (msg) => console.log('Browser:', msg.text()));
+  
+  // Log network requests
+  page.on('request', (req) => console.log('Request:', req.url()));
+  page.on('response', (res) => console.log('Response:', res.status(), res.url()));
+  
+  await page.goto('/');
+});
+```
+
+<ProgressCheckpoint section="playwright-basics" xpReward={20} />
+
+## CI/CD Integration
+
+Run Playwright tests in your CI pipeline:
+
+### GitHub Actions
+
+```yaml
+# .github/workflows/playwright.yml
+name: Playwright Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+        
+      - name: Run Playwright tests
+        run: npx playwright test
+        
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30
+```
+
+### Sharding for Speed
+
+```yaml
+# Run tests in parallel across multiple machines
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        shard: [1, 2, 3, 4]
+    steps:
+      - name: Run tests
+        run: npx playwright test --shard=${{ matrix.shard }}/4
+```
+
+```typescript
+// playwright.config.ts for CI
+export default defineConfig({
+  // Fail fast in CI
+  forbidOnly: !!process.env.CI,
+  
+  // Retry on CI
+  retries: process.env.CI ? 2 : 0,
+  
+  // Limit workers in CI
+  workers: process.env.CI ? 2 : undefined,
+  
+  // CI-specific reporter
+  reporter: process.env.CI 
+    ? [['github'], ['html', { open: 'never' }]]
+    : 'html',
+});
+```
+
+<ProgressCheckpoint section="locators-and-selectors" xpReward={20} />
+
+## Performance Testing
+
+Measure and assert on performance metrics:
+
+```typescript
+import { test, expect } from '@playwright/test';
+
+test('page loads within performance budget', async ({ page }) => {
+  // Start measuring
+  await page.goto('/');
+  
+  // Get performance metrics
+  const metrics = await page.evaluate(() => {
+    const timing = performance.timing;
+    return {
+      domContentLoaded: timing.domContentLoadedEventEnd - timing.navigationStart,
+      load: timing.loadEventEnd - timing.navigationStart,
+      firstPaint: performance.getEntriesByType('paint')[0]?.startTime,
+    };
+  });
+  
+  // Assert on metrics
+  expect(metrics.domContentLoaded).toBeLessThan(2000);
+  expect(metrics.load).toBeLessThan(5000);
+});
+
+test('core web vitals', async ({ page }) => {
+  await page.goto('/');
+  
+  // Wait for LCP
+  const lcp = await page.evaluate(() => {
+    return new Promise((resolve) => {
+      new PerformanceObserver((list) => {
+        const entries = list.getEntries();
+        resolve(entries[entries.length - 1].startTime);
+      }).observe({ type: 'largest-contentful-paint', buffered: true });
+    });
+  });
+  
+  expect(lcp).toBeLessThan(2500); // Good LCP is < 2.5s
+});
+```
+
+### Network Throttling
+
+```typescript
+test('works on slow network', async ({ page, context }) => {
+  // Simulate slow 3G
+  await context.route('**/*', async (route) => {
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    await route.continue();
+  });
+  
+  await page.goto('/');
+  
+  // Should still show loading state quickly
+  await expect(page.getByText('Loading...')).toBeVisible();
+  
+  // And eventually load content
+  await expect(page.getByRole('main')).toBeVisible({ timeout: 30000 });
+});
+```
+
+<ProgressCheckpoint section="assertions-and-waits" xpReward={20} />
+
+## Testing Accessibility
+
+Integrate accessibility testing into your E2E suite:
+
+```typescript
+import { test, expect } from '@playwright/test';
+import AxeBuilder from '@axe-core/playwright';
+
+test('homepage has no accessibility violations', async ({ page }) => {
+  await page.goto('/');
+  
+  const results = await new AxeBuilder({ page }).analyze();
+  
+  expect(results.violations).toEqual([]);
+});
+
+test('form is accessible', async ({ page }) => {
+  await page.goto('/contact');
+  
+  const results = await new AxeBuilder({ page })
+    .include('form')
+    .withTags(['wcag2a', 'wcag2aa'])
+    .analyze();
+  
+  expect(results.violations).toEqual([]);
+});
+```
+
+### Testing Keyboard Navigation
+
+```typescript
+test('can complete form with keyboard only', async ({ page }) => {
+  await page.goto('/contact');
+  
+  // Tab to first field
+  await page.keyboard.press('Tab');
+  await expect(page.getByLabel('Name')).toBeFocused();
+  
+  // Type name
+  await page.keyboard.type('John Doe');
+  
+  // Tab to email
+  await page.keyboard.press('Tab');
+  await expect(page.getByLabel('Email')).toBeFocused();
+  
+  // Type email
+  await page.keyboard.type('john@example.com');
+  
+  // Tab to submit
+  await page.keyboard.press('Tab');
+  await expect(page.getByRole('button', { name: 'Submit' })).toBeFocused();
+  
+  // Submit with Enter
+  await page.keyboard.press('Enter');
+  
+  // Verify success
+  await expect(page.getByText('Message sent')).toBeVisible();
+});
+```
+
+<ProgressCheckpoint section="page-object-model" xpReward={15} />
+
+## Multi-Browser Testing
+
+Test across different browsers and devices:
+
+```typescript
+// playwright.config.ts
+import { defineConfig, devices } from '@playwright/test';
+
+export default defineConfig({
+  projects: [
+    // Desktop browsers
+    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
+    { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
+    { name: 'webkit', use: { ...devices['Desktop Safari'] } },
+    
+    // Mobile browsers
+    { name: 'mobile-chrome', use: { ...devices['Pixel 5'] } },
+    { name: 'mobile-safari', use: { ...devices['iPhone 12'] } },
+    
+    // Tablet
+    { name: 'tablet', use: { ...devices['iPad Pro'] } },
+  ],
+});
+```
+
+### Browser-Specific Tests
+
+```typescript
+import { test, expect } from '@playwright/test';
+
+test('safari-specific behavior', async ({ page, browserName }) => {
+  test.skip(browserName !== 'webkit', 'Safari-only test');
+  
+  await page.goto('/');
+  // Test Safari-specific behavior
+});
+
+test('responsive layout', async ({ page, isMobile }) => {
+  await page.goto('/');
+  
+  if (isMobile) {
+    await expect(page.getByRole('button', { name: 'Menu' })).toBeVisible();
+  } else {
+    await expect(page.getByRole('navigation')).toBeVisible();
+  }
+});
+```
+
+<ProgressCheckpoint section="best-practices" xpReward={15} />
+
+## Quick Quiz
+
+<Quiz id="e2e-playwright-advanced-quiz">
+  <Question text="What does visual regression testing catch that functional tests miss?">
+    <Answer>JavaScript errors</Answer>
+    <Answer>API failures</Answer>
+    <Answer correct>CSS bugs and layout issues</Answer>
+    <Answer>Performance problems</Answer>
+  </Question>
+  
+  <Question text="What's the purpose of test sharding in CI?">
+    <Answer>To test different browsers</Answer>
+    <Answer correct>To run tests in parallel across multiple machines</Answer>
+    <Answer>To split tests by feature</Answer>
+    <Answer>To reduce test flakiness</Answer>
+  </Question>
+  
+  <Question text="How do you handle dynamic content in visual tests?">
+    <Answer>Delete the dynamic elements</Answer>
+    <Answer>Run tests at the same time every day</Answer>
+    <Answer correct>Mask dynamic elements or use CSS to hide them</Answer>
+    <Answer>Visual tests can't handle dynamic content</Answer>
+  </Question>
+</Quiz>
+
+<ProgressCheckpoint section="summary" xpReward={15} />
+
+## Key Takeaways
+
+<KeyConcept title="Visual Testing">
+Screenshot comparisons catch CSS bugs and layout regressions. Mask dynamic content for reliable results.
+</KeyConcept>
+
+<KeyConcept title="Debugging Tools">
+Use trace viewer, debug mode, and `page.pause()` to investigate failures. Playwright's debugging tools are incredibly powerful.
+</KeyConcept>
+
+<KeyConcept title="CI/CD Integration">
+Run tests in CI with proper configuration: retries, sharding, and artifact uploads. Fast feedback is essential.
+</KeyConcept>
+
+---
+
+**Congratulations!** 🏆 You've mastered E2E testing with Playwright. You can now build comprehensive test suites that verify your application works correctly across browsers, catches visual regressions, and integrates seamlessly with your deployment pipeline.

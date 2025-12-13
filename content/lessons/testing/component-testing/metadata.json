@@ -1,0 +1,33 @@
+{
+  "id": "component-testing",
+  "title": "Component Testing",
+  "description": "Learn to test React components effectively using Testing Library and Vitest",
+  "milestone": "testing",
+  "order": 2,
+  "sections": [
+    "introduction",
+    "why-component-testing",
+    "testing-library-basics",
+    "querying-elements",
+    "user-interactions",
+    "async-testing",
+    "best-practices",
+    "summary"
+  ],
+  "levels": {
+    "beginner": {
+      "estimatedMinutes": 22,
+      "xpReward": 50
+    },
+    "intermediate": {
+      "estimatedMinutes": 38,
+      "xpReward": 100
+    },
+    "advanced": {
+      "estimatedMinutes": 55,
+      "xpReward": 200
+    }
+  },
+  "prerequisites": ["unit-testing-vitest", "components-and-jsx"],
+  "tags": ["testing", "react", "testing-library", "component-testing", "user-events"]
+}

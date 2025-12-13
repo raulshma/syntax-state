@@ -1,0 +1,414 @@
+# E2E Testing with Playwright - Intermediate
+
+Now that you understand the basics, let's explore patterns that make E2E tests maintainable and reliable: the Page Object Model, authentication handling, API mocking, and testing complex user flows.
+
+<InfoBox type="info" title="Scaling E2E Tests">
+As your test suite grows, organization becomes critical. The patterns in this lesson help you write tests that are easy to maintain and debug.
+</InfoBox>
+
+<ProgressCheckpoint section="introduction" xpReward={15} />
+
+## The Page Object Model
+
+The **Page Object Model (POM)** is a design pattern that creates an abstraction layer between your tests and page interactions. Instead of repeating selectors everywhere, you encapsulate them in reusable classes.
+
+<PageObjectModelDemo showComparison={true} />
+
+### Creating a Page Object
+
+```typescript
+// pages/LoginPage.ts
+import { Page, Locator, expect } from '@playwright/test';
+
+export class LoginPage {
+  readonly page: Page;
+  readonly emailInput: Locator;
+  readonly passwordInput: Locator;
+  readonly submitButton: Locator;
+  readonly errorMessage: Locator;
+
+  constructor(page: Page) {
+    this.page = page;
+    this.emailInput = page.getByLabel('Email');
+    this.passwordInput = page.getByLabel('Password');
+    this.submitButton = page.getByRole('button', { name: 'Sign in' });
+    this.errorMessage = page.getByRole('alert');
+  }
+
+  async goto() {
+    await this.page.goto('/login');
+  }
+
+  async login(email: string, password: string) {
+    await this.emailInput.fill(email);
+    await this.passwordInput.fill(password);
+    await this.submitButton.click();
+  }
+
+  async expectError(message: string) {
+    await expect(this.errorMessage).toContainText(message);
+  }
+}
+```
+
+### Using Page Objects in Tests
+
+```typescript
+// tests/login.spec.ts
+import { test, expect } from '@playwright/test';
+import { LoginPage } from '../pages/LoginPage';
+
+test.describe('Login', () => {
+  test('successful login redirects to dashboard', async ({ page }) => {
+    const loginPage = new LoginPage(page);
+    
+    await loginPage.goto();
+    await loginPage.login('user@example.com', 'password123');
+    
+    await expect(page).toHaveURL('/dashboard');
+  });
+
+  test('shows error for invalid credentials', async ({ page }) => {
+    const loginPage = new LoginPage(page);
+    
+    await loginPage.goto();
+    await loginPage.login('wrong@example.com', 'wrongpassword');
+    
+    await loginPage.expectError('Invalid credentials');
+  });
+});
+```
+
+<KeyConcept title="Single Source of Truth">
+When the UI changes, update the Page Object once instead of every test. This dramatically reduces maintenance effort.
+</KeyConcept>
+
+<ProgressCheckpoint section="why-e2e-testing" xpReward={15} />
+
+## Handling Authentication
+
+Most apps require authentication. Playwright provides elegant solutions:
+
+### Method 1: Login Before Each Test
+
+```typescript
+// tests/auth.setup.ts
+import { test as setup, expect } from '@playwright/test';
+
+setup('authenticate', async ({ page }) => {
+  await page.goto('/login');
+  await page.getByLabel('Email').fill('user@example.com');
+  await page.getByLabel('Password').fill('password123');
+  await page.getByRole('button', { name: 'Sign in' }).click();
+  
+  // Wait for redirect
+  await expect(page).toHaveURL('/dashboard');
+  
+  // Save authentication state
+  await page.context().storageState({ path: '.auth/user.json' });
+});
+```
+
+```typescript
+// playwright.config.ts
+import { defineConfig } from '@playwright/test';
+
+export default defineConfig({
+  projects: [
+    // Setup project runs first
+    { name: 'setup', testMatch: /.*\.setup\.ts/ },
+    
+    // Tests use the authenticated state
+    {
+      name: 'chromium',
+      use: {
+        storageState: '.auth/user.json',
+      },
+      dependencies: ['setup'],
+    },
+  ],
+});
+```
+
+### Method 2: API Authentication
+
+```typescript
+// Faster: authenticate via API instead of UI
+test.beforeEach(async ({ page, request }) => {
+  // Get auth token via API
+  const response = await request.post('/api/auth/login', {
+    data: {
+      email: 'user@example.com',
+      password: 'password123',
+    },
+  });
+  
+  const { token } = await response.json();
+  
+  // Set token in browser storage
+  await page.addInitScript((token) => {
+    localStorage.setItem('authToken', token);
+  }, token);
+});
+```
+
+<ProgressCheckpoint section="playwright-basics" xpReward={15} />
+
+## Mocking API Responses
+
+Sometimes you need to test edge cases or avoid hitting real APIs:
+
+```typescript
+import { test, expect } from '@playwright/test';
+
+test('shows error when API fails', async ({ page }) => {
+  // Intercept API calls
+  await page.route('**/api/users', (route) => {
+    route.fulfill({
+      status: 500,
+      body: JSON.stringify({ error: 'Server error' }),
+    });
+  });
+  
+  await page.goto('/users');
+  
+  await expect(page.getByRole('alert')).toContainText('Server error');
+});
+
+test('displays user list from API', async ({ page }) => {
+  await page.route('**/api/users', (route) => {
+    route.fulfill({
+      status: 200,
+      body: JSON.stringify([
+        { id: 1, name: 'Alice' },
+        { id: 2, name: 'Bob' },
+      ]),
+    });
+  });
+  
+  await page.goto('/users');
+  
+  await expect(page.getByRole('listitem')).toHaveCount(2);
+  await expect(page.getByText('Alice')).toBeVisible();
+});
+```
+
+### Modifying Requests
+
+```typescript
+test('adds auth header to requests', async ({ page }) => {
+  await page.route('**/api/**', (route) => {
+    route.continue({
+      headers: {
+        ...route.request().headers(),
+        'Authorization': 'Bearer test-token',
+      },
+    });
+  });
+});
+```
+
+<ProgressCheckpoint section="locators-and-selectors" xpReward={15} />
+
+## Testing Complex Workflows
+
+E2E tests excel at testing multi-step user journeys:
+
+<E2EFlowVisualizer flowType="checkout" />
+
+```typescript
+// tests/checkout.spec.ts
+import { test, expect } from '@playwright/test';
+import { ProductPage } from '../pages/ProductPage';
+import { CartPage } from '../pages/CartPage';
+import { CheckoutPage } from '../pages/CheckoutPage';
+
+test.describe('Checkout Flow', () => {
+  test('complete purchase', async ({ page }) => {
+    const productPage = new ProductPage(page);
+    const cartPage = new CartPage(page);
+    const checkoutPage = new CheckoutPage(page);
+    
+    // Add product to cart
+    await productPage.goto('product-123');
+    await productPage.addToCart();
+    
+    // Go to cart
+    await cartPage.goto();
+    await expect(cartPage.items).toHaveCount(1);
+    await cartPage.proceedToCheckout();
+    
+    // Fill shipping info
+    await checkoutPage.fillShipping({
+      name: 'John Doe',
+      address: '123 Main St',
+      city: 'New York',
+      zip: '10001',
+    });
+    await checkoutPage.continueToPayment();
+    
+    // Fill payment info
+    await checkoutPage.fillPayment({
+      cardNumber: '4242424242424242',
+      expiry: '12/25',
+      cvc: '123',
+    });
+    await checkoutPage.placeOrder();
+    
+    // Verify confirmation
+    await expect(page).toHaveURL(/\/confirmation/);
+    await expect(page.getByText('Order Confirmed')).toBeVisible();
+  });
+});
+```
+
+<ProgressCheckpoint section="assertions-and-waits" xpReward={20} />
+
+## Fixtures and Hooks
+
+Playwright fixtures provide reusable test setup:
+
+```typescript
+// fixtures.ts
+import { test as base } from '@playwright/test';
+import { LoginPage } from './pages/LoginPage';
+import { DashboardPage } from './pages/DashboardPage';
+
+type MyFixtures = {
+  loginPage: LoginPage;
+  dashboardPage: DashboardPage;
+  authenticatedPage: Page;
+};
+
+export const test = base.extend<MyFixtures>({
+  loginPage: async ({ page }, use) => {
+    await use(new LoginPage(page));
+  },
+  
+  dashboardPage: async ({ page }, use) => {
+    await use(new DashboardPage(page));
+  },
+  
+  authenticatedPage: async ({ browser }, use) => {
+    const context = await browser.newContext({
+      storageState: '.auth/user.json',
+    });
+    const page = await context.newPage();
+    await use(page);
+    await context.close();
+  },
+});
+
+export { expect } from '@playwright/test';
+```
+
+```typescript
+// tests/dashboard.spec.ts
+import { test, expect } from '../fixtures';
+
+test('shows user stats', async ({ dashboardPage, authenticatedPage }) => {
+  await dashboardPage.goto();
+  await expect(dashboardPage.statsWidget).toBeVisible();
+});
+```
+
+### Test Hooks
+
+```typescript
+test.describe('User Management', () => {
+  test.beforeAll(async () => {
+    // Run once before all tests in this describe block
+    await seedDatabase();
+  });
+
+  test.afterAll(async () => {
+    // Run once after all tests
+    await cleanupDatabase();
+  });
+
+  test.beforeEach(async ({ page }) => {
+    // Run before each test
+    await page.goto('/admin/users');
+  });
+
+  test.afterEach(async ({ page }) => {
+    // Run after each test
+    // Good for cleanup or screenshots on failure
+  });
+});
+```
+
+<ProgressCheckpoint section="page-object-model" xpReward={15} />
+
+## Parallel Execution
+
+Playwright runs tests in parallel by default. Configure it in `playwright.config.ts`:
+
+```typescript
+import { defineConfig } from '@playwright/test';
+
+export default defineConfig({
+  // Run tests in parallel
+  fullyParallel: true,
+  
+  // Number of parallel workers
+  workers: process.env.CI ? 2 : undefined,
+  
+  // Retry failed tests
+  retries: process.env.CI ? 2 : 0,
+  
+  // Reporter
+  reporter: process.env.CI ? 'github' : 'html',
+});
+```
+
+<InfoBox type="warning" title="Test Isolation">
+Parallel tests must be independent! Don't share state between tests. Each test should set up its own data and clean up after itself.
+</InfoBox>
+
+<ProgressCheckpoint section="best-practices" xpReward={10} />
+
+## Quick Quiz
+
+<Quiz id="e2e-playwright-intermediate-quiz">
+  <Question text="What's the main benefit of the Page Object Model?">
+    <Answer>Tests run faster</Answer>
+    <Answer correct>Selectors are defined once and reused, reducing maintenance</Answer>
+    <Answer>Tests can run in parallel</Answer>
+    <Answer>It's required by Playwright</Answer>
+  </Question>
+  
+  <Question text="How can you speed up authentication in E2E tests?">
+    <Answer>Skip authentication entirely</Answer>
+    <Answer>Use shorter passwords</Answer>
+    <Answer correct>Save and reuse authentication state, or authenticate via API</Answer>
+    <Answer>Run tests in headless mode</Answer>
+  </Question>
+  
+  <Question text="What does page.route() do?">
+    <Answer>Navigates to a URL</Answer>
+    <Answer correct>Intercepts and modifies network requests</Answer>
+    <Answer>Creates a new browser tab</Answer>
+    <Answer>Defines test routes</Answer>
+  </Question>
+</Quiz>
+
+<ProgressCheckpoint section="summary" xpReward={10} />
+
+## Key Takeaways
+
+<KeyConcept title="Page Object Model">
+Encapsulate page interactions in classes. When the UI changes, update one place instead of every test.
+</KeyConcept>
+
+<KeyConcept title="Smart Authentication">
+Save authentication state and reuse it across tests. Or authenticate via API for faster setup.
+</KeyConcept>
+
+<KeyConcept title="API Mocking">
+Use `page.route()` to intercept requests and test edge cases without depending on real APIs.
+</KeyConcept>
+
+---
+
+**Excellent progress!** 🚀 You now have the tools to write maintainable, reliable E2E tests. In the advanced level, we'll explore visual testing, CI/CD integration, and debugging techniques.
