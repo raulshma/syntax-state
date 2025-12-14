@@ -23,7 +23,7 @@ import { PIXEL_PET_REGISTRY } from "@/lib/pixel-pet/registry";
 import { updatePixelPetPreferences } from "@/lib/actions/user";
 import { usePixelPetStore } from "@/hooks/use-pixel-pet";
 import { toast } from "sonner";
-import { PixelPetModelDiagnostics } from "@/components/pixel-pet/pixel-pet-model-diagnostics";
+import { PixelPetCalibration } from "@/components/pixel-pet/pixel-pet-calibration";
 
 interface PixelPetSectionProps {
   plan: "FREE" | "PRO" | "MAX";
@@ -232,14 +232,6 @@ export function PixelPetSection({ plan, pixelPet }: PixelPetSectionProps) {
                 </p>
               </div>
             )}
-
-            {selected && (
-              <PixelPetModelDiagnostics
-                fileName={selected.fileName}
-                modelScale={selected.modelScale}
-                hasAnimations={selected.hasAnimations}
-              />
-            )}
           </div>
 
           {/* Animation Settings */}
@@ -325,46 +317,29 @@ export function PixelPetSection({ plan, pixelPet }: PixelPetSectionProps) {
             </div>
           )}
 
-          {/* Front Direction Settings */}
-          <div className="space-y-2">
-            <Label className="text-sm font-medium">Front Direction</Label>
-            <Select
-              value={String(defaultOrientation ?? 0)}
-              onValueChange={async (value) => {
-                const orient = parseInt(value, 10);
-                const prev = defaultOrientation;
-                setDefaultOrientation(orient);
+          {/* Model Calibration - Visual front direction selection */}
+          {selected && (
+            <PixelPetCalibration
+              fileName={selected.fileName}
+              modelScale={selected.modelScale}
+              hasAnimations={selected.hasAnimations}
+              currentOrientation={defaultOrientation ?? 0}
+              onOrientationChange={setDefaultOrientation}
+              onOrientationConfirm={async (degrees) => {
                 try {
-                  const result = await updatePixelPetPreferences({ defaultOrientation: orient });
+                  const result = await updatePixelPetPreferences({ defaultOrientation: degrees });
                   if (!result.success) {
-                    setDefaultOrientation(prev ?? 0);
                     toast.error(result.error.message ?? "Failed to save front direction");
+                    throw new Error(result.error.message);
                   }
+                  toast.success("Front direction saved!");
                 } catch (error) {
                   console.error("Failed to save front direction:", error);
-                  setDefaultOrientation(prev ?? 0);
-                  toast.error("Failed to save front direction");
+                  throw error;
                 }
               }}
-            >
-              <SelectTrigger className="h-11 rounded-xl">
-                <SelectValue placeholder="Front (0°)" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="0">Front (0°)</SelectItem>
-                <SelectItem value="45">45°</SelectItem>
-                <SelectItem value="90">Right (90°)</SelectItem>
-                <SelectItem value="135">135°</SelectItem>
-                <SelectItem value="180">Back (180°)</SelectItem>
-                <SelectItem value="225">225°</SelectItem>
-                <SelectItem value="270">Left (270°)</SelectItem>
-                <SelectItem value="315">315°</SelectItem>
-              </SelectContent>
-            </Select>
-            <p className="text-xs text-muted-foreground">
-              Which side of your pet faces the camera when idle. The pet will rotate toward movement direction when walking.
-            </p>
-          </div>
+            />
+          )}
 
           <div className="space-y-3">
             <div className="flex items-center justify-between">

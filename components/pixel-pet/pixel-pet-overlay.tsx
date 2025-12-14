@@ -259,8 +259,13 @@ export function PixelPetOverlay({ initialPreferences, plan }: PixelPetOverlayPro
     isDragging.current = false;
     setCursorStyle("grab");
     
-    const finalPos = { x: x.get(), y: y.get() };
-    const clamped = clampToScreen(finalPos.x, finalPos.y, petSize);
+    // Use currentPos which is updated during drag (in handleDrag), not x.get()/y.get()
+    // which may contain pre-drag values when using springs for positioning
+    const clamped = clampToScreen(currentPos.x, currentPos.y, petSize);
+    
+    // Update motion values so next walk starts from the correct position
+    x.set(clamped.x);
+    y.set(clamped.y);
     
     setPosition(clamped);
     setCurrentPos(clamped);
