@@ -56,7 +56,7 @@ interface PipelineStage {
   environment?: string;
 }
 
-const beginnerPipeline: PipelineStage[] = [
+const getBeginnerPipeline = (): PipelineStage[] => [
   {
     id: 'build',
     name: 'Build',
@@ -79,7 +79,7 @@ const beginnerPipeline: PipelineStage[] = [
   }
 ];
 
-const intermediatePipeline: PipelineStage[] = [
+const getIntermediatePipeline = (): PipelineStage[] => [
   {
     id: 'build',
     name: 'Build',
@@ -140,7 +140,7 @@ const intermediatePipeline: PipelineStage[] = [
   }
 ];
 
-const advancedPipeline: PipelineStage[] = [
+const getAdvancedPipeline = (): PipelineStage[] => [
   {
     id: 'build',
     name: 'Build & Validate',
@@ -308,9 +308,9 @@ export function AzureDevOpsVisualizer({
 }: AzureDevOpsVisualizerProps) {
   const getInitialPipeline = useCallback(() => {
     switch (mode) {
-      case 'intermediate': return JSON.parse(JSON.stringify(intermediatePipeline));
-      case 'advanced': return JSON.parse(JSON.stringify(advancedPipeline));
-      default: return JSON.parse(JSON.stringify(beginnerPipeline));
+      case 'intermediate': return getIntermediatePipeline();
+      case 'advanced': return getAdvancedPipeline();
+      default: return getBeginnerPipeline();
     }
   }, [mode]);
 

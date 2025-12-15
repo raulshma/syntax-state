@@ -44,7 +44,7 @@ interface WorkflowJob {
   dependsOn?: string[];
 }
 
-const beginnerWorkflow: WorkflowJob[] = [
+const getBeginnerWorkflow = (): WorkflowJob[] => [
   {
     id: 'build',
     name: 'Build & Test',
@@ -60,7 +60,7 @@ const beginnerWorkflow: WorkflowJob[] = [
   }
 ];
 
-const intermediateWorkflow: WorkflowJob[] = [
+const getIntermediateWorkflow = (): WorkflowJob[] => [
   {
     id: 'build',
     name: 'Build',
@@ -99,7 +99,7 @@ const intermediateWorkflow: WorkflowJob[] = [
   }
 ];
 
-const advancedWorkflow: WorkflowJob[] = [
+const getAdvancedWorkflow = (): WorkflowJob[] => [
   {
     id: 'build-matrix',
     name: 'Build (Matrix)',
@@ -201,9 +201,9 @@ export function GitHubActionsVisualizer({
 }: GitHubActionsVisualizerProps) {
   const getInitialWorkflow = useCallback(() => {
     switch (mode) {
-      case 'intermediate': return JSON.parse(JSON.stringify(intermediateWorkflow));
-      case 'advanced': return JSON.parse(JSON.stringify(advancedWorkflow));
-      default: return JSON.parse(JSON.stringify(beginnerWorkflow));
+      case 'intermediate': return getIntermediateWorkflow();
+      case 'advanced': return getAdvancedWorkflow();
+      default: return getBeginnerWorkflow();
     }
   }, [mode]);
 

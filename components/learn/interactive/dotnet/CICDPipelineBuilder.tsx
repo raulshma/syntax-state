@@ -36,7 +36,7 @@ interface PipelineStage {
   isComplete: boolean;
 }
 
-const beginnerStages: PipelineStage[] = [
+const getBeginnerStages = (): PipelineStage[] => [
   {
     id: 'code',
     name: 'Code',
@@ -79,7 +79,7 @@ const beginnerStages: PipelineStage[] = [
   },
 ];
 
-const intermediateStages: PipelineStage[] = [
+const getIntermediateStages = (): PipelineStage[] => [
   {
     id: 'code',
     name: 'Source Control',
@@ -132,7 +132,7 @@ const intermediateStages: PipelineStage[] = [
   },
 ];
 
-const advancedStages: PipelineStage[] = [
+const getAdvancedStages = (): PipelineStage[] => [
   {
     id: 'code',
     name: 'Source',
@@ -228,9 +228,9 @@ export function CICDPipelineBuilder({
 }: CICDPipelineBuilderProps) {
   const getInitialStages = () => {
     switch (mode) {
-      case 'intermediate': return JSON.parse(JSON.stringify(intermediateStages));
-      case 'advanced': return JSON.parse(JSON.stringify(advancedStages));
-      default: return JSON.parse(JSON.stringify(beginnerStages));
+      case 'intermediate': return getIntermediateStages();
+      case 'advanced': return getAdvancedStages();
+      default: return getBeginnerStages();
     }
   };
 

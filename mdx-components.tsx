@@ -1,3 +1,4 @@
+import dynamic from 'next/dynamic';
 import type { MDXComponents } from 'mdx/types';
 import {
   AnimatedDiagram,
