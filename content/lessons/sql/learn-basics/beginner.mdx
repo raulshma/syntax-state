@@ -25,13 +25,20 @@ Use the interactive visualizer below to understand how tables, rows, columns, an
 
 The "R" in RDBMS stands for **Relational**. This means tables can be connected to each other:
 
-```
-Users Table          Orders Table
-+---------+         +-------------+
-| id      |←───────→| user_id     |
-| name    |         | product     |
-| email   |         | amount      |
-+---------+         +-------------+
+```mermaid
+erDiagram
+    USERS {
+        int id PK
+        string name
+        string email
+    }
+    ORDERS {
+        int id PK
+        int user_id FK
+        string product
+        decimal amount
+    }
+    USERS ||--o{ ORDERS : "places"
 ```
 
 This connection (relationship) lets you answer questions like:

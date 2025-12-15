@@ -108,16 +108,23 @@ Identify core, supporting, and generic subdomains:
 
 Microsoft's reference application demonstrates microservices:
 
-```
-┌─────────────┐ ┌─────────────┐ ┌─────────────┐
-│   Catalog   │ │   Basket    │ │   Ordering  │
-│   Service   │ │   Service   │ │   Service   │
-└──────┬──────┘ └──────┬──────┘ └──────┬──────┘
-       │               │               │
-   ┌───▼───┐       ┌───▼───┐       ┌───▼───┐
-   │ SQL   │       │ Redis │       │ SQL   │
-   │ Server│       │       │       │ Server│
-   └───────┘       └───────┘       └───────┘
+```mermaid
+flowchart TB
+    subgraph Services["fa:fa-building Microservices"]
+        C["fa:fa-box Catalog<br />Service"]
+        B["fa:fa-shopping-cart Basket<br />Service"]
+        O["fa:fa-list Ordering<br />Service"]
+    end
+    
+    subgraph Data["fa:fa-database Each Service Owns Its Data"]
+        CS[("fa:fa-database SQL Server")]
+        RD[("fa:fa-database Redis")]
+        OS[("fa:fa-database SQL Server")]
+    end
+    
+    C --> CS
+    B --> RD
+    O --> OS
 ```
 
 ### Key Takeaways

@@ -134,15 +134,16 @@ services.AddHttpClient<IPaymentClient, PaymentClient>()
 
 ### Event-Driven Architecture
 
-```
-┌─────────────┐       ┌─────────────┐       ┌─────────────┐
-│   Order     │       │   Event     │       │  Payment    │
-│   Service   │──────►│    Bus      │──────►│   Service   │
-└─────────────┘       │             │       └─────────────┘
-                      │             │       ┌─────────────┐
-                      │             │──────►│   Email     │
-                      │             │       │   Service   │
-                      └─────────────┘       └─────────────┘
+```mermaid
+flowchart LR
+    O["fa:fa-box Order<br />Service"]
+    EB["fa:fa-envelope Event Bus"]
+    P["fa:fa-credit-card Payment<br />Service"]
+    E["fa:fa-envelope Email<br />Service"]
+    
+    O -->|"OrderCreated"| EB
+    EB -->|"subscribe"| P
+    EB -->|"subscribe"| E
 ```
 
 ### Key Takeaways

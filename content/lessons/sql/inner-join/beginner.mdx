@@ -14,26 +14,35 @@ INNER JOIN customers ON orders.customer_id = customers.id;
 
 ## 📊 Visual: How INNER JOIN Works
 
+```mermaid
+flowchart LR
+    subgraph customers["customers table"]
+        C1["1 | Alice"]
+        C2["2 | Bob"]
+        C3["3 | Carol"]
+    end
+    
+    subgraph orders["orders table"]
+        O1["1 | customer_id: 1 | $100"]
+        O2["2 | customer_id: 1 | $200"]
+        O3["3 | customer_id: 2 | $150"]
+    end
+    
+    C1 ---|match| O1
+    C1 ---|match| O2
+    C2 ---|match| O3
+    C3 -.-x|no match| X[" "]
 ```
-customers             orders
-+----+--------+      +----+-------------+-------+
-| id | name   |      | id | customer_id | total |
-+----+--------+      +----+-------------+-------+
-| 1  | Alice  |      | 1  | 1           | 100   |
-| 2  | Bob    |      | 2  | 1           | 200   |
-| 3  | Carol  |      | 3  | 2           | 150   |
-+----+--------+      +----+-------------+-------+
 
-INNER JOIN Result: Only matching rows!
-+----------+-------+-------+
-| order_id | name  | total |
-+----------+-------+-------+
-| 1        | Alice | 100   |  ← Alice has orders
-| 2        | Alice | 200   |  ← Alice has orders
-| 3        | Bob   | 150   |  ← Bob has orders
-+----------+-------+-------+
-Note: Carol has no orders, so she's not in the result
-```
+**INNER JOIN Result:** Only matching rows!
+
+| order_id | name | total |
+|:---:|:---:|:---:|
+| 1 | Alice | 100 |
+| 2 | Alice | 200 |
+| 3 | Bob | 150 |
+
+> Carol has no orders, so she's **not** in the result
 
 ## 📝 Basic Syntax
 

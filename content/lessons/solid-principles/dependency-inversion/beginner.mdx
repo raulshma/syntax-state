@@ -38,11 +38,8 @@ When your code directly creates and uses specific classes, it's "hardwired":
 
 ```mermaid
 flowchart TB
-    OS["OrderService<br/>(High-Level)"]
-    OS -->|Directly creates| SQL["SqlDatabase<br/>(Low-Level)"]
-    
-    style OS fill:#fca5a5,stroke:#ef4444
-    style SQL fill:#fca5a5,stroke:#ef4444
+    OS["fa:fa-times OrderService<br/>(High-Level)"]
+    OS -->|Directly creates| SQL["fa:fa-database SqlDatabase<br/>(Low-Level)"]
 ```
 
 **Problems:**
@@ -58,19 +55,13 @@ flowchart TB
 
 ```mermaid
 flowchart TB
-    OS["OrderService (High-Level)<br/>depends on: IDatabase"]
-    OS --> IDB["IDatabase (Interface)<br/>🔌 The Wall Outlet"]
-    IDB --> SQL["SQL Database"]
-    IDB --> MDB["MongoDB Database"]
-    
-    style OS fill:#86efac,stroke:#22c55e
-    style IDB fill:#93c5fd,stroke:#3b82f6
-    style SQL fill:#fde68a,stroke:#f59e0b
-    style MDB fill:#fde68a,stroke:#f59e0b
+    OS["fa:fa-check OrderService (High-Level)<br/>depends on: IDatabase"]
+    OS --> IDB["fa:fa-plug IDatabase (Interface)<br/>The Wall Outlet"]
+    IDB --> SQL["fa:fa-database SQL Database"]
+    IDB --> MDB["fa:fa-database MongoDB Database"]
 ```
      
-     Now you can swap databases without touching OrderService!
-```
+Now you can swap databases without touching OrderService!
 
 ### The Simple Rule
 

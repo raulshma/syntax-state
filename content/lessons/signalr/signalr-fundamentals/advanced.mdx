@@ -342,16 +342,21 @@ builder.Services.AddSignalR()
 
 **Architecture with Redis:**
 
-```
-┌─────────────┐     ┌─────────────┐     ┌─────────────┐
-│   Server 1  │────▶│    Redis    │◀────│   Server 2  │
-│ (3 clients) │     │  Backplane  │     │ (2 clients) │
-└─────────────┘     └─────────────┘     └─────────────┘
-       │                                         │
-       ▼                                         ▼
-  ┌────────┐                               ┌────────┐
-  │Clients │                               │Clients │
-  └────────┘                               └────────┘
+```mermaid
+flowchart LR
+    subgraph S1["fa:fa-server Server 1"]
+        C1["3 Clients"]
+        C1@{ icon: "fa:fa-users"}
+    end
+    
+    R["fa:fa-database Redis<br />Backplane"]
+    
+    subgraph S2["fa:fa-server Server 2"]
+        C2["fa:fa-users 2 Clients"]
+    end
+    
+    S1 <-->|"pub/sub"| R
+    R <-->|"pub/sub"| S2
 ```
 
 ### Message Compression Benchmarks

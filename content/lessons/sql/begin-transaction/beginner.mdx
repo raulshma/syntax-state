@@ -44,15 +44,16 @@ COMMIT;
 
 ## 🔄 Transaction Flow
 
-```
-BEGIN TRANSACTION
-       ↓
-   Operations
-       ↓
-  ┌────┴────┐
-  ↓         ↓
-COMMIT   ROLLBACK
-(save)   (cancel)
+```mermaid
+flowchart TB
+    B["fa:fa-play BEGIN TRANSACTION"]
+    O["fa:fa-cogs Operations<br />(INSERT, UPDATE, DELETE)"]
+    C["fa:fa-check COMMIT<br />(save changes)"]
+    R["fa:fa-times ROLLBACK<br />(cancel changes)"]
+    
+    B --> O
+    O -->|"Success"| C
+    O -->|"Error/Cancel"| R
 ```
 
 ## ⚡ Auto-commit Mode

@@ -45,13 +45,19 @@ Just like a library organizes books so you can find them, databases organize dat
 
 The magic word is **relational**! Tables can be connected (related) to each other:
 
-```
-Employees Table          Departments Table
-+---------------+        +------------------+
-| EmployeeID    |←──────→| DepartmentID     |
-| Name          |        | DepartmentName   |
-| DepartmentID  |        | Budget           |
-+---------------+        +------------------+
+```mermaid
+erDiagram
+    EMPLOYEES {
+        int EmployeeID PK
+        string Name
+        int DepartmentID FK
+    }
+    DEPARTMENTS {
+        int DepartmentID PK
+        string DepartmentName
+        decimal Budget
+    }
+    EMPLOYEES }o--|| DEPARTMENTS : "belongs to"
 ```
 
 This connection lets you answer questions like:

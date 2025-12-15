@@ -14,16 +14,11 @@ flowchart TB
         subgraph IA["Interface Adapters"]
             subgraph AL["Application Layer"]
                 subgraph DE["Domain/Entities"]
-                    Core["★ NOTHING DEPENDS INWARD ★"]
+                    Core["fa:fa-star NOTHING DEPENDS INWARD"]
                 end
             end
         end
     end
-    
-    style DE fill:#4ade80,stroke:#22c55e
-    style AL fill:#60a5fa,stroke:#3b82f6
-    style IA fill:#f472b6,stroke:#ec4899
-    style FD fill:#a78bfa,stroke:#8b5cf6
 ```
 
 Dependencies flow INWARD. Inner layers NEVER know about outer layers.

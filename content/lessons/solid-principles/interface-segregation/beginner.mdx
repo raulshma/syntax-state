@@ -35,28 +35,17 @@ Imagine an interface for workers:
 
 When you create a **giant interface** with too many methods:
 
-```
-     Giant Interface
-     ┌─────────────────────────────────────┐
-     │  interface IWorker                  │
-     │  ─────────────────                  │
-     │  • Work()                           │
-     │  • Eat()     ◀── Robots don't eat! │
-     │  • Sleep()   ◀── Robots don't sleep!│
-     │  • Report()                         │
-     └─────────────────────────────────────┘
-                       │
-         ┌─────────────┴─────────────┐
-         ▼                           ▼
-     ┌─────────┐                 ┌─────────┐
-     │ Human   │                 │ Robot   │
-     │ Worker  │                 │ Worker  │
-     │ ✅ All  │                 │ ❌ Must │
-     │ methods │                 │   fake  │
-     │ make    │                 │   Eat() │
-     │ sense   │                 │   and   │
-     │         │                 │  Sleep()│
-     └─────────┘                 └─────────┘
+```mermaid
+flowchart TB
+    subgraph Giant["fa:fa-times Giant Interface: IWorker"]
+        W["Work()"]
+        E["Eat() ← Robots don't eat!"]
+        S["Sleep() ← Robots don't sleep!"]
+        R["Report()"]
+    end
+    
+    Giant --> H["fa:fa-user Human Worker<br />fa:fa-check All methods make sense"]
+    Giant --> RB["fa:fa-robot Robot Worker<br />fa:fa-times Must fake Eat() and Sleep()"]
 ```
 
 The robot is FORCED to implement `Eat()` and `Sleep()` even though it never uses them!
@@ -75,25 +64,19 @@ The robot is FORCED to implement `Eat()` and `Sleep()` even though it never uses
 
 ## Section 3: Solution - Split It Up!
 
-```
-     Segregated Interfaces
-     
-     ┌──────────────┐  ┌──────────────┐  ┌──────────────┐
-     │ IWorkable    │  │ IFeedable    │  │ ISleepable   │
-     │ ───────────  │  │ ───────────  │  │ ───────────  │
-     │ • Work()     │  │ • Eat()      │  │ • Sleep()    │
-     └──────────────┘  └──────────────┘  └──────────────┘
-            │                │                   │
-            ▼                ▼                   ▼
-     ┌─────────────────────────────────────────────────┐
-     │ Human: IWorkable, IFeedable, ISleepable        │
-     │ ✅ Implements all three - makes sense!          │
-     └─────────────────────────────────────────────────┘
-     
-     ┌─────────────────────────────────────────────────┐
-     │ Robot: IWorkable                                │
-     │ ✅ Only implements Work() - no fake methods!    │
-     └─────────────────────────────────────────────────┘
+```mermaid
+flowchart TB
+    subgraph Interfaces["fa:fa-check Segregated Interfaces"]
+        IW["IWorkable<br />Work()"]
+        IF["IFeedable<br />Eat()"]
+        IS["ISleepable<br />Sleep()"]
+    end
+    
+    IW --> H["fa:fa-user Human<br />IWorkable + IFeedable + ISleepable<br />fa:fa-check All three make sense!"]
+    IF --> H
+    IS --> H
+    
+    IW --> R["fa:fa-robot Robot<br />IWorkable only<br />fa:fa-check No fake methods!"]
 ```
 
 ### The Simple Rule

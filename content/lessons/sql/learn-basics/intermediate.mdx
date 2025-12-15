@@ -6,16 +6,14 @@ Now that you know the basics, let's dive deeper into how relational database man
 
 A database management system has several key components:
 
-```
-┌─────────────────────────────────────┐
-│         Application Layer           │ ← Your SQL queries go here
-├─────────────────────────────────────┤
-│          Query Processor            │ ← Parses, optimizes, executes
-├─────────────────────────────────────┤
-│         Storage Engine              │ ← Manages how data is stored
-├─────────────────────────────────────┤
-│          File System                │ ← Actual disk storage
-└─────────────────────────────────────┘
+```mermaid
+flowchart TB
+    A["fa:fa-desktop Application Layer<br />(Your SQL queries go here)"]
+    B["fa:fa-cogs Query Processor<br />(Parses, optimizes, executes)"]
+    C["fa:fa-database Storage Engine<br />(Manages how data is stored)"]
+    D["fa:fa-folder File System<br />(Actual disk storage)"]
+    
+    A --> B --> C --> D
 ```
 
 ## ACID Properties: The Foundation of Reliability

@@ -16,14 +16,19 @@ Each hosting type has its own strengths and trade-offs. Understanding these will
 
 ### How It Works
 
+```mermaid
+block-beta
+    columns 1
+    block:server["fa:fa-server Physical Server"]:1
+        columns 4
+        A["fa:fa-globe Site A<br />(You)"]
+        B["fa:fa-globe Site B"]
+        C["fa:fa-globe Site C"]
+        D["fa:fa-globe Site D"]
+    end
 ```
-┌─────────────────────────────────────────┐
-│           Physical Server               │
-├─────────┬─────────┬─────────┬──────────┤
-│ Site A  │ Site B  │ Site C  │ Site D   │
-│ (You)   │         │         │          │
-└─────────┴─────────┴─────────┴──────────┘
-```
+
+> All sites share the same CPU, RAM, and storage resources
 
 ### Pros
 - **Cost-effective**: $3-15/month
@@ -47,18 +52,19 @@ A **VPS** uses virtualization to give you dedicated resources on a shared physic
 
 ### How It Works
 
+```mermaid
+flowchart TB
+    subgraph Server["fa:fa-server Physical Server"]
+        subgraph VS1["Virtual Server 1"]
+            Y["fa:fa-globe Your Site<br />2GB RAM | 2 CPU"]
+        end
+        subgraph VS2["Virtual Server 2"]
+            O["fa:fa-globe Other Site<br />4GB RAM | 4 CPU"]
+        end
+    end
 ```
-┌─────────────────────────────────────────┐
-│           Physical Server               │
-├───────────────────┬─────────────────────┤
-│   Virtual Server  │   Virtual Server    │
-│   ┌───────────┐   │   ┌───────────┐     │
-│   │ Your Site │   │   │ Other     │     │
-│   │ 2GB RAM   │   │   │ 4GB RAM   │     │
-│   │ 2 CPU     │   │   │ 4 CPU     │     │
-│   └───────────┘   │   └───────────┘     │
-└───────────────────┴─────────────────────┘
-```
+
+> Each VPS has guaranteed, isolated resources
 
 ### Key Differences from Shared
 - **Guaranteed resources**: Your 2GB RAM is always yours

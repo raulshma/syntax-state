@@ -14,14 +14,14 @@ This lesson covers patterns used by senior developers and in enterprise applicat
 
 ### Understanding Coverage Metrics
 
-```
-Coverage Types:
-┌─────────────────────────────────────────────────────┐
-│ Line Coverage    - Which lines were executed        │
-│ Branch Coverage  - Which if/else paths were taken   │
-│ Function Coverage - Which functions were called     │
-│ Statement Coverage - Which statements ran           │
-└─────────────────────────────────────────────────────┘
+```mermaid
+flowchart TB
+    subgraph Coverage["fa:fa-chart-bar Coverage Types"]
+        L["fa:fa-ruler Line Coverage<br />Which lines were executed"]
+        B["fa:fa-code-branch Branch Coverage<br />Which if/else paths were taken"]
+        F["fa:fa-cogs Function Coverage<br />Which functions were called"]
+        S["fa:fa-file-code Statement Coverage<br />Which statements ran"]
+    end
 ```
 
 ### Configuring Coverage in Vitest
@@ -132,16 +132,26 @@ Property-based testing shines for:
 
 Understanding the different types of test doubles helps you choose the right tool:
 
+```mermaid
+flowchart LR
+    subgraph Doubles["fa:fa-masks-theater Test Double Types"]
+        D["fa:fa-circle Dummy<br />Passed but never used"]
+        St["fa:fa-clipboard Stub<br />Returns canned answers"]
+        Sp["fa:fa-magnifying-glass Spy<br />Records calls"]
+        M["fa:fa-bullseye Mock<br />Verifies expectations"]
+        F["fa:fa-database Fake<br />Working implementation"]
+    end
+    
+    D --> St --> Sp --> M --> F
 ```
-Test Double Types:
-┌──────────┬─────────────────────────────────────────────┐
-│ Dummy    │ Passed but never used (placeholder)        │
-│ Stub     │ Returns canned answers, no verification    │
-│ Spy      │ Records calls, may call real implementation│
-│ Mock     │ Pre-programmed expectations, verifies calls│
-│ Fake     │ Working implementation (e.g., in-memory DB)│
-└──────────┴─────────────────────────────────────────────┘
-```
+
+| Type | Purpose |
+|:---:|:---|
+| **Dummy** | Placeholder, never actually used |
+| **Stub** | Returns canned answers, no verification |
+| **Spy** | Records calls, may call real implementation |
+| **Mock** | Pre-programmed expectations, verifies calls |
+| **Fake** | Working implementation (e.g., in-memory DB) |
 
 ### Implementing a Fake
 

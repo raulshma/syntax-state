@@ -6,16 +6,26 @@ Foreign keys link tables together, like connecting puzzle pieces!
 
 A foreign key is a column that **references** the primary key of another table.
 
+```mermaid
+erDiagram
+    CUSTOMERS {
+        int id PK
+        string name
+    }
+    ORDERS {
+        int id PK
+        int customer_id FK "Foreign Key"
+        date order_date
+    }
+    CUSTOMERS ||--o{ ORDERS : "has many"
 ```
-customers table          orders table
-+----+--------+         +----+-------------+
-| id | name   |         | id | customer_id |←── Foreign Key
-+----+--------+         +----+-------------+
-| 1  | Alice  |←────────| 1  | 1           |
-| 2  | Bob    |         | 2  | 1           |
-+----+--------+         | 3  | 2           |
-                        +----+-------------+
-```
+
+**Sample Data:**
+| customers.id | customers.name | | orders.id | orders.customer_id |
+|:---:|:---:|---|:---:|:---:|
+| 1 | Alice | ← | 1 | 1 |
+| 2 | Bob | | 2 | 1 |
+| | | | 3 | 2 |
 
 ## 📝 Creating a Foreign Key
 

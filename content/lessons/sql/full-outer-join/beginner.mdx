@@ -14,24 +14,32 @@ FULL OUTER JOIN orders o ON c.id = o.customer_id;
 
 ## 📊 Visual Example
 
+```mermaid
+flowchart LR
+    subgraph LEFT["customers"]
+        C1["1 | Alice fa:fa-check"]
+        C2["2 | Bob fa:fa-check"]
+    end
+    
+    subgraph RIGHT["orders"]
+        O1["1 | customer_id: 1 fa:fa-check"]
+        O2["2 | customer_id: 999 fa:fa-check"]
+    end
+    
+    C1 ---|match| O1
+    C2 -.->|NULL| N1["No orders"]
+    O2 -.->|NULL| N2["No customer 999"]
 ```
-customers           orders
-+----+--------+     +----+-------------+
-| id | name   |     | id | customer_id |
-+----+--------+     +----+-------------+
-| 1  | Alice  |     | 1  | 1           |
-| 2  | Bob    |     | 2  | 999         | ← No matching customer
-+----+--------+     +----+-------------+
 
-FULL OUTER JOIN Result:
-+--------+----------+
-| name   | order_id |
-+--------+----------+
-| Alice  | 1        | ← Match found
-| Bob    | NULL     | ← Bob has no orders
-| NULL   | 2        | ← Order has no customer
-+--------+----------+
-```
+**FULL OUTER JOIN Result:**
+
+| name | order_id |
+|:---:|:---:|
+| Alice | 1 |
+| Bob | **NULL** |
+| **NULL** | 2 |
+
+> Keeps ALL rows from BOTH tables - unmatched rows show NULL
 
 ## 📝 Syntax
 

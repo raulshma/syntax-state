@@ -24,15 +24,15 @@ Unit and component tests are great, but they test pieces in isolation. E2E tests
 
 ### When E2E Tests Shine
 
-```
-E2E Tests Are Perfect For:
-┌─────────────────────────────────────────────┐
-│ ✓ Critical user journeys (login, checkout) │
-│ ✓ Cross-page workflows                      │
-│ ✓ Integration with real APIs               │
-│ ✓ Browser-specific behavior                │
-│ ✓ Visual regression testing                │
-└─────────────────────────────────────────────┘
+```mermaid
+flowchart LR
+    subgraph E2E["fa:fa-bullseye E2E Tests Are Perfect For"]
+        A["fa:fa-check Critical user journeys<br />(login, checkout)"]
+        B["fa:fa-check Cross-page workflows"]
+        C["fa:fa-check Integration with real APIs"]
+        D["fa:fa-check Browser-specific behavior"]
+        E["fa:fa-check Visual regression testing"]
+    end
 ```
 
 <KeyConcept title="Quality Over Quantity">
@@ -272,7 +272,7 @@ npx playwright show-trace trace.zip
   <Question text="What's the recommended way to find a button in Playwright?">
     <Answer>page.querySelector('button')</Answer>
     <Answer>page.locator('.btn-primary')</Answer>
-    <Answer correct>page.getByRole('button', { name: 'Submit' })</Answer>
+    <Answer correct>page.getByRole('button', name)</Answer>
     <Answer>page.findElement('button')</Answer>
   </Question>
   

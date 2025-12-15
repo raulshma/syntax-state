@@ -162,16 +162,25 @@ public class InventoryEventHandler
 
 In DDD, SRP aligns with **Bounded Contexts**:
 
-```
-┌─────────────────────────────────────────────────────────┐
-│                    E-Commerce System                     │
-├─────────────────┬──────────────────┬───────────────────┤
-│  Orders Context │ Inventory Context│ Shipping Context  │
-│  ─────────────  │ ────────────────│ ─────────────────  │
-│  • Order        │ • Product       │ • Shipment        │
-│  • OrderLine    │ • StockLevel    │ • Carrier         │
-│  • OrderService │ • Warehouse     │ • TrackingInfo    │
-└─────────────────┴──────────────────┴───────────────────┘
+```mermaid
+flowchart TB
+    subgraph System["fa:fa-shopping-cart E-Commerce System"]
+        subgraph Orders["fa:fa-box Orders Context"]
+            O1["Order"]
+            O2["OrderLine"]
+            O3["OrderService"]
+        end
+        subgraph Inventory["fa:fa-chart-bar Inventory Context"]
+            I1["Product"]
+            I2["StockLevel"]
+            I3["Warehouse"]
+        end
+        subgraph Shipping["fa:fa-truck Shipping Context"]
+            S1["Shipment"]
+            S2["Carrier"]
+            S3["TrackingInfo"]
+        end
+    end
 ```
 
 Each bounded context:

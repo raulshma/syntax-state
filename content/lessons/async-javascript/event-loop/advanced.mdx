@@ -6,22 +6,21 @@ The event loop is the heart of JavaScript's concurrency model. Understanding its
 
 The JavaScript runtime interacts with the event loop through several components:
 
-```
-┌─────────────────────────────────────────────────────────┐
-│                      JavaScript Engine                   │
-│  ┌─────────────┐                    ┌──────────────┐   │
-│  │  Call Stack │                    │     Heap     │   │
-│  │             │                    │  (Objects)   │   │
-│  └─────────────┘                    └──────────────┘   │
-└───────────────────────────┬─────────────────────────────┘
-                            │
-┌───────────────────────────▼─────────────────────────────┐
-│                      Event Loop                          │
-│  ┌──────────────────┐     ┌──────────────────────────┐ │
-│  │  Microtask Queue │ ──► │  Macrotask Queue         │ │
-│  │  (Promises)      │     │  (timers, I/O, UI)       │ │
-│  └──────────────────┘     └──────────────────────────┘ │
-└─────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TB
+    subgraph Engine["fa:fa-cogs JavaScript Engine"]
+        CS["fa:fa-layer-group Call Stack<br />(LIFO execution)"]
+        Heap["fa:fa-database Heap<br />(Objects & Memory)"]
+    end
+    
+    subgraph EL["fa:fa-rotate Event Loop"]
+        MQ["fa:fa-bolt Microtask Queue<br />(Promises, queueMicrotask)"]
+        TQ["fa:fa-clock Macrotask Queue<br />(timers, I/O, UI events)"]
+    end
+    
+    Engine --> EL
+    MQ -->|"Process ALL<br />microtasks first"| TQ
+    TQ -->|"Process ONE<br />macrotask"| CS
 ```
 
 ## Event Loop Phases (Browser)
@@ -53,25 +52,17 @@ function allowPaint() {
 
 Node.js has additional phases:
 
-```
-   ┌───────────────────────────┐
-┌─►│         timers           │ ← setTimeout, setInterval
-│  └─────────────┬─────────────┘
-│  ┌─────────────▼─────────────┐
-│  │     pending callbacks     │ ← deferred I/O callbacks
-│  └─────────────┬─────────────┘
-│  ┌─────────────▼─────────────┐
-│  │         idle, prepare     │ ← internal use only
-│  └─────────────┬─────────────┘
-│  ┌─────────────▼─────────────┐
-│  │            poll           │ ← I/O, new connections
-│  └─────────────┬─────────────┘
-│  ┌─────────────▼─────────────┐
-│  │           check           │ ← setImmediate
-│  └─────────────┬─────────────┘
-│  ┌─────────────▼─────────────┐
-└──┤       close callbacks     │ ← socket.on('close')
-   └───────────────────────────┘
+```mermaid
+flowchart TB
+    T["fa:fa-clock timers<br />setTimeout, setInterval"]
+    PC["fa:fa-envelope pending callbacks<br />deferred I/O callbacks"]
+    IP["fa:fa-wrench idle, prepare<br />internal use only"]
+    P["fa:fa-satellite-dish poll<br />I/O, new connections"]
+    C["fa:fa-check check<br />setImmediate"]
+    CC["fa:fa-door-closed close callbacks<br />socket.on('close')"]
+    
+    T --> PC --> IP --> P --> C --> CC
+    CC -->|"loop"| T
 ```
 
 ## Advanced: queueMicrotask vs Promise

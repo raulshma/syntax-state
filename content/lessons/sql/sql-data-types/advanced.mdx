@@ -6,16 +6,18 @@ Master the nuances of data types for optimal database design and performance.
 
 ### How Data Types Affect Storage
 
+```mermaid
+block-beta
+    columns 4
+    block:row["Row Storage Layout"]:4
+        A["Fixed Length\nColumns"]
+        B["Variable Length\nCount"]
+        C["NULL\nBitmap"]
+        D["Variable\nData"]
+    end
 ```
-Row Storage Layout:
-┌─────────┬─────────┬──────────┬───────────────┐
-│ Fixed   │ Variable│ NULL     │ Variable      │
-│ Length  │ Length  │ Bitmap   │ Data          │
-│ Columns │ Count   │          │               │
-└─────────┴─────────┴──────────┴───────────────┘
 
--- INT (fixed 4 bytes) vs VARCHAR (2 bytes overhead + data)
-```
+> INT uses fixed 4 bytes, while VARCHAR has 2 bytes overhead + actual data length
 
 ### Page and Row Size Limits
 

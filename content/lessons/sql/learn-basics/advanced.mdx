@@ -6,15 +6,18 @@ Let&apos;s explore the deeper architectural decisions and trade-offs in database
 
 In distributed systems, you can only guarantee two of three properties:
 
+```mermaid
+flowchart TB
+    C["fa:fa-lock Consistency<br />All nodes see same data"]
+    A["fa:fa-check Availability<br />Every request gets response"]
+    P["fa:fa-network-wired Partition Tolerance<br />Works despite network failures"]
+    
+    C --- A
+    A --- P
+    P --- C
 ```
-        Consistency
-           /\
-          /  \
-         /    \
-        /      \
-       /________\
-Availability   Partition Tolerance
-```
+
+> **Pick 2:** You can only guarantee two of these three properties!
 
 | Database Type     | Prioritizes | Trade-off                         |
 | :---------------- | :---------- | :-------------------------------- |
@@ -99,15 +102,20 @@ COMMIT;
 
 Hierarchy in most RDBMS:
 
-```
-Database Server (PostgreSQL, SQL Server)
-└── Database (e.g., "production_db")
-    ├── Schema (e.g., "public", "sales")
-    │   ├── Table (e.g., "users")
-    │   ├── Table (e.g., "orders")
-    │   └── View (e.g., "active_users")
-    └── Schema (e.g., "analytics")
-        └── Table (e.g., "reports")
+```mermaid
+flowchart TB
+    subgraph Server["fa:fa-server Database Server"]
+        subgraph DB["fa:fa-database Database: production_db"]
+            subgraph S1["fa:fa-folder Schema: public"]
+                T1["fa:fa-table users"]
+                T2["fa:fa-table orders"]
+                V1["fa:fa-eye active_users (view)"]
+            end
+            subgraph S2["fa:fa-folder Schema: analytics"]
+                T3["fa:fa-table reports"]
+            end
+        end
+    end
 ```
 
 ## SQL vs NoSQL: When to Choose What

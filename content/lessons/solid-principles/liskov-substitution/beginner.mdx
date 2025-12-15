@@ -37,21 +37,14 @@ Here's the most famous LSP violation:
 
 Imagine you're building a bird game:
 
-```
-     Your Code Expects:
-     ┌─────────────────────────────┐
-     │   For each bird:            │
-     │     bird.Fly()              │ ◀── Works for eagles, sparrows...
-     │                             │
-     └─────────────────────────────┘
-                 │
-                 │ But then...
-                 ▼
-     ┌─────────────────────────────┐
-     │   💥 CRASH! 💥              │
-     │   Penguin throws exception! │ ◀── Penguins can't fly!
-     │                             │
-     └─────────────────────────────┘
+```mermaid
+flowchart TB
+    subgraph Expect["fa:fa-check Your Code Expects"]
+        E["For each bird:<br />bird.Fly()"]
+    end
+    
+    Expect -->|"Works for eagles, sparrows..."| OK["fa:fa-dove Flying birds work!"]
+    Expect -->|"But then..."| CRASH["fa:fa-bomb CRASH!<br />Penguin throws exception!"]
 ```
 
 Your code expected all birds to fly. The penguin broke that promise!

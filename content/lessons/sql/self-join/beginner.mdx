@@ -16,24 +16,30 @@ INNER JOIN employees m ON e.manager_id = m.id;
 
 ## 📊 Visual Example
 
+```mermaid
+flowchart TB
+    CEO["fa:fa-user-tie CEO (id: 1)"]
+    Alice["fa:fa-user Alice (id: 2)"]
+    Bob["fa:fa-user Bob (id: 3)"]
+    
+    CEO -->|manages| Alice
+    Alice -->|manages| Bob
 ```
-employees
-+----+--------+------------+
-| id | name   | manager_id |
-+----+--------+------------+
-| 1  | CEO    | NULL       |
-| 2  | Alice  | 1          |  ← Reports to CEO
-| 3  | Bob    | 2          |  ← Reports to Alice
-+----+--------+------------+
 
-Self Join Result:
-+----------+---------+
+**employees table:**
+
+| id | name | manager_id |
+|:---:|:---:|:---:|
+| 1 | CEO | NULL |
+| 2 | Alice | 1 (→ CEO) |
+| 3 | Bob | 2 (→ Alice) |
+
+**Self Join Result:**
+
 | employee | manager |
-+----------+---------+
-| Alice    | CEO     |
-| Bob      | Alice   |
-+----------+---------+
-```
+|:---:|:---:|
+| Alice | CEO |
+| Bob | Alice |
 
 ## 📝 Key: Use Different Aliases!
 

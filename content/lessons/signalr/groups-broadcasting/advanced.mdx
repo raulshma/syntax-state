@@ -47,18 +47,19 @@ builder.Services.AddSignalR()
 
 **Scale-Out Architecture:**
 
-```
-┌─────────────┐     ┌─────────────┐     ┌─────────────┐
-│  Server 1   │     │  Server 2   │     │  Server 3   │
-│ (100 users) │────▶│ (150 users) │◀────│ (120 users) │
-└─────────────┘     └─────────────┘     └─────────────┘
-        │                   │                    │
-        └───────────────────┼────────────────────┘
-                            │
-                    ┌───────▼────────┐
-                    │ Redis Backplane│
-                    │ Group Registry │
-                    └────────────────┘
+```mermaid
+flowchart TB
+    subgraph Servers["fa:fa-server SignalR Servers"]
+        S1["Server 1<br />fa:fa-users 100 users"]
+        S2["Server 2<br />fa:fa-users 150 users"]
+        S3["Server 3<br />fa:fa-users 120 users"]
+    end
+    
+    R["fa:fa-database Redis Backplane<br />fa:fa-list Group Registry"]
+    
+    S1 <--> R
+    S2 <--> R
+    S3 <--> R
 ```
 
 ### Custom Backplane Implementation

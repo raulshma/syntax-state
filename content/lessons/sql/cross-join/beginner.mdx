@@ -12,28 +12,37 @@ SELECT * FROM colors CROSS JOIN sizes;
 
 ## 📊 Visual Example
 
+```mermaid
+flowchart LR
+    subgraph Colors["fa:fa-palette colors"]
+        R["Red"]
+        B["Blue"]
+    end
+    
+    subgraph Sizes["fa:fa-ruler sizes"]
+        S["Small"]
+        M["Medium"]
+        L["Large"]
+    end
+    
+    R --> S
+    R --> M
+    R --> L
+    B --> S
+    B --> M
+    B --> L
 ```
-colors            sizes
-+-------+         +--------+
-| color |         | size   |
-+-------+         +--------+
-| Red   |         | Small  |
-| Blue  |         | Medium |
-+-------+         | Large  |
-                  +--------+
 
-CROSS JOIN Result: 2 × 3 = 6 rows
-+-------+--------+
-| color | size   |
-+-------+--------+
-| Red   | Small  |
-| Red   | Medium |
-| Red   | Large  |
-| Blue  | Small  |
-| Blue  | Medium |
-| Blue  | Large  |
-+-------+--------+
-```
+**CROSS JOIN Result:** 2 × 3 = **6 rows**
+
+| color | size |
+|:---:|:---:|
+| Red | Small |
+| Red | Medium |
+| Red | Large |
+| Blue | Small |
+| Blue | Medium |
+| Blue | Large |
 
 ## 📝 Syntax
 

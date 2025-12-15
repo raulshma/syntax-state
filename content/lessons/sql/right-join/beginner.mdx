@@ -15,23 +15,30 @@ RIGHT JOIN orders o ON c.id = o.customer_id;
 
 ## 📊 Visual Example
 
+```mermaid
+flowchart RL
+    subgraph RIGHT["orders (RIGHT) - All Kept"]
+        O1["1 | customer_id: 1 fa:fa-check"]
+        O2["2 | customer_id: 999 fa:fa-check"]
+    end
+    
+    subgraph LEFT["customers (LEFT)"]
+        C1["1 | Alice"]
+        C2["2 | Bob"]
+    end
+    
+    O1 ---|match| C1
+    O2 -.->|no match| N["NULL - customer 999 doesn't exist"]
 ```
-customers (LEFT)     orders (RIGHT)
-+----+--------+      +----+-------------+
-| id | name   |      | id | customer_id |
-+----+--------+      +----+-------------+
-| 1  | Alice  |      | 1  | 1           |
-| 2  | Bob    |      | 2  | 999         | ← customer doesn't exist
-+----+--------+      +----+-------------+
 
-RIGHT JOIN Result:
-+----------+--------+
-| order_id | name   |
-+----------+--------+
-| 1        | Alice  |
-| 2        | NULL   | ← Order exists, no matching customer
-+----------+--------+
-```
+**RIGHT JOIN Result:**
+
+| order_id | name |
+|:---:|:---:|
+| 1 | Alice |
+| 2 | **NULL** |
+
+> Order 2 exists but has no matching customer, shown with NULL
 
 ## 🔄 RIGHT JOIN = Reversed LEFT JOIN
 
