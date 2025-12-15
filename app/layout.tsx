@@ -17,10 +17,20 @@ const _geistMono = Geist_Mono({
 
 // <CHANGE> Updated metadata for IT Interview Prep Platform
 export const metadata: Metadata = {
+  applicationName: "MyLearningPrep",
   title: "MyLearningPrep | AI-Powered Learning Preparation",
   description:
     "Ace your next technical interview with personalized, AI-driven preparation tailored to your specific role and company.",
   generator: "Next.js",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "MyLearningPrep",
+  },
+  formatDetection: {
+    telephone: false,
+  },
   icons: {
     icon: [
       {

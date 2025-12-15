@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ViewTransitionLink } from "@/components/transitions";
 import { LayoutDashboard, LogOut, Menu, X, Github, Sun, Moon } from "lucide-react";
+import { InstallAppButton } from "@/components/pwa/install-app-button";
 import { useTransition, useState, useEffect } from "react";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { motion, AnimatePresence } from "framer-motion";
@@ -159,6 +160,9 @@ export function Header() {
           >
             <Github className="h-5 w-5" />
           </a>
+          <div className="hidden md:block">
+            <InstallAppButton variant="ghost" size="sm" />
+          </div>
           <div className="hidden md:block">
             <ThemeToggle />
           </div>
