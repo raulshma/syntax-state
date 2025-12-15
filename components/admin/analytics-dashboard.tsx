@@ -38,6 +38,8 @@ import {
   Cpu,
   Building2,
   Activity,
+  Map,
+  CheckCircle2,
   PieChart as PieChartIcon,
   BarChart3,
 } from "lucide-react";
@@ -46,6 +48,9 @@ import type {
   PopularTopicData,
   PlanDistribution,
   TokenUsageTrend,
+  RoadmapAnalyticsStats,
+  RoadmapTrendData,
+  PopularRoadmapData,
 } from "@/lib/actions/admin";
 
 interface AnalyticsDashboardProps {
@@ -55,6 +60,9 @@ interface AnalyticsDashboardProps {
   tokenUsageTrends: TokenUsageTrend[];
   topCompanies: PopularTopicData[];
   modelUsage: Array<{ model: string; count: number; percentage: number }>;
+  roadmapStats: RoadmapAnalyticsStats;
+  roadmapTrends: RoadmapTrendData[];
+  popularRoadmaps: PopularRoadmapData[];
 }
 
 const usageChartConfig: ChartConfig = {
@@ -84,6 +92,17 @@ const tokenChartConfig: ChartConfig = {
   outputTokens: {
     label: "Output Tokens",
     color: "#f472b6", // Bright pink - visible on both light/dark
+  },
+};
+
+const roadmapChartConfig: ChartConfig = {
+  roadmapsStarted: {
+    label: "Roadmaps Started",
+    color: "#3b82f6", // Bright blue
+  },
+  nodeCompletions: {
+    label: "Node Completions",
+    color: "#22c55e", // Bright green
   },
 };
 
@@ -168,6 +187,9 @@ export function AnalyticsDashboard({
   tokenUsageTrends,
   topCompanies,
   modelUsage,
+  roadmapStats,
+  roadmapTrends,
+  popularRoadmaps,
 }: AnalyticsDashboardProps) {
   const [activePieIndex, setActivePieIndex] = useState<number | undefined>(undefined);
   
@@ -175,6 +197,9 @@ export function AnalyticsDashboard({
   const interviewTrend = calculateTrend(usageTrends.map((d) => d.interviews));
   const aiRequestTrend = calculateTrend(usageTrends.map((d) => d.aiRequests));
   const userTrend = calculateTrend(usageTrends.map((d) => d.users));
+
+  const roadmapStartTrend = calculateTrend(roadmapTrends.map((d) => d.roadmapsStarted));
+  const roadmapCompletionTrend = calculateTrend(roadmapTrends.map((d) => d.nodeCompletions));
 
   // Format data for charts - ensure numeric values
   // Tokens are scaled to thousands (K) for better chart readability
@@ -191,6 +216,13 @@ export function AnalyticsDashboard({
     ...d,
     inputTokens: Number(d.inputTokens) || 0,
     outputTokens: Number(d.outputTokens) || 0,
+    formattedDate: formatDate(d.date),
+  }));
+
+  const formattedRoadmapTrends = roadmapTrends.map((d) => ({
+    ...d,
+    roadmapsStarted: Number(d.roadmapsStarted) || 0,
+    nodeCompletions: Number(d.nodeCompletions) || 0,
     formattedDate: formatDate(d.date),
   }));
 
@@ -410,6 +442,161 @@ export function AnalyticsDashboard({
           )}
         </CardContent>
       </Card>
+
+      {/* Roadmap Summary */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        <SummaryCard
+          title="Roadmaps Started (30d)"
+          value={roadmapStats.roadmapsStarted30d}
+          trend={roadmapStartTrend}
+          icon={Map}
+          colorClass="text-blue-500"
+          bgColorClass="bg-blue-500/10"
+        />
+        <SummaryCard
+          title="Active Roadmap Users (7d)"
+          value={roadmapStats.activeRoadmapUsers7d}
+          trend={{ value: 0, isPositive: true }}
+          icon={Users}
+          colorClass="text-green-500"
+          bgColorClass="bg-green-500/10"
+        />
+        <SummaryCard
+          title="Node Completions (30d)"
+          value={roadmapStats.nodeCompletions30d}
+          trend={roadmapCompletionTrend}
+          icon={CheckCircle2}
+          colorClass="text-violet-500"
+          bgColorClass="bg-violet-500/10"
+        />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Roadmap Trends */}
+        <Card className="border-0 shadow-xl shadow-black/5 dark:shadow-black/20 bg-card/80  rounded-3xl overflow-hidden">
+          <CardHeader className="p-6 md:p-8 border-b border-border/50">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-blue-500/10 flex items-center justify-center">
+                <Map className="w-5 h-5 text-blue-500" />
+              </div>
+              <div>
+                <CardTitle className="text-xl font-bold">Roadmap Trends</CardTitle>
+                <CardDescription className="mt-1">
+                  Starts and node completions over the last 30 days
+                </CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="p-6 md:p-8">
+            {formattedRoadmapTrends.length > 0 ? (
+              <ChartContainer config={roadmapChartConfig} className="h-[300px] w-full">
+                <AreaChart data={formattedRoadmapTrends} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="colorRoadmapsStarted" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="var(--color-roadmapsStarted)" stopOpacity={0.35} />
+                      <stop offset="95%" stopColor="var(--color-roadmapsStarted)" stopOpacity={0} />
+                    </linearGradient>
+                    <linearGradient id="colorNodeCompletions" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="var(--color-nodeCompletions)" stopOpacity={0.25} />
+                      <stop offset="95%" stopColor="var(--color-nodeCompletions)" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-border/30" vertical={false} />
+                  <XAxis
+                    dataKey="formattedDate"
+                    tickLine={false}
+                    axisLine={false}
+                    tickMargin={16}
+                    tick={{ fontSize: 12, fill: "var(--muted-foreground)" }}
+                    interval="preserveStartEnd"
+                  />
+                  <YAxis
+                    tickLine={false}
+                    axisLine={false}
+                    tickMargin={16}
+                    tick={{ fontSize: 12, fill: "var(--muted-foreground)" }}
+                    allowDecimals={false}
+                  />
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <ChartLegend content={<ChartLegendContent />} />
+                  <Area
+                    type="monotone"
+                    dataKey="roadmapsStarted"
+                    stroke="var(--color-roadmapsStarted)"
+                    fill="url(#colorRoadmapsStarted)"
+                    strokeWidth={2}
+                    animationBegin={0}
+                    animationDuration={900}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="nodeCompletions"
+                    stroke="var(--color-nodeCompletions)"
+                    fill="url(#colorNodeCompletions)"
+                    strokeWidth={2}
+                    animationBegin={100}
+                    animationDuration={900}
+                  />
+                </AreaChart>
+              </ChartContainer>
+            ) : (
+              <div className="h-[300px] flex flex-col items-center justify-center border-2 border-dashed border-border/50 rounded-2xl bg-secondary/20">
+                <Map className="w-10 h-10 text-muted-foreground/50 mb-3" />
+                <p className="text-sm text-muted-foreground font-medium">
+                  No roadmap data available yet
+                </p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Popular Roadmaps */}
+        <Card className="border-0 shadow-xl shadow-black/5 dark:shadow-black/20 bg-card/80  rounded-3xl overflow-hidden">
+          <CardHeader className="p-6 md:p-8 border-b border-border/50">
+            <CardTitle className="text-lg font-bold">Popular Roadmaps (30d)</CardTitle>
+            <CardDescription className="mt-1">Most engaged roadmaps (unique users)</CardDescription>
+          </CardHeader>
+          <CardContent className="p-6 md:p-8">
+            {popularRoadmaps.length > 0 ? (
+              <div className="space-y-4">
+                {popularRoadmaps.map((r, i) => (
+                  <div key={r.roadmapSlug} className="group">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                        <span className="flex items-center justify-center w-6 h-6 rounded-full bg-secondary text-xs font-medium text-muted-foreground">
+                          {i + 1}
+                        </span>
+                        <span className="text-sm font-medium text-foreground truncate">
+                          {r.roadmapTitle}
+                        </span>
+                      </div>
+                      <span className="text-xs font-mono text-muted-foreground bg-secondary px-2 py-1 rounded-md">
+                        {r.count}
+                      </span>
+                    </div>
+                    <div className="w-full h-2 bg-secondary/50 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-blue-500/80 rounded-full transition-all duration-500 group-hover:bg-blue-500 group-hover:scale-y-125 group-hover:shadow-lg origin-left"
+                        style={{
+                          width: `${r.percentage}%`,
+                          boxShadow: "0 0 12px rgba(59, 130, 246, 0.4)",
+                        }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="h-48 flex flex-col items-center justify-center text-center p-4">
+                <div className="w-12 h-12 rounded-full bg-secondary/50 flex items-center justify-center mb-3">
+                  <Map className="w-6 h-6 text-muted-foreground/50" />
+                </div>
+                <p className="text-sm text-muted-foreground">No roadmap data yet</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Popular Topics */}

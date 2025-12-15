@@ -23,6 +23,9 @@ const defaultData = {
   tokenUsageTrends: [],
   topCompanies: [],
   modelUsage: [],
+  roadmapStats: { totalActiveRoadmaps: 0, roadmapsStarted30d: 0, activeRoadmapUsers7d: 0, nodeCompletions30d: 0, avgOverallProgressActive7d: 0 },
+  roadmapTrends: [],
+  popularRoadmaps: [],
   concurrencyLimit: 3,
   tieredModelConfig: {
     high: { provider: 'openrouter' as AIProviderType, primaryModel: null, fallbackModel: null, temperature: 0.7, maxTokens: 4096, fallbackMaxTokens: 4096, toolsEnabled: true },
@@ -59,6 +62,9 @@ export default async function AdminPage() {
           tokenUsageTrends={data.tokenUsageTrends}
           topCompanies={data.topCompanies}
           modelUsage={data.modelUsage}
+          roadmapStats={data.roadmapStats}
+          roadmapTrends={data.roadmapTrends}
+          popularRoadmaps={data.popularRoadmaps}
           concurrencyLimit={data.concurrencyLimit}
           tieredModelConfig={data.tieredModelConfig}
           aiToolsConfig={data.aiToolsConfig}

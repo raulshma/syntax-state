@@ -5,6 +5,8 @@ import {
   getInterviewsCollection,
   getAILogsCollection,
   getSettingsCollection,
+  getRoadmapsCollection,
+  getUserRoadmapProgressCollection,
 } from "@/lib/db/collections";
 import { isSearchEnabled } from "@/lib/services/search-service";
 import { SETTINGS_KEYS, DEFAULT_AI_TOOLS, type AIToolConfig, type AIToolId } from "@/lib/db/schemas/settings";
@@ -20,6 +22,9 @@ import type {
   PlanDistribution,
   TokenUsageTrend,
   FullTieredModelConfig,
+  RoadmapAnalyticsStats,
+  RoadmapTrendData,
+  PopularRoadmapData,
 } from "./admin";
 
 // Cache for expensive computations (in-memory, resets on server restart)
@@ -57,6 +62,9 @@ export async function getAdminDashboardData(): Promise<
       tokenUsageTrends: TokenUsageTrend[];
       topCompanies: PopularTopicData[];
       modelUsage: Array<{ model: string; count: number; percentage: number }>;
+      roadmapStats: RoadmapAnalyticsStats;
+      roadmapTrends: RoadmapTrendData[];
+      popularRoadmaps: PopularRoadmapData[];
       concurrencyLimit: number;
       tieredModelConfig: FullTieredModelConfig;
       aiToolsConfig: AIToolConfig[];
@@ -76,13 +84,21 @@ export async function getAdminDashboardData(): Promise<
 }
 
 async function fetchAllAdminData() {
-  const [usersCollection, interviewsCollection, aiLogsCollection, settingsCollection] =
-    await Promise.all([
-      getUsersCollection(),
-      getInterviewsCollection(),
-      getAILogsCollection(),
-      getSettingsCollection(),
-    ]);
+  const [
+    usersCollection,
+    interviewsCollection,
+    aiLogsCollection,
+    settingsCollection,
+    roadmapsCollection,
+    userRoadmapProgressCollection,
+  ] = await Promise.all([
+    getUsersCollection(),
+    getInterviewsCollection(),
+    getAILogsCollection(),
+    getSettingsCollection(),
+    getRoadmapsCollection(),
+    getUserRoadmapProgressCollection(),
+  ]);
 
   const now = new Date();
   const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
@@ -122,6 +138,16 @@ async function fetchAllAdminData() {
     tierMediumDoc,
     tierLowDoc,
     aiToolsConfigDoc,
+
+    // Roadmap analytics
+    totalActiveRoadmaps,
+    roadmapsStarted30d,
+    activeRoadmapUsers7dDistinct,
+    nodeCompletions30dAgg,
+    avgProgressActive7dAgg,
+    roadmapStartsAgg,
+    roadmapNodeCompletionsAgg,
+    popularRoadmapsAgg,
   ] = await Promise.all([
     // Basic counts
     usersCollection.countDocuments(),
@@ -282,7 +308,153 @@ async function fetchAllAdminData() {
     settingsCollection.findOne({ key: SETTINGS_KEYS.MODEL_TIER_MEDIUM }),
     settingsCollection.findOne({ key: SETTINGS_KEYS.MODEL_TIER_LOW }),
     settingsCollection.findOne({ key: SETTINGS_KEYS.AI_TOOLS_CONFIG }),
+
+    // Roadmap analytics
+    roadmapsCollection.countDocuments({ isActive: true }),
+    userRoadmapProgressCollection.countDocuments({ startedAt: { $gte: thirtyDaysAgo } }),
+    userRoadmapProgressCollection.distinct("userId", {
+      $or: [
+        { lastActivityAt: { $gte: oneWeekAgo } },
+        { updatedAt: { $gte: oneWeekAgo } },
+      ],
+    }),
+    userRoadmapProgressCollection
+      .aggregate([
+        { $match: { "nodeProgress.completedAt": { $gte: thirtyDaysAgo } } },
+        { $unwind: "$nodeProgress" },
+        { $match: { "nodeProgress.completedAt": { $gte: thirtyDaysAgo } } },
+        { $group: { _id: null, count: { $sum: 1 } } },
+      ])
+      .toArray(),
+    userRoadmapProgressCollection
+      .aggregate([
+        {
+          $match: {
+            $or: [
+              { lastActivityAt: { $gte: oneWeekAgo } },
+              { updatedAt: { $gte: oneWeekAgo } },
+            ],
+          },
+        },
+        { $group: { _id: null, avg: { $avg: { $ifNull: ["$overallProgress", 0] } } } },
+      ])
+      .toArray(),
+    userRoadmapProgressCollection
+      .aggregate([
+        { $match: { startedAt: { $gte: thirtyDaysAgo } } },
+        {
+          $group: {
+            _id: {
+              $dateToString: { format: "%Y-%m-%d", date: "$startedAt", timezone: "UTC" },
+            },
+            count: { $sum: 1 },
+          },
+        },
+        { $sort: { _id: 1 as const } },
+      ])
+      .toArray(),
+    userRoadmapProgressCollection
+      .aggregate([
+        { $match: { "nodeProgress.completedAt": { $gte: thirtyDaysAgo } } },
+        { $unwind: "$nodeProgress" },
+        { $match: { "nodeProgress.completedAt": { $gte: thirtyDaysAgo } } },
+        {
+          $group: {
+            _id: {
+              $dateToString: {
+                format: "%Y-%m-%d",
+                date: "$nodeProgress.completedAt",
+                timezone: "UTC",
+              },
+            },
+            count: { $sum: 1 },
+          },
+        },
+        { $sort: { _id: 1 as const } },
+      ])
+      .toArray(),
+    userRoadmapProgressCollection
+      .aggregate([
+        {
+          $match: {
+            $or: [
+              { lastActivityAt: { $gte: thirtyDaysAgo } },
+              { updatedAt: { $gte: thirtyDaysAgo } },
+            ],
+          },
+        },
+        { $group: { _id: "$roadmapSlug", count: { $sum: 1 } } },
+        { $sort: { count: -1 as const } },
+        { $limit: 10 },
+      ])
+      .toArray(),
   ]);
+
+  // Roadmap stats
+  const nodeCompletions30d = (nodeCompletions30dAgg[0] as any)?.count ?? 0;
+  const avgOverallProgressActive7d = Math.round(
+    ((avgProgressActive7dAgg[0] as any)?.avg as number) || 0
+  );
+
+  const roadmapStats: RoadmapAnalyticsStats = {
+    totalActiveRoadmaps: totalActiveRoadmaps as number,
+    roadmapsStarted30d: roadmapsStarted30d as number,
+    activeRoadmapUsers7d: Array.isArray(activeRoadmapUsers7dDistinct)
+      ? activeRoadmapUsers7dDistinct.length
+      : 0,
+    nodeCompletions30d: nodeCompletions30d as number,
+    avgOverallProgressActive7d,
+  };
+
+  // Roadmap trends (fill last 30 days)
+  const startsMap = new Map(
+    (roadmapStartsAgg as any[]).map((d: any) => [String(d._id), Number(d.count) || 0])
+  );
+  const nodeCompletionsMap = new Map(
+    (roadmapNodeCompletionsAgg as any[]).map((d: any) => [String(d._id), Number(d.count) || 0])
+  );
+
+  const roadmapTrends: RoadmapTrendData[] = [];
+  for (let i = 0; i <= 30; i++) {
+    const date = new Date(now.getTime() - (30 - i) * 24 * 60 * 60 * 1000);
+    const dateStr = date.toISOString().split("T")[0];
+    roadmapTrends.push({
+      date: dateStr,
+      roadmapsStarted: startsMap.get(dateStr) ?? 0,
+      nodeCompletions: nodeCompletionsMap.get(dateStr) ?? 0,
+    });
+  }
+
+  // Popular roadmaps (30d active) + titles
+  const popularRoadmapTotal = (popularRoadmapsAgg as any[]).reduce(
+    (sum: number, r: any) => sum + (Number(r.count) || 0),
+    0
+  );
+
+  const popularSlugs = (popularRoadmapsAgg as any[])
+    .map((r: any) => String(r._id))
+    .filter(Boolean);
+
+  const titleMap = new Map<string, string>();
+  if (popularSlugs.length > 0) {
+    const roadmapDocs = await roadmapsCollection
+      .find({ slug: { $in: popularSlugs } }, { projection: { slug: 1, title: 1 } })
+      .toArray();
+    for (const r of roadmapDocs as any[]) {
+      titleMap.set(String(r.slug), String(r.title));
+    }
+  }
+
+  const popularRoadmaps: PopularRoadmapData[] = (popularRoadmapsAgg as any[]).map((r: any) => {
+    const count = Number(r.count) || 0;
+    const slug = String(r._id);
+    return {
+      roadmapSlug: slug,
+      roadmapTitle: titleMap.get(slug) ?? slug,
+      count,
+      percentage: popularRoadmapTotal > 0 ? Math.round((count / popularRoadmapTotal) * 100) : 0,
+    };
+  });
 
   // Process AI stats
   const aiStats = aiStatsResult[0] || {
@@ -489,6 +661,9 @@ async function fetchAllAdminData() {
     tokenUsageTrends,
     topCompanies,
     modelUsage,
+    roadmapStats,
+    roadmapTrends,
+    popularRoadmaps,
     concurrencyLimit: (concurrencyDoc?.value as number) ?? 3,
     tieredModelConfig,
     aiToolsConfig,

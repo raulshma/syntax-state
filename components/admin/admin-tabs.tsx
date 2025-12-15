@@ -47,6 +47,9 @@ import type {
   PopularTopicData,
   PlanDistribution,
   TokenUsageTrend,
+  RoadmapAnalyticsStats,
+  RoadmapTrendData,
+  PopularRoadmapData,
   AIToolConfig,
 } from "@/lib/actions/admin";
 
@@ -63,6 +66,9 @@ interface AdminTabsProps {
   tokenUsageTrends: TokenUsageTrend[];
   topCompanies: PopularTopicData[];
   modelUsage: Array<{ model: string; count: number; percentage: number }>;
+  roadmapStats: RoadmapAnalyticsStats;
+  roadmapTrends: RoadmapTrendData[];
+  popularRoadmaps: PopularRoadmapData[];
   concurrencyLimit: number;
   tieredModelConfig: FullTieredModelConfig;
   aiToolsConfig: AIToolConfig[];
@@ -81,6 +87,9 @@ export function AdminTabs({
   tokenUsageTrends,
   topCompanies,
   modelUsage,
+  roadmapStats,
+  roadmapTrends,
+  popularRoadmaps,
   concurrencyLimit,
   tieredModelConfig,
   aiToolsConfig,
@@ -192,6 +201,9 @@ export function AdminTabs({
             tokenUsageTrends={tokenUsageTrends}
             topCompanies={topCompanies}
             modelUsage={modelUsage}
+            roadmapStats={roadmapStats}
+            roadmapTrends={roadmapTrends}
+            popularRoadmaps={popularRoadmaps}
           />
         </TabsContent>
 

@@ -79,8 +79,8 @@ export const PRICING_TIERS: PricingTier[] = [
       { name: `${FREE_INTERVIEW_LIMIT} interviews/month`, included: true },
       { name: `${FREE_ITERATION_LIMIT} iterations/month`, included: true },
       { name: `${FREE_CHAT_MESSAGE_LIMIT} AI chat messages/month`, included: true, tooltip: 'Chat with AI assistant for interview guidance' },
-      { name: 'Basic AI generation', included: true },
-      { name: 'Community preps access', included: true },
+      { name: 'Frontend & Backend Roadmaps', included: true },
+      { name: 'Basic Interactive Components', included: true },
       { name: 'Standard analogies', included: true },
       { name: 'AI tools (search, trends, etc.)', included: false, tooltip: 'Advanced AI tools including web search, tech trends analysis, and more' },
       { name: 'PDF export', included: false },
@@ -91,8 +91,8 @@ export const PRICING_TIERS: PricingTier[] = [
     previewFeatures: [
       `${FREE_INTERVIEW_LIMIT} interviews/month`,
       `${FREE_CHAT_MESSAGE_LIMIT} AI chat messages`,
-      'Basic AI generation',
-      'Community access',
+      'Frontend & Backend Roadmaps',
+      'Basic Interactive Components',
     ],
     cta: 'Get Started',
     href: '/onboarding',
@@ -114,7 +114,8 @@ export const PRICING_TIERS: PricingTier[] = [
       { name: `${PRO_ITERATION_LIMIT} iterations/month`, included: true },
       { name: `${PRO_CHAT_MESSAGE_LIMIT} AI chat messages/month`, included: true, tooltip: 'Chat with AI assistant with advanced tools' },
       { name: 'Advanced AI generation', included: true },
-      { name: 'Community preps access', included: true },
+      { name: 'Full Stack (.NET & React) Deep Dives', included: true },
+      { name: 'Interactive Architecture Visualizers', included: true },
       { name: 'All analogy levels', included: true },
       { name: 'AI tools (search, trends, etc.)', included: true, tooltip: 'Web search & crawl, tech trends analysis, mock interviews, and more' },
       { name: 'PDF export', included: true },
@@ -126,9 +127,10 @@ export const PRICING_TIERS: PricingTier[] = [
     previewFeatures: [
       `${PRO_INTERVIEW_LIMIT} interviews/month`,
       `${PRO_CHAT_MESSAGE_LIMIT} AI chat messages`,
+      'Full Stack Deep Dives',
+      'Architecture Visualizers',
       'AI tools & web search',
       'Analytics & Insights',
-      'Export to PDF',
     ],
     cta: 'Subscribe to Pro',
     plan: 'PRO',
@@ -150,6 +152,7 @@ export const PRICING_TIERS: PricingTier[] = [
       { name: `${MAX_ITERATION_LIMIT} iterations/month`, included: true },
       { name: `${MAX_CHAT_MESSAGE_LIMIT} AI chat messages/month`, included: true, tooltip: 'Unlimited AI chat with all tools and model selection' },
       { name: 'Everything in Pro', included: true },
+      { name: 'System Design Scenarios', included: true },
       { name: 'AI tools (search, trends, etc.)', included: true, tooltip: 'All AI tools with higher quotas and priority processing' },
       { name: 'Customizable generation', included: true, tooltip: `Fine-tune the number of topics (${GENERATION_LIMITS.topics.min}-${GENERATION_LIMITS.topics.max}), MCQs (${GENERATION_LIMITS.mcqs.min}-${GENERATION_LIMITS.mcqs.max}), and rapid-fire questions (${GENERATION_LIMITS.rapidFire.min}-${GENERATION_LIMITS.rapidFire.max}) per interview` },
       { name: 'BYOK option', included: true, tooltip: 'Bring Your Own Key - use your own OpenRouter API key' },
@@ -163,6 +166,7 @@ export const PRICING_TIERS: PricingTier[] = [
     previewFeatures: [
       `${MAX_INTERVIEW_LIMIT} interviews/month`,
       `${MAX_CHAT_MESSAGE_LIMIT} AI chat messages`,
+      'System Design Scenarios',
       'Customizable generation',
       'BYOK option',
       'AI Usage Dashboard',
@@ -173,6 +177,8 @@ export const PRICING_TIERS: PricingTier[] = [
 ];
 
 export const COMPARISON_FEATURES: ComparisonFeature[] = [
+  { name: 'Roadmap Access', free: 'Web + Basic .NET', pro: 'Full Stack + Microservices', max: 'Full Stack + Microservices' },
+  { name: 'Interactive Components', free: 'Basic Types', pro: 'Architecture Visualizers', max: 'System Design Scenarios' },
   { name: 'Monthly Interviews', free: `${FREE_INTERVIEW_LIMIT}`, pro: `${PRO_INTERVIEW_LIMIT}`, max: `${MAX_INTERVIEW_LIMIT}` },
   { name: 'Monthly Iterations', free: `${FREE_ITERATION_LIMIT}`, pro: `${PRO_ITERATION_LIMIT}`, max: `${MAX_ITERATION_LIMIT}` },
   { name: 'AI Chat Messages', free: `${FREE_CHAT_MESSAGE_LIMIT}`, pro: `${PRO_CHAT_MESSAGE_LIMIT}`, max: `${MAX_CHAT_MESSAGE_LIMIT}` },
