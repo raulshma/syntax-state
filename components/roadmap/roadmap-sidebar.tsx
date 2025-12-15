@@ -403,11 +403,8 @@ export function RoadmapSidebar({
   
   // Use passed initial data
   const [nodeObjectivesInfo, setNodeObjectivesInfo] = useState<Record<string, ObjectiveLessonInfo[]>>(initialLessonAvailability);
-  // No loading state needed if we have initial data!
-  const [isLoadingLessons, setIsLoadingLessons] = useState(false);
-
+  
   const { recentLessons, addRecentLesson, isLoaded: isRecentLoaded } = useRecentLessons();
-  const [objectiveCompletionTick, bumpObjectiveCompletionTick] = useReducer((x: number) => x + 1, 0);
   
   const getNodeStatus = (nodeId: string): NodeProgressStatus => {
     if (!progress) return 'available';
@@ -428,15 +425,8 @@ export function RoadmapSidebar({
     }
   }, [selectedNodeId]);
   
-  // Removed client-side fetching effect
-  /* 
-  useEffect(() => { ... }) 
-  */
-  
   // Calculate lesson availability for each node
   const getLessonAvailability = useCallback((nodeId: string): LessonAvailability => {
-    if (isLoadingLessons) return 'loading';
-    
     const info = nodeObjectivesInfo[nodeId];
     if (!info || info.length === 0) return 'none';
     
@@ -444,7 +434,7 @@ export function RoadmapSidebar({
     if (availableCount === 0) return 'none';
     if (availableCount === info.length) return 'full';
     return 'partial';
-  }, [nodeObjectivesInfo, isLoadingLessons]);
+  }, [nodeObjectivesInfo]);
 
   const computeObjectiveCompletionForNode = useCallback((nodeId: string) => {
     const objectives = nodeObjectivesInfo[nodeId] || [];
@@ -460,6 +450,27 @@ export function RoadmapSidebar({
     return { completed, total: objectives.length };
   }, [nodeObjectivesInfo]);
 
+  // Initial computation
+  const [objectiveCompletionByNode, setObjectiveCompletionByNode] = useState<Record<string, { completed: number; total: number }>>(() => {
+    const initial: Record<string, { completed: number; total: number }> = {};
+    if (typeof window !== 'undefined') {
+        for (const node of roadmap.nodes) {
+            if ((initialLessonAvailability[node.id] || []).length > 0) {
+                // We need to call this logic, but computeObjectiveCompletionForNode is not available in initializer
+                const objectives = initialLessonAvailability[node.id] || [];
+                let completed = 0;
+                for (const obj of objectives) {
+                   const stored = getObjectiveProgress(node.id, obj.lessonId);
+                   if (stored?.completedAt) completed += 1;
+                }
+                initial[node.id] = { completed, total: objectives.length };
+            }
+        }
+    }
+    return initial;
+  });
+
+  // Listener for updates
   useEffect(() => {
     const handler = (e: Event) => {
       const custom = e as CustomEvent<{ nodeId?: string }>;
@@ -467,26 +478,16 @@ export function RoadmapSidebar({
       if (!nodeId) return;
       if (!(nodeId in nodeObjectivesInfo)) return;
 
-      // Trigger a re-render; completion is derived from localStorage
-      bumpObjectiveCompletionTick();
+      setObjectiveCompletionByNode(prev => ({
+          ...prev,
+          [nodeId]: computeObjectiveCompletionForNode(nodeId)
+      }));
     };
 
     window.addEventListener('objective-progress-updated', handler);
     return () => window.removeEventListener('objective-progress-updated', handler);
-  }, [nodeObjectivesInfo]);
+  }, [nodeObjectivesInfo, computeObjectiveCompletionForNode]);
 
-  const objectiveCompletionByNode = useMemo(() => {
-    const next: Record<string, { completed: number; total: number }> = {};
-    // Use tick to refresh derived values when localStorage changes in same tab
-    void objectiveCompletionTick;
-
-    for (const node of roadmap.nodes) {
-      if ((nodeObjectivesInfo[node.id] || []).length > 0) {
-        next[node.id] = computeObjectiveCompletionForNode(node.id);
-      }
-    }
-    return next;
-  }, [computeObjectiveCompletionForNode, nodeObjectivesInfo, roadmap.nodes, objectiveCompletionTick]);
   
   // Group nodes by type for organized display
   const milestones = roadmap.nodes.filter(n => n.type === 'milestone');
@@ -573,8 +574,6 @@ export function RoadmapSidebar({
   
   // Calculate overall lesson statistics
   const lessonStats = useMemo(() => {
-    if (isLoadingLessons) return null;
-    
     let totalObjectives = 0;
     let availableLessons = 0;
     
@@ -584,7 +583,7 @@ export function RoadmapSidebar({
     });
     
     return { totalObjectives, availableLessons };
-  }, [nodeObjectivesInfo, isLoadingLessons]);
+  }, [nodeObjectivesInfo]);
   
   return (
     <aside className="w-full flex flex-col bg-sidebar border border-border rounded-2xl">

@@ -55,7 +55,12 @@ export async function getRoadmapWithProgress(slug: string): Promise<{
 }> {
   const { userId } = await auth();
 
-  const roadmap = await roadmapRepo.findRoadmapBySlug(slug);
+  // 1. Fetch main roadmap and user progress in parallel
+  const [roadmap, progress] = await Promise.all([
+    roadmapRepo.findRoadmapBySlug(slug),
+    userId ? progressRepo.findByUserAndSlug(userId, slug) : Promise.resolve(null),
+  ]);
+  
   if (!roadmap) {
     return {
       roadmap: null,
@@ -67,59 +72,34 @@ export async function getRoadmapWithProgress(slug: string): Promise<{
     };
   }
 
-  let progress: UserRoadmapProgress | null = null;
-  if (userId) {
-    progress = await progressRepo.findByUserAndSlug(userId, slug);
-  }
-
-  // Get sub-roadmaps for nodes that have them
-  const subRoadmaps = await roadmapRepo.findSubRoadmaps(slug);
-
-  // Get lesson availability map
-  // We import dynamically to avoid circular dependencies if any (though lessons.ts is generic)
-  const { getRoadmapLessonAvailability } = await import(
-    "@/lib/actions/lessons"
-  );
-  const lessonAvailability = await getRoadmapLessonAvailability(roadmap);
-
-  // Fetch parent roadmap if this is a sub-roadmap (Requirements: 2.1)
-  let parentRoadmap: Roadmap | null = null;
-  if (roadmap.parentRoadmapSlug) {
-    parentRoadmap = await roadmapRepo.findRoadmapBySlug(
-      roadmap.parentRoadmapSlug
-    );
-  }
-
-  // Get sub-roadmap progress for milestones that have sub-roadmaps (Requirements: 4.2, 4.3)
+  // 2. Fetch all related data in parallel
+  // - Sub-roadmaps details
+  // - Lesson availability
+  // - Parent roadmap (if applicable)
+  // - Progress for all sub-roadmaps (if applicable)
+  
   const subRoadmapSlugs = roadmap.nodes
     .filter((node) => node.subRoadmapSlug)
     .map((node) => node.subRoadmapSlug as string);
 
-  let subRoadmapProgressMap: Record<string, SubRoadmapProgressInfo> = {};
-  if (subRoadmapSlugs.length > 0 && userId) {
-    for (const subSlug of subRoadmapSlugs) {
-      const subRoadmap = await roadmapRepo.findRoadmapBySlug(subSlug);
-      if (!subRoadmap) {
-        subRoadmapProgressMap[subSlug] = {
-          slug: subSlug,
-          overallProgress: 0,
-          nodesCompleted: 0,
-          totalNodes: 0,
-          exists: false,
-        };
-        continue;
-      }
+  const [
+    subRoadmaps,
+    { getRoadmapLessonAvailability },
+    parentRoadmap,
+    subRoadmapProgressMap
+  ] = await Promise.all([
+    roadmapRepo.findSubRoadmaps(slug),
+    import("@/lib/actions/lessons"),
+    roadmap.parentRoadmapSlug 
+      ? roadmapRepo.findRoadmapBySlug(roadmap.parentRoadmapSlug) 
+      : Promise.resolve(null),
+    userId && subRoadmapSlugs.length > 0
+      ? getSubRoadmapProgressMap(subRoadmapSlugs)
+      : Promise.resolve({}),
+  ]);
 
-      const subProgress = await progressRepo.findByUserAndSlug(userId, subSlug);
-      subRoadmapProgressMap[subSlug] = {
-        slug: subSlug,
-        overallProgress: subProgress?.overallProgress ?? 0,
-        nodesCompleted: subProgress?.nodesCompleted ?? 0,
-        totalNodes: subRoadmap.nodes.length,
-        exists: true,
-      };
-    }
-  }
+  // Execute the imported function
+  const lessonAvailability = await getRoadmapLessonAvailability(roadmap);
 
   return {
     roadmap,

@@ -332,6 +332,24 @@ export function RoadmapViewer({ subRoadmapProgressMap = {}, ...props }: RoadmapV
     let cancelled = false;
     
     async function runLayout() {
+      // 1. Check cache first
+      const cacheKey = `roadmap-layout-${props.roadmap.slug}-${layoutType}`;
+      const versionHash = `${props.roadmap.nodes.length}-${props.roadmap.edges.length}`; // Simple versioning
+      
+      try {
+        const cached = localStorage.getItem(cacheKey);
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          // Check if cache matches current roadmap version
+          if (parsed.version === versionHash) {
+            setLayoutResult(parsed.result);
+            return;
+          }
+        }
+      } catch (e) {
+        // Ignore cache errors
+      }
+
       setIsLayouting(true);
       try {
         const result = await computeElkLayout(
@@ -339,8 +357,21 @@ export function RoadmapViewer({ subRoadmapProgressMap = {}, ...props }: RoadmapV
           props.roadmap.edges,
           layoutType
         );
+        
         if (!cancelled) {
           setLayoutResult(result);
+          
+          // Cache the result
+          try {
+            localStorage.setItem(cacheKey, JSON.stringify({
+              version: versionHash,
+              result,
+              timestamp: Date.now()
+            }));
+          } catch (e) {
+            // Storage quota exceeded or other error
+            console.warn('Failed to cache layout:', e);
+          }
         }
       } catch (error) {
         console.error('Layout failed:', error);
@@ -353,7 +384,7 @@ export function RoadmapViewer({ subRoadmapProgressMap = {}, ...props }: RoadmapV
     
     runLayout();
     return () => { cancelled = true; };
-  }, [props.roadmap.nodes, props.roadmap.edges, layoutType]);
+  }, [props.roadmap.nodes, props.roadmap.edges, layoutType, props.roadmap.slug]);
 
   // Save layout preference to localStorage
   const handleLayoutChange = (newLayout: ElkLayoutType) => {
