@@ -425,6 +425,11 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
     DatabaseDesignVisualizer,
     DbContextVisualizer,
 
+    // Dapper Lesson Components
+    DapperQueryVisualizer,
+    DapperCommandVisualizer,
+    DapperMultiMappingVisualizer,
+
     // Blazor Lesson Components
     HostingTypeSelector,
     InteractiveCodeEditor: dynamic(() => import('@/components/learn/interactive/blazor/InteractiveCodeEditor').then(mod => mod.InteractiveCodeEditor), { ssr: false }),
