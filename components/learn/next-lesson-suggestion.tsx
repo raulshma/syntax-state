@@ -33,8 +33,8 @@ export function NextLessonSuggestion({
       transition={{ duration: 0.3, delay: 0.2 }}
     >
       <Card className="p-6 bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex-1">
+        <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
+          <div className="flex-1 w-full">
             <div className="flex items-center gap-2 mb-2">
               <span className="text-xs font-medium text-primary uppercase tracking-wider">
                 Next Lesson
@@ -61,8 +61,8 @@ export function NextLessonSuggestion({
             </div>
           </div>
           
-          <Link href={`/roadmaps/${roadmapSlug}/learn/${milestone}/${lessonSlug}`}>
-            <Button className="gap-2">
+          <Link href={`/roadmaps/${roadmapSlug}/learn/${milestone}/${lessonSlug}`} className="w-full sm:w-auto">
+            <Button className="gap-2 w-full sm:w-auto">
               Start Lesson
               <ArrowRight className="w-4 h-4" />
             </Button>

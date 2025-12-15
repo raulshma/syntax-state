@@ -91,7 +91,7 @@ export async function completeLesson(
   const completionRecord = {
     lessonId,
     experienceLevel: level,
-    sectionsCompleted: sections.map(s => ({
+    sectionsCompleted: (sections || []).map(s => ({
       sectionId: s,
       completedAt: now,
       xpEarned: 10, // Assuming 10xp per section
@@ -108,7 +108,7 @@ export async function completeLesson(
   
   // Check for new badges after this completion
   const updatedCompletedLessons = [...currentGamification.completedLessons, completionRecord];
-  const existingBadgeIds = currentGamification.badges.map((b: { id: string }) => b.id);
+  const existingBadgeIds = (currentGamification.badges || []).map((b: { id: string }) => b.id);
   
   // Calculate stats for badge checking
   const internetLessonsAtLevel = (targetLevel: string) => 

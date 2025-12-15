@@ -152,11 +152,11 @@ interface ObjectiveLinkProps {
   href: string;
   objectiveTitle: string;
   xpRewards?: ObjectiveLessonInfo['xpRewards'];
-  heatmap?: boolean; // deprecated but keeping for prop compatibility if needed
+  isComplete?: boolean;
   onNavigate?: () => void;
 }
 
-function ObjectiveLink({ href, objectiveTitle, xpRewards, onNavigate }: ObjectiveLinkProps) {
+function ObjectiveLink({ href, objectiveTitle, xpRewards, isComplete, onNavigate }: ObjectiveLinkProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   
@@ -181,8 +181,10 @@ function ObjectiveLink({ href, objectiveTitle, xpRewards, onNavigate }: Objectiv
     >
       {isPending ? (
         <Loader2 className="w-3 h-3 text-primary animate-spin shrink-0" />
+      ) : isComplete ? (
+        <CheckCircle2 className="w-3 h-3 text-green-500 shrink-0" />
       ) : (
-        <BookOpen className="w-3 h-3 text-green-500 shrink-0" />
+        <BookOpen className="w-3 h-3 text-muted-foreground shrink-0" />
       )}
       <span className="flex-1 line-clamp-2">{objectiveTitle}</span>
       {xpRewards && !isPending && (
@@ -354,6 +356,8 @@ function NodeItem({
                 const objectiveTitle = info.objective;
                 const objectiveSlug = info.lessonId;
                 const hasLesson = info.hasLesson;
+                // Full lessonId format matches how it's stored in gamification: "roadmapSlug/lessonSlug"
+                const fullLessonId = `${roadmapSlug}/${objectiveSlug}`;
                 
                 return (
                   <motion.li
@@ -367,6 +371,7 @@ function NodeItem({
                         href={`/roadmaps/${roadmapSlug}/learn/${node.id}/${objectiveSlug}`}
                         objectiveTitle={objectiveTitle}
                         xpRewards={info.xpRewards}
+                        isComplete={!!getObjectiveProgress(roadmapSlug, fullLessonId)?.completedAt}
                         onNavigate={() => {
                           onSelect();
                           onLessonNavigate?.(objectiveSlug, objectiveTitle);
@@ -447,11 +452,13 @@ export function RoadmapSidebar({
 
     let completed = 0;
     for (const obj of objectives) {
-      const stored = getObjectiveProgress(nodeId, obj.lessonId);
+      // Use roadmap.slug and full lessonId format for key consistency
+      const fullLessonId = `${roadmap.slug}/${obj.lessonId}`;
+      const stored = getObjectiveProgress(roadmap.slug, fullLessonId);
       if (stored?.completedAt) completed += 1;
     }
     return { completed, total: objectives.length };
-  }, [nodeObjectivesInfo]);
+  }, [nodeObjectivesInfo, roadmap.slug]);
 
   // Initial computation
   const [objectiveCompletionByNode, setObjectiveCompletionByNode] = useState<Record<string, { completed: number; total: number }>>(() => {
@@ -463,7 +470,9 @@ export function RoadmapSidebar({
                 const objectives = initialLessonAvailability[node.id] || [];
                 let completed = 0;
                 for (const obj of objectives) {
-                   const stored = getObjectiveProgress(node.id, obj.lessonId);
+                   // Use roadmap.slug and full lessonId format for key consistency
+                   const fullLessonId = `${roadmap.slug}/${obj.lessonId}`;
+                   const stored = getObjectiveProgress(roadmap.slug, fullLessonId);
                    if (stored?.completedAt) completed += 1;
                 }
                 initial[node.id] = { completed, total: objectives.length };
@@ -642,8 +651,9 @@ export function RoadmapSidebar({
           </h3>
           <ul className="space-y-1">
             {recentLessons.filter(l => l.roadmapSlug === roadmap.slug).map((lesson, i) => {
-               // Check if completed
-               const isCompleted = getObjectiveProgress(lesson.nodeId, lesson.lessonId)?.completedAt;
+               // Check if completed - use roadmapSlug and full lessonId format for key consistency
+               const fullLessonId = `${lesson.roadmapSlug}/${lesson.lessonId}`;
+               const isCompleted = getObjectiveProgress(lesson.roadmapSlug, fullLessonId)?.completedAt;
                
                return (
                 <li key={`${lesson.nodeId}-${lesson.lessonId}-${i}`}>

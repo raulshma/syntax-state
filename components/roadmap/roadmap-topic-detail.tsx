@@ -211,10 +211,11 @@ export function RoadmapTopicDetail({
         setObjectivesInfo(info);
         
         // Load progress from localStorage using lessonId from info
-        // This now includes synced gamification data
+        // Use roadmapSlug for key consistency with syncGamificationToLocalStorage
         const progress: Record<string, ObjectiveProgressData> = {};
         for (const objInfo of info) {
-          const key = getObjectiveProgressKey(node.id, objInfo.lessonId);
+          const fullLessonId = `${roadmapSlug}/${objInfo.lessonId}`;
+          const key = getObjectiveProgressKey(roadmapSlug, fullLessonId);
           const stored = localStorage.getItem(key);
           if (stored) {
             try {

@@ -268,8 +268,9 @@ function LessonContent({
         setHasClaimedReward(true);
         
         // Save objective progress to localStorage for roadmap UI sync
-        // lessonId format is "milestoneId/lessonSlug", milestoneId is the nodeId
-        saveObjectiveProgress(milestoneId, lessonId, level, totalEarnedXp);
+        // Use roadmapSlug from lessonId for consistency with syncGamificationToLocalStorage
+        const roadmapSlugFromLesson = lessonId.split('/')[0];
+        saveObjectiveProgress(roadmapSlugFromLesson, lessonId, level, totalEarnedXp);
         
         // Show XP animation
         setXpAwarded(totalEarnedXp);
@@ -295,8 +296,8 @@ function LessonContent({
         }
         setHasClaimedReward(false);
         
-        // Clear objective progress from localStorage
-        clearObjectiveProgress(milestoneId, lessonId);
+        // Clear objective progress from localStorage (use roadmapSlug for key consistency)
+        clearObjectiveProgress(lessonId.split('/')[0], lessonId);
         
         toast.success('Lesson progress reset and XP removed');
       } else {
@@ -405,11 +406,11 @@ function LessonContent({
             exit={{ opacity: 0, y: -20 }}
             className="mt-12 p-6 rounded-2xl bg-green-500/10 border border-green-500/30"
           >
-            <div className="flex items-center gap-4">
-              <div className="p-3 rounded-xl bg-green-500/20">
+            <div className="flex flex-col sm:flex-row items-center gap-4 text-center sm:text-left">
+              <div className="p-3 rounded-xl bg-green-500/20 shrink-0">
                 <CheckCircle2 className="w-8 h-8 text-green-500" />
               </div>
-              <div className="flex-1">
+              <div className="flex-1 w-full">
                 <h3 className="text-lg font-semibold text-foreground">
                   {hasClaimedReward ? 'Lesson Completed!' : 'Lesson Complete! 🎉'}
                 </h3>
@@ -420,13 +421,13 @@ function LessonContent({
                   }
                 </p>
               </div>
-              <div className="flex gap-2">
-                <Button onClick={handleResetLesson} variant="outline" size="sm" className="text-muted-foreground hover:text-destructive">
+              <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                <Button onClick={handleResetLesson} variant="outline" size="sm" className="text-muted-foreground hover:text-destructive w-full sm:w-auto">
                   <RefreshCw className="w-4 h-4 mr-2" />
                   Reset
                 </Button>
                 {!hasClaimedReward && (
-                  <Button onClick={handleClaimRewards}>
+                  <Button onClick={handleClaimRewards} className="w-full sm:w-auto">
                     Claim Rewards
                   </Button>
                 )}

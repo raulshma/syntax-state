@@ -23,6 +23,7 @@ import type {
 } from "@/lib/db/schemas/user-roadmap-progress";
 import type { ObjectiveLessonInfo } from "@/lib/actions/lessons";
 import type { UserGamification } from "@/lib/db/schemas/user";
+import { syncGamificationToLocalStorage } from "@/lib/hooks/use-objective-progress";
 
 interface RoadmapClientProps {
   initialRoadmap: Roadmap;
@@ -69,6 +70,13 @@ export function RoadmapClient({
 
   const [isPending, startTransition] = useTransition();
   const [gamification] = useState(initialGamification);
+  
+  // Sync gamification data to localStorage on mount for sidebar completion indicators
+  useEffect(() => {
+    if (gamification) {
+      syncGamificationToLocalStorage(gamification);
+    }
+  }, [gamification]);
 
   const selectedNode = selectedNodeId
     ? roadmap.nodes.find((n) => n.id === selectedNodeId)
