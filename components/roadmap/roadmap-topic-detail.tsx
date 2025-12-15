@@ -31,6 +31,7 @@ import {
   syncGamificationToLocalStorage,
   type ObjectiveProgressData 
 } from '@/lib/hooks/use-objective-progress';
+import { getRoadmapSkillLevel } from '@/lib/hooks/use-roadmap-skill-level';
 import type { RoadmapNode } from '@/lib/db/schemas/roadmap';
 import type { NodeProgress } from '@/lib/db/schemas/user-roadmap-progress';
 import type { UserGamification } from '@/lib/db/schemas/user';
@@ -74,6 +75,7 @@ interface DetailObjectiveLinkProps {
   xpRewards?: ObjectiveLessonInfo['xpRewards'];
   estimatedMinutes?: ObjectiveLessonInfo['estimatedMinutes'];
   xpEarned?: number;
+  roadmapSlug: string;
 }
 
 function DetailObjectiveLink({ 
@@ -83,14 +85,18 @@ function DetailObjectiveLink({
   xpRewards,
   estimatedMinutes,
   xpEarned,
+  roadmapSlug,
 }: DetailObjectiveLinkProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
+    // Check for persisted skill level and append to URL if exists
+    const persistedLevel = getRoadmapSkillLevel(roadmapSlug);
+    const targetUrl = persistedLevel ? `${href}?level=${persistedLevel}` : href;
     startTransition(() => {
-      router.push(href);
+      router.push(targetUrl);
     });
   };
   
@@ -234,7 +240,7 @@ export function RoadmapTopicDetail({
     }
     
     fetchObjectives();
-  }, [node.id, node.learningObjectives]);
+  }, [node.id, node.learningObjectives, roadmapSlug]);
   
   // Fetch sub-roadmap info when node has subRoadmapSlug (Requirements: 7.1, 7.2, 7.3)
   useEffect(() => {
@@ -427,6 +433,7 @@ export function RoadmapTopicDetail({
                           xpRewards={info.xpRewards}
                           estimatedMinutes={info.estimatedMinutes}
                           xpEarned={progress?.xpEarned}
+                          roadmapSlug={roadmapSlug}
                         />
                       ) : (
                         <div className="p-3 flex items-start gap-3">

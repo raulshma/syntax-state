@@ -26,6 +26,7 @@ import type { ExperienceLevel } from '@/lib/db/schemas/lesson-progress';
 import { ProgressCheckpoint } from '@/components/learn/mdx-components/progress-checkpoint';
 import { Quiz, Question, Answer } from '@/components/learn/mdx-components/quiz';
 import { saveObjectiveProgress, clearObjectiveProgress } from '@/lib/hooks/use-objective-progress';
+import { getRoadmapSkillLevel, saveRoadmapSkillLevel } from '@/lib/hooks/use-roadmap-skill-level';
 
 import type { UserGamification } from '@/lib/db/schemas/user';
 import type { NextLessonSuggestion as NextLessonSuggestionType, AdjacentLessons, NextLessonNavigation } from '@/lib/actions/lessons';
@@ -59,6 +60,9 @@ interface LessonContentInternalProps extends LessonPageClientProps {
   onMdxSourceChange: (mdxSource: MDXRemoteSerializeResult) => void;
   mdxKey: number;
   bumpMdxKey: () => void;
+  /** If true, content needs to be loaded for the persisted level on mount */
+  needsContentLoad: boolean;
+  onContentLoaded: () => void;
 }
 
 // Inner component that uses the progress context
@@ -84,6 +88,8 @@ function LessonContent({
   onMdxSourceChange,
   mdxKey,
   bumpMdxKey,
+  needsContentLoad,
+  onContentLoaded,
 }: LessonContentInternalProps) {
   const searchParams = useSearchParams();
   const { setAdjacentLessons, enterZenMode, isZenMode } = useZenMode();
@@ -101,10 +107,11 @@ function LessonContent({
       enterZenMode();
     }
   }, [searchParams, enterZenMode, isZenMode]);
+  
   // Use the lifted level state from parent
   const level = currentLevel;
   const setLevel = setCurrentLevel;
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(needsContentLoad);
   const [gamification, setGamification] = useState<UserGamification | null>(initialGamification);
   const [hasClaimedReward, setHasClaimedReward] = useState(isLessonCompleted);
   const [xpAwarded, setXpAwarded] = useState<number | null>(null);
@@ -224,6 +231,9 @@ function LessonContent({
       ) ?? false;
       setHasClaimedReward(isLevelCompleted);
       
+      // Persist the skill level for this roadmap so other lessons auto-load at this level
+      saveRoadmapSkillLevel(roadmapSlug, newLevel);
+      
       // Update URL without page refresh
       window.history.replaceState(
         null,
@@ -239,6 +249,50 @@ function LessonContent({
       setIsLoading(false);
     }
   }, [level, lessonId, roadmapSlug, milestoneId, isLoading, gamification, setLevel, onMdxSourceChange, bumpMdxKey]);
+
+  // Load content for persisted level on mount if it differs from server-rendered level
+  useEffect(() => {
+    if (!needsContentLoad) return;
+    
+    async function loadPersistedLevelContent() {
+      try {
+        const timestamp = Date.now();
+        const response = await fetch(
+          `/api/lessons/content?path=${encodeURIComponent(lessonId)}&level=${level}&t=${timestamp}`,
+          { cache: 'no-store', headers: { 'Cache-Control': 'no-cache' } }
+        );
+        
+        if (!response.ok) throw new Error('Failed to fetch content');
+        
+        const data = await response.json();
+        const { serialize } = await import('next-mdx-remote/serialize');
+        const remarkGfm = (await import('remark-gfm')).default;
+        
+        const serialized = await serialize(data.source, {
+          mdxOptions: { remarkPlugins: [remarkGfm] },
+        });
+        
+        onMdxSourceChange(serialized);
+        bumpMdxKey();
+        
+        // Update URL to reflect the persisted level
+        window.history.replaceState(
+          null,
+          '',
+          `/roadmaps/${roadmapSlug}/learn/${milestoneId}/${lessonId.split('/')[1]}?level=${level}`
+        );
+        
+        onContentLoaded();
+      } catch (error) {
+        console.error('Failed to load persisted level content:', error);
+        onContentLoaded();
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    
+    loadPersistedLevelContent();
+  }, [needsContentLoad, lessonId, level, roadmapSlug, milestoneId, onMdxSourceChange, bumpMdxKey, onContentLoaded]);
 
   // Handle lesson completion
   const handleClaimRewards = useCallback(async () => {
@@ -309,7 +363,7 @@ function LessonContent({
       console.error('Failed to reset lesson:', error);
       toast.error('Something went wrong');
     }
-  }, [lessonId, milestoneId, resetProgress]);
+  }, [lessonId, resetProgress]);
 
   return (
     <div className="relative">
@@ -465,7 +519,7 @@ function LessonContent({
 
                 {nextLessonNavigation && (
                   <Link 
-                    href={`/roadmaps/${roadmapSlug}/learn/${nextLessonNavigation.milestone}/${nextLessonNavigation.lessonPath.split('/').pop()}`}
+                    href={`/roadmaps/${roadmapSlug}/learn/${nextLessonNavigation.milestone}/${nextLessonNavigation.lessonPath.split('/').pop()}?level=${level}`}
                     className="flex-shrink-0"
                   >
                     <Button className="gap-2">
@@ -554,12 +608,33 @@ function LessonContentWithZen(props: LessonContentInternalProps) {
 
 // Wrapper component that provides the progress context
 export function LessonPageClient(props: LessonPageClientProps) {
-  // Lift level state up to ensure ProgressProvider is recreated when level changes
-  const [currentLevel, setCurrentLevel] = useState<ExperienceLevel>(props.initialLevel);
+  // Check for persisted skill level for this roadmap (client-side only)
+  const [currentLevel, setCurrentLevel] = useState<ExperienceLevel>(() => {
+    // On initial render, check if there's a persisted level for this roadmap
+    // If URL has explicit level param, use that; otherwise check localStorage
+    if (typeof window !== 'undefined') {
+      const persistedLevel = getRoadmapSkillLevel(props.roadmapSlug);
+      // Only use persisted level if URL doesn't have explicit level param
+      const urlParams = new URLSearchParams(window.location.search);
+      if (!urlParams.has('level') && persistedLevel) {
+        return persistedLevel;
+      }
+    }
+    return props.initialLevel;
+  });
 
   // Lift MDX state up so it survives ProgressProvider remounts on level changes.
   const [mdxSource, setMdxSource] = useState<MDXRemoteSerializeResult>(props.initialMdxSource);
   const [mdxKey, setMdxKey] = useState(0);
+  
+  // Track if we need to load different content due to persisted level mismatch
+  const [needsContentLoad, setNeedsContentLoad] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    const persistedLevel = getRoadmapSkillLevel(props.roadmapSlug);
+    const urlParams = new URLSearchParams(window.location.search);
+    // If there's a persisted level, no explicit URL param, and it differs from initial
+    return !!(persistedLevel && !urlParams.has('level') && persistedLevel !== props.initialLevel);
+  });
 
   const bumpMdxKey = useCallback(() => {
     setMdxKey(prev => prev + 1);
@@ -589,6 +664,10 @@ export function LessonPageClient(props: LessonPageClientProps) {
     ?? (currentLevel === props.initialLevel ? props.initialCompletedSections : [])
     ?? [];
 
+  const handleContentLoaded = useCallback(() => {
+    setNeedsContentLoad(false);
+  }, []);
+
   return (
     <ZenModeProvider>
       <ProgressProvider
@@ -613,6 +692,8 @@ export function LessonPageClient(props: LessonPageClientProps) {
           onMdxSourceChange={setMdxSource}
           mdxKey={mdxKey}
           bumpMdxKey={bumpMdxKey}
+          needsContentLoad={needsContentLoad}
+          onContentLoaded={handleContentLoaded}
         />
       </ProgressProvider>
     </ZenModeProvider>
