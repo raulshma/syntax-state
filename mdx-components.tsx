@@ -22,8 +22,9 @@ import { AddressBarDeconstruction } from '@/components/learn/interactive/domain/
 import { DnsResolutionFlow } from '@/components/learn/interactive/domain/DnsResolutionFlow';
 import { DnsRecordExplorer as DnsRecordExplorerLegacy } from '@/components/learn/interactive/domain/DnsRecordExplorer';
 
-import { HostingTypeSelector } from '@/components/learn/interactive/hosting/HostingTypeSelector';
 import { ServerArchitectureDiagram } from '@/components/learn/interactive/hosting/ServerArchitectureDiagram';
+
+const HostingTypeSelector = dynamic(() => import('@/components/learn/interactive/hosting/HostingTypeSelector').then(mod => mod.HostingTypeSelector), { ssr: false });
 
 import { DnsRecordExplorer } from '@/components/learn/interactive/dns/DnsRecordExplorer';
 import { DnsResolutionSimulator } from '@/components/learn/interactive/dns/DnsResolutionSimulator';
@@ -228,6 +229,7 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
     // Interactive learning components
     AnimatedDiagram,
     InteractiveDemo,
+    InteractiveDemoPanel: InteractiveDemo,
     InfoBox,
     Quiz,
     Question,
@@ -248,7 +250,7 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
     DnsRecordExplorerLegacy,
 
     // Hosting Lesson Components
-    HostingTypeSelector,
+
     ServerArchitectureDiagram,
 
     // DNS Lesson Components
@@ -423,10 +425,14 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
     DatabaseDesignVisualizer,
     DbContextVisualizer,
 
-    // Dapper Lesson Components
-    DapperQueryVisualizer,
-    DapperCommandVisualizer,
-    DapperMultiMappingVisualizer,
+    // Blazor Lesson Components
+    HostingTypeSelector,
+    InteractiveCodeEditor: dynamic(() => import('@/components/learn/interactive/blazor/InteractiveCodeEditor').then(mod => mod.InteractiveCodeEditor), { ssr: false }),
+    ComponentVisualizer: dynamic(() => import('@/components/learn/interactive/blazor/ComponentVisualizer').then(mod => mod.ComponentVisualizer), { ssr: false }),
+    JSInteropVisualizer: dynamic(() => import('@/components/learn/interactive/blazor/JSInteropVisualizer').then(mod => mod.JSInteropVisualizer), { ssr: false }),
+    ComponentDataFlowVisualizer: dynamic(() => import('@/components/learn/interactive/blazor/ComponentDataFlowVisualizer').then(mod => mod.ComponentDataFlowVisualizer), { ssr: false }),
+    JSModuleVisualizer: dynamic(() => import('@/components/learn/interactive/blazor/JSModuleVisualizer').then(mod => mod.JSModuleVisualizer), { ssr: false }),
+
 
     // CI/CD Lesson Components
     GitHubActionsVisualizer,

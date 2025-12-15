@@ -30,6 +30,7 @@ import { getObjectiveTitle } from '@/lib/utils/lesson-utils';
 import type { Roadmap, RoadmapNode, LearningObjective } from '@/lib/db/schemas/roadmap';
 import type { UserRoadmapProgress, NodeProgressStatus } from '@/lib/db/schemas/user-roadmap-progress';
 import { getObjectiveProgress } from '@/lib/hooks/use-objective-progress';
+import { useRecentLessons } from '@/lib/hooks/use-recent-lessons';
 
 interface RoadmapSidebarProps {
   roadmap: Roadmap;
@@ -116,6 +117,7 @@ interface NodeItemProps {
   objectiveCompletion?: { completed: number; total: number };
   isExpanded?: boolean;
   onToggleExpand?: () => void;
+  onLessonNavigate?: (lessonId: string, lessonTitle: string) => void;
 }
 
 function LessonAvailabilityBadge({ availability }: { availability: LessonAvailability }) {
@@ -149,14 +151,19 @@ interface ObjectiveLinkProps {
   href: string;
   objectiveTitle: string;
   xpRewards?: ObjectiveLessonInfo['xpRewards'];
+  heatmap?: boolean; // deprecated but keeping for prop compatibility if needed
+  onNavigate?: () => void;
 }
 
-function ObjectiveLink({ href, objectiveTitle, xpRewards }: ObjectiveLinkProps) {
+function ObjectiveLink({ href, objectiveTitle, xpRewards, onNavigate }: ObjectiveLinkProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
+    if (onNavigate) {
+      onNavigate();
+    }
     startTransition(() => {
       router.push(href);
     });
@@ -205,6 +212,7 @@ function NodeItem({
   objectiveCompletion,
   isExpanded: controlledExpanded,
   onToggleExpand: controlledToggle,
+  onLessonNavigate,
 }: NodeItemProps) {
   // Use controlled state if provided, otherwise use local state
   const [localExpanded, setLocalExpanded] = useState(false);
@@ -358,6 +366,7 @@ function NodeItem({
                         href={`/roadmaps/${roadmapSlug}/learn/${node.id}/${objectiveSlug}`}
                         objectiveTitle={objectiveTitle}
                         xpRewards={info.xpRewards}
+                        onNavigate={() => onLessonNavigate?.(objectiveSlug, objectiveTitle)}
                       />
                     ) : (
                       <div className="flex items-center gap-2 py-1.5 px-2 rounded-lg text-xs text-muted-foreground/60">
@@ -393,6 +402,7 @@ export function RoadmapSidebar({
   // No loading state needed if we have initial data!
   const [isLoadingLessons, setIsLoadingLessons] = useState(false);
 
+  const { recentLessons, addRecentLesson, isLoaded: isRecentLoaded } = useRecentLessons();
   const [objectiveCompletionTick, bumpObjectiveCompletionTick] = useReducer((x: number) => x + 1, 0);
   
   const getNodeStatus = (nodeId: string): NodeProgressStatus => {
@@ -578,6 +588,40 @@ export function RoadmapSidebar({
         </div>
       </div>
       
+
+
+      {/* Recently Visited */}
+      {isRecentLoaded && recentLessons.length > 0 && (
+        <div className="px-6 py-4 border-b border-border">
+          <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+            Recently Visited
+          </h3>
+          <ul className="space-y-1">
+            {recentLessons.filter(l => l.roadmapSlug === roadmap.slug).map((lesson, i) => {
+               // Check if completed
+               const isCompleted = getObjectiveProgress(lesson.nodeId, lesson.lessonId)?.completedAt;
+               
+               return (
+                <li key={`${lesson.nodeId}-${lesson.lessonId}-${i}`}>
+                  <Link
+                    href={`/roadmaps/${lesson.roadmapSlug}/learn/${lesson.nodeId}/${lesson.lessonId}`}
+                    className="flex items-center gap-2 py-1.5 px-2 rounded-lg text-xs hover:bg-secondary/50 transition-colors group"
+                  >
+                    {isCompleted ? (
+                      <CheckCircle2 className="w-3 h-3 text-green-500 shrink-0" />
+                    ) : (
+                      <Clock className="w-3 h-3 text-muted-foreground shrink-0" />
+                    )}
+                    <span className="flex-1 text-foreground truncate">{lesson.title}</span>
+                    <ChevronRight className="w-3 h-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </Link>
+                </li>
+               );
+            })}
+          </ul>
+        </div>
+      )}
+      
       {/* Progress Overview */}
       <div className="p-6 border-b border-border">
         <div className="flex items-center justify-between mb-3">
@@ -699,6 +743,17 @@ export function RoadmapSidebar({
                   objectiveCompletion={objectiveCompletionByNode[node.id]}
                   isExpanded={expandedNodes.has(node.id)}
                   onToggleExpand={() => handleToggleNode(node.id)}
+                  onLessonNavigate={(lessonId, title) => {
+                    // Save last active node
+                    localStorage.setItem(`roadmap-last-active-node-${roadmap.slug}`, node.id);
+                    // Add to recent
+                    addRecentLesson({
+                      roadmapSlug: roadmap.slug,
+                      nodeId: node.id,
+                      lessonId,
+                      title
+                    });
+                  }}
                 />
               ))}
             </ul>
@@ -723,6 +778,17 @@ export function RoadmapSidebar({
                   lessonAvailability={getLessonAvailability(node.id)}
                   objectivesInfo={nodeObjectivesInfo[node.id] || []}
                   objectiveCompletion={objectiveCompletionByNode[node.id]}
+                  onLessonNavigate={(lessonId, title) => {
+                    // Save last active node
+                    localStorage.setItem(`roadmap-last-active-node-${roadmap.slug}`, node.id);
+                    // Add to recent
+                    addRecentLesson({
+                      roadmapSlug: roadmap.slug,
+                      nodeId: node.id,
+                      lessonId,
+                      title
+                    });
+                  }}
                 />
               ))}
             </ul>
@@ -747,6 +813,17 @@ export function RoadmapSidebar({
                   lessonAvailability={getLessonAvailability(node.id)}
                   objectivesInfo={nodeObjectivesInfo[node.id] || []}
                   objectiveCompletion={objectiveCompletionByNode[node.id]}
+                  onLessonNavigate={(lessonId, title) => {
+                    // Save last active node
+                    localStorage.setItem(`roadmap-last-active-node-${roadmap.slug}`, node.id);
+                    // Add to recent
+                    addRecentLesson({
+                      roadmapSlug: roadmap.slug,
+                      nodeId: node.id,
+                      lessonId,
+                      title
+                    });
+                  }}
                 />
               ))}
             </ul>

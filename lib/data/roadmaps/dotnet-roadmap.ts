@@ -552,9 +552,9 @@ export const dotnetRoadmap: CreateRoadmap = {
       type: 'optional',
       position: { x: 200, y: 1320 },
       learningObjectives: [
-        { title: 'Blazor Server vs WebAssembly', lessonId: 'blazor/blazor-hosting' },
-        { title: 'Components & Data Binding', lessonId: 'blazor/blazor-components' },
-        { title: 'JavaScript Interop', lessonId: 'blazor/blazor-js-interop' },
+        { title: 'Blazor Server vs WebAssembly', lessonId: 'blazor-hosting' },
+        { title: 'Components & Data Binding', lessonId: 'blazor-components' },
+        { title: 'JavaScript Interop', lessonId: 'blazor-js-interop' },
       ],
       resources: [
         {

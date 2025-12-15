@@ -36,12 +36,12 @@ A component is a **self-contained chunk of UI** written in C# and HTML. Think of
 ```
 
 **What's happening here?**
+
 - `@page "/counter"` = This component has its own URL
 - `@currentCount` = Display the variable in HTML
 - `@onclick` = When clicked, run C# code!
 - `@code { }` = Your C# logic lives here
-
-<ComponentVisualizer mode="simple" />
+  <ComponentVisualizer mode="simple" />
 
 ## The Three Parts of a Component
 
@@ -86,7 +86,7 @@ Think of parameters like **function arguments** but for components!
 @code {
     [Parameter]
     public string Name { get; set; } = "Friend";
-    
+
     [Parameter]
     public string Message { get; set; } = "Welcome!";
 }
@@ -102,6 +102,7 @@ Think of parameters like **function arguments** but for components!
 ```
 
 **Result:**
+
 ```
 Hello, Alice!
 Have a great day!
@@ -196,18 +197,18 @@ Let's build a contact form that uses everything we've learned!
 <!-- ContactForm.razor -->
 <div class="form-container">
     <h2>Contact Us</h2>
-    
+
     <label>Name:</label>
     <input @bind="contactName" />
-    
+
     <label>Email:</label>
     <input @bind="email" type="email" />
-    
+
     <label>Message:</label>
     <textarea @bind="message" rows="4"></textarea>
-    
+
     <button @onclick="SubmitForm">Submit</button>
-    
+
     @if (submitted)
     {
         <div class="success">
@@ -221,7 +222,7 @@ Let's build a contact form that uses everything we've learned!
     private string email = "";
     private string message = "";
     private bool submitted = false;
-    
+
     void SubmitForm()
     {
         submitted = true;
@@ -230,6 +231,7 @@ Let's build a contact form that uses everything we've learned!
 ```
 
 **What's Happening:**
+
 1. Each input is bound to a variable
 2. When you type, variables update
 3. Click submit → `submitted` becomes `true`
@@ -248,13 +250,13 @@ The beauty of components is **reusing** them! Here's a reusable button:
 @code {
     [Parameter]
     public string Text { get; set; } = "Click";
-    
+
     [Parameter]
     public string ColorClass { get; set; } = "blue";
-    
+
     [Parameter]
     public EventCallback OnClick { get; set; }
-    
+
     async Task HandleClick()
     {
         await OnClick.InvokeAsync();
@@ -278,12 +280,12 @@ You can nest components like Russian dolls! 🪆
 <!-- Page.razor -->
 <Layout>
     <Header Title="My App" />
-    
+
     <Sidebar>
         <MenuItem Text="Home" Icon="🏠" />
         <MenuItem Text="Profile" Icon="👤" />
     </Sidebar>
-    
+
     <MainContent>
         <Card Title="Welcome">
             <p>This is a nested component!</p>
@@ -296,20 +298,20 @@ You can nest components like Russian dolls! 🪆
 
 ## Key Takeaways
 
-| Concept | What It Does | Example |
-|:--------|:-------------|:--------|
-| **Component** | Reusable UI piece | `<MyButton />` |
+| Concept       | What It Does           | Example                     |
+| :------------ | :--------------------- | :-------------------------- |
+| **Component** | Reusable UI piece      | `<MyButton />`              |
 | **Parameter** | Pass data to component | `<Greeting Name="Alice" />` |
-| **Binding** | Connect HTML ↔ C# | `<input @bind="name" />` |
-| **@onclick** | Handle button clicks | `@onclick="DoSomething"` |
-| **@if** | Conditional rendering | `@if (show) { <p>Hi</p> }` |
+| **Binding**   | Connect HTML ↔ C#      | `<input @bind="name" />`    |
+| **@onclick**  | Handle button clicks   | `@onclick="DoSomething"`    |
+| **@if**       | Conditional rendering  | `@if (show) { <p>Hi</p> }`  |
 
 ## Try It Yourself! 🎨
 
 Create a simple counter with a custom increment amount:
 
-```razor
-@page "/custom-counter"
+<InteractiveCodeEditor
+  initialCode={`@page "/custom-counter"
 
 <h1>Custom Counter</h1>
 
@@ -318,23 +320,21 @@ Create a simple counter with a custom increment amount:
 
 <p>Count: @count</p>
 
-<button @onclick="IncrementCount">Add @increment</button>
+<button class="btn btn-primary" @onclick="IncrementCount">Add @increment</button>
 
 @code {
-    private int count = 0;
-    private int increment = 1;
-    
+private int count = 0;
+private int increment = 1;
+
     void IncrementCount()
     {
         count += increment;
     }
-}
-```
+
+}`}
+language="razor"
+runMode="blazor"
+title="Try It Yourself: Custom Counter"
+/>
 
 Components are the heart of Blazor! Master them, and you can build anything. 🚀
-
-<InteractiveCodeEditor
-  initialCode="@page \"/counter\"..."
-  language="razor"
-  runMode="blazor"
-/>

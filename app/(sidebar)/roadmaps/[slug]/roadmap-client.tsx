@@ -44,7 +44,29 @@ export function RoadmapClient({
   const router = useRouter();
   const [roadmap] = useState(initialRoadmap);
   const [progress, setProgress] = useState(initialProgress);
-  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(() => {
+    // Try to restore from localStorage if available
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem(`roadmap-last-active-node-${initialRoadmap.slug}`);
+         // Only use it if it exists in the current roadmap's nodes
+        if (saved && initialRoadmap.nodes.some(n => n.id === saved)) {
+          return saved;
+        }
+      } catch (e) {
+        // Ignore
+      }
+    }
+    return null;
+  });
+  
+  // Persist selected node changes
+  useEffect(() => {
+    if (selectedNodeId) {
+      localStorage.setItem(`roadmap-last-active-node-${initialRoadmap.slug}`, selectedNodeId);
+    }
+  }, [selectedNodeId, initialRoadmap.slug]);
+
   const [isPending, startTransition] = useTransition();
   const [gamification] = useState(initialGamification);
 

@@ -18,7 +18,7 @@ Blazor is Microsoft's framework for building **interactive web UIs using C# inst
 
 @code {
     private int count = 0;
-    
+
     void IncrementCount() {
         count++;  // C# in the browser!
     }
@@ -30,11 +30,13 @@ Blazor is Microsoft's framework for building **interactive web UIs using C# inst
 ### 🔵 Blazor Server: "Stay Connected"
 
 Think of it like a **video game streaming service** (like Google Stadia):
+
 - Your code runs on the **server**
 - The browser just displays what the server tells it to
 - Every click sends a message to the server via **SignalR** (a real-time connection)
 
 **Visual Flow:**
+
 ```
 Browser                    Server
    👆 Click! ──────────▶   🖥️ Runs C# code
@@ -45,11 +47,13 @@ Browser                    Server
 ### 🟢 Blazor WebAssembly: "Full Independence"
 
 Think of it like a **native mobile app**:
+
 - Your C# code is **downloaded to the browser**
 - It runs completely **client-side** using WebAssembly
 - No constant server connection needed
 
 **Visual Flow:**
+
 ```
 Initial Load:
 Server ─────▶ 📦 Downloads .NET runtime + your app
@@ -60,28 +64,30 @@ Browser: 👆 Click! ──▶ 🖥️ Runs C# in browser
          ◀──────────  🖼️ Updates instantly
 ```
 
-<BlazorHostingVisualizer mode="simple" />
+<HostingTypeSelector />
 
 ## Quick Comparison
 
-| Feature | Blazor Server 🔵 | Blazor WebAssembly 🟢 |
-|:--------|:----------------|:--------------------|
-| **Where code runs** | Server | Browser |
-| **Initial load time** | ⚡ Fast | 🐢 Slower (downloads runtime) |
-| **Offline support** | ❌ No | ✅ Yes (after initial load) |
-| **Server required** | ✅ Yes, always | ❌ No (after download) |
-| **Latency** | 🌐 Network delay | ⚡ Instant responses |
-| **Code protection** | 🔒 Stays on server | 👁️ Visible in browser |
+| Feature               | Blazor Server 🔵   | Blazor WebAssembly 🟢         |
+| :-------------------- | :----------------- | :---------------------------- |
+| **Where code runs**   | Server             | Browser                       |
+| **Initial load time** | ⚡ Fast            | 🐢 Slower (downloads runtime) |
+| **Offline support**   | ❌ No              | ✅ Yes (after initial load)   |
+| **Server required**   | ✅ Yes, always     | ❌ No (after download)        |
+| **Latency**           | 🌐 Network delay   | ⚡ Instant responses          |
+| **Code protection**   | 🔒 Stays on server | 👁️ Visible in browser         |
 
 ## Real-World Analogies
 
 ### Blazor Server = Remote Desktop
+
 - You control a computer from far away
 - Every action requires communication
 - If internet disconnects, you're stuck
 - **Great for:** Internal business apps, apps with sensitive logic
 
 ### Blazor WebAssembly = Installed Program
+
 - Everything runs on your machine
 - Works offline once downloaded
 - Takes longer to install initially
@@ -92,12 +98,14 @@ Browser: 👆 Click! ──▶ 🖥️ Runs C# in browser
 ## When Should You Use Each?
 
 ### Choose Blazor Server when:
+
 - 👥 Building **internal company apps**
 - 🔒 You have **sensitive business logic** to protect
 - ⚡ You need **fast initial load**
 - 📱 Supporting **older browsers** or devices
 
 ### Choose Blazor WebAssembly when:
+
 - 🌍 Building **public-facing apps**
 - 📴 You need **offline capability**
 - 🎮 You want **instant interactions** (no network latency)
@@ -106,6 +114,7 @@ Browser: 👆 Click! ──▶ 🖥️ Runs C# in browser
 ## The Hybrid Approach
 
 Good news! You can actually **combine both** in a Blazor Web App (.NET 8+):
+
 - Start with Server rendering for fast load
 - Switch to WebAssembly for certain components
 - Best of both worlds! 🎉
@@ -142,9 +151,23 @@ Here's the simplest Blazor counter component that works in BOTH hosting models:
 **Same code, different hosting!** That's the Blazor magic. ✨
 
 <InteractiveCodeEditor
-  initialCode="@page \"/counter\"..."
-  language="razor"
-  runMode="blazor"
-/>
+  initialCode={`@page "/counter"
 
-<ProgressCheckpoint section="blazor-server-architecture" xpReward={25} />
+<h1>Counter</h1>
+
+<p>Current count: @currentCount</p>
+
+<button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
+
+@code {
+private int currentCount = 0;
+
+    private void IncrementCount()
+    {
+        currentCount++;
+    }
+
+}`}
+language="razor"
+runMode="blazor"
+/>

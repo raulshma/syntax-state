@@ -12,6 +12,7 @@ C# Land 🏰                JavaScript Land 🗼
 ## Why Do We Need JS Interop?
 
 While Blazor lets you write C#, sometimes you need JavaScript for:
+
 - 📦 Using existing JavaScript libraries (Chart.js, Leaflet maps, etc.)
 - 🌐 Browser APIs not available in .NET (local storage, geolocation)
 - 🎨 Manipulating the DOM directly
@@ -40,12 +41,11 @@ This is your magic tool for calling JavaScript:
 ```
 
 **What's happening?**
+
 1. `@inject IJSRuntime JS` = Get the JS interop service
 2. `InvokeVoidAsync` = Call a JS function (returns nothing)
 3. `"alert"` = JavaScript function name
 4. `"Hello from C#!"` = Parameter passed to JS
-
-<JSInteropVisualizer mode="csharp-to-js" />
 
 ### JavaScript Functions with Return Values
 
@@ -55,21 +55,22 @@ This is your magic tool for calling JavaScript:
 
 @code {
     private string userResponse = "Not answered yet";
-    
+
     async Task GetConfirmation()
     {
         // Call JavaScript confirm() and get result
         bool confirmed = await JS.InvokeAsync<bool>(
-            "confirm", 
+            "confirm",
             "Do you like Blazor?"
         );
-        
+
         userResponse = confirmed ? "Yes! 👍" : "No 👎";
     }
 }
 ```
 
 **Notice:**
+
 - `InvokeAsync<bool>` = Expecting a boolean return value
 - JavaScript's `confirm()` returns true/false
 - C# receives it as `bool`
@@ -83,17 +84,17 @@ Create `wwwroot/js/myFunctions.js`:
 ```javascript
 // myFunctions.js
 window.myFunctions = {
-    showMessage: function (message) {
-        alert("Message from C#: " + message);
-    },
-    
-    getCurrentTime: function () {
-        return new Date().toLocaleTimeString();
-    },
-    
-    addNumbers: function (a, b) {
-        return a + b;
-    }
+  showMessage: function (message) {
+    alert("Message from C#: " + message);
+  },
+
+  getCurrentTime: function () {
+    return new Date().toLocaleTimeString();
+  },
+
+  addNumbers: function (a, b) {
+    return a + b;
+  },
 };
 ```
 
@@ -119,18 +120,18 @@ In `wwwroot/index.html` (WASM) or `Pages/_Host.cshtml` (Server):
 @code {
     private string currentTime = "";
     private int sum = 0;
-    
+
     async Task ShowTime()
     {
         currentTime = await JS.InvokeAsync<string>(
             "myFunctions.getCurrentTime"
         );
     }
-    
+
     async Task AddNumbers()
     {
         sum = await JS.InvokeAsync<int>(
-            "myFunctions.addNumbers", 
+            "myFunctions.addNumbers",
             5, 3
         );
     }
@@ -163,20 +164,17 @@ public class Greeting
 ```javascript
 // JavaScript code
 async function callCSharp() {
-    const greeting = await DotNet.invokeMethodAsync(
-        'YourAppName',  // Assembly name
-        'GetGreeting',  // Method name
-        'Alice'         // Parameter
-    );
-    
-    console.log(greeting);  // "Hello, Alice, from C#!"
+  const greeting = await DotNet.invokeMethodAsync(
+    "YourAppName", // Assembly name
+    "GetGreeting", // Method name
+    "Alice" // Parameter
+  );
+
+  console.log(greeting); // "Hello, Alice, from C#!"
 }
 ```
 
-<InteractiveDemoPanel
-  title="Bidirectional JS Interop Demo"
-  component="JSInteropDemo"
-/>
+<JSInteropVisualizer mode="bisymmetric" />
 
 ## Common JS Interop Scenarios
 
@@ -185,14 +183,14 @@ async function callCSharp() {
 ```csharp
 // Save to local storage
 await JS.InvokeVoidAsync(
-    "localStorage.setItem", 
-    "username", 
+    "localStorage.setItem",
+    "username",
     "Alice"
 );
 
 // Read from local storage
 string? username = await JS.InvokeAsync<string>(
-    "localStorage.getItem", 
+    "localStorage.getItem",
     "username"
 );
 ```
@@ -210,8 +208,8 @@ await JS.InvokeVoidAsync("console.warn", "Warning!");
 ```csharp
 // Open URL in new tab
 await JS.InvokeVoidAsync(
-    "open", 
-    "https://example.com", 
+    "open",
+    "https://example.com",
     "_blank"
 );
 ```
@@ -221,9 +219,9 @@ await JS.InvokeVoidAsync(
 ```javascript
 // myFunctions.js
 window.myFunctions = {
-    focusElement: function (elementId) {
-        document.getElementById(elementId).focus();
-    }
+  focusElement: function (elementId) {
+    document.getElementById(elementId).focus();
+  },
 };
 ```
 
@@ -234,11 +232,11 @@ window.myFunctions = {
 
 @code {
     private string name = "";
-    
+
     async Task FocusInput()
     {
         await JS.InvokeVoidAsync(
-            "myFunctions.focusElement", 
+            "myFunctions.focusElement",
             "nameInput"
         );
     }
@@ -263,20 +261,22 @@ Let's integrate a popular JavaScript charting library!
 ```javascript
 // wwwroot/js/chartHelper.js
 window.chartHelper = {
-    createChart: function (canvasId, data) {
-        const ctx = document.getElementById(canvasId);
-        new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: data.labels,
-                datasets: [{
-                    label: 'Sales',
-                    data: data.values,
-                    backgroundColor: 'rgba(75, 192, 192, 0.6)'
-                }]
-            }
-        });
-    }
+  createChart: function (canvasId, data) {
+    const ctx = document.getElementById(canvasId);
+    new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels: data.labels,
+        datasets: [
+          {
+            label: "Sales",
+            data: data.values,
+            backgroundColor: "rgba(75, 192, 192, 0.6)",
+          },
+        ],
+      },
+    });
+  },
 };
 ```
 
@@ -296,14 +296,14 @@ window.chartHelper = {
             labels = new[] { "Jan", "Feb", "Mar", "Apr" },
             values = new[] { 10, 20, 15, 30 }
         };
-        
+
         await JS.InvokeVoidAsync(
             "chartHelper.createChart",
             "myChart",
             chartData
         );
     }
-    
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
@@ -355,13 +355,13 @@ if (JS != null)
 
 ## Summary: The JS Interop Cheat Sheet
 
-| Task | Code |
-|:-----|:-----|
-| **Call JS (no return)** | `await JS.InvokeVoidAsync("functionName", param1)` |
-| **Call JS (with return)** | `var result = await JS.InvokeAsync<T>("functionName")` |
-| **Make C# callable from JS** | `[JSInvokable] public static ...` |
-| **Call C# from JS** | `DotNet.invokeMethodAsync('App', 'MethodName')` |
-| **Wait for DOM** | Use `OnAfterRenderAsync(bool firstRender)` |
+| Task                         | Code                                                   |
+| :--------------------------- | :----------------------------------------------------- |
+| **Call JS (no return)**      | `await JS.InvokeVoidAsync("functionName", param1)`     |
+| **Call JS (with return)**    | `var result = await JS.InvokeAsync<T>("functionName")` |
+| **Make C# callable from JS** | `[JSInvokable] public static ...`                      |
+| **Call C# from JS**          | `DotNet.invokeMethodAsync('App', 'MethodName')`        |
+| **Wait for DOM**             | Use `OnAfterRenderAsync(bool firstRender)`             |
 
 ## Try It Yourself! 🎨
 
@@ -376,7 +376,7 @@ Create a simple color picker that uses JS and C#:
 
 @code {
     private string selectedColor = "";
-    
+
     async Task GetSelectedColor()
     {
         selectedColor = await JS.InvokeAsync<string>(
