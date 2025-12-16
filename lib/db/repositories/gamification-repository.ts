@@ -5,10 +5,13 @@ import {
   checkNewBadges, 
   TOTAL_INTERNET_LESSONS,
   TOTAL_CSS_LESSONS,
+  TOTAL_EF_CORE_LESSONS,
+  EF_CORE_LESSON_IDS,
   checkCssSelectorMasterBadge,
   checkLayoutExpertBadge,
   checkAnimationWizardBadge,
   checkCssMasterBadge,
+  checkEfCoreMilestoneBadge,
 } from '@/lib/gamification';
 import { UserGamification } from '@/lib/db/schemas/user';
 
@@ -124,6 +127,13 @@ export async function completeLesson(
       .map((l: { lessonId: string }) => l.lessonId)
   ).size;
   
+  // Calculate EF Core lesson stats
+  const efCoreLessonsCompleted = new Set(
+    updatedCompletedLessons
+      .filter((l: { lessonId: string }) => EF_CORE_LESSON_IDS.includes(l.lessonId))
+      .map((l: { lessonId: string }) => l.lessonId)
+  ).size;
+  
   const stats = {
     completedLessons: updatedCompletedLessons.length,
     currentStreak: currentGamification.currentStreak,
@@ -140,6 +150,8 @@ export async function completeLesson(
     cssSelectorAllLevelsCompleted: checkCssSelectorMasterBadge(updatedCompletedLessons) !== null,
     cssFlexboxAndGridCompleted: checkLayoutExpertBadge(updatedCompletedLessons) !== null,
     cssAnimationsAndTransformsCompleted: checkAnimationWizardBadge(updatedCompletedLessons) !== null,
+    efCoreLessonsCompleted,
+    totalEfCoreLessons: TOTAL_EF_CORE_LESSONS,
   };
   
   const newBadgeIds = checkNewBadges(stats, existingBadgeIds);

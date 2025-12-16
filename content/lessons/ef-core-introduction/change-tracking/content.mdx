@@ -1,0 +1,393 @@
+# Change Tracking - How EF Core Knows What Changed
+
+One of EF Core's most powerful features is **change tracking**. It automatically detects what you've modified and generates the perfect SQL to update only what changed. Let's explore how this magic works!
+
+---
+
+## Section 1: Understanding Entity States
+
+### The Five Entity States
+
+Every entity tracked by EF Core has a **state** that determines what happens when you call `SaveChangesAsync()`. Think of it like a package tracking system:
+
+| State | Meaning | What Happens on Save |
+|:------|:--------|:--------------------|
+| **Added** | New entity, not yet in database | INSERT statement |
+| **Unchanged** | Loaded from database, no modifications | Nothing |
+| **Modified** | Loaded and changed | UPDATE statement |
+| **Deleted** | Marked for removal | DELETE statement |
+| **Detached** | Not being tracked | Nothing |
+
+<InfoBox type="info">
+**Change Tracking** is EF Core's ability to remember the original values of entities and detect when properties have been modified.
+</InfoBox>
+
+### Try It Yourself!
+
+Use the interactive demo below to see how entity states change as you perform different operations:
+
+<ChangeTrackingVisualizer />
+
+<KeyConcept title="Key Insight">
+Notice how the state changes when you:
+- **Add** a new entity → State becomes "Added"
+- **Modify** an existing entity → State becomes "Modified"  
+- **Delete** an entity → State becomes "Deleted"
+- **SaveChanges** → All states reset to "Unchanged" (or entity is removed)
+</KeyConcept>
+
+<ProgressCheckpoint section="entity-states" xpReward={20} />
+
+---
+
+## Section 2: How Change Tracking Works
+
+### The Snapshot Approach
+
+When EF Core loads an entity from the database, it takes a **snapshot** of all property values. Later, when you call `SaveChangesAsync()`, it compares current values to the snapshot to detect changes.
+
+<DotnetCodePreview
+  title="Change Tracking in Action"
+  code={`// Step 1: Load entity (EF Core takes a snapshot)
+var customer = await context.Customers.FindAsync(1);
+// Snapshot: { Id: 1, Name: "Alice", Email: "alice@old.com" }
+
+// Step 2: Modify the entity
+customer.Email = "alice@new.com";
+// Current: { Id: 1, Name: "Alice", Email: "alice@new.com" }
+
+// Step 3: EF Core detects the change
+var entry = context.Entry(customer);
+Console.WriteLine(entry.State); // Output: Modified
+
+// Step 4: SaveChanges generates UPDATE for only changed columns
+await context.SaveChangesAsync();
+// SQL: UPDATE Customers SET Email = 'alice@new.com' WHERE Id = 1`}
+  steps={[
+    {
+      lineNumbers: [2, 3],
+      highlight: "Load & Snapshot",
+      explanation: "When you load an entity, EF Core stores a copy of all original values"
+    },
+    {
+      lineNumbers: [6, 7],
+      highlight: "Modify Property",
+      explanation: "You change a property - EF Core is watching!"
+    },
+    {
+      lineNumbers: [10, 11],
+      highlight: "Detect Change",
+      explanation: "EF Core compares current values to the snapshot and marks entity as Modified"
+    },
+    {
+      lineNumbers: [14, 15],
+      highlight: "Efficient UPDATE",
+      explanation: "Only the changed column (Email) is included in the UPDATE statement!"
+    }
+  ]}
+/>
+
+### Checking Entity State
+
+You can inspect the state of any tracked entity using `context.Entry()`:
+
+<DotnetCodePreview
+  title="Inspecting Entity State"
+  code={`var customer = await context.Customers.FindAsync(1);
+
+// Get the EntityEntry for this entity
+var entry = context.Entry(customer);
+
+// Check the current state
+Console.WriteLine($"State: {entry.State}");
+
+// Check if a specific property was modified
+var emailProperty = entry.Property(c => c.Email);
+Console.WriteLine($"Email modified: {emailProperty.IsModified}");
+Console.WriteLine($"Original value: {emailProperty.OriginalValue}");
+Console.WriteLine($"Current value: {emailProperty.CurrentValue}");`}
+  steps={[
+    {
+      lineNumbers: [4],
+      highlight: "Get EntityEntry",
+      explanation: "Entry() gives you access to tracking information for an entity"
+    },
+    {
+      lineNumbers: [7],
+      highlight: "Check State",
+      explanation: "The State property tells you if it's Added, Modified, Deleted, etc."
+    },
+    {
+      lineNumbers: [10, 11, 12, 13],
+      highlight: "Property Details",
+      explanation: "You can inspect individual properties - their original and current values"
+    }
+  ]}
+/>
+
+<ProgressCheckpoint section="how-tracking-works" xpReward={25} />
+
+---
+
+## Section 3: State Transitions
+
+### The State Machine
+
+Entity states follow predictable transitions based on your actions:
+
+```
+                    ┌─────────────┐
+                    │  Detached   │
+                    └──────┬──────┘
+                           │ Attach/Add
+                           ▼
+    ┌─────────┐     ┌─────────────┐     ┌─────────┐
+    │  Added  │────▶│  Unchanged  │────▶│ Modified│
+    └────┬────┘     └──────┬──────┘     └────┬────┘
+         │                 │                  │
+         │                 │ Remove           │
+         │                 ▼                  │
+         │          ┌─────────────┐           │
+         └─────────▶│   Deleted   │◀──────────┘
+                    └─────────────┘
+                           │
+                           │ SaveChanges
+                           ▼
+                    ┌─────────────┐
+                    │  (Removed)  │
+                    └─────────────┘
+```
+
+<DotnetCodePreview
+  title="State Transitions Example"
+  code={`// New entity starts as Detached
+var customer = new Customer { Name = "Bob" };
+// State: Detached (not tracked)
+
+// Add to context → Added
+context.Customers.Add(customer);
+// State: Added
+
+// SaveChanges → Unchanged
+await context.SaveChangesAsync();
+// State: Unchanged (now in database)
+
+// Modify property → Modified
+customer.Name = "Robert";
+// State: Modified
+
+// Or mark for deletion → Deleted
+context.Customers.Remove(customer);
+// State: Deleted
+
+// SaveChanges → Entity removed from tracker
+await context.SaveChangesAsync();`}
+  steps={[
+    {
+      lineNumbers: [2, 3],
+      highlight: "Detached",
+      explanation: "New objects aren't tracked until you add them to a DbSet"
+    },
+    {
+      lineNumbers: [6, 7],
+      highlight: "Added",
+      explanation: "Add() starts tracking the entity and marks it for insertion"
+    },
+    {
+      lineNumbers: [10, 11],
+      highlight: "Unchanged",
+      explanation: "After saving, the entity is in sync with the database"
+    },
+    {
+      lineNumbers: [14, 15],
+      highlight: "Modified",
+      explanation: "Any property change automatically transitions to Modified"
+    },
+    {
+      lineNumbers: [18, 19],
+      highlight: "Deleted",
+      explanation: "Remove() marks the entity for deletion on next save"
+    }
+  ]}
+/>
+
+### Manual State Changes
+
+Sometimes you need to manually set an entity's state:
+
+<DotnetCodePreview
+  title="Manual State Management"
+  code={`// Scenario: You have an entity from an API request
+var customerFromApi = new Customer 
+{ 
+    Id = 5, 
+    Name = "Updated Name",
+    Email = "updated@email.com"
+};
+
+// Attach and mark as modified
+context.Customers.Attach(customerFromApi);
+context.Entry(customerFromApi).State = EntityState.Modified;
+
+// Or use Update() which does both
+context.Customers.Update(customerFromApi);
+
+// SaveChanges will UPDATE all columns
+await context.SaveChangesAsync();`}
+  steps={[
+    {
+      lineNumbers: [2, 3, 4, 5, 6, 7],
+      highlight: "External Entity",
+      explanation: "Entity from API/form isn't tracked - it's Detached"
+    },
+    {
+      lineNumbers: [10, 11],
+      highlight: "Attach & Modify",
+      explanation: "Attach() adds to tracker as Unchanged, then we set to Modified"
+    },
+    {
+      lineNumbers: [14],
+      highlight: "Update Shortcut",
+      explanation: "Update() attaches and marks as Modified in one call"
+    }
+  ]}
+/>
+
+<InfoBox type="warning">
+**Caution:** When you manually set state to Modified, EF Core will update ALL columns, not just changed ones. Use this carefully!
+</InfoBox>
+
+<ProgressCheckpoint section="state-transitions" xpReward={20} />
+
+---
+
+## Section 4: Practical Tips
+
+### When to Use AsNoTracking
+
+For read-only queries, disable change tracking for better performance:
+
+<Comparison
+  title="Tracking vs No Tracking"
+  items={[
+    {
+      label: "With Tracking (default)",
+      description: "EF Core stores snapshots and watches for changes. Use when you plan to modify entities.",
+      isCorrect: true
+    },
+    {
+      label: "AsNoTracking()",
+      description: "No snapshots, no change detection. Faster for read-only scenarios like reports and displays.",
+      isCorrect: true
+    }
+  ]}
+/>
+
+<DotnetCodePreview
+  title="AsNoTracking for Performance"
+  code={`// ✅ Read-only report - use AsNoTracking
+var salesReport = await context.Orders
+    .AsNoTracking()
+    .Where(o => o.Year == 2024)
+    .GroupBy(o => o.Month)
+    .Select(g => new { Month = g.Key, Total = g.Sum(o => o.Amount) })
+    .ToListAsync();
+
+// ✅ Display list - use AsNoTracking
+var productList = await context.Products
+    .AsNoTracking()
+    .OrderBy(p => p.Name)
+    .ToListAsync();
+
+// ❌ Don't use AsNoTracking if you plan to modify
+var customer = await context.Customers.FindAsync(1);
+customer.LastLogin = DateTime.UtcNow;
+await context.SaveChangesAsync(); // This works because it's tracked`}
+  steps={[
+    {
+      lineNumbers: [2, 3, 4, 5, 6, 7],
+      highlight: "Report Query",
+      explanation: "Reports are read-only - AsNoTracking improves performance"
+    },
+    {
+      lineNumbers: [10, 11, 12, 13],
+      highlight: "Display List",
+      explanation: "Lists for display don't need tracking either"
+    },
+    {
+      lineNumbers: [16, 17, 18],
+      highlight: "Modify Scenario",
+      explanation: "When you need to update, keep tracking enabled (the default)"
+    }
+  ]}
+/>
+
+### Common Pitfalls
+
+<Comparison
+  title="Change Tracking Pitfalls"
+  items={[
+    {
+      label: "❌ Forgetting SaveChanges",
+      description: "Changes are only persisted when you call SaveChangesAsync(). No save = no database update!",
+      isCorrect: false
+    },
+    {
+      label: "❌ Long-lived DbContext",
+      description: "Keeping a DbContext open too long accumulates tracked entities and uses memory.",
+      isCorrect: false
+    },
+    {
+      label: "✅ Short-lived DbContext",
+      description: "Create DbContext per request/operation. Let DI handle the lifecycle.",
+      isCorrect: true
+    },
+    {
+      label: "✅ Clear tracker when needed",
+      description: "Use context.ChangeTracker.Clear() to reset tracking in long operations.",
+      isCorrect: true
+    }
+  ]}
+/>
+
+### Quick Knowledge Check
+
+<Quiz id="entity-states-quiz">
+  <Question>What state is an entity in immediately after calling Add()?</Question>
+  <Answer>Unchanged</Answer>
+  <Answer correct>Added</Answer>
+  <Answer>Modified</Answer>
+  <Answer>Detached</Answer>
+</Quiz>
+
+<Quiz id="savechanges-state-quiz">
+  <Question>What happens to an "Added" entity's state after SaveChangesAsync()?</Question>
+  <Answer>It stays Added</Answer>
+  <Answer>It becomes Detached</Answer>
+  <Answer correct>It becomes Unchanged</Answer>
+  <Answer>It becomes Modified</Answer>
+</Quiz>
+
+<Quiz id="asnotracking-quiz">
+  <Question>When should you use AsNoTracking()?</Question>
+  <Answer>When you want to modify entities</Answer>
+  <Answer correct>For read-only queries where you won't modify the data</Answer>
+  <Answer>Always, for better performance</Answer>
+  <Answer>When inserting new entities</Answer>
+</Quiz>
+
+### Summary
+
+| Concept | Key Takeaway |
+|:--------|:-------------|
+| **Entity States** | Added, Unchanged, Modified, Deleted, Detached |
+| **Snapshot Tracking** | EF Core compares current values to original snapshot |
+| **SaveChanges** | Generates SQL based on entity states |
+| **AsNoTracking** | Disables tracking for read-only performance |
+| **Entry()** | Inspect and manually control entity state |
+
+<KeyConcept title="What's Next?">
+Now that you understand how EF Core tracks changes, you're ready to learn about **relationships** - how to connect entities together and navigate between them!
+</KeyConcept>
+
+<ProgressCheckpoint section="practical-tips" xpReward={20} />

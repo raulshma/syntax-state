@@ -1,0 +1,18 @@
+{
+  "id": "code-first-migrations",
+  "title": "Code-First Migrations - Evolving Your Database",
+  "description": "Learn how to use EF Core migrations to version control your database schema and safely apply changes over time.",
+  "milestone": "ef-core-introduction",
+  "order": 5,
+  "sections": [
+    "what-are-migrations",
+    "creating-migrations",
+    "applying-migrations",
+    "migration-best-practices"
+  ],
+  "singleLevel": true,
+  "estimatedMinutes": 20,
+  "xpReward": 85,
+  "prerequisites": ["querying-with-linq"],
+  "tags": ["ef-core", "migrations", "database", "schema", "dotnet"]
+}

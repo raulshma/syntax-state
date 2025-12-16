@@ -235,6 +235,11 @@ export async function findLessonPath(milestoneId: string, objective: LearningObj
   addPath(`sql/${lessonId}`);
   addPath(`sql/${finalSlug}`);
 
+  // For EF Core roadmap: lessons are in entity-framework-core/{lessonId}/ structure
+  // Try entity-framework-core/ prefix as a fallback for EF Core lessons
+  addPath(`entity-framework-core/${lessonId}`);
+  addPath(`entity-framework-core/${finalSlug}`);
+
   for (const candidate of candidatePaths) {
     if (await lessonExists(candidate)) {
       return candidate;

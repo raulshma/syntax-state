@@ -1,0 +1,18 @@
+{
+  "id": "querying-with-linq",
+  "title": "Querying with LINQ - From C# to SQL",
+  "description": "Learn how EF Core translates your LINQ queries into efficient SQL, and master common query patterns for data retrieval.",
+  "milestone": "ef-core-introduction",
+  "order": 4,
+  "sections": [
+    "linq-basics",
+    "filtering-sorting",
+    "loading-related-data",
+    "query-optimization"
+  ],
+  "singleLevel": true,
+  "estimatedMinutes": 25,
+  "xpReward": 95,
+  "prerequisites": ["ef-relationships"],
+  "tags": ["ef-core", "linq", "queries", "sql", "dotnet"]
+}

@@ -46,7 +46,7 @@ export function buildLessonCandidatePaths(
   }
   
   // Common category folders fallback
-  const categoryFolders = ['sql', 'databases', 'javascript', 'typescript'];
+  const categoryFolders = ['sql', 'databases', 'javascript', 'typescript', 'entity-framework-core'];
   for (const category of categoryFolders) {
     if (category !== roadmapSlug) {
       addPath(`${category}/${lessonId}`);

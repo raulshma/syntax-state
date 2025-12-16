@@ -1,0 +1,18 @@
+{
+  "id": "dbset-fundamentals",
+  "title": "DbSet Fundamentals - Your Data Collections",
+  "description": "Learn how DbSet works as a collection abstraction for your entities, enabling CRUD operations with simple C# code.",
+  "milestone": "ef-core-introduction",
+  "order": 1,
+  "sections": [
+    "what-is-dbset",
+    "crud-operations",
+    "querying-basics",
+    "best-practices"
+  ],
+  "singleLevel": true,
+  "estimatedMinutes": 18,
+  "xpReward": 80,
+  "prerequisites": ["ef-core-overview"],
+  "tags": ["ef-core", "dbset", "crud", "collections", "dotnet"]
+}

@@ -1,0 +1,434 @@
+# Entity Relationships - Connecting Your Data
+
+Real-world data is connected. Customers have orders, orders have products, authors write books. In EF Core, we model these connections using **relationships**. Let's explore the three types!
+
+---
+
+## Section 1: Understanding Relationship Types
+
+### The Three Relationship Types
+
+EF Core supports three types of relationships between entities:
+
+| Type | Example | Description |
+|:-----|:--------|:------------|
+| **One-to-One** | User → Profile | Each user has exactly one profile |
+| **One-to-Many** | Blog → Posts | One blog has many posts |
+| **Many-to-Many** | Students ↔ Courses | Students enroll in many courses, courses have many students |
+
+### Key Concepts
+
+Before we dive in, let's understand the terminology:
+
+<InfoBox type="info">
+**Navigation Properties** are C# properties that let you navigate from one entity to related entities. They're the "arrows" connecting your data!
+</InfoBox>
+
+| Term | Meaning |
+|:-----|:--------|
+| **Principal Entity** | The "parent" side of the relationship (e.g., Blog) |
+| **Dependent Entity** | The "child" side that contains the foreign key (e.g., Post) |
+| **Foreign Key** | A property that stores the ID of the related entity |
+| **Navigation Property** | A property that references related entity/entities |
+
+<ProgressCheckpoint section="relationship-types" xpReward={20} />
+
+---
+
+## Section 2: One-to-Many Relationships
+
+### The Most Common Relationship
+
+One-to-many is the most frequently used relationship. Think: one blog has many posts, one customer has many orders, one category has many products.
+
+<RelationshipDiagram
+  type="one-to-many"
+  entities={{
+    principal: {
+      name: "Blog",
+      properties: ["Title: string", "Url: string"]
+    },
+    dependent: {
+      name: "Post",
+      properties: ["Title: string", "Content: string"]
+    }
+  }}
+  showNavigation={true}
+  showForeignKey={true}
+/>
+
+### Defining One-to-Many in Code
+
+<DotnetCodePreview
+  title="One-to-Many Relationship"
+  code={`// Principal entity (the "one" side)
+public class Blog
+{
+    public int Id { get; set; }
+    public string Title { get; set; } = "";
+    public string Url { get; set; } = "";
+    
+    // Navigation property - collection of related Posts
+    public List<Post> Posts { get; set; } = new();
+}
+
+// Dependent entity (the "many" side)
+public class Post
+{
+    public int Id { get; set; }
+    public string Title { get; set; } = "";
+    public string Content { get; set; } = "";
+    
+    // Foreign key property
+    public int BlogId { get; set; }
+    
+    // Navigation property - reference to parent Blog
+    public Blog Blog { get; set; } = null!;
+}`}
+  steps={[
+    {
+      lineNumbers: [2, 3, 4, 5, 6],
+      highlight: "Principal Entity",
+      explanation: "Blog is the 'one' side - it doesn't have a foreign key"
+    },
+    {
+      lineNumbers: [9],
+      highlight: "Collection Navigation",
+      explanation: "List<Post> lets you access all posts belonging to this blog"
+    },
+    {
+      lineNumbers: [13, 14, 15, 16, 17],
+      highlight: "Dependent Entity",
+      explanation: "Post is the 'many' side - it contains the foreign key"
+    },
+    {
+      lineNumbers: [20],
+      highlight: "Foreign Key",
+      explanation: "BlogId stores the ID of the parent Blog - this creates the relationship!"
+    },
+    {
+      lineNumbers: [23],
+      highlight: "Reference Navigation",
+      explanation: "Blog property lets you navigate from a Post to its parent Blog"
+    }
+  ]}
+/>
+
+### Working with One-to-Many
+
+<DotnetCodePreview
+  title="Using One-to-Many Relationships"
+  code={`// Create a blog with posts
+var blog = new Blog
+{
+    Title = "My Tech Blog",
+    Url = "https://myblog.com",
+    Posts = new List<Post>
+    {
+        new Post { Title = "First Post", Content = "Hello World!" },
+        new Post { Title = "Second Post", Content = "More content..." }
+    }
+};
+context.Blogs.Add(blog);
+await context.SaveChangesAsync();
+
+// Query: Get blog with all its posts
+var blogWithPosts = await context.Blogs
+    .Include(b => b.Posts)
+    .FirstOrDefaultAsync(b => b.Id == 1);
+
+// Navigate from post to blog
+var post = await context.Posts.FindAsync(1);
+var parentBlog = post.Blog; // Navigation property!`}
+  steps={[
+    {
+      lineNumbers: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+      highlight: "Create with Children",
+      explanation: "You can create a parent with its children in one go!"
+    },
+    {
+      lineNumbers: [12, 13],
+      highlight: "Save All",
+      explanation: "EF Core inserts the blog first, then posts with the correct BlogId"
+    },
+    {
+      lineNumbers: [16, 17, 18],
+      highlight: "Include for Loading",
+      explanation: "Include() eagerly loads related Posts with the Blog"
+    },
+    {
+      lineNumbers: [21, 22],
+      highlight: "Navigate Up",
+      explanation: "Use the navigation property to go from child to parent"
+    }
+  ]}
+/>
+
+<InfoBox type="tip">
+**Pro Tip:** Without `Include()`, navigation properties are null by default. EF Core uses lazy loading only if explicitly configured!
+</InfoBox>
+
+<ProgressCheckpoint section="one-to-many" xpReward={25} />
+
+---
+
+## Section 3: One-to-One Relationships
+
+### When Each Entity Has Exactly One Related Entity
+
+One-to-one relationships are less common but important. Examples: User → UserProfile, Order → ShippingAddress, Employee → EmployeeDetails.
+
+<RelationshipDiagram
+  type="one-to-one"
+  entities={{
+    principal: {
+      name: "User",
+      properties: ["Username: string", "Email: string"]
+    },
+    dependent: {
+      name: "UserProfile",
+      properties: ["Bio: string", "AvatarUrl: string"]
+    }
+  }}
+  showNavigation={true}
+  showForeignKey={true}
+/>
+
+### Defining One-to-One in Code
+
+<DotnetCodePreview
+  title="One-to-One Relationship"
+  code={`// Principal entity
+public class User
+{
+    public int Id { get; set; }
+    public string Username { get; set; } = "";
+    public string Email { get; set; } = "";
+    
+    // Navigation to the one related profile
+    public UserProfile? Profile { get; set; }
+}
+
+// Dependent entity
+public class UserProfile
+{
+    public int Id { get; set; }
+    public string Bio { get; set; } = "";
+    public string AvatarUrl { get; set; } = "";
+    
+    // Foreign key (also the primary key in this case)
+    public int UserId { get; set; }
+    
+    // Navigation back to User
+    public User User { get; set; } = null!;
+}`}
+  steps={[
+    {
+      lineNumbers: [2, 3, 4, 5, 6],
+      highlight: "Principal Entity",
+      explanation: "User is the principal - it exists independently"
+    },
+    {
+      lineNumbers: [9],
+      highlight: "Single Navigation",
+      explanation: "Not a List - just one Profile (nullable because it might not exist)"
+    },
+    {
+      lineNumbers: [13, 14, 15, 16, 17],
+      highlight: "Dependent Entity",
+      explanation: "UserProfile depends on User - can't exist without one"
+    },
+    {
+      lineNumbers: [20],
+      highlight: "Foreign Key",
+      explanation: "UserId links this profile to exactly one user"
+    }
+  ]}
+/>
+
+<Comparison
+  title="One-to-One vs One-to-Many"
+  items={[
+    {
+      label: "One-to-One",
+      description: "Single reference on both sides. Use when each entity has exactly one related entity.",
+      isCorrect: true
+    },
+    {
+      label: "One-to-Many",
+      description: "Collection on one side, single reference on other. Use when one entity has multiple related entities.",
+      isCorrect: true
+    }
+  ]}
+/>
+
+<ProgressCheckpoint section="one-to-one" xpReward={20} />
+
+---
+
+## Section 4: Many-to-Many Relationships
+
+### When Both Sides Have Multiple Related Entities
+
+Many-to-many is used when entities on both sides can have multiple relationships. Examples: Students ↔ Courses, Products ↔ Tags, Authors ↔ Books.
+
+<RelationshipDiagram
+  type="many-to-many"
+  entities={{
+    principal: {
+      name: "Student",
+      properties: ["Name: string", "Email: string"]
+    },
+    dependent: {
+      name: "Course",
+      properties: ["Title: string", "Credits: int"]
+    }
+  }}
+  showNavigation={true}
+  showForeignKey={false}
+/>
+
+### Simple Many-to-Many (EF Core 5+)
+
+<DotnetCodePreview
+  title="Many-to-Many Relationship"
+  code={`public class Student
+{
+    public int Id { get; set; }
+    public string Name { get; set; } = "";
+    
+    // Many students can take many courses
+    public List<Course> Courses { get; set; } = new();
+}
+
+public class Course
+{
+    public int Id { get; set; }
+    public string Title { get; set; } = "";
+    public int Credits { get; set; }
+    
+    // Many courses can have many students
+    public List<Student> Students { get; set; } = new();
+}`}
+  steps={[
+    {
+      lineNumbers: [1, 2, 3, 4],
+      highlight: "Student Entity",
+      explanation: "A student can enroll in multiple courses"
+    },
+    {
+      lineNumbers: [7],
+      highlight: "Courses Collection",
+      explanation: "List of courses this student is enrolled in"
+    },
+    {
+      lineNumbers: [10, 11, 12, 13, 14],
+      highlight: "Course Entity",
+      explanation: "A course can have multiple students"
+    },
+    {
+      lineNumbers: [17],
+      highlight: "Students Collection",
+      explanation: "List of students enrolled in this course"
+    }
+  ]}
+/>
+
+<InfoBox type="info">
+**Behind the Scenes:** EF Core automatically creates a join table (StudentCourse) with foreign keys to both entities. You don't need to define it!
+</InfoBox>
+
+### Working with Many-to-Many
+
+<DotnetCodePreview
+  title="Using Many-to-Many Relationships"
+  code={`// Enroll a student in courses
+var student = await context.Students.FindAsync(1);
+var mathCourse = await context.Courses.FindAsync(1);
+var physicsCourse = await context.Courses.FindAsync(2);
+
+student.Courses.Add(mathCourse);
+student.Courses.Add(physicsCourse);
+await context.SaveChangesAsync();
+
+// Query: Get student with all their courses
+var studentWithCourses = await context.Students
+    .Include(s => s.Courses)
+    .FirstOrDefaultAsync(s => s.Id == 1);
+
+// Query: Get course with all enrolled students
+var courseWithStudents = await context.Courses
+    .Include(c => c.Students)
+    .FirstOrDefaultAsync(c => c.Id == 1);
+
+// Remove enrollment
+student.Courses.Remove(mathCourse);
+await context.SaveChangesAsync();`}
+  steps={[
+    {
+      lineNumbers: [2, 3, 4],
+      highlight: "Load Entities",
+      explanation: "Get the student and courses you want to connect"
+    },
+    {
+      lineNumbers: [6, 7, 8],
+      highlight: "Add Relationships",
+      explanation: "Just add to the collection - EF Core handles the join table!"
+    },
+    {
+      lineNumbers: [11, 12, 13],
+      highlight: "Include Courses",
+      explanation: "Load a student with all their enrolled courses"
+    },
+    {
+      lineNumbers: [16, 17, 18],
+      highlight: "Include Students",
+      explanation: "Load a course with all enrolled students"
+    },
+    {
+      lineNumbers: [21, 22],
+      highlight: "Remove Relationship",
+      explanation: "Remove from collection to unenroll - EF Core deletes from join table"
+    }
+  ]}
+/>
+
+### Quick Knowledge Check
+
+<Quiz id="relationship-types-quiz">
+  <Question>Which relationship type would you use for "One Author writes Many Books"?</Question>
+  <Answer>One-to-One</Answer>
+  <Answer correct>One-to-Many</Answer>
+  <Answer>Many-to-Many</Answer>
+  <Answer>None of the above</Answer>
+</Quiz>
+
+<Quiz id="foreign-key-quiz">
+  <Question>In a one-to-many relationship, where is the foreign key located?</Question>
+  <Answer>On the principal (parent) entity</Answer>
+  <Answer correct>On the dependent (child) entity</Answer>
+  <Answer>On both entities</Answer>
+  <Answer>In a separate table</Answer>
+</Quiz>
+
+<Quiz id="navigation-quiz">
+  <Question>What is a navigation property?</Question>
+  <Answer>A property that stores the database connection string</Answer>
+  <Answer>A property that stores SQL queries</Answer>
+  <Answer correct>A property that references related entities</Answer>
+  <Answer>A property that stores the table name</Answer>
+</Quiz>
+
+### Summary
+
+| Relationship | Use Case | Navigation Properties |
+|:-------------|:---------|:---------------------|
+| **One-to-One** | User → Profile | Single reference on both sides |
+| **One-to-Many** | Blog → Posts | Collection on "one", reference on "many" |
+| **Many-to-Many** | Students ↔ Courses | Collections on both sides |
+
+<KeyConcept title="What's Next?">
+Now that you understand relationships, you're ready to learn about **querying with LINQ** - how to write powerful queries that navigate these relationships and retrieve exactly the data you need!
+</KeyConcept>
+
+<ProgressCheckpoint section="many-to-many" xpReward={25} />

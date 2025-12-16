@@ -1,0 +1,462 @@
+# DbSet Fundamentals - Your Data Collections
+
+Now that you understand what EF Core is, let's dive into one of its most important concepts: **DbSet**. Think of DbSet as your gateway to working with data in the database.
+
+---
+
+## Section 1: What is DbSet?
+
+### The Library Analogy 📚
+
+Imagine you're managing a library. You have different sections:
+- **Fiction books** on one shelf
+- **Science books** on another
+- **History books** on a third
+
+Each section is organized, and you can easily:
+- **Add** new books to a section
+- **Find** specific books
+- **Update** book information
+- **Remove** books that are no longer needed
+
+A **DbSet** works exactly the same way! Each DbSet represents a collection of entities (like a section of books) that maps to a database table.
+
+| Library | EF Core |
+|:--------|:--------|
+| Library building | DbContext |
+| Book section (Fiction) | DbSet&lt;Book&gt; |
+| Individual book | Entity instance |
+| Library catalog | Database |
+
+<InfoBox type="info">
+**DbSet&lt;T&gt;** is a generic class where T is your entity type. It provides methods to query and save instances of T to the database.
+</InfoBox>
+
+### DbSet in Your DbContext
+
+Every DbSet is defined as a property in your DbContext class:
+
+<DotnetCodePreview
+  title="Defining DbSets in DbContext"
+  code={`public class AppDbContext : DbContext
+{
+    // Each DbSet represents a table in your database
+    public DbSet<Customer> Customers { get; set; }
+    public DbSet<Order> Orders { get; set; }
+    public DbSet<Product> Products { get; set; }
+    
+    public AppDbContext(DbContextOptions<AppDbContext> options)
+        : base(options)
+    {
+    }
+}`}
+  steps={[
+    {
+      lineNumbers: [1],
+      highlight: "DbContext Class",
+      explanation: "Your DbContext inherits from EF Core's DbContext base class"
+    },
+    {
+      lineNumbers: [4],
+      highlight: "Customers DbSet",
+      explanation: "This DbSet<Customer> maps to a 'Customers' table in your database"
+    },
+    {
+      lineNumbers: [5],
+      highlight: "Orders DbSet",
+      explanation: "Each DbSet is a separate table - Orders maps to an 'Orders' table"
+    },
+    {
+      lineNumbers: [6],
+      highlight: "Products DbSet",
+      explanation: "You can have as many DbSets as you need for your application"
+    }
+  ]}
+/>
+
+<KeyConcept title="DbSet = Table">
+Each DbSet property in your DbContext corresponds to a table in your database. The entity type (like Customer) defines the columns through its properties.
+</KeyConcept>
+
+<ProgressCheckpoint section="what-is-dbset" xpReward={20} />
+
+---
+
+## Section 2: CRUD Operations with DbSet
+
+### The Four Essential Operations
+
+CRUD stands for **Create, Read, Update, Delete** - the four basic operations you'll perform on your data. DbSet makes all of these incredibly simple!
+
+<DbContextVisualizer mode="beginner" />
+
+### Create - Adding New Entities
+
+
+<DotnetCodePreview
+  title="Adding Entities to DbSet"
+  code={`// Create a new customer
+var newCustomer = new Customer
+{
+    Name = "Alice Johnson",
+    Email = "alice@example.com"
+};
+
+// Add to the DbSet (marks as 'Added')
+context.Customers.Add(newCustomer);
+
+// Save to database
+await context.SaveChangesAsync();
+
+// Now newCustomer.Id has the database-generated value!
+Console.WriteLine($"Created customer with ID: {newCustomer.Id}");`}
+  steps={[
+    {
+      lineNumbers: [2, 3, 4, 5, 6],
+      highlight: "Create Entity",
+      explanation: "First, create a new instance of your entity class with the data you want"
+    },
+    {
+      lineNumbers: [9],
+      highlight: "Add to DbSet",
+      explanation: "The Add() method marks the entity as 'Added' - it's now tracked by EF Core"
+    },
+    {
+      lineNumbers: [12],
+      highlight: "Save Changes",
+      explanation: "SaveChangesAsync() sends an INSERT statement to the database"
+    },
+    {
+      lineNumbers: [15],
+      highlight: "Auto-Generated ID",
+      explanation: "After saving, EF Core updates the entity with the database-generated ID!"
+    }
+  ]}
+/>
+
+<InfoBox type="tip">
+**Pro Tip:** Use `AddRange()` to add multiple entities at once - it's more efficient than calling `Add()` multiple times!
+</InfoBox>
+
+### Read - Querying Entities
+
+<DotnetCodePreview
+  title="Reading Entities from DbSet"
+  code={`// Get all customers
+var allCustomers = await context.Customers.ToListAsync();
+
+// Find by primary key (fastest lookup!)
+var customer = await context.Customers.FindAsync(1);
+
+// Query with conditions
+var activeCustomers = await context.Customers
+    .Where(c => c.IsActive)
+    .OrderBy(c => c.Name)
+    .ToListAsync();
+
+// Get first matching or null
+var alice = await context.Customers
+    .FirstOrDefaultAsync(c => c.Name == "Alice");`}
+  steps={[
+    {
+      lineNumbers: [2],
+      highlight: "Get All",
+      explanation: "ToListAsync() retrieves all records from the Customers table"
+    },
+    {
+      lineNumbers: [5],
+      highlight: "Find by ID",
+      explanation: "FindAsync() is optimized for primary key lookups - checks cache first!"
+    },
+    {
+      lineNumbers: [8, 9, 10, 11],
+      highlight: "Filtered Query",
+      explanation: "Chain LINQ methods to filter, sort, and shape your results"
+    },
+    {
+      lineNumbers: [14, 15],
+      highlight: "Single Result",
+      explanation: "FirstOrDefaultAsync() returns one entity or null if not found"
+    }
+  ]}
+/>
+
+### Update - Modifying Entities
+
+<DotnetCodePreview
+  title="Updating Entities"
+  code={`// Find the customer to update
+var customer = await context.Customers.FindAsync(1);
+
+if (customer != null)
+{
+    // Modify properties - EF Core tracks these changes!
+    customer.Email = "newemail@example.com";
+    customer.LastModified = DateTime.UtcNow;
+    
+    // Save changes to database
+    await context.SaveChangesAsync();
+}`}
+  steps={[
+    {
+      lineNumbers: [2],
+      highlight: "Find Entity",
+      explanation: "First, retrieve the entity you want to update"
+    },
+    {
+      lineNumbers: [7, 8],
+      highlight: "Modify Properties",
+      explanation: "Just change the properties - EF Core automatically detects these changes!"
+    },
+    {
+      lineNumbers: [11],
+      highlight: "Save Changes",
+      explanation: "SaveChangesAsync() generates an UPDATE statement with only the changed columns"
+    }
+  ]}
+/>
+
+### Delete - Removing Entities
+
+<DotnetCodePreview
+  title="Deleting Entities"
+  code={`// Find the customer to delete
+var customer = await context.Customers.FindAsync(1);
+
+if (customer != null)
+{
+    // Mark for deletion
+    context.Customers.Remove(customer);
+    
+    // Execute the delete
+    await context.SaveChangesAsync();
+}
+
+// Alternative: Delete without loading first (EF Core 7+)
+await context.Customers
+    .Where(c => c.IsInactive && c.LastLogin < DateTime.UtcNow.AddYears(-2))
+    .ExecuteDeleteAsync();`}
+  steps={[
+    {
+      lineNumbers: [2],
+      highlight: "Find Entity",
+      explanation: "Retrieve the entity you want to delete"
+    },
+    {
+      lineNumbers: [7],
+      highlight: "Remove",
+      explanation: "Remove() marks the entity as 'Deleted' in the change tracker"
+    },
+    {
+      lineNumbers: [10],
+      highlight: "Execute Delete",
+      explanation: "SaveChangesAsync() sends a DELETE statement to the database"
+    },
+    {
+      lineNumbers: [14, 15, 16],
+      highlight: "Bulk Delete",
+      explanation: "ExecuteDeleteAsync() deletes directly in the database - more efficient for bulk operations!"
+    }
+  ]}
+/>
+
+<ProgressCheckpoint section="crud-operations" xpReward={25} />
+
+---
+
+## Section 3: Querying Basics with DbSet
+
+### DbSet as IQueryable
+
+One of DbSet's superpowers is that it implements `IQueryable<T>`. This means you can use LINQ to build powerful queries that get translated to efficient SQL!
+
+<DotnetCodePreview
+  title="LINQ Queries with DbSet"
+  code={`// Simple filter
+var premiumCustomers = context.Customers
+    .Where(c => c.MembershipLevel == "Premium");
+
+// Multiple conditions
+var recentOrders = context.Orders
+    .Where(o => o.OrderDate >= DateTime.Today.AddDays(-30))
+    .Where(o => o.Total > 100);
+
+// Projection - select specific columns
+var customerNames = context.Customers
+    .Select(c => new { c.Id, c.Name });
+
+// Aggregations
+var totalRevenue = await context.Orders.SumAsync(o => o.Total);
+var orderCount = await context.Orders.CountAsync();`}
+  steps={[
+    {
+      lineNumbers: [2, 3],
+      highlight: "Simple Filter",
+      explanation: "Where() filters results - this becomes a SQL WHERE clause"
+    },
+    {
+      lineNumbers: [6, 7, 8],
+      highlight: "Chained Filters",
+      explanation: "Chain multiple Where() calls - they combine with AND in SQL"
+    },
+    {
+      lineNumbers: [11, 12],
+      highlight: "Projection",
+      explanation: "Select() lets you choose specific columns - reduces data transfer!"
+    },
+    {
+      lineNumbers: [15, 16],
+      highlight: "Aggregations",
+      explanation: "Sum, Count, Average, Min, Max - all translated to SQL aggregates"
+    }
+  ]}
+/>
+
+<InfoBox type="warning">
+**Important:** Queries are not executed until you call a method like `ToListAsync()`, `FirstAsync()`, or iterate over the results. This is called **deferred execution**.
+</InfoBox>
+
+### Common Query Patterns
+
+<Comparison
+  title="Query Execution Methods"
+  items={[
+    {
+      label: "ToListAsync()",
+      description: "Returns all matching results as a List<T>. Use when you need multiple results.",
+      isCorrect: true
+    },
+    {
+      label: "FirstOrDefaultAsync()",
+      description: "Returns the first match or null. Use when you expect 0 or 1 result.",
+      isCorrect: true
+    },
+    {
+      label: "SingleOrDefaultAsync()",
+      description: "Returns exactly one match or null. Throws if multiple matches exist!",
+      isCorrect: true
+    },
+    {
+      label: "AnyAsync()",
+      description: "Returns true if any records match. Efficient for existence checks.",
+      isCorrect: true
+    }
+  ]}
+/>
+
+<ProgressCheckpoint section="querying-basics" xpReward={20} />
+
+---
+
+## Section 4: Best Practices
+
+### Do's and Don'ts
+
+<Comparison
+  title="DbSet Best Practices"
+  items={[
+    {
+      label: "✅ Use async methods",
+      description: "Always prefer ToListAsync(), SaveChangesAsync() etc. for better scalability",
+      isCorrect: true
+    },
+    {
+      label: "❌ Load entire tables",
+      description: "Avoid context.Customers.ToList() without filters - can crash your app with large tables!",
+      isCorrect: false
+    },
+    {
+      label: "✅ Use FindAsync for ID lookups",
+      description: "FindAsync() checks the local cache first, avoiding unnecessary database calls",
+      isCorrect: true
+    },
+    {
+      label: "❌ Forget to call SaveChanges",
+      description: "Changes are only persisted when you call SaveChangesAsync() - don't forget it!",
+      isCorrect: false
+    }
+  ]}
+/>
+
+### Performance Tips
+
+<DotnetCodePreview
+  title="Efficient DbSet Usage"
+  code={`// ✅ Good: Only select what you need
+var names = await context.Customers
+    .Select(c => c.Name)
+    .ToListAsync();
+
+// ✅ Good: Use pagination for large datasets
+var page = await context.Products
+    .OrderBy(p => p.Name)
+    .Skip(20)
+    .Take(10)
+    .ToListAsync();
+
+// ✅ Good: Use AsNoTracking for read-only queries
+var report = await context.Orders
+    .AsNoTracking()
+    .Where(o => o.Year == 2024)
+    .ToListAsync();`}
+  steps={[
+    {
+      lineNumbers: [2, 3, 4],
+      highlight: "Select Only Needed Data",
+      explanation: "Don't load entire entities if you only need a few columns"
+    },
+    {
+      lineNumbers: [7, 8, 9, 10, 11],
+      highlight: "Pagination",
+      explanation: "Use Skip() and Take() to load data in pages - essential for large datasets"
+    },
+    {
+      lineNumbers: [14, 15, 16, 17],
+      highlight: "AsNoTracking",
+      explanation: "For read-only queries, AsNoTracking() improves performance by skipping change tracking"
+    }
+  ]}
+/>
+
+<KeyConcept title="Remember">
+DbSet is your primary interface for working with data in EF Core. Master these CRUD operations and query patterns, and you'll be able to handle most data access scenarios with ease!
+</KeyConcept>
+
+### Quick Knowledge Check
+
+<Quiz id="dbset-basics-quiz">
+  <Question>What does DbSet represent in EF Core?</Question>
+  <Answer correct>A collection of entities that maps to a database table</Answer>
+  <Answer>A single row in a database table</Answer>
+  <Answer>The database connection string</Answer>
+  <Answer>A SQL query builder</Answer>
+</Quiz>
+
+<Quiz id="crud-add-quiz">
+  <Question>Which method do you call to add a new entity to a DbSet?</Question>
+  <Answer>Insert()</Answer>
+  <Answer>Create()</Answer>
+  <Answer correct>Add()</Answer>
+  <Answer>New()</Answer>
+</Quiz>
+
+<Quiz id="savechanges-quiz">
+  <Question>When are changes actually saved to the database?</Question>
+  <Answer>Immediately when you call Add() or Remove()</Answer>
+  <Answer>When the DbContext is disposed</Answer>
+  <Answer correct>When you call SaveChangesAsync()</Answer>
+  <Answer>Automatically every 5 seconds</Answer>
+</Quiz>
+
+### Summary
+
+| Concept | Key Takeaway |
+|:--------|:-------------|
+| **DbSet** | Collection of entities mapping to a database table |
+| **Add()** | Marks entity as Added for insertion |
+| **Remove()** | Marks entity as Deleted for removal |
+| **FindAsync()** | Efficient primary key lookup (checks cache first) |
+| **SaveChangesAsync()** | Persists all tracked changes to database |
+| **AsNoTracking()** | Improves read-only query performance |
+
+<ProgressCheckpoint section="best-practices" xpReward={15} />

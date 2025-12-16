@@ -1,0 +1,456 @@
+# Code-First Migrations - Evolving Your Database
+
+Your application evolves, and so does your data model. **Migrations** let you version control your database schema, making it easy to add new tables, columns, and relationships without losing data!
+
+---
+
+## Section 1: What Are Migrations?
+
+### The Problem Migrations Solve
+
+Imagine you've deployed your app with a `Customer` table. Now you need to add an `Email` column. How do you:
+- Update your development database?
+- Update your teammate's database?
+- Update the production database?
+
+Without migrations, you'd write SQL scripts manually and hope everyone runs them in the right order. 😰
+
+<InfoBox type="info">
+**Migrations** are like version control for your database schema. Each migration is a snapshot of changes that can be applied (or rolled back) in order.
+</InfoBox>
+
+### The Migration Workflow
+
+<MigrationFlowDiagram />
+
+### How It Works
+
+| Step | What Happens |
+|:-----|:-------------|
+| 1. **Change Model** | You modify your C# entity classes |
+| 2. **Add Migration** | EF Core compares model to last snapshot, generates migration |
+| 3. **Migration File** | Contains `Up()` (apply) and `Down()` (rollback) methods |
+| 4. **Update Database** | Applies pending migrations to your database |
+
+<KeyConcept title="Code-First Approach">
+With Code-First, your C# classes are the source of truth. You change the code, and EF Core generates the SQL to update the database!
+</KeyConcept>
+
+<ProgressCheckpoint section="what-are-migrations" xpReward={20} />
+
+---
+
+## Section 2: Creating Migrations
+
+### Your First Migration
+
+Let's say you have this entity:
+
+<DotnetCodePreview
+  title="Initial Entity"
+  code={`public class Customer
+{
+    public int Id { get; set; }
+    public string Name { get; set; } = "";
+}
+
+public class AppDbContext : DbContext
+{
+    public DbSet<Customer> Customers { get; set; }
+    
+    // ... constructor
+}`}
+  steps={[
+    {
+      lineNumbers: [1, 2, 3, 4, 5],
+      highlight: "Customer Entity",
+      explanation: "A simple entity with Id and Name properties"
+    },
+    {
+      lineNumbers: [7, 8, 9],
+      highlight: "DbContext",
+      explanation: "DbSet<Customer> tells EF Core to create a Customers table"
+    }
+  ]}
+/>
+
+To create your first migration, run:
+
+```bash
+dotnet ef migrations add InitialCreate
+```
+
+This generates a migration file:
+
+<DotnetCodePreview
+  title="Generated Migration"
+  code={`public partial class InitialCreate : Migration
+{
+    protected override void Up(MigrationBuilder migrationBuilder)
+    {
+        migrationBuilder.CreateTable(
+            name: "Customers",
+            columns: table => new
+            {
+                Id = table.Column<int>(nullable: false)
+                    .Annotation("SqlServer:Identity", "1, 1"),
+                Name = table.Column<string>(nullable: false)
+            },
+            constraints: table =>
+            {
+                table.PrimaryKey("PK_Customers", x => x.Id);
+            });
+    }
+
+    protected override void Down(MigrationBuilder migrationBuilder)
+    {
+        migrationBuilder.DropTable(name: "Customers");
+    }
+}`}
+  steps={[
+    {
+      lineNumbers: [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17],
+      highlight: "Up Method",
+      explanation: "Up() contains the changes to apply - creates the Customers table"
+    },
+    {
+      lineNumbers: [19, 20, 21, 22],
+      highlight: "Down Method",
+      explanation: "Down() reverses the changes - drops the table if you rollback"
+    }
+  ]}
+/>
+
+### Adding a New Column
+
+Now let's add an Email property:
+
+<DotnetCodePreview
+  title="Updated Entity"
+  code={`public class Customer
+{
+    public int Id { get; set; }
+    public string Name { get; set; } = "";
+    public string Email { get; set; } = "";  // New property!
+}`}
+  steps={[
+    {
+      lineNumbers: [5],
+      highlight: "New Property",
+      explanation: "Adding Email property to the Customer class"
+    }
+  ]}
+/>
+
+Create a new migration:
+
+```bash
+dotnet ef migrations add AddCustomerEmail
+```
+
+<DotnetCodePreview
+  title="Column Migration"
+  code={`public partial class AddCustomerEmail : Migration
+{
+    protected override void Up(MigrationBuilder migrationBuilder)
+    {
+        migrationBuilder.AddColumn<string>(
+            name: "Email",
+            table: "Customers",
+            nullable: false,
+            defaultValue: "");
+    }
+
+    protected override void Down(MigrationBuilder migrationBuilder)
+    {
+        migrationBuilder.DropColumn(
+            name: "Email",
+            table: "Customers");
+    }
+}`}
+  steps={[
+    {
+      lineNumbers: [5, 6, 7, 8, 9],
+      highlight: "Add Column",
+      explanation: "EF Core detected the new property and generates AddColumn"
+    },
+    {
+      lineNumbers: [14, 15, 16],
+      highlight: "Drop Column",
+      explanation: "Down() removes the column if you need to rollback"
+    }
+  ]}
+/>
+
+<InfoBox type="tip">
+**Naming Tip:** Use descriptive migration names like `AddCustomerEmail`, `CreateOrdersTable`, or `AddIndexOnProductName`. Future you will thank present you!
+</InfoBox>
+
+<ProgressCheckpoint section="creating-migrations" xpReward={25} />
+
+---
+
+## Section 3: Applying Migrations
+
+### Update Database Command
+
+To apply pending migrations to your database:
+
+```bash
+dotnet ef database update
+```
+
+This command:
+1. Checks which migrations have been applied (stored in `__EFMigrationsHistory` table)
+2. Runs any pending migrations in order
+3. Updates the history table
+
+### Common Migration Commands
+
+| Command | Purpose |
+|:--------|:--------|
+| `dotnet ef migrations add <Name>` | Create a new migration |
+| `dotnet ef database update` | Apply all pending migrations |
+| `dotnet ef database update <Name>` | Apply up to a specific migration |
+| `dotnet ef migrations remove` | Remove the last migration (if not applied) |
+| `dotnet ef migrations list` | List all migrations and their status |
+| `dotnet ef database drop` | Drop the database (careful!) |
+
+### Rolling Back Migrations
+
+<DotnetCodePreview
+  title="Migration Rollback"
+  code={`# Apply all migrations
+dotnet ef database update
+
+# Rollback to a specific migration
+dotnet ef database update AddCustomerEmail
+
+# Rollback to before any migrations (empty database)
+dotnet ef database update 0
+
+# Remove the last unapplied migration file
+dotnet ef migrations remove`}
+  steps={[
+    {
+      lineNumbers: [2],
+      highlight: "Apply All",
+      explanation: "Applies all pending migrations to bring database up to date"
+    },
+    {
+      lineNumbers: [5],
+      highlight: "Target Migration",
+      explanation: "Rolls back (or forward) to a specific migration"
+    },
+    {
+      lineNumbers: [8],
+      highlight: "Reset",
+      explanation: "Rolls back ALL migrations - use with caution!"
+    },
+    {
+      lineNumbers: [11],
+      highlight: "Remove Migration",
+      explanation: "Deletes the migration file (only works if not yet applied)"
+    }
+  ]}
+/>
+
+### Applying Migrations in Production
+
+<Comparison
+  title="Production Migration Strategies"
+  items={[
+    {
+      label: "✅ Generate SQL Script",
+      description: "Use 'dotnet ef migrations script' to generate SQL, review it, then run manually or via CI/CD",
+      isCorrect: true
+    },
+    {
+      label: "✅ Migrate on Startup",
+      description: "Call context.Database.Migrate() in Program.cs - good for simple apps",
+      isCorrect: true
+    },
+    {
+      label: "❌ Run CLI in Production",
+      description: "Don't run 'dotnet ef database update' directly on production servers",
+      isCorrect: false
+    }
+  ]}
+/>
+
+<DotnetCodePreview
+  title="Production Migration Options"
+  code={`// Option 1: Generate SQL script for review
+// Run in terminal:
+// dotnet ef migrations script -o migration.sql
+
+// Option 2: Migrate on application startup
+var builder = WebApplication.CreateBuilder(args);
+// ... configure services
+
+var app = builder.Build();
+
+// Apply migrations on startup
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    db.Database.Migrate();
+}
+
+app.Run();`}
+  steps={[
+    {
+      lineNumbers: [2, 3],
+      highlight: "SQL Script",
+      explanation: "Generate a SQL file you can review and run manually"
+    },
+    {
+      lineNumbers: [11, 12, 13, 14, 15],
+      highlight: "Auto-Migrate",
+      explanation: "Automatically apply migrations when the app starts"
+    }
+  ]}
+/>
+
+<ProgressCheckpoint section="applying-migrations" xpReward={20} />
+
+---
+
+## Section 4: Migration Best Practices
+
+### Do's and Don'ts
+
+<Comparison
+  title="Migration Best Practices"
+  items={[
+    {
+      label: "✅ Small, focused migrations",
+      description: "One logical change per migration. Easier to review, test, and rollback.",
+      isCorrect: true
+    },
+    {
+      label: "✅ Test migrations locally",
+      description: "Always test on a copy of production data before deploying.",
+      isCorrect: true
+    },
+    {
+      label: "✅ Commit migrations to source control",
+      description: "Migrations are code - they belong in your Git repository!",
+      isCorrect: true
+    },
+    {
+      label: "❌ Edit applied migrations",
+      description: "Never modify a migration that's been applied to any database.",
+      isCorrect: false
+    },
+    {
+      label: "❌ Delete migrations randomly",
+      description: "Only remove the LAST migration, and only if it hasn't been applied.",
+      isCorrect: false
+    }
+  ]}
+/>
+
+### Handling Data Migrations
+
+Sometimes you need to transform existing data:
+
+<DotnetCodePreview
+  title="Data Migration Example"
+  code={`public partial class SplitCustomerName : Migration
+{
+    protected override void Up(MigrationBuilder migrationBuilder)
+    {
+        // Add new columns
+        migrationBuilder.AddColumn<string>(
+            name: "FirstName", table: "Customers", nullable: false, defaultValue: "");
+        migrationBuilder.AddColumn<string>(
+            name: "LastName", table: "Customers", nullable: false, defaultValue: "");
+        
+        // Migrate data using raw SQL
+        migrationBuilder.Sql(@"
+            UPDATE Customers 
+            SET FirstName = SUBSTRING(Name, 1, CHARINDEX(' ', Name + ' ') - 1),
+                LastName = SUBSTRING(Name, CHARINDEX(' ', Name + ' ') + 1, LEN(Name))
+        ");
+        
+        // Remove old column
+        migrationBuilder.DropColumn(name: "Name", table: "Customers");
+    }
+
+    protected override void Down(MigrationBuilder migrationBuilder)
+    {
+        // Reverse the process...
+    }
+}`}
+  steps={[
+    {
+      lineNumbers: [6, 7, 8, 9],
+      highlight: "Add New Columns",
+      explanation: "First, add the new FirstName and LastName columns"
+    },
+    {
+      lineNumbers: [12, 13, 14, 15, 16],
+      highlight: "Migrate Data",
+      explanation: "Use raw SQL to split existing Name values into the new columns"
+    },
+    {
+      lineNumbers: [19],
+      highlight: "Remove Old Column",
+      explanation: "Finally, drop the old Name column"
+    }
+  ]}
+/>
+
+<InfoBox type="warning">
+**Data Migrations Are Risky!** Always backup your database before running migrations that modify data. Test thoroughly on a copy first!
+</InfoBox>
+
+### Quick Knowledge Check
+
+<Quiz id="migration-purpose-quiz">
+  <Question>What is the main purpose of EF Core migrations?</Question>
+  <Answer>To backup your database</Answer>
+  <Answer correct>To version control and apply database schema changes</Answer>
+  <Answer>To improve query performance</Answer>
+  <Answer>To encrypt sensitive data</Answer>
+</Quiz>
+
+<Quiz id="migration-up-down-quiz">
+  <Question>What do the Up() and Down() methods in a migration do?</Question>
+  <Answer>Up() creates tables, Down() creates indexes</Answer>
+  <Answer correct>Up() applies changes, Down() reverses them for rollback</Answer>
+  <Answer>Up() is for development, Down() is for production</Answer>
+  <Answer>Up() runs first, Down() runs last</Answer>
+</Quiz>
+
+<Quiz id="migration-command-quiz">
+  <Question>Which command applies pending migrations to the database?</Question>
+  <Answer>dotnet ef migrations add</Answer>
+  <Answer>dotnet ef migrations apply</Answer>
+  <Answer correct>dotnet ef database update</Answer>
+  <Answer>dotnet ef schema sync</Answer>
+</Quiz>
+
+### Summary
+
+| Concept | Key Takeaway |
+|:--------|:-------------|
+| **Migrations** | Version control for your database schema |
+| **Add Migration** | Creates a new migration from model changes |
+| **Update Database** | Applies pending migrations |
+| **Up/Down Methods** | Apply and rollback logic |
+| **SQL Script** | Generate SQL for production review |
+
+<KeyConcept title="Congratulations!">
+You've completed the EF Core fundamentals! You now understand:
+- **DbContext & DbSet** - Your database gateway
+- **Change Tracking** - How EF Core detects modifications
+- **Relationships** - Connecting entities together
+- **LINQ Queries** - Retrieving data efficiently
+- **Migrations** - Evolving your database schema
+
+You're ready to build real applications with Entity Framework Core! 🎉
+</KeyConcept>
+
+<ProgressCheckpoint section="migration-best-practices" xpReward={20} />

@@ -1,0 +1,503 @@
+# Querying with LINQ - From C# to SQL
+
+One of EF Core's most powerful features is its ability to translate your C# LINQ queries into efficient SQL. Write familiar C# code, and EF Core handles the database communication!
+
+---
+
+## Section 1: LINQ Basics with EF Core
+
+### What is LINQ?
+
+**LINQ** (Language Integrated Query) lets you write queries using C# syntax. EF Core takes these queries and translates them into SQL that runs on your database.
+
+<QueryExecutionVisualizer
+  title="LINQ to SQL Translation"
+  steps={[
+    {
+      linq: `var customers = context.Customers
+    .Where(c => c.IsActive)
+    .ToList();`,
+      sql: `SELECT [c].[Id], [c].[Name], [c].[Email], [c].[IsActive]
+FROM [Customers] AS [c]
+WHERE [c].[IsActive] = 1`,
+      explanation: "A simple Where() clause becomes a SQL WHERE condition. EF Core selects all columns by default."
+    },
+    {
+      linq: `var names = context.Customers
+    .Where(c => c.IsActive)
+    .Select(c => c.Name)
+    .ToList();`,
+      sql: `SELECT [c].[Name]
+FROM [Customers] AS [c]
+WHERE [c].[IsActive] = 1`,
+      explanation: "Adding Select() limits the columns retrieved - more efficient when you only need specific data!"
+    },
+    {
+      linq: `var topCustomers = context.Customers
+    .Where(c => c.TotalOrders > 10)
+    .OrderByDescending(c => c.TotalOrders)
+    .Take(5)
+    .ToList();`,
+      sql: `SELECT TOP(5) [c].[Id], [c].[Name], [c].[Email], [c].[TotalOrders]
+FROM [Customers] AS [c]
+WHERE [c].[TotalOrders] > 10
+ORDER BY [c].[TotalOrders] DESC`,
+      explanation: "OrderBy and Take translate to ORDER BY and TOP in SQL. The database does the sorting!"
+    }
+  ]}
+/>
+
+<InfoBox type="info">
+**Deferred Execution:** LINQ queries don't run until you call a method like `ToList()`, `First()`, or iterate over results. This lets you build up complex queries step by step!
+</InfoBox>
+
+### Query Syntax vs Method Syntax
+
+You can write LINQ in two styles - both produce the same SQL:
+
+<DotnetCodePreview
+  title="Two Ways to Write LINQ"
+  code={`// Method Syntax (more common in EF Core)
+var activeCustomers = context.Customers
+    .Where(c => c.IsActive)
+    .OrderBy(c => c.Name)
+    .ToList();
+
+// Query Syntax (SQL-like)
+var activeCustomers = (
+    from c in context.Customers
+    where c.IsActive
+    orderby c.Name
+    select c
+).ToList();
+
+// Both generate the exact same SQL!`}
+  steps={[
+    {
+      lineNumbers: [2, 3, 4, 5],
+      highlight: "Method Syntax",
+      explanation: "Chain methods together - most EF Core developers prefer this style"
+    },
+    {
+      lineNumbers: [8, 9, 10, 11, 12, 13],
+      highlight: "Query Syntax",
+      explanation: "Looks more like SQL - some find it more readable for complex queries"
+    }
+  ]}
+/>
+
+<ProgressCheckpoint section="linq-basics" xpReward={20} />
+
+---
+
+## Section 2: Filtering and Sorting
+
+### Filtering with Where()
+
+<DotnetCodePreview
+  title="Filtering Data"
+  code={`// Single condition
+var premiumCustomers = context.Customers
+    .Where(c => c.MembershipLevel == "Premium")
+    .ToList();
+
+// Multiple conditions (AND)
+var targetCustomers = context.Customers
+    .Where(c => c.IsActive && c.TotalOrders > 5)
+    .ToList();
+
+// OR conditions
+var specialCustomers = context.Customers
+    .Where(c => c.MembershipLevel == "Premium" || c.TotalOrders > 100)
+    .ToList();
+
+// String operations
+var searchResults = context.Customers
+    .Where(c => c.Name.Contains("John"))
+    .ToList();
+
+// Date comparisons
+var recentCustomers = context.Customers
+    .Where(c => c.CreatedAt >= DateTime.Today.AddDays(-30))
+    .ToList();`}
+  steps={[
+    {
+      lineNumbers: [2, 3, 4],
+      highlight: "Single Condition",
+      explanation: "Basic equality check - becomes WHERE MembershipLevel = 'Premium'"
+    },
+    {
+      lineNumbers: [7, 8, 9],
+      highlight: "AND Conditions",
+      explanation: "Use && for AND - both conditions must be true"
+    },
+    {
+      lineNumbers: [12, 13, 14],
+      highlight: "OR Conditions",
+      explanation: "Use || for OR - either condition can be true"
+    },
+    {
+      lineNumbers: [17, 18, 19],
+      highlight: "String Search",
+      explanation: "Contains() becomes LIKE '%John%' in SQL"
+    },
+    {
+      lineNumbers: [22, 23, 24],
+      highlight: "Date Filtering",
+      explanation: "Date comparisons work naturally with >= and <="
+    }
+  ]}
+/>
+
+### Sorting with OrderBy()
+
+<DotnetCodePreview
+  title="Sorting Results"
+  code={`// Ascending order (default)
+var alphabetical = context.Customers
+    .OrderBy(c => c.Name)
+    .ToList();
+
+// Descending order
+var newestFirst = context.Customers
+    .OrderByDescending(c => c.CreatedAt)
+    .ToList();
+
+// Multiple sort columns
+var sorted = context.Customers
+    .OrderBy(c => c.Country)
+    .ThenByDescending(c => c.TotalOrders)
+    .ToList();`}
+  steps={[
+    {
+      lineNumbers: [2, 3, 4],
+      highlight: "Ascending",
+      explanation: "OrderBy() sorts A-Z, smallest to largest"
+    },
+    {
+      lineNumbers: [7, 8, 9],
+      highlight: "Descending",
+      explanation: "OrderByDescending() reverses the order - newest/largest first"
+    },
+    {
+      lineNumbers: [12, 13, 14, 15],
+      highlight: "Multiple Columns",
+      explanation: "ThenBy/ThenByDescending adds secondary sort criteria"
+    }
+  ]}
+/>
+
+### Pagination with Skip() and Take()
+
+<DotnetCodePreview
+  title="Pagination"
+  code={`int pageSize = 10;
+int pageNumber = 3; // 0-indexed would be page 2
+
+var pagedResults = context.Products
+    .OrderBy(p => p.Name)
+    .Skip((pageNumber - 1) * pageSize)  // Skip first 20 items
+    .Take(pageSize)                      // Take next 10 items
+    .ToList();
+
+// Get total count for pagination UI
+var totalCount = await context.Products.CountAsync();
+var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);`}
+  steps={[
+    {
+      lineNumbers: [1, 2],
+      highlight: "Page Parameters",
+      explanation: "Define how many items per page and which page to fetch"
+    },
+    {
+      lineNumbers: [5],
+      highlight: "Order First",
+      explanation: "Always order before pagination for consistent results!"
+    },
+    {
+      lineNumbers: [6],
+      highlight: "Skip",
+      explanation: "Skip items from previous pages"
+    },
+    {
+      lineNumbers: [7],
+      highlight: "Take",
+      explanation: "Take only the items for the current page"
+    },
+    {
+      lineNumbers: [11, 12],
+      highlight: "Total Count",
+      explanation: "Get total for pagination controls (page numbers, next/prev buttons)"
+    }
+  ]}
+/>
+
+<ProgressCheckpoint section="filtering-sorting" xpReward={25} />
+
+---
+
+## Section 3: Loading Related Data
+
+### The N+1 Problem
+
+Without proper loading, you can accidentally make hundreds of database queries:
+
+<Comparison
+  title="Loading Strategies"
+  items={[
+    {
+      label: "❌ N+1 Problem",
+      description: "Loading blogs, then looping and accessing Posts triggers a query for EACH blog. 100 blogs = 101 queries!",
+      isCorrect: false
+    },
+    {
+      label: "✅ Eager Loading",
+      description: "Use Include() to load related data in ONE query. 100 blogs with posts = 1 query!",
+      isCorrect: true
+    }
+  ]}
+/>
+
+### Eager Loading with Include()
+
+<QueryExecutionVisualizer
+  title="Eager Loading Translation"
+  steps={[
+    {
+      linq: `var blogs = context.Blogs
+    .Include(b => b.Posts)
+    .ToList();`,
+      sql: `SELECT [b].[Id], [b].[Title], [p].[Id], [p].[Title], [p].[BlogId]
+FROM [Blogs] AS [b]
+LEFT JOIN [Posts] AS [p] ON [b].[Id] = [p].[BlogId]
+ORDER BY [b].[Id]`,
+      explanation: "Include() creates a LEFT JOIN to fetch blogs and their posts in a single query!"
+    },
+    {
+      linq: `var blogs = context.Blogs
+    .Include(b => b.Posts)
+    .ThenInclude(p => p.Comments)
+    .ToList();`,
+      sql: `SELECT [b].[Id], [b].[Title], [p].[Id], [p].[Title], [c].[Id], [c].[Text]
+FROM [Blogs] AS [b]
+LEFT JOIN [Posts] AS [p] ON [b].[Id] = [p].[BlogId]
+LEFT JOIN [Comments] AS [c] ON [p].[Id] = [c].[PostId]
+ORDER BY [b].[Id], [p].[Id]`,
+      explanation: "ThenInclude() chains to load nested relationships - blogs → posts → comments"
+    },
+    {
+      linq: `var blogs = context.Blogs
+    .Include(b => b.Posts.Where(p => p.IsPublished))
+    .ToList();`,
+      sql: `SELECT [b].[Id], [b].[Title], [p].[Id], [p].[Title], [p].[IsPublished]
+FROM [Blogs] AS [b]
+LEFT JOIN [Posts] AS [p] ON [b].[Id] = [p].[BlogId] AND [p].[IsPublished] = 1
+ORDER BY [b].[Id]`,
+      explanation: "Filtered Include (EF Core 5+) - only load published posts, not all posts!"
+    }
+  ]}
+/>
+
+<DotnetCodePreview
+  title="Include Patterns"
+  code={`// Basic include
+var blogsWithPosts = context.Blogs
+    .Include(b => b.Posts)
+    .ToList();
+
+// Multiple includes
+var blogsComplete = context.Blogs
+    .Include(b => b.Posts)
+    .Include(b => b.Author)
+    .ToList();
+
+// Nested includes
+var blogsDeep = context.Blogs
+    .Include(b => b.Posts)
+        .ThenInclude(p => p.Comments)
+            .ThenInclude(c => c.Author)
+    .ToList();
+
+// Filtered include (EF Core 5+)
+var blogsFiltered = context.Blogs
+    .Include(b => b.Posts.Where(p => p.IsPublished))
+    .ToList();`}
+  steps={[
+    {
+      lineNumbers: [2, 3, 4],
+      highlight: "Basic Include",
+      explanation: "Load blogs with their posts in one query"
+    },
+    {
+      lineNumbers: [7, 8, 9, 10],
+      highlight: "Multiple Includes",
+      explanation: "Load multiple related collections/entities"
+    },
+    {
+      lineNumbers: [13, 14, 15, 16, 17],
+      highlight: "Nested Includes",
+      explanation: "ThenInclude chains for deep relationships"
+    },
+    {
+      lineNumbers: [20, 21, 22],
+      highlight: "Filtered Include",
+      explanation: "Only include related entities matching a condition"
+    }
+  ]}
+/>
+
+<InfoBox type="tip">
+**Pro Tip:** Only Include what you need! Loading unnecessary related data wastes memory and slows queries.
+</InfoBox>
+
+<ProgressCheckpoint section="loading-related-data" xpReward={25} />
+
+---
+
+## Section 4: Query Optimization
+
+### Projection with Select()
+
+Don't load entire entities when you only need a few fields:
+
+<DotnetCodePreview
+  title="Efficient Projections"
+  code={`// ❌ Loads all columns
+var customers = context.Customers.ToList();
+// Then in code: customers.Select(c => c.Name)
+
+// ✅ Only loads Name column
+var names = context.Customers
+    .Select(c => c.Name)
+    .ToList();
+
+// ✅ Project to anonymous type
+var customerSummaries = context.Customers
+    .Select(c => new 
+    { 
+        c.Id, 
+        c.Name, 
+        OrderCount = c.Orders.Count() 
+    })
+    .ToList();
+
+// ✅ Project to DTO class
+var customerDtos = context.Customers
+    .Select(c => new CustomerDto
+    {
+        Id = c.Id,
+        Name = c.Name,
+        TotalSpent = c.Orders.Sum(o => o.Total)
+    })
+    .ToList();`}
+  steps={[
+    {
+      lineNumbers: [2, 3],
+      highlight: "Bad: Load All",
+      explanation: "Loads ALL columns, then filters in memory - wasteful!"
+    },
+    {
+      lineNumbers: [6, 7, 8],
+      highlight: "Good: Select Column",
+      explanation: "SQL only selects the Name column - much more efficient"
+    },
+    {
+      lineNumbers: [11, 12, 13, 14, 15, 16, 17, 18],
+      highlight: "Anonymous Type",
+      explanation: "Create objects with just the fields you need, including computed values"
+    },
+    {
+      lineNumbers: [21, 22, 23, 24, 25, 26, 27, 28],
+      highlight: "DTO Projection",
+      explanation: "Project directly to your DTO class - no manual mapping needed!"
+    }
+  ]}
+/>
+
+### AsNoTracking for Read-Only Queries
+
+<DotnetCodePreview
+  title="AsNoTracking Performance"
+  code={`// ✅ Read-only list - use AsNoTracking
+var products = await context.Products
+    .AsNoTracking()
+    .Where(p => p.IsActive)
+    .ToListAsync();
+
+// ✅ Reports and dashboards
+var salesReport = await context.Orders
+    .AsNoTracking()
+    .GroupBy(o => o.CustomerId)
+    .Select(g => new 
+    {
+        CustomerId = g.Key,
+        TotalOrders = g.Count(),
+        TotalSpent = g.Sum(o => o.Total)
+    })
+    .ToListAsync();
+
+// ❌ Don't use when you need to update
+var customer = await context.Customers.FindAsync(1);
+customer.LastLogin = DateTime.UtcNow;
+await context.SaveChangesAsync(); // Works because tracked`}
+  steps={[
+    {
+      lineNumbers: [2, 3, 4, 5],
+      highlight: "Read-Only List",
+      explanation: "AsNoTracking() skips change tracking - faster for display-only data"
+    },
+    {
+      lineNumbers: [8, 9, 10, 11, 12, 13, 14, 15, 16, 17],
+      highlight: "Reports",
+      explanation: "Reports never modify data - always use AsNoTracking"
+    },
+    {
+      lineNumbers: [20, 21, 22],
+      highlight: "Updates Need Tracking",
+      explanation: "Don't use AsNoTracking if you plan to modify and save"
+    }
+  ]}
+/>
+
+### Quick Knowledge Check
+
+<Quiz id="linq-execution-quiz">
+  <Question>When does a LINQ query actually execute against the database?</Question>
+  <Answer>When you write the Where() clause</Answer>
+  <Answer>When you add OrderBy()</Answer>
+  <Answer correct>When you call ToList(), First(), or iterate over results</Answer>
+  <Answer>Immediately when you access the DbSet</Answer>
+</Quiz>
+
+<Quiz id="include-quiz">
+  <Question>What problem does Include() solve?</Question>
+  <Answer>It makes queries run faster</Answer>
+  <Answer correct>It prevents the N+1 query problem by loading related data in one query</Answer>
+  <Answer>It filters out null values</Answer>
+  <Answer>It sorts the results</Answer>
+</Quiz>
+
+<Quiz id="asnotracking-perf-quiz">
+  <Question>Why does AsNoTracking() improve performance?</Question>
+  <Answer>It uses a faster database connection</Answer>
+  <Answer>It compresses the data</Answer>
+  <Answer correct>It skips creating snapshots for change detection</Answer>
+  <Answer>It caches the results</Answer>
+</Quiz>
+
+### Summary
+
+| Concept | Key Takeaway |
+|:--------|:-------------|
+| **LINQ** | Write C# queries, EF Core translates to SQL |
+| **Where()** | Filter results with conditions |
+| **OrderBy()** | Sort results (use ThenBy for multiple columns) |
+| **Include()** | Eager load related data to avoid N+1 |
+| **Select()** | Project to specific columns or DTOs |
+| **AsNoTracking()** | Faster read-only queries |
+
+<KeyConcept title="What's Next?">
+You've mastered querying! The final piece of the puzzle is **migrations** - how to evolve your database schema as your model changes over time.
+</KeyConcept>
+
+<ProgressCheckpoint section="query-optimization" xpReward={25} />

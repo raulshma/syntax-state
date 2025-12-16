@@ -233,6 +233,15 @@ export const BADGES = {
     icon: '✅',
     category: 'mastery',
   },
+  
+  // EF Core milestone badge
+  EF_CORE_MASTER: {
+    id: 'ef-core-master',
+    name: 'EF Core Master',
+    description: 'Complete all Entity Framework Core lessons',
+    icon: '🗄️',
+    category: 'mastery',
+  },
 } as const;
 
 export type BadgeId = keyof typeof BADGES;
@@ -330,6 +339,9 @@ export function checkNewBadges(stats: {
   e2eTestAllLevelsCompleted?: boolean;
   testingLessonsCompleted?: number;
   totalTestingLessons?: number;
+  // EF Core milestone stats
+  efCoreLessonsCompleted?: number;
+  totalEfCoreLessons?: number;
 }, existingBadgeIds: string[]): string[] {
   const newBadges: string[] = [];
   
@@ -446,6 +458,14 @@ export function checkNewBadges(stats: {
     newBadges.push('testing-master');
   }
   
+  // Check EF Core Master badge
+  if (stats.efCoreLessonsCompleted !== undefined && 
+      stats.totalEfCoreLessons !== undefined &&
+      stats.efCoreLessonsCompleted >= stats.totalEfCoreLessons && 
+      !existingBadgeIds.includes('ef-core-master')) {
+    newBadges.push('ef-core-master');
+  }
+  
   return newBadges;
 }
 
@@ -538,6 +558,18 @@ export const TESTING_LESSON_IDS = [
 
 // Total number of Testing lessons
 export const TOTAL_TESTING_LESSONS = 3;
+
+// EF Core lesson IDs for badge tracking
+export const EF_CORE_LESSON_IDS = [
+  'entity-framework-core/dbcontext-dbset',
+  'entity-framework-core/code-first-migrations',
+  'entity-framework-core/querying-with-linq',
+  'entity-framework-core/ef-relationships',
+  'entity-framework-core/ef-performance',
+];
+
+// Total number of EF Core lessons
+export const TOTAL_EF_CORE_LESSONS = 5;
 
 /**
  * Check if user has completed all Internet lessons at a specific level
@@ -800,6 +832,28 @@ export function checkTestingMasterBadge(
   
   if (completedTestingLessonIds.size >= TOTAL_TESTING_LESSONS) {
     return 'testing-master';
+  }
+  
+  return null;
+}
+
+/**
+ * Check if user has completed all EF Core lessons at any level
+ * Returns 'ef-core-master' badge ID if all lessons are completed
+ * Note: EF Core lessons can be either single-level or three-level format
+ */
+export function checkEfCoreMilestoneBadge(
+  completedLessons: Array<{ lessonId: string; experienceLevel: string }>
+): string | null {
+  // Get unique EF Core lesson IDs that have been completed at any level
+  const completedEfCoreLessonIds = new Set(
+    completedLessons
+      .filter(lesson => EF_CORE_LESSON_IDS.includes(lesson.lessonId))
+      .map(lesson => lesson.lessonId)
+  );
+  
+  if (completedEfCoreLessonIds.size >= TOTAL_EF_CORE_LESSONS) {
+    return 'ef-core-master';
   }
   
   return null;

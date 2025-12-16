@@ -6,6 +6,21 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import type { MDXRemoteSerializeResult } from 'next-mdx-remote';
 import type { ExperienceLevel } from '@/lib/db/schemas/lesson-progress';
 
+// Mock the roadmap module BEFORE importing LessonPageClient to avoid DB dependency chain
+vi.mock('@/components/roadmap', () => ({
+  RoadmapCommandMenu: () => null,
+  RoadmapTopicDetail: () => null,
+  RoadmapSidebar: () => null,
+  RoadmapBreadcrumb: () => null,
+  RoadmapViewer: () => null,
+  RoadmapNodeComponent: () => null,
+  RoadmapEdges: () => null,
+  RoadmapCardSkeleton: () => null,
+  RoadmapsPageSkeleton: () => null,
+  RoadmapPageSkeleton: () => null,
+  LessonPageSkeleton: () => null,
+}));
+
 import { LessonPageClient } from './lesson-page-client';
 
 vi.mock('next/link', () => ({

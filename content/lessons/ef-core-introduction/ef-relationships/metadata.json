@@ -1,0 +1,18 @@
+{
+  "id": "ef-relationships",
+  "title": "Entity Relationships - Connecting Your Data",
+  "description": "Master the three types of relationships in EF Core: one-to-one, one-to-many, and many-to-many, with navigation properties.",
+  "milestone": "ef-core-introduction",
+  "order": 3,
+  "sections": [
+    "relationship-types",
+    "one-to-many",
+    "one-to-one",
+    "many-to-many"
+  ],
+  "singleLevel": true,
+  "estimatedMinutes": 22,
+  "xpReward": 90,
+  "prerequisites": ["change-tracking"],
+  "tags": ["ef-core", "relationships", "navigation-properties", "foreign-keys", "dotnet"]
+}

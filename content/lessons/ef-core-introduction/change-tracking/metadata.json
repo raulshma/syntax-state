@@ -1,0 +1,18 @@
+{
+  "id": "change-tracking",
+  "title": "Change Tracking - How EF Core Knows What Changed",
+  "description": "Understand how EF Core tracks entity states and automatically detects changes to generate efficient database updates.",
+  "milestone": "ef-core-introduction",
+  "order": 2,
+  "sections": [
+    "entity-states",
+    "how-tracking-works",
+    "state-transitions",
+    "practical-tips"
+  ],
+  "singleLevel": true,
+  "estimatedMinutes": 20,
+  "xpReward": 85,
+  "prerequisites": ["dbset-fundamentals"],
+  "tags": ["ef-core", "change-tracking", "entity-states", "dotnet"]
+}
