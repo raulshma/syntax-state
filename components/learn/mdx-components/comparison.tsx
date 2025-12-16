@@ -42,6 +42,12 @@ const variantStyles = {
  * Side-by-side comparison for explaining differences
  */
 export function Comparison({ left, right }: ComparisonProps) {
+  // Guard against undefined props from MDX
+  if (!left || !right) {
+    console.warn('Comparison component requires both left and right props');
+    return null;
+  }
+
   const leftStyle = variantStyles[left.variant || 'neutral'];
   const rightStyle = variantStyles[right.variant || 'neutral'];
 
