@@ -1,0 +1,451 @@
+# Memory Profiling: Hunting Down Memory Leaks
+
+Memory leaks are like slow punctures in a tire - your application keeps running, but performance gradually degrades until eventually it crashes or becomes unusable. The Memory panel in DevTools helps you find these leaks by taking snapshots of memory and showing you exactly what's consuming it.
+
+---
+
+## Section 1: Understanding JavaScript Memory
+
+### How Memory Works
+
+JavaScript automatically manages memory through garbage collection, but it can only clean up objects that are no longer reachable:
+
+```
+Reachable Objects (kept in memory):
+- Global variables
+- Currently executing function's local variables
+- Objects referenced by other reachable objects
+
+Unreachable Objects (garbage collected):
+- Objects with no references pointing to them
+- Objects only referenced by other unreachable objects
+```
+
+<InfoBox type="info">
+A memory leak occurs when objects that should be garbage collected remain reachable through unintended references. The garbage collector can't clean them up because technically they're still "in use."
+</InfoBox>
+
+### Common Causes of Memory Leaks
+
+| Cause | Example | Solution |
+|:------|:--------|:---------|
+| Forgotten timers | `setInterval` without `clearInterval` | Always clear intervals |
+| Detached DOM nodes | Removed elements still referenced in JS | Null out references |
+| Event listeners | Listeners on removed elements | Remove listeners on cleanup |
+| Closures | Functions holding references to large objects | Be mindful of closure scope |
+| Global variables | Accidentally creating globals | Use strict mode |
+
+<CodePlayground
+  initialCode={`// MEMORY LEAK: Forgotten interval
+let leakyData = [];
+
+setInterval(() => {
+  // This array grows forever!
+  leakyData.push(new Array(10000).fill('leak'));
+  console.log('Array size:', leakyData.length);
+}, 1000);
+
+// FIX: Store interval ID and clear when done
+const intervalId = setInterval(() => {
+  // ... work ...
+}, 1000);
+
+// Later, when component unmounts or cleanup needed:
+clearInterval(intervalId);`}
+  height={280}
+/>
+
+<KeyConcept title="The Three Types of Memory Issues">
+1. **Memory Leaks**: Memory usage grows continuously over time
+2. **Memory Bloat**: Using more memory than necessary for the task
+3. **Frequent GC**: Too many short-lived objects causing garbage collection pauses
+</KeyConcept>
+
+<ProgressCheckpoint section="memory-concepts" xpReward={20} />
+
+---
+
+## Section 2: Heap Snapshots
+
+### Taking a Snapshot
+
+The heap snapshot captures everything in memory at a specific moment:
+
+1. Open DevTools > Memory panel
+2. Select "Heap snapshot"
+3. Click "Take snapshot"
+4. Wait for the snapshot to complete
+
+### Reading the Snapshot
+
+The snapshot shows objects grouped by constructor:
+
+| Column | Meaning |
+|:-------|:--------|
+| Constructor | The function that created the objects |
+| Distance | Steps from GC root (lower = more directly reachable) |
+| Shallow Size | Memory used by the object itself |
+| Retained Size | Memory that would be freed if object was deleted |
+
+<InfoBox type="tip">
+Focus on "Retained Size" - it shows the true memory impact of an object including everything it keeps alive. A small object with large retained size is holding references to lots of other objects.
+</InfoBox>
+
+### Comparing Snapshots
+
+The most powerful technique for finding leaks:
+
+1. Take a snapshot (baseline)
+2. Perform the action you suspect causes a leak
+3. Take another snapshot
+4. Select "Comparison" view
+5. Look for objects that increased
+
+<CodePlayground
+  initialCode={`// Simulate a leak to detect with snapshots
+
+class DataCache {
+  constructor() {
+    this.cache = new Map();
+  }
+  
+  // LEAK: Data is added but never removed
+  addData(key, data) {
+    this.cache.set(key, {
+      data: data,
+      timestamp: Date.now(),
+      // Large buffer that should be temporary
+      buffer: new ArrayBuffer(1024 * 1024) // 1MB
+    });
+  }
+  
+  // FIX: Add cleanup method
+  removeData(key) {
+    this.cache.delete(key);
+  }
+  
+  // FIX: Add expiration
+  cleanup(maxAge = 60000) {
+    const now = Date.now();
+    for (const [key, value] of this.cache) {
+      if (now - value.timestamp > maxAge) {
+        this.cache.delete(key);
+      }
+    }
+  }
+}
+
+const cache = new DataCache();
+
+// Each call adds 1MB that's never freed
+cache.addData('item1', { name: 'test' });
+cache.addData('item2', { name: 'test' });`}
+  height={400}
+/>
+
+### Finding Detached DOM Nodes
+
+A common leak pattern - DOM elements removed from the page but still referenced in JavaScript:
+
+1. Take a heap snapshot
+2. In the filter box, type "Detached"
+3. Look for "Detached HTMLDivElement" or similar
+4. Click to see what's retaining them
+
+<CodePlayground
+  initialCode={`// LEAK: Detached DOM nodes
+
+let cachedElements = [];
+
+function createAndRemove() {
+  const div = document.createElement('div');
+  div.innerHTML = '<span>Temporary content</span>';
+  document.body.appendChild(div);
+  
+  // Store reference before removing
+  cachedElements.push(div);  // LEAK!
+  
+  // Element is removed from DOM but still in memory
+  document.body.removeChild(div);
+}
+
+// Each call creates a detached node
+createAndRemove();
+createAndRemove();
+createAndRemove();
+
+// FIX: Don't store references to temporary elements
+// Or clear the array when done:
+// cachedElements = [];`}
+  height={300}
+/>
+
+<ProgressCheckpoint section="heap-snapshots" xpReward={25} />
+
+---
+
+## Section 3: Allocation Timeline
+
+### Recording Allocations Over Time
+
+The Allocation Timeline shows when and where memory is allocated:
+
+1. Open Memory panel
+2. Select "Allocation instrumentation on timeline"
+3. Click Start
+4. Interact with your application
+5. Click Stop
+
+### Reading the Timeline
+
+The timeline shows:
+- **Blue bars**: Memory allocated at that moment
+- **Gray bars**: Memory that was allocated then freed (good!)
+- **Blue bars that persist**: Potential leaks
+
+Click any bar to see what objects were allocated at that moment.
+
+<CodePlayground
+  initialCode={`// This pattern shows up clearly in allocation timeline
+
+function leakyEventHandler() {
+  const bigData = new Array(100000).fill('data');
+  
+  // LEAK: Event listener holds reference to bigData
+  // through closure, even after function returns
+  document.addEventListener('click', function handler() {
+    console.log(bigData.length);
+  });
+}
+
+// Each call adds a new listener holding 100K items
+leakyEventHandler();
+leakyEventHandler();
+leakyEventHandler();
+
+// FIX: Remove listeners when no longer needed
+function fixedEventHandler() {
+  const bigData = new Array(100000).fill('data');
+  
+  function handler() {
+    console.log(bigData.length);
+    // Remove self after first use
+    document.removeEventListener('click', handler);
+  }
+  
+  document.addEventListener('click', handler);
+}`}
+  height={350}
+/>
+
+### Allocation Sampling
+
+For long-running profiling with less overhead:
+
+1. Select "Allocation sampling"
+2. Click Start
+3. Use your app normally for an extended period
+4. Click Stop
+
+This uses statistical sampling instead of tracking every allocation, making it suitable for production-like testing.
+
+<KeyConcept title="Choosing the Right Tool">
+- **Heap Snapshot**: Point-in-time analysis, finding what's in memory
+- **Allocation Timeline**: Finding when leaks occur during specific actions
+- **Allocation Sampling**: Long-running analysis with minimal performance impact
+</KeyConcept>
+
+<ProgressCheckpoint section="allocation-timeline" xpReward={25} />
+
+---
+
+## Section 4: Fixing Memory Leaks
+
+### The Debugging Workflow
+
+1. **Establish baseline**: Take initial heap snapshot
+2. **Reproduce the issue**: Perform actions that might leak
+3. **Force garbage collection**: Click the trash can icon
+4. **Take comparison snapshot**: See what wasn't cleaned up
+5. **Identify retainers**: Find what's keeping objects alive
+6. **Fix and verify**: Remove the reference, repeat test
+
+### Common Fixes
+
+**Event Listener Leaks**
+
+<CodePlayground
+  initialCode={`// Component with proper cleanup
+class Component {
+  constructor(element) {
+    this.element = element;
+    this.data = new Array(10000).fill('data');
+    
+    // Bind handler so we can remove it later
+    this.handleClick = this.handleClick.bind(this);
+    this.element.addEventListener('click', this.handleClick);
+  }
+  
+  handleClick() {
+    console.log('Clicked!', this.data.length);
+  }
+  
+  // CRITICAL: Call this when component is removed
+  destroy() {
+    this.element.removeEventListener('click', this.handleClick);
+    this.element = null;
+    this.data = null;
+  }
+}
+
+// Usage
+const comp = new Component(document.body);
+// Later, when removing:
+comp.destroy();`}
+  height={320}
+/>
+
+**Timer Leaks**
+
+<CodePlayground
+  initialCode={`// Proper timer management
+class Poller {
+  constructor() {
+    this.intervalId = null;
+    this.data = [];
+  }
+  
+  start() {
+    // Clear any existing interval first
+    this.stop();
+    
+    this.intervalId = setInterval(() => {
+      this.data.push(Date.now());
+      console.log('Polling...', this.data.length);
+    }, 1000);
+  }
+  
+  stop() {
+    if (this.intervalId) {
+      clearInterval(this.intervalId);
+      this.intervalId = null;
+    }
+  }
+  
+  destroy() {
+    this.stop();
+    this.data = [];
+  }
+}
+
+const poller = new Poller();
+poller.start();
+// IMPORTANT: Call when done
+// poller.destroy();`}
+  height={320}
+/>
+
+**Closure Leaks**
+
+<CodePlayground
+  initialCode={`// LEAK: Closure captures entire scope
+function createHandler() {
+  const hugeData = new Array(1000000).fill('x');
+  const smallValue = 42;
+  
+  // This closure captures hugeData even though
+  // it only uses smallValue
+  return function() {
+    return smallValue;
+  };
+}
+
+// FIX: Only capture what you need
+function createHandlerFixed() {
+  const hugeData = new Array(1000000).fill('x');
+  const smallValue = 42;
+  
+  // Process hugeData here, don't capture it
+  const result = hugeData.length;
+  
+  // Closure only captures smallValue
+  return function() {
+    return smallValue;
+  };
+  // hugeData can now be garbage collected
+}`}
+  height={320}
+/>
+
+### Using WeakMap and WeakSet
+
+For caches that shouldn't prevent garbage collection:
+
+<CodePlayground
+  initialCode={`// Regular Map prevents garbage collection
+const cache = new Map();
+
+function processElement(element) {
+  if (!cache.has(element)) {
+    cache.set(element, expensiveComputation(element));
+  }
+  return cache.get(element);
+}
+// Problem: Even after element is removed from DOM,
+// it stays in cache forever
+
+// WeakMap allows garbage collection
+const weakCache = new WeakMap();
+
+function processElementFixed(element) {
+  if (!weakCache.has(element)) {
+    weakCache.set(element, expensiveComputation(element));
+  }
+  return weakCache.get(element);
+}
+// When element is removed from DOM and no other
+// references exist, it's automatically removed from WeakMap
+
+function expensiveComputation(el) {
+  return { computed: true, tag: el.tagName };
+}`}
+  height={320}
+/>
+
+### Quick Knowledge Check
+
+<Quiz id="memory-leak-quiz">
+  <Question>What is a memory leak?</Question>
+  <Answer>When JavaScript runs out of memory</Answer>
+  <Answer correct>When objects that should be garbage collected remain reachable</Answer>
+  <Answer>When the browser crashes</Answer>
+  <Answer>When variables are declared without values</Answer>
+</Quiz>
+
+<Quiz id="memory-retained-quiz">
+  <Question>What does "Retained Size" show in a heap snapshot?</Question>
+  <Answer>The size of the object itself</Answer>
+  <Answer correct>The total memory freed if the object was deleted</Answer>
+  <Answer>The number of references to the object</Answer>
+  <Answer>The time the object has been in memory</Answer>
+</Quiz>
+
+<Quiz id="memory-weakmap-quiz">
+  <Question>Why use WeakMap instead of Map for caching DOM elements?</Question>
+  <Answer>WeakMap is faster</Answer>
+  <Answer>WeakMap uses less memory</Answer>
+  <Answer correct>WeakMap allows cached elements to be garbage collected</Answer>
+  <Answer>WeakMap supports more data types</Answer>
+</Quiz>
+
+### Summary
+
+| Tool | Use Case |
+|:-----|:---------|
+| Heap Snapshot | See what's in memory at a point in time |
+| Snapshot Comparison | Find objects that weren't cleaned up |
+| Allocation Timeline | See when allocations happen |
+| Allocation Sampling | Long-running memory analysis |
+| WeakMap/WeakSet | Caches that don't prevent GC |
+
+<ProgressCheckpoint section="fixing-leaks" xpReward={20} />

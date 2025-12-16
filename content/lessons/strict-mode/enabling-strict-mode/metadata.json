@@ -1,0 +1,18 @@
+{
+  "id": "enabling-strict-mode",
+  "title": "Enabling Strict Mode",
+  "description": "Learn the different ways to enable strict mode in your JavaScript code, from scripts to functions to modules.",
+  "milestone": "strict-mode",
+  "order": 2,
+  "sections": [
+    "script-level",
+    "function-level",
+    "module-level",
+    "class-level"
+  ],
+  "singleLevel": true,
+  "estimatedMinutes": 12,
+  "xpReward": 65,
+  "prerequisites": ["what-is-strict-mode"],
+  "tags": ["javascript", "strict-mode", "modules", "classes"]
+}

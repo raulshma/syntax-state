@@ -1,0 +1,392 @@
+# Debugging with Breakpoints: Pausing Time in Your Code
+
+Imagine you could freeze time at any moment during your program's execution, look around at every variable, and then step forward one instruction at a time. That's exactly what breakpoints give you. Instead of sprinkling `console.log()` statements everywhere, breakpoints let you pause execution and inspect the entire state of your application.
+
+---
+
+## Section 1: Understanding Breakpoint Types
+
+### The Debugging Toolkit
+
+Browser DevTools offer several types of breakpoints, each designed for different debugging scenarios:
+
+| Breakpoint Type | Use When You Want To... |
+|:----------------|:------------------------|
+| Line-of-code | Pause on a specific line you've identified |
+| Conditional | Pause only when a condition is true |
+| Logpoint | Log a message without pausing execution |
+| DOM | Pause when a DOM element changes |
+| XHR/Fetch | Pause when a network request matches a pattern |
+| Event Listener | Pause when a specific event fires |
+| Exception | Pause when an error is thrown |
+
+<InfoBox type="info">
+Line-of-code breakpoints are the most common, but learning when to use other types can dramatically speed up your debugging workflow.
+</InfoBox>
+
+### The Sources Panel
+
+All breakpoint debugging happens in the Sources panel:
+
+1. Open DevTools (`F12` or `Cmd+Option+I`)
+2. Click the "Sources" tab
+3. Navigate to your JavaScript file in the file tree
+4. Click on a line number to set a breakpoint
+
+<KeyConcept title="The Sources Panel Layout">
+The Sources panel has three main areas: the file navigator (left), the code editor (center), and the debugging sidebar (right) which shows breakpoints, scope variables, call stack, and watch expressions.
+</KeyConcept>
+
+<ProgressCheckpoint section="breakpoint-types" xpReward={15} />
+
+---
+
+## Section 2: Setting and Managing Breakpoints
+
+### Line-of-Code Breakpoints
+
+The simplest breakpoint pauses execution at a specific line:
+
+<CodePlayground
+  initialCode={`function calculateTotal(items) {
+  let total = 0;
+  
+  for (const item of items) {
+    // Set a breakpoint on the next line to inspect each item
+    total += item.price * item.quantity;
+  }
+  
+  // Set a breakpoint here to see the final total
+  return total;
+}
+
+const cart = [
+  { name: 'Widget', price: 25, quantity: 2 },
+  { name: 'Gadget', price: 50, quantity: 1 },
+  { name: 'Gizmo', price: 15, quantity: 3 }
+];
+
+const result = calculateTotal(cart);
+console.log('Total:', result);`}
+  height={350}
+/>
+
+To set a line-of-code breakpoint:
+1. Open the file in the Sources panel
+2. Click the line number where you want to pause
+3. A blue marker appears indicating the breakpoint
+4. Run your code - execution pauses at that line
+
+### The debugger Statement
+
+You can also set breakpoints directly in your code:
+
+```javascript
+function processData(data) {
+  // Execution pauses here when DevTools is open
+  debugger;
+  
+  return data.map(item => item.value * 2);
+}
+```
+
+<InfoBox type="warning">
+Remember to remove `debugger` statements before deploying to production. They have no effect when DevTools is closed, but leaving them in code is considered poor practice.
+</InfoBox>
+
+### Conditional Breakpoints
+
+Pause only when specific conditions are met - invaluable when debugging loops:
+
+<CodePlayground
+  initialCode={`function processUsers(users) {
+  for (const user of users) {
+    // Right-click line number > "Add conditional breakpoint"
+    // Condition: user.age < 18
+    validateUser(user);
+  }
+}
+
+function validateUser(user) {
+  // Only pause when we hit a minor
+  // This saves you from stepping through hundreds of valid users
+  console.log('Validating:', user.name);
+}
+
+const users = [
+  { name: 'Alice', age: 28 },
+  { name: 'Bob', age: 16 },    // Breakpoint triggers here
+  { name: 'Charlie', age: 34 },
+  { name: 'Diana', age: 15 },  // And here
+  { name: 'Eve', age: 42 }
+];
+
+processUsers(users);`}
+  height={350}
+/>
+
+To set a conditional breakpoint:
+1. Right-click on the line number
+2. Select "Add conditional breakpoint"
+3. Enter your condition (any JavaScript expression)
+4. Press Enter
+
+### Logpoints: Non-Breaking Breakpoints
+
+Logpoints let you log messages without modifying your code or pausing execution:
+
+```javascript
+// Instead of adding console.log() to your code:
+function fetchData(url) {
+  // Right-click > "Add logpoint"
+  // Message: "Fetching: " + url
+  return fetch(url).then(r => r.json());
+}
+```
+
+<KeyConcept title="Logpoints vs console.log()">
+Logpoints are superior to `console.log()` because: (1) you don't modify source code, (2) you can add/remove them instantly, (3) they work on minified production code, and (4) they're automatically removed when you close DevTools.
+</KeyConcept>
+
+<ProgressCheckpoint section="setting-breakpoints" xpReward={25} />
+
+---
+
+## Section 3: Stepping Through Code
+
+### Execution Controls
+
+When paused at a breakpoint, you have several options for continuing execution:
+
+| Control | Shortcut | Action |
+|:--------|:---------|:-------|
+| Resume | `F8` | Continue until next breakpoint |
+| Step Over | `F10` | Execute current line, move to next |
+| Step Into | `F11` | Enter the function being called |
+| Step Out | `Shift+F11` | Finish current function, return to caller |
+| Step | `F9` | Step to next statement (even within a line) |
+
+<CodePlayground
+  initialCode={`function main() {
+  const data = fetchData();      // F10: Step Over (don't enter fetchData)
+  const processed = process(data); // F11: Step Into (enter process function)
+  display(processed);
+}
+
+function fetchData() {
+  // If you stepped into here but want to leave:
+  // Shift+F11: Step Out (return to main)
+  return [1, 2, 3, 4, 5];
+}
+
+function process(items) {
+  return items.map(x => x * 2);  // F9: Step through each operation
+}
+
+function display(items) {
+  console.log('Result:', items);
+}
+
+main();`}
+  height={320}
+/>
+
+### Inspecting Variables
+
+While paused, you can inspect the current state:
+
+**Scope Panel**: Shows all variables in the current scope
+- Local: Variables in the current function
+- Closure: Variables from enclosing scopes
+- Global: Window/global object properties
+
+**Hover Inspection**: Hover over any variable in the code to see its current value
+
+**Watch Expressions**: Add expressions to monitor across breakpoints
+- Click "+" in the Watch panel
+- Enter any JavaScript expression
+- Values update as you step through code
+
+<CodePlayground
+  initialCode={`function analyzeData(numbers) {
+  // While paused here, check the Scope panel
+  const sum = numbers.reduce((a, b) => a + b, 0);
+  const avg = sum / numbers.length;
+  
+  // Add "avg > 50" to Watch expressions
+  // to monitor this condition as you step
+  
+  const above = numbers.filter(n => n > avg);
+  const below = numbers.filter(n => n <= avg);
+  
+  return { sum, avg, above, below };
+}
+
+const data = [23, 67, 45, 89, 12, 56, 78, 34];
+const result = analyzeData(data);
+console.log(result);`}
+  height={300}
+/>
+
+### The Call Stack
+
+The Call Stack panel shows the chain of function calls that led to the current point:
+
+```
+inner          <- Currently paused here
+middle         <- Called by middle()
+outer          <- Called by outer()
+(anonymous)    <- Called from global scope
+```
+
+Click any frame in the call stack to:
+- View the code at that point
+- Inspect variables in that scope
+- Understand how you arrived at the current location
+
+<InfoBox type="tip">
+When debugging an error, the call stack tells the story of how your code reached that point. Read it from bottom to top to trace the execution path.
+</InfoBox>
+
+<ProgressCheckpoint section="stepping-through-code" xpReward={25} />
+
+---
+
+## Section 4: Advanced Breakpoint Techniques
+
+### DOM Breakpoints
+
+Pause when the DOM changes - perfect for debugging dynamic UIs:
+
+1. Right-click an element in the Elements panel
+2. Select "Break on" and choose:
+   - **Subtree modifications**: Child elements added/removed
+   - **Attribute modifications**: Element attributes change
+   - **Node removal**: Element is removed from DOM
+
+<CodePlayground
+  initialCode={`// DOM breakpoints help debug code like this:
+
+function updateUI() {
+  const container = document.getElementById('list');
+  
+  // Subtree modification breakpoint triggers here
+  container.innerHTML = '<li>New Item</li>';
+}
+
+function toggleClass() {
+  const button = document.getElementById('btn');
+  
+  // Attribute modification breakpoint triggers here
+  button.classList.toggle('active');
+}
+
+function removeElement() {
+  const element = document.getElementById('temp');
+  
+  // Node removal breakpoint triggers here
+  element.remove();
+}`}
+  height={300}
+/>
+
+### Event Listener Breakpoints
+
+Pause when specific events fire, even if you don't know where the handler is:
+
+1. In the Sources panel, expand "Event Listener Breakpoints"
+2. Check the events you want to break on:
+   - Mouse: click, mousedown, mouseup
+   - Keyboard: keydown, keypress, keyup
+   - Timer: setTimeout, setInterval
+   - Animation: requestAnimationFrame
+
+<KeyConcept title="Finding Mystery Event Handlers">
+Event listener breakpoints are invaluable when debugging unfamiliar code. If clicking a button causes unexpected behavior, enable the "click" breakpoint to find exactly which handler is responsible.
+</KeyConcept>
+
+### XHR/Fetch Breakpoints
+
+Pause when network requests match a URL pattern:
+
+1. In the Sources panel, find "XHR/fetch Breakpoints"
+2. Click "+" and enter a URL substring
+3. Execution pauses when any request URL contains that string
+
+```javascript
+// If you add breakpoint for "api/users"
+// These requests will trigger the breakpoint:
+fetch('/api/users');
+fetch('/api/users/123');
+fetch('https://example.com/api/users?page=2');
+```
+
+### Exception Breakpoints
+
+Pause when errors occur:
+
+1. Click the "Pause on exceptions" button in Sources panel
+2. Optionally enable "Pause on caught exceptions"
+
+<CodePlayground
+  initialCode={`// With "Pause on exceptions" enabled:
+
+function riskyOperation() {
+  const data = JSON.parse('invalid json');  // Pauses here!
+  return data;
+}
+
+// With "Pause on caught exceptions" also enabled:
+function safeOperation() {
+  try {
+    const data = JSON.parse('invalid json');  // Also pauses here
+    return data;
+  } catch (e) {
+    console.error('Parse failed:', e);
+    return null;
+  }
+}
+
+// This helps you catch errors before they're swallowed
+riskyOperation();`}
+  height={300}
+/>
+
+### Quick Knowledge Check
+
+<Quiz id="breakpoint-step-quiz">
+  <Question>Which stepping command enters into a function call?</Question>
+  <Answer>Step Over (F10)</Answer>
+  <Answer correct>Step Into (F11)</Answer>
+  <Answer>Step Out (Shift+F11)</Answer>
+  <Answer>Resume (F8)</Answer>
+</Quiz>
+
+<Quiz id="conditional-breakpoint-quiz">
+  <Question>When would you use a conditional breakpoint?</Question>
+  <Answer>When you want to log without pausing</Answer>
+  <Answer correct>When you only want to pause under specific conditions</Answer>
+  <Answer>When debugging DOM changes</Answer>
+  <Answer>When you want to pause on all exceptions</Answer>
+</Quiz>
+
+<Quiz id="dom-breakpoint-quiz">
+  <Question>Which DOM breakpoint type triggers when child elements are added?</Question>
+  <Answer>Attribute modifications</Answer>
+  <Answer>Node removal</Answer>
+  <Answer correct>Subtree modifications</Answer>
+  <Answer>Event listener</Answer>
+</Quiz>
+
+### Summary
+
+| Technique | Best For |
+|:----------|:---------|
+| Line-of-code breakpoints | Pausing at known locations |
+| Conditional breakpoints | Debugging loops and specific conditions |
+| Logpoints | Non-invasive logging |
+| DOM breakpoints | Debugging UI changes |
+| Event breakpoints | Finding event handlers |
+| Exception breakpoints | Catching errors at their source |
+
+<ProgressCheckpoint section="advanced-breakpoints" xpReward={25} />

@@ -1,0 +1,18 @@
+{
+  "id": "console-api",
+  "title": "Console API",
+  "description": "Master the Console API for logging, debugging, and inspecting values in your JavaScript applications.",
+  "milestone": "browser-devtools",
+  "order": 1,
+  "singleLevel": true,
+  "estimatedMinutes": 15,
+  "xpReward": 80,
+  "sections": [
+    "console-basics",
+    "logging-methods",
+    "formatting-output",
+    "timing-counting"
+  ],
+  "prerequisites": [],
+  "tags": ["javascript", "devtools", "console", "debugging"]
+}

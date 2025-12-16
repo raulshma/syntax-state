@@ -1,0 +1,18 @@
+{
+  "id": "what-is-strict-mode",
+  "title": "What is Strict Mode?",
+  "description": "Understand JavaScript's strict mode, why it exists, and how it helps you write safer, more optimized code.",
+  "milestone": "strict-mode",
+  "order": 1,
+  "sections": [
+    "strict-mode-intro",
+    "why-strict-mode",
+    "strict-vs-sloppy",
+    "benefits-overview"
+  ],
+  "singleLevel": true,
+  "estimatedMinutes": 10,
+  "xpReward": 60,
+  "prerequisites": [],
+  "tags": ["javascript", "strict-mode", "fundamentals", "best-practices"]
+}

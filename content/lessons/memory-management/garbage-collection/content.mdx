@@ -1,0 +1,390 @@
+# Garbage Collection: JavaScript's Automatic Memory Cleanup
+
+JavaScript automatically cleans up memory you're no longer using. Understanding how this works helps you write more efficient code and avoid subtle bugs.
+
+---
+
+## Section 1: What is Garbage Collection?
+
+### The Janitor Analogy 🧹
+
+Imagine a busy office building:
+
+- **Employees** = Your variables and objects
+- **Desks** = Memory locations
+- **Janitor** = Garbage collector
+
+The janitor doesn't clean desks that employees are still using. Instead, they look for desks that are **completely abandoned** — no employee can reach them anymore. Those get cleaned up!
+
+| Office | JavaScript |
+|:-------|:-----------|
+| Employee at desk | Variable referencing object |
+| Empty desk | Unreachable memory |
+| Janitor cleaning | Garbage collector running |
+| Building entrance | Global scope (root) |
+
+<InfoBox type="info">
+**Garbage Collection (GC)** is the automatic process of finding memory that's no longer reachable by your program and freeing it for reuse. JavaScript engines like V8 (Chrome, Node.js) handle this automatically.
+</InfoBox>
+
+### Why Automatic GC?
+
+In languages like C, you manually free memory:
+
+```c
+// C language - manual memory management
+int* ptr = malloc(sizeof(int));  // Allocate
+*ptr = 42;                        // Use
+free(ptr);                        // Must manually free!
+// Forget to free? Memory leak!
+// Free twice? Program crash!
+```
+
+JavaScript handles this automatically:
+
+```javascript
+// JavaScript - automatic memory management
+let data = { value: 42 };  // Allocate
+console.log(data.value);   // Use
+data = null;               // Remove reference
+// GC will automatically free the memory later!
+```
+
+<KeyConcept title="Reachability">
+The core concept of garbage collection is **reachability**. If an object can be accessed from the root (global scope) through any chain of references, it's "reachable" and won't be collected. If there's no path to reach it, it's garbage.
+</KeyConcept>
+
+<ProgressCheckpoint section="gc-basics" xpReward={20} />
+
+---
+
+## Section 2: Reference Counting (The Old Way)
+
+### How Reference Counting Works
+
+The simplest GC algorithm counts how many references point to each object:
+
+```javascript
+let obj = { name: "Alice" };  // Reference count: 1
+let copy = obj;               // Reference count: 2
+
+copy = null;                  // Reference count: 1
+obj = null;                   // Reference count: 0 → Collect!
+```
+
+<CodePlayground
+  initialCode={`// Simulating reference counting (conceptually)
+
+// Let's track references manually
+let refCount = {};
+
+function allocate(id, data) {
+  refCount[id] = 1;
+  console.log(\`Allocated '\${id}' - refs: \${refCount[id]}\`);
+  return { id, data };
+}
+
+function addReference(id) {
+  refCount[id]++;
+  console.log(\`Added ref to '\${id}' - refs: \${refCount[id]}\`);
+}
+
+function removeReference(id) {
+  refCount[id]--;
+  console.log(\`Removed ref from '\${id}' - refs: \${refCount[id]}\`);
+  if (refCount[id] === 0) {
+    console.log(\`🗑️ '\${id}' collected! (0 references)\`);
+    delete refCount[id];
+  }
+}
+
+// Simulate the lifecycle
+const user = allocate('user', { name: 'Alice' });
+const backup = user;  // Conceptually adds a reference
+addReference('user');
+
+// Remove first reference
+removeReference('user');  // Still has 1 ref
+
+// Remove second reference
+removeReference('user');  // Now collected!`}
+  title="Reference Counting Concept"
+/>
+
+### The Circular Reference Problem
+
+Reference counting has a fatal flaw — **circular references**:
+
+```javascript
+function createCycle() {
+  const objA = {};
+  const objB = {};
+  
+  // Create circular reference
+  objA.partner = objB;  // A references B
+  objB.partner = objA;  // B references A
+  
+  return "done";
+}
+
+createCycle();
+// After function returns:
+// - objA has 1 reference (from objB.partner)
+// - objB has 1 reference (from objA.partner)
+// Neither reaches 0, but BOTH are unreachable from outside!
+// Reference counting would NEVER collect these = MEMORY LEAK
+```
+
+```
+┌─────────┐         ┌─────────┐
+│  objA   │────────▶│  objB   │
+│         │◀────────│         │
+└─────────┘         └─────────┘
+     ↑                   ↑
+     └── Each has 1 ref ─┘
+     
+But NO path from global scope!
+```
+
+<InfoBox type="warning">
+**No modern JavaScript engine uses reference counting** as its primary GC algorithm because of the circular reference problem. It was used in older browsers (IE6/7) and caused many memory leaks.
+</InfoBox>
+
+<ProgressCheckpoint section="reference-counting" xpReward={20} />
+
+---
+
+## Section 3: Mark-and-Sweep (The Modern Way)
+
+### How Mark-and-Sweep Works
+
+Modern JavaScript engines use **mark-and-sweep**, which solves the circular reference problem:
+
+**Phase 1: Mark** — Start from "roots" (global objects, current function scope) and mark everything reachable
+
+**Phase 2: Sweep** — Delete everything that wasn't marked
+
+```javascript
+// Global scope is a "root"
+let user = { name: "Alice" };
+let settings = { theme: "dark" };
+
+// Both are reachable from global → MARKED → KEPT
+
+user = null;
+// { name: "Alice" } is now unreachable → NOT MARKED → SWEPT
+```
+
+### Visual Example
+
+```
+BEFORE MARK-AND-SWEEP:
+                                    
+  Global (ROOT)                     
+      │                             
+      ├──▶ user ──▶ { name: "Alice" }
+      │                             
+      └──▶ settings ──▶ { theme: "dark" }
+                                    
+  Floating (unreachable):           
+      { orphan: true } ◀──▶ { partner: ... }
+      (circular reference)          
+
+AFTER MARK-AND-SWEEP:
+                                    
+  Global (ROOT)                     
+      │                             
+      ├──▶ user ──▶ { name: "Alice" }  ✓ Kept
+      │                             
+      └──▶ settings ──▶ { theme: "dark" }  ✓ Kept
+                                    
+  🗑️ Circular objects collected!    
+```
+
+<CodePlayground
+  initialCode={`// Mark-and-sweep handles circular references!
+
+function demonstrateMarkAndSweep() {
+  // Create objects with circular references
+  const nodeA = { name: 'A' };
+  const nodeB = { name: 'B' };
+  const nodeC = { name: 'C' };
+  
+  // Create a cycle: A → B → C → A
+  nodeA.next = nodeB;
+  nodeB.next = nodeC;
+  nodeC.next = nodeA;  // Circular!
+  
+  console.log("Created circular chain: A → B → C → A");
+  console.log("nodeA.next.next.next.name:", nodeA.next.next.next.name);
+  
+  // Return only nodeA
+  return nodeA;
+}
+
+// Only the returned reference is kept
+let chain = demonstrateMarkAndSweep();
+console.log("\\nAfter function returns:");
+console.log("chain (nodeA) is reachable");
+console.log("nodeB is reachable via chain.next");
+console.log("nodeC is reachable via chain.next.next");
+
+// Now remove the only reference
+chain = null;
+console.log("\\nAfter chain = null:");
+console.log("All three nodes are unreachable!");
+console.log("Mark-and-sweep will collect ALL of them");
+console.log("(No circular reference problem!)");`}
+  title="Mark-and-Sweep in Action"
+/>
+
+### Why Mark-and-Sweep Works
+
+The key insight: **reachability from roots**, not reference count!
+
+| Scenario | Reference Count | Mark-and-Sweep |
+|:---------|:----------------|:---------------|
+| Normal object | ✅ Works | ✅ Works |
+| Circular reference | ❌ Leaks | ✅ Collects |
+| Deep nesting | ✅ Works | ✅ Works |
+| Closures | ✅ Works | ✅ Works |
+
+<KeyConcept title="Roots in JavaScript">
+The garbage collector starts from these "roots":
+- **Global object** (window in browsers, global in Node.js)
+- **Currently executing function's** local variables and parameters
+- **Call stack** — all functions currently being executed
+- Any object reachable from these roots is kept alive
+</KeyConcept>
+
+<ProgressCheckpoint section="mark-and-sweep" xpReward={25} />
+
+---
+
+## Section 4: Modern GC Optimizations
+
+### Generational Collection
+
+Modern engines like V8 use **generational garbage collection**:
+
+- **Young Generation (Nursery)**: New objects start here. Most objects die young!
+- **Old Generation (Tenured)**: Objects that survive multiple GC cycles move here
+
+```
+┌─────────────────────────────────────────┐
+│           YOUNG GENERATION              │
+│  ┌─────┐ ┌─────┐ ┌─────┐ ┌─────┐       │
+│  │ new │ │ new │ │ new │ │ new │       │
+│  └─────┘ └─────┘ └─────┘ └─────┘       │
+│     ↓       ↓       ↓       ↓          │
+│   🗑️ die   🗑️ die  survive  🗑️ die    │
+│                      ↓                  │
+├─────────────────────────────────────────┤
+│           OLD GENERATION                │
+│  ┌─────────┐ ┌─────────┐               │
+│  │ long-   │ │ survived│               │
+│  │ lived   │ │ object  │               │
+│  └─────────┘ └─────────┘               │
+│  (collected less frequently)            │
+└─────────────────────────────────────────┘
+```
+
+<InfoBox type="tip">
+**Why generations?** Studies show most objects die young (temporary variables, intermediate results). By focusing GC effort on young objects, the engine can be much more efficient!
+</InfoBox>
+
+### Incremental and Concurrent GC
+
+To avoid freezing your app, modern GC runs in small chunks:
+
+| Technique | Description |
+|:----------|:------------|
+| **Incremental** | GC work split into small steps between your code |
+| **Concurrent** | GC runs on separate thread while your code runs |
+| **Parallel** | Multiple GC threads work together |
+| **Idle-time** | GC runs when browser is idle |
+
+```javascript
+// Your code runs smoothly because GC is incremental:
+
+for (let i = 0; i < 1000000; i++) {
+  // Create temporary object
+  const temp = { index: i, data: "processing" };
+  // Process it...
+  // GC might run a tiny bit here, between iterations!
+}
+// No noticeable pause, even with millions of allocations
+```
+
+### Helping the Garbage Collector
+
+While GC is automatic, you can help it work efficiently:
+
+```javascript
+// ✅ Good: Let variables go out of scope naturally
+function processData(items) {
+  const results = items.map(item => transform(item));
+  return results;
+}  // 'items' reference released when function returns
+
+// ✅ Good: Clear large data when done
+let cache = loadHugeDataset();
+processCache(cache);
+cache = null;  // Explicitly release for immediate eligibility
+
+// ✅ Good: Use appropriate data structures
+const weakCache = new WeakMap();  // Keys can be garbage collected!
+weakCache.set(someObject, expensiveComputation);
+// When someObject is collected, the cache entry goes too
+
+// ❌ Bad: Keeping unnecessary references
+const allData = [];
+function addData(item) {
+  allData.push(item);  // Never cleared = grows forever!
+}
+```
+
+### Quick Knowledge Check
+
+<Quiz id="gc-algorithm-quiz">
+  <Question>What algorithm do modern JavaScript engines use for garbage collection?</Question>
+  <Answer>Reference counting</Answer>
+  <Answer correct>Mark-and-sweep</Answer>
+  <Answer>Manual deallocation</Answer>
+  <Answer>Stack unwinding</Answer>
+</Quiz>
+
+<Quiz id="circular-ref-quiz">
+  <Question>Why doesn't mark-and-sweep have problems with circular references?</Question>
+  <Answer>It counts references more carefully</Answer>
+  <Answer>It breaks circular references automatically</Answer>
+  <Answer correct>It checks reachability from roots, not reference counts</Answer>
+  <Answer>Circular references are impossible in JavaScript</Answer>
+</Quiz>
+
+<Quiz id="generational-quiz">
+  <Question>Why do modern engines use generational garbage collection?</Question>
+  <Answer>To make code run faster</Answer>
+  <Answer correct>Because most objects die young, so focusing on new objects is efficient</Answer>
+  <Answer>To support older browsers</Answer>
+  <Answer>To prevent memory leaks</Answer>
+</Quiz>
+
+### Summary
+
+| Concept | Description |
+|:--------|:------------|
+| **Garbage Collection** | Automatic memory cleanup |
+| **Reference Counting** | Old algorithm, fails on cycles |
+| **Mark-and-Sweep** | Modern algorithm, handles cycles |
+| **Reachability** | Core concept — can you reach it from roots? |
+| **Generational GC** | Optimize by focusing on young objects |
+| **Incremental GC** | Run in small chunks to avoid pauses |
+
+<KeyConcept title="What's Next?">
+Now that you understand how garbage collection works, you're ready to learn about:
+- **Memory Leaks** - When GC can't help because references are accidentally kept
+- **DevTools Memory Profiling** - How to find and fix memory issues
+</KeyConcept>
+
+<ProgressCheckpoint section="gc-optimization" xpReward={20} />

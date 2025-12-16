@@ -1,0 +1,18 @@
+{
+  "id": "garbage-collection",
+  "title": "Garbage Collection",
+  "description": "Learn how JavaScript's garbage collector automatically reclaims unused memory using mark-and-sweep and other algorithms.",
+  "milestone": "memory-management",
+  "order": 2,
+  "sections": [
+    "gc-basics",
+    "reference-counting",
+    "mark-and-sweep",
+    "gc-optimization"
+  ],
+  "singleLevel": true,
+  "estimatedMinutes": 15,
+  "xpReward": 85,
+  "prerequisites": ["memory-lifecycle"],
+  "tags": ["javascript", "garbage-collection", "mark-and-sweep", "performance"]
+}

@@ -1,0 +1,18 @@
+{
+  "id": "strict-mode-changes",
+  "title": "Strict Mode Changes",
+  "description": "Explore all the behavioral changes strict mode introduces, from error handling to scope management to security improvements.",
+  "milestone": "strict-mode",
+  "order": 3,
+  "sections": [
+    "error-changes",
+    "scope-changes",
+    "eval-arguments",
+    "security-changes"
+  ],
+  "singleLevel": true,
+  "estimatedMinutes": 18,
+  "xpReward": 85,
+  "prerequisites": ["enabling-strict-mode"],
+  "tags": ["javascript", "strict-mode", "errors", "scope", "security"]
+}

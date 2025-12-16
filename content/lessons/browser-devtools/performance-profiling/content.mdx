@@ -1,0 +1,370 @@
+# Performance Profiling: Finding What's Slowing You Down
+
+Your application might work correctly but still feel sluggish. Users notice when animations stutter, scrolling lags, or buttons take too long to respond. The Performance panel is your diagnostic tool for these issues - it records everything your browser does and shows you exactly where time is being spent.
+
+---
+
+## Section 1: Performance Fundamentals
+
+### The 60 FPS Target
+
+For smooth animations and interactions, your browser needs to render 60 frames per second. That gives you just 16.67 milliseconds per frame to:
+
+1. Run JavaScript
+2. Calculate styles
+3. Layout elements
+4. Paint pixels
+5. Composite layers
+
+```
+One Frame Budget: 16.67ms
+|--JS--|--Style--|--Layout--|--Paint--|--Composite--|
+   ^        ^         ^          ^           ^
+  Must complete all of this in under 16.67ms
+```
+
+<InfoBox type="info">
+When any frame takes longer than 16.67ms, the browser drops frames, causing visible stuttering or "jank." The Performance panel helps you find which phase is taking too long.
+</InfoBox>
+
+### The RAIL Model
+
+Google's RAIL model defines performance budgets for different interactions:
+
+| Interaction | Budget | User Perception |
+|:------------|:-------|:----------------|
+| Response | 100ms | Feels instant |
+| Animation | 16ms/frame | Smooth motion |
+| Idle | 50ms chunks | Background work |
+| Load | 1000ms | Content visible |
+
+<KeyConcept title="Response Time Perception">
+Users perceive delays under 100ms as instant. Between 100-300ms feels sluggish. Over 1000ms and users lose focus. The Performance panel helps you stay within these budgets.
+</KeyConcept>
+
+<ProgressCheckpoint section="performance-basics" xpReward={20} />
+
+---
+
+## Section 2: Recording and Analyzing Performance
+
+### Starting a Recording
+
+1. Open DevTools and go to the Performance panel
+2. Click the Record button (or press `Cmd+E` / `Ctrl+E`)
+3. Interact with your page (scroll, click, animate)
+4. Click Stop to end the recording
+
+<InfoBox type="tip">
+For page load analysis, click the "Reload" button instead. This starts recording, reloads the page, and automatically stops when loading completes.
+</InfoBox>
+
+### Understanding the Recording
+
+A performance recording has several tracks:
+
+**Overview Strip** (top)
+- FPS: Green bars show frame rate (higher is better)
+- CPU: Shows CPU activity by category
+- NET: Network request timeline
+
+**Main Track**
+- Flame chart showing JavaScript execution
+- Each bar is a function call
+- Width represents duration
+- Nested bars show call hierarchy
+
+**Frames Track**
+- Individual frames rendered
+- Red frames indicate dropped frames (jank)
+
+<CodePlayground
+  initialCode={`// This code would show up in the Performance panel
+
+function expensiveOperation() {
+  // This creates a tall flame in the chart
+  const start = performance.now();
+  
+  // Simulate heavy computation
+  let result = 0;
+  for (let i = 0; i < 10000000; i++) {
+    result += Math.sqrt(i);
+  }
+  
+  console.log('Operation took:', performance.now() - start, 'ms');
+  return result;
+}
+
+// Each call creates a separate flame
+expensiveOperation();
+expensiveOperation();
+expensiveOperation();`}
+  height={300}
+/>
+
+### Reading the Flame Chart
+
+The flame chart visualizes your call stack over time:
+
+```
+|  main()                                    |
+|    |  processData()              |         |
+|    |    |  transform()  |        |         |
+|    |    |    | map() |  |        |         |
+```
+
+- **Width** = Time spent (wider = slower)
+- **Height** = Call stack depth
+- **Color** = Category (yellow=JS, purple=rendering, green=painting)
+
+<KeyConcept title="Finding Bottlenecks">
+Look for wide bars - they represent functions taking the most time. Click any bar to see details including the exact source location, self time (excluding children), and total time (including children).
+</KeyConcept>
+
+<ProgressCheckpoint section="recording-analyzing" xpReward={25} />
+
+---
+
+## Section 3: Flame Charts Deep Dive
+
+### Self Time vs Total Time
+
+When analyzing function performance, understand these two metrics:
+
+| Metric | Meaning |
+|:-------|:--------|
+| Self Time | Time spent in this function only |
+| Total Time | Time including all called functions |
+
+<CodePlayground
+  initialCode={`function parent() {
+  // Self time: ~1ms (just the loop)
+  // Total time: ~101ms (includes child calls)
+  
+  for (let i = 0; i < 1000; i++) {
+    // Small self-time work
+  }
+  
+  child(); // 50ms
+  child(); // 50ms
+}
+
+function child() {
+  // Self time: ~50ms
+  // Total time: ~50ms (no children)
+  
+  for (let i = 0; i < 5000000; i++) {
+    // Heavy computation
+  }
+}
+
+parent();`}
+  height={280}
+/>
+
+### Identifying Common Problems
+
+**Long Tasks** (>50ms)
+- Appear as wide yellow bars
+- Block the main thread
+- Cause input delay and jank
+
+**Forced Synchronous Layout**
+- Purple bars labeled "Layout"
+- Caused by reading layout properties after writing
+- Look for "Forced reflow" warnings
+
+**Excessive Painting**
+- Green bars in the flame chart
+- Often caused by animating expensive properties
+- Check for "Paint" events during animations
+
+<CodePlayground
+  initialCode={`// BAD: Forces synchronous layout (layout thrashing)
+function badAnimation() {
+  const elements = document.querySelectorAll('.item');
+  
+  elements.forEach(el => {
+    // Read triggers layout calculation
+    const height = el.offsetHeight;
+    // Write invalidates layout
+    el.style.height = (height + 10) + 'px';
+    // Next read forces synchronous layout!
+  });
+}
+
+// GOOD: Batch reads and writes
+function goodAnimation() {
+  const elements = document.querySelectorAll('.item');
+  
+  // Read phase - all reads together
+  const heights = Array.from(elements).map(el => el.offsetHeight);
+  
+  // Write phase - all writes together
+  elements.forEach((el, i) => {
+    el.style.height = (heights[i] + 10) + 'px';
+  });
+}`}
+  height={350}
+/>
+
+### The Bottom-Up and Call Tree Views
+
+Below the flame chart, you'll find alternative views:
+
+**Bottom-Up**: Shows which functions consumed the most time
+- Sorted by self-time by default
+- Great for finding the actual slow code
+
+**Call Tree**: Shows the call hierarchy
+- Top-down view of execution
+- Helps understand the execution flow
+
+**Event Log**: Chronological list of events
+- Useful for understanding sequence
+- Shows exact timestamps
+
+<ProgressCheckpoint section="flame-charts" xpReward={25} />
+
+---
+
+## Section 4: Optimization Strategies
+
+### CPU Throttling
+
+Test performance on slower devices:
+
+1. Click the gear icon in Performance panel
+2. Set CPU throttling (4x or 6x slowdown)
+3. Record again to simulate slower hardware
+
+<InfoBox type="warning">
+Your development machine is likely much faster than your users' devices. Always test with CPU throttling to catch performance issues that only appear on slower hardware.
+</InfoBox>
+
+### Common Optimizations
+
+Based on what the Performance panel reveals:
+
+**Long JavaScript Tasks**
+```javascript
+// Break up long tasks with scheduler
+function processLargeArray(items) {
+  const CHUNK_SIZE = 100;
+  let index = 0;
+  
+  function processChunk() {
+    const end = Math.min(index + CHUNK_SIZE, items.length);
+    
+    while (index < end) {
+      processItem(items[index]);
+      index++;
+    }
+    
+    if (index < items.length) {
+      // Yield to browser, then continue
+      requestIdleCallback(processChunk);
+    }
+  }
+  
+  processChunk();
+}
+```
+
+**Layout Thrashing**
+```javascript
+// Use requestAnimationFrame for DOM updates
+function smoothUpdate(elements, newValues) {
+  requestAnimationFrame(() => {
+    elements.forEach((el, i) => {
+      el.style.transform = `translateX(${newValues[i]}px)`;
+    });
+  });
+}
+```
+
+**Expensive Animations**
+```css
+/* Animate transform and opacity - GPU accelerated */
+.animated {
+  transition: transform 0.3s, opacity 0.3s;
+}
+
+/* Avoid animating these - trigger layout */
+.slow-animated {
+  transition: width 0.3s, height 0.3s, top 0.3s, left 0.3s;
+}
+```
+
+### Using Performance Marks
+
+Add custom markers to your recordings:
+
+<CodePlayground
+  initialCode={`// Mark the start of an operation
+performance.mark('data-fetch-start');
+
+fetch('/api/data')
+  .then(response => response.json())
+  .then(data => {
+    // Mark the end
+    performance.mark('data-fetch-end');
+    
+    // Measure the duration
+    performance.measure(
+      'Data Fetch',
+      'data-fetch-start',
+      'data-fetch-end'
+    );
+    
+    // These marks appear in the Performance recording
+    // as labeled points on the timeline
+    
+    processData(data);
+  });
+
+// View all measurements
+const measures = performance.getEntriesByType('measure');
+console.table(measures);`}
+  height={320}
+/>
+
+### Quick Knowledge Check
+
+<Quiz id="perf-fps-quiz">
+  <Question>What frame rate is needed for smooth animations?</Question>
+  <Answer>30 FPS</Answer>
+  <Answer correct>60 FPS</Answer>
+  <Answer>120 FPS</Answer>
+  <Answer>24 FPS</Answer>
+</Quiz>
+
+<Quiz id="perf-flame-quiz">
+  <Question>In a flame chart, what does the width of a bar represent?</Question>
+  <Answer>Memory usage</Answer>
+  <Answer>Call stack depth</Answer>
+  <Answer correct>Time spent in that function</Answer>
+  <Answer>Number of calls</Answer>
+</Quiz>
+
+<Quiz id="perf-layout-quiz">
+  <Question>What causes "layout thrashing"?</Question>
+  <Answer>Too many DOM elements</Answer>
+  <Answer correct>Alternating between reading and writing layout properties</Answer>
+  <Answer>Using CSS animations</Answer>
+  <Answer>Loading too many scripts</Answer>
+</Quiz>
+
+### Summary
+
+| Concept | Key Takeaway |
+|:--------|:-------------|
+| 60 FPS | Target for smooth animations (16.67ms/frame) |
+| Flame Chart | Visualizes call stack over time |
+| Self Time | Time in function excluding children |
+| Long Tasks | >50ms blocks that cause jank |
+| Layout Thrashing | Read/write cycles forcing sync layout |
+| CPU Throttling | Simulate slower devices |
+| Performance Marks | Custom markers in recordings |
+
+<ProgressCheckpoint section="optimization-strategies" xpReward={25} />

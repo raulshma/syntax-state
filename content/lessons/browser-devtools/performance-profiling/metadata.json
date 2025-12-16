@@ -1,0 +1,18 @@
+{
+  "id": "performance-profiling",
+  "title": "Performance Profiling",
+  "description": "Analyze runtime performance, identify bottlenecks, and optimize your application using the Performance panel.",
+  "milestone": "browser-devtools",
+  "order": 4,
+  "singleLevel": true,
+  "estimatedMinutes": 20,
+  "xpReward": 95,
+  "sections": [
+    "performance-basics",
+    "recording-analyzing",
+    "flame-charts",
+    "optimization-strategies"
+  ],
+  "prerequisites": ["debugging-breakpoints"],
+  "tags": ["javascript", "devtools", "performance", "optimization"]
+}

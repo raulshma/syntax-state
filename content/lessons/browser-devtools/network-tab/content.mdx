@@ -1,0 +1,336 @@
+# Network Tab: Watching Your App Talk to the World
+
+Every time your web application fetches data, loads an image, or calls an API, it sends a network request. The Network tab is like a flight control tower - it shows you every request taking off and landing, how long each journey takes, and what cargo (data) is being transported. Mastering this tool is essential for debugging API issues and optimizing load times.
+
+---
+
+## Section 1: Network Panel Basics
+
+### Opening the Network Panel
+
+1. Open DevTools (`F12` or `Cmd+Option+I`)
+2. Click the "Network" tab
+3. Reload the page to start capturing requests
+
+<InfoBox type="info">
+The Network panel only records activity while it's open. If you're debugging a page load issue, open DevTools first, then reload the page.
+</InfoBox>
+
+### Understanding the Request List
+
+Each row in the Network panel represents a single request:
+
+| Column | Description |
+|:-------|:------------|
+| Name | The resource filename or URL path |
+| Status | HTTP status code (200, 404, 500, etc.) |
+| Type | Resource type (document, script, xhr, fetch, img) |
+| Initiator | What triggered the request (script, parser, user) |
+| Size | Transfer size (compressed) and actual size |
+| Time | Total time from request start to response complete |
+| Waterfall | Visual timeline showing request phases |
+
+### The Waterfall Visualization
+
+The waterfall chart shows the timing breakdown of each request:
+
+```
+|--DNS--|--Connect--|--SSL--|--Wait--|--Download--|
+   ^         ^          ^       ^          ^
+   |         |          |       |          |
+ Lookup   TCP conn   TLS    Server    Receiving
+                    handshake response   data
+```
+
+<KeyConcept title="Reading the Waterfall">
+Long green bars (waiting/TTFB) indicate slow server response. Long blue bars (content download) suggest large payloads or slow connections. Stacked requests indicate sequential loading that could be parallelized.
+</KeyConcept>
+
+<ProgressCheckpoint section="network-basics" xpReward={15} />
+
+---
+
+## Section 2: Inspecting Requests
+
+### Request Details Panel
+
+Click any request to see detailed information across several tabs:
+
+**Headers Tab**
+- General: URL, method, status code
+- Response Headers: Server-sent headers (content-type, cache-control)
+- Request Headers: Browser-sent headers (cookies, authorization)
+
+**Preview Tab**
+- Rendered preview of the response
+- JSON is displayed as an expandable tree
+- Images are displayed visually
+- HTML is rendered
+
+**Response Tab**
+- Raw response body
+- Click "Format" to pretty-print minified JSON/JS
+
+**Timing Tab**
+- Detailed breakdown of request phases
+- Identifies bottlenecks (DNS, connection, server, download)
+
+<CodePlayground
+  initialCode={`// When you make this fetch call:
+async function loadUserData() {
+  const response = await fetch('/api/users/123', {
+    method: 'GET',
+    headers: {
+      'Authorization': 'Bearer token123',
+      'Accept': 'application/json'
+    }
+  });
+  
+  // Check the Network tab to see:
+  // - Request headers you sent
+  // - Response headers from server
+  // - The JSON response body
+  // - How long each phase took
+  
+  return response.json();
+}
+
+loadUserData().then(console.log);`}
+  height={300}
+/>
+
+### Inspecting Request/Response Bodies
+
+For POST, PUT, and PATCH requests, you can see the sent data:
+
+1. Click the request in the list
+2. Go to the "Payload" tab (or "Request" in some browsers)
+3. View form data, JSON body, or query parameters
+
+<CodePlayground
+  initialCode={`// This POST request sends a JSON body
+async function createUser(userData) {
+  const response = await fetch('/api/users', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      name: 'Alice',
+      email: 'alice@example.com',
+      role: 'admin'
+    })
+  });
+  
+  // In Network tab, click this request
+  // The Payload tab shows the JSON you sent
+  // The Response tab shows what the server returned
+  
+  return response.json();
+}
+
+createUser();`}
+  height={300}
+/>
+
+<InfoBox type="tip">
+Right-click any request and select "Copy as cURL" to get a command you can run in your terminal. This is invaluable for sharing requests with backend developers or testing in isolation.
+</InfoBox>
+
+<ProgressCheckpoint section="inspecting-requests" xpReward={25} />
+
+---
+
+## Section 3: Filtering and Searching
+
+### Filter by Type
+
+Use the filter buttons to show only specific request types:
+
+| Filter | Shows |
+|:-------|:------|
+| All | Every request |
+| Fetch/XHR | API calls (fetch, XMLHttpRequest) |
+| JS | JavaScript files |
+| CSS | Stylesheets |
+| Img | Images |
+| Media | Audio/video |
+| Font | Web fonts |
+| Doc | HTML documents |
+| WS | WebSocket connections |
+
+### Text Filtering
+
+The filter input box supports several patterns:
+
+```
+// Simple text match
+api/users          // URLs containing "api/users"
+
+// Negative filter
+-analytics         // Exclude URLs containing "analytics"
+
+// Regular expression
+/api\/v[0-9]+/     // Match versioned API paths
+
+// Property filters
+status-code:404    // Only 404 responses
+method:POST        // Only POST requests
+domain:api.example.com  // Only requests to specific domain
+larger-than:100k   // Responses larger than 100KB
+```
+
+<CodePlayground
+  initialCode={`// Common filtering scenarios:
+
+// 1. Debug a specific API endpoint
+// Filter: "api/users"
+
+// 2. Find failed requests
+// Filter: "status-code:400" or "status-code:500"
+
+// 3. Find slow requests
+// Sort by Time column, descending
+
+// 4. Find large responses
+// Filter: "larger-than:1M"
+
+// 5. Exclude third-party analytics
+// Filter: "-google-analytics -facebook"
+
+// 6. Find all POST requests
+// Filter: "method:POST"`}
+  height={280}
+/>
+
+### Searching Request Content
+
+Use the Search feature to find text within request/response bodies:
+
+1. Press `Cmd+F` (Mac) or `Ctrl+F` (Windows) in the Network panel
+2. Enter your search term
+3. Results show which requests contain the text
+4. Click a result to jump to that request
+
+<KeyConcept title="Finding API Errors">
+When debugging an error message shown to users, search for that exact text in the Network panel. You'll quickly find which API response contains the error, then inspect the request that caused it.
+</KeyConcept>
+
+<ProgressCheckpoint section="filtering-searching" xpReward={20} />
+
+---
+
+## Section 4: Network Throttling and Simulation
+
+### Simulating Slow Connections
+
+Test how your app performs on slower networks:
+
+1. Click the "No throttling" dropdown in the Network panel
+2. Select a preset or create custom throttling:
+   - Fast 3G: 1.5 Mbps down, 750 Kbps up
+   - Slow 3G: 400 Kbps down, 400 Kbps up
+   - Offline: No network connectivity
+
+<InfoBox type="warning">
+Network throttling only affects requests made through the browser. It doesn't affect WebSocket connections or requests made by browser extensions.
+</InfoBox>
+
+### Why Throttling Matters
+
+Your development machine likely has a fast, stable connection. Your users might not:
+
+| Connection Type | Typical Speed | Common Scenarios |
+|:----------------|:--------------|:-----------------|
+| Fast 3G | 1.5 Mbps | Mobile users in good coverage |
+| Slow 3G | 400 Kbps | Mobile users in poor coverage |
+| 2G | 50 Kbps | Emerging markets, rural areas |
+| Offline | 0 | Subway, airplane, dead zones |
+
+<CodePlayground
+  initialCode={`// Test your loading states with throttling enabled
+
+async function loadDashboard() {
+  // With Slow 3G throttling, this takes noticeably longer
+  // Does your UI show a loading indicator?
+  const [users, posts, stats] = await Promise.all([
+    fetch('/api/users').then(r => r.json()),
+    fetch('/api/posts').then(r => r.json()),
+    fetch('/api/stats').then(r => r.json())
+  ]);
+  
+  return { users, posts, stats };
+}
+
+// With throttling, you can verify:
+// 1. Loading spinners appear
+// 2. Skeleton screens render
+// 3. The UI doesn't freeze
+// 4. Errors are handled gracefully`}
+  height={280}
+/>
+
+### Blocking Requests
+
+Test how your app handles missing resources:
+
+1. Right-click any request
+2. Select "Block request URL" or "Block request domain"
+3. Reload the page to see the effect
+
+This helps you verify:
+- Graceful degradation when CDNs fail
+- Error handling when APIs are unavailable
+- Fallback behavior for missing images
+
+### Preserving Logs Across Navigation
+
+By default, the Network panel clears when you navigate to a new page. To keep logs:
+
+1. Check "Preserve log" in the Network panel
+2. Now requests persist across page loads and redirects
+
+This is essential for debugging:
+- Login flows with redirects
+- Form submissions that navigate
+- OAuth authentication flows
+
+### Quick Knowledge Check
+
+<Quiz id="network-waterfall-quiz">
+  <Question>What does a long green bar in the waterfall indicate?</Question>
+  <Answer>Large file download</Answer>
+  <Answer correct>Slow server response (TTFB)</Answer>
+  <Answer>DNS lookup delay</Answer>
+  <Answer>SSL handshake time</Answer>
+</Quiz>
+
+<Quiz id="network-filter-quiz">
+  <Question>Which filter shows only failed requests?</Question>
+  <Answer>method:GET</Answer>
+  <Answer>larger-than:1M</Answer>
+  <Answer correct>status-code:404 or status-code:500</Answer>
+  <Answer>domain:api</Answer>
+</Quiz>
+
+<Quiz id="network-throttle-quiz">
+  <Question>Why should you test with network throttling?</Question>
+  <Answer>To make requests faster</Answer>
+  <Answer>To bypass CORS restrictions</Answer>
+  <Answer correct>To simulate real-world user conditions</Answer>
+  <Answer>To cache responses locally</Answer>
+</Quiz>
+
+### Summary
+
+| Feature | Use Case |
+|:--------|:---------|
+| Request inspection | Debug API calls, check headers |
+| Waterfall analysis | Identify slow requests |
+| Type filters | Focus on specific resource types |
+| Text search | Find requests by content |
+| Throttling | Test slow network performance |
+| Request blocking | Test failure scenarios |
+| Preserve log | Debug multi-page flows |
+
+<ProgressCheckpoint section="throttling-simulation" xpReward={25} />

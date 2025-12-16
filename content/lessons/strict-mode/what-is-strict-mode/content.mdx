@@ -1,0 +1,295 @@
+# What is Strict Mode?
+
+JavaScript's strict mode is a way to opt into a restricted, safer variant of the language. Think of it as JavaScript putting on its "professional hat" - it becomes more disciplined and catches mistakes that would otherwise slip through silently.
+
+---
+
+## Section 1: Understanding Strict Mode
+
+### The Safety Net Analogy
+
+Imagine you're learning to walk a tightrope. In "sloppy mode" (the default), there's no safety net - if you make a mistake, you might not even realize it until you've fallen far. In strict mode, there's a safety net that catches you immediately when something goes wrong.
+
+| Sloppy Mode | Strict Mode |
+|:------------|:------------|
+| Silently ignores many errors | Throws errors immediately |
+| Allows accidental globals | Prevents accidental globals |
+| Permits confusing syntax | Forbids problematic patterns |
+| Harder to optimize | Easier for engines to optimize |
+
+<InfoBox type="info">
+**Note**: The term "sloppy mode" isn't official - it's just what developers call the default, non-strict mode. You'll see both terms used in documentation and discussions.
+</InfoBox>
+
+### What Strict Mode Actually Does
+
+Strict mode makes three fundamental changes to how JavaScript behaves:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    STRICT MODE CHANGES                       │
+├─────────────────────────────────────────────────────────────┤
+│  1. ERRORS         Silent failures → Thrown exceptions       │
+│  2. OPTIMIZATION   Removes unpredictable behaviors           │
+│  3. FUTURE-PROOF   Reserves keywords for future JS versions  │
+└─────────────────────────────────────────────────────────────┘
+```
+
+<CodePlayground
+  initialCode={`// Without strict mode - this would silently create a global variable
+// With strict mode - this throws an error
+
+"use strict";
+
+// Try running this code:
+function calculateTotal(items) {
+  // Oops! Typo in variable name
+  // In sloppy mode: silently creates global 'totl'
+  // In strict mode: ReferenceError!
+  totl = 0;  
+  
+  for (const item of items) {
+    totl += item.price;
+  }
+  
+  return totl;
+}
+
+const cart = [
+  { name: "Book", price: 20 },
+  { name: "Pen", price: 5 }
+];
+
+console.log(calculateTotal(cart));`}
+  title="Strict Mode Catches Typos"
+/>
+
+<ProgressCheckpoint section="strict-mode-intro" xpReward={15} />
+
+---
+
+## Section 2: Why Does Strict Mode Exist?
+
+### A Brief History
+
+When JavaScript was created in 1995, it was designed to be forgiving - perfect for beginners adding simple interactivity to web pages. But as applications grew more complex, this forgiveness became a liability.
+
+```javascript
+// In 1995, this seemed helpful:
+function oldCode() {
+  mistypedVariable = "oops";  // Creates global - no error!
+}
+
+// In modern apps, this is a nightmare:
+// - Hard to debug
+// - Pollutes global scope
+// - Causes unexpected behavior
+```
+
+ECMAScript 5 (2009) introduced strict mode as an opt-in way to use a "better" version of JavaScript without breaking existing code.
+
+### The Three Pillars of Strict Mode
+
+<KeyConcept title="1. Catching Mistakes Early">
+Strict mode converts silent errors into thrown exceptions. Instead of your code quietly doing the wrong thing, it fails loudly and immediately - exactly when and where the problem occurs.
+</KeyConcept>
+
+```javascript
+"use strict";
+
+// Example: Assigning to a non-writable property
+const obj = {};
+Object.defineProperty(obj, "x", { value: 42, writable: false });
+
+obj.x = 100;  // TypeError: Cannot assign to read only property 'x'
+// In sloppy mode: silently fails, obj.x stays 42
+```
+
+<KeyConcept title="2. Enabling Optimizations">
+JavaScript engines can optimize strict mode code better because it eliminates unpredictable behaviors. The engine doesn't have to account for edge cases that strict mode forbids.
+</KeyConcept>
+
+```javascript
+"use strict";
+
+// The 'with' statement is forbidden in strict mode
+// This helps engines optimize variable lookups
+
+// FORBIDDEN in strict mode:
+// with (obj) {
+//   x = 10;  // Is this obj.x or a variable x? Engine can't know!
+// }
+
+// Instead, be explicit:
+obj.x = 10;  // Clear and optimizable
+```
+
+<KeyConcept title="3. Future-Proofing Your Code">
+Strict mode reserves certain words as keywords for future JavaScript versions. This prevents your code from breaking when new features are added.
+</KeyConcept>
+
+```javascript
+"use strict";
+
+// These are reserved for future use:
+// let implements = 1;  // SyntaxError
+// let interface = 1;   // SyntaxError
+// let package = 1;     // SyntaxError
+// let private = 1;     // SyntaxError
+// let protected = 1;   // SyntaxError
+// let public = 1;      // SyntaxError
+// let static = 1;      // SyntaxError
+```
+
+<ProgressCheckpoint section="why-strict-mode" xpReward={15} />
+
+---
+
+## Section 3: Strict Mode vs Sloppy Mode
+
+### Side-by-Side Comparison
+
+<CodePlayground
+  initialCode={`// COMPARISON: Sloppy vs Strict Mode Behaviors
+
+// 1. Accidental Globals
+function sloppyGlobal() {
+  // No "use strict"
+  accidental = "I'm global now!";  // Works (bad!)
+}
+
+function strictGlobal() {
+  "use strict";
+  // accidental = "I'm global now!";  // ReferenceError!
+  let intentional = "I'm local";      // Correct way
+  return intentional;
+}
+
+// 2. Silent Assignment Failures
+const frozen = Object.freeze({ value: 42 });
+
+function sloppyFreeze() {
+  frozen.value = 100;  // Silently fails
+  console.log("Sloppy - frozen.value:", frozen.value);  // Still 42
+}
+
+function strictFreeze() {
+  "use strict";
+  try {
+    frozen.value = 100;  // TypeError!
+  } catch (e) {
+    console.log("Strict caught error:", e.message);
+  }
+}
+
+// Run the comparisons
+sloppyGlobal();
+console.log("Global 'accidental':", typeof accidental !== 'undefined' ? accidental : 'not created');
+
+console.log("Strict local:", strictGlobal());
+
+sloppyFreeze();
+strictFreeze();`}
+  title="Sloppy vs Strict Mode Comparison"
+/>
+
+### Key Differences Table
+
+| Behavior | Sloppy Mode | Strict Mode |
+|:---------|:------------|:------------|
+| Undeclared variable assignment | Creates global | ReferenceError |
+| Assignment to non-writable property | Silent failure | TypeError |
+| Deleting non-configurable property | Silent failure | TypeError |
+| Duplicate parameter names | Allowed | SyntaxError |
+| Octal literals (0644) | Allowed | SyntaxError |
+| `with` statement | Allowed | SyntaxError |
+| `this` in functions | Global object | `undefined` |
+| `eval` creating variables | Leaks to outer scope | Contained |
+
+<ProgressCheckpoint section="strict-vs-sloppy" xpReward={15} />
+
+---
+
+## Section 4: Benefits Overview
+
+### Why You Should Use Strict Mode
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                  STRICT MODE BENEFITS                        │
+├─────────────────────────────────────────────────────────────┤
+│  ✓ Catches common coding mistakes                           │
+│  ✓ Prevents accidental global variables                     │
+│  ✓ Makes debugging easier (errors happen at source)         │
+│  ✓ Enables JavaScript engine optimizations                  │
+│  ✓ Prepares code for future JavaScript versions             │
+│  ✓ Makes eval() and arguments safer                         │
+│  ✓ Improves security in certain scenarios                   │
+└─────────────────────────────────────────────────────────────┘
+```
+
+<InfoBox type="tip">
+**Modern JavaScript Tip**: ES6 modules and classes are automatically in strict mode. If you're using modern JavaScript with `import`/`export` or class syntax, you're already benefiting from strict mode without explicitly declaring it.
+</InfoBox>
+
+### When to Use Strict Mode
+
+```javascript
+// ALWAYS use strict mode in:
+
+// 1. New projects
+"use strict";
+// ... all your code
+
+// 2. New functions in legacy codebases
+function newFeature() {
+  "use strict";
+  // Safe, modern code here
+}
+
+// 3. It's automatic in:
+// - ES6 modules (import/export)
+// - Class bodies
+// - Code inside arrow functions in modules
+```
+
+### Quick Knowledge Check
+
+<Quiz id="strict-mode-purpose-quiz">
+  <Question>What is the primary purpose of JavaScript's strict mode?</Question>
+  <Answer>To make JavaScript run faster</Answer>
+  <Answer correct>To catch common mistakes and prevent problematic patterns</Answer>
+  <Answer>To add new features to JavaScript</Answer>
+  <Answer>To make JavaScript compatible with other languages</Answer>
+</Quiz>
+
+<Quiz id="strict-mode-global-quiz">
+  <Question>What happens when you assign to an undeclared variable in strict mode?</Question>
+  <Answer>It creates a global variable</Answer>
+  <Answer>It creates a local variable</Answer>
+  <Answer correct>It throws a ReferenceError</Answer>
+  <Answer>It silently fails</Answer>
+</Quiz>
+
+<Quiz id="strict-mode-auto-quiz">
+  <Question>Which of these automatically uses strict mode?</Question>
+  <Answer>Regular script tags</Answer>
+  <Answer>Function declarations</Answer>
+  <Answer correct>ES6 modules (import/export)</Answer>
+  <Answer>Inline event handlers</Answer>
+</Quiz>
+
+### Summary
+
+| Aspect | Description |
+|:-------|:------------|
+| **What** | An opt-in restricted variant of JavaScript |
+| **Why** | Catches errors, enables optimizations, future-proofs code |
+| **When** | Always in new code; automatic in modules and classes |
+| **How** | Add `"use strict";` at script or function start |
+
+<KeyConcept title="What's Next?">
+Now that you understand what strict mode is and why it matters, you're ready to learn how to enable it in different contexts - from entire scripts to individual functions to modern modules.
+</KeyConcept>
+
+<ProgressCheckpoint section="benefits-overview" xpReward={15} />

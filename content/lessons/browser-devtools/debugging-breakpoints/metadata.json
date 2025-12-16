@@ -1,0 +1,18 @@
+{
+  "id": "debugging-breakpoints",
+  "title": "Debugging with Breakpoints",
+  "description": "Learn to pause code execution, inspect variables, and step through code using breakpoints in browser DevTools.",
+  "milestone": "browser-devtools",
+  "order": 2,
+  "singleLevel": true,
+  "estimatedMinutes": 18,
+  "xpReward": 90,
+  "sections": [
+    "breakpoint-types",
+    "setting-breakpoints",
+    "stepping-through-code",
+    "advanced-breakpoints"
+  ],
+  "prerequisites": ["console-api"],
+  "tags": ["javascript", "devtools", "debugging", "breakpoints"]
+}

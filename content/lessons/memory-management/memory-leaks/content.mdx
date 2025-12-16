@@ -1,0 +1,568 @@
+# Memory Leaks: Finding and Fixing Hidden Memory Problems
+
+Memory leaks happen when your application holds onto memory it no longer needs. Over time, this causes slowdowns, crashes, and frustrated users. Let's learn to identify and prevent them!
+
+---
+
+## Section 1: Understanding Memory Leaks
+
+### The Hoarder Analogy 📦
+
+Imagine someone who never throws anything away:
+
+- **Day 1**: Keeps today's newspaper (useful!)
+- **Day 30**: Still has 30 newspapers (why?)
+- **Day 365**: House is full of newspapers, can't move!
+
+Memory leaks work the same way — your app keeps references to data it no longer needs, and eventually runs out of memory.
+
+| Hoarding | Memory Leak |
+|:---------|:------------|
+| Keeping old newspapers | Keeping old object references |
+| House fills up | Memory fills up |
+| Can't find anything | App slows down |
+| House unusable | App crashes |
+
+<InfoBox type="info">
+A **memory leak** occurs when memory that's no longer needed cannot be garbage collected because references to it still exist. The garbage collector can only free memory that's completely unreachable!
+</InfoBox>
+
+### Signs of Memory Leaks
+
+Watch for these symptoms in your applications:
+
+```javascript
+// Your app might have memory leaks if:
+
+// 1. Memory usage grows over time
+// Check: Chrome DevTools → Performance Monitor → JS Heap Size
+
+// 2. Page becomes sluggish after extended use
+// Users report: "It was fast at first, now it's slow"
+
+// 3. Browser tab crashes with "Out of Memory"
+// Error: "Aw, Snap!" or "Page Unresponsive"
+
+// 4. Mobile devices affected more than desktop
+// Less memory available = problems appear sooner
+```
+
+<KeyConcept title="Leaks vs High Memory Usage">
+Not all high memory usage is a leak! A leak is memory that **grows unboundedly** over time. If your app uses 100MB consistently, that's fine. If it grows from 100MB to 500MB over an hour of normal use, that's a leak.
+</KeyConcept>
+
+<ProgressCheckpoint section="leak-basics" xpReward={20} />
+
+---
+
+## Section 2: Common Memory Leak Patterns
+
+### 1. Forgotten Event Listeners
+
+The most common leak in web applications:
+
+```javascript
+// ❌ LEAK: Event listener never removed
+function setupButton() {
+  const button = document.getElementById('myButton');
+  
+  button.addEventListener('click', function handleClick() {
+    console.log('Clicked!');
+    // This closure keeps references to outer scope
+  });
+}
+
+// Called every time user visits this "page" in SPA
+setupButton();  // Adds listener
+setupButton();  // Adds ANOTHER listener!
+setupButton();  // And another... memory grows!
+
+// ✅ FIX: Remove listeners when done
+function setupButton() {
+  const button = document.getElementById('myButton');
+  
+  function handleClick() {
+    console.log('Clicked!');
+  }
+  
+  button.addEventListener('click', handleClick);
+  
+  // Return cleanup function
+  return () => {
+    button.removeEventListener('click', handleClick);
+  };
+}
+
+const cleanup = setupButton();
+// Later, when navigating away:
+cleanup();
+```
+
+### 2. Forgotten Timers and Intervals
+
+Timers that run forever:
+
+```javascript
+// ❌ LEAK: Interval never cleared
+function startPolling() {
+  setInterval(() => {
+    fetch('/api/data')
+      .then(data => updateUI(data));
+  }, 1000);
+}
+
+// Called on component mount, but interval runs forever!
+startPolling();
+
+// ✅ FIX: Store and clear the interval
+let pollingInterval = null;
+
+function startPolling() {
+  // Clear any existing interval first
+  if (pollingInterval) {
+    clearInterval(pollingInterval);
+  }
+  
+  pollingInterval = setInterval(() => {
+    fetch('/api/data')
+      .then(data => updateUI(data));
+  }, 1000);
+}
+
+function stopPolling() {
+  if (pollingInterval) {
+    clearInterval(pollingInterval);
+    pollingInterval = null;
+  }
+}
+
+// On component unmount:
+stopPolling();
+```
+
+### 3. Closures Holding References
+
+Closures can accidentally keep large objects alive:
+
+```javascript
+// ❌ LEAK: Closure keeps entire 'data' array alive
+function processData() {
+  const data = new Array(1000000).fill('x');  // Huge array!
+  
+  return function getLength() {
+    return data.length;  // Closure references 'data'
+  };
+}
+
+const getLen = processData();
+// The huge array can NEVER be collected while getLen exists!
+
+// ✅ FIX: Only capture what you need
+function processData() {
+  const data = new Array(1000000).fill('x');
+  const length = data.length;  // Extract just the length
+  
+  return function getLength() {
+    return length;  // Only captures the number, not the array
+  };
+}
+// Now the huge array can be collected!
+```
+
+<CodePlayground
+  initialCode={`// Common leak patterns demonstration
+
+// Pattern 1: Growing array (simulated leak)
+const leakyCache = [];
+
+function addToCache(item) {
+  leakyCache.push(item);
+  // Never removes old items!
+}
+
+// Simulate adding data over time
+for (let i = 0; i < 10; i++) {
+  addToCache({ id: i, data: 'some data' });
+}
+console.log("Leaky cache size:", leakyCache.length);
+
+// Pattern 2: Fixed-size cache (no leak)
+class BoundedCache {
+  constructor(maxSize = 5) {
+    this.maxSize = maxSize;
+    this.items = [];
+  }
+  
+  add(item) {
+    this.items.push(item);
+    // Remove oldest if over limit
+    while (this.items.length > this.maxSize) {
+      this.items.shift();
+    }
+  }
+  
+  get size() {
+    return this.items.length;
+  }
+}
+
+const boundedCache = new BoundedCache(5);
+for (let i = 0; i < 10; i++) {
+  boundedCache.add({ id: i, data: 'some data' });
+}
+console.log("Bounded cache size:", boundedCache.size);
+console.log("(stays at max 5, old items removed)")`}
+  title="Leak Patterns and Fixes"
+/>
+
+### 4. Detached DOM Elements
+
+DOM nodes removed from the page but still referenced:
+
+```javascript
+// ❌ LEAK: Detached DOM nodes
+const elements = [];
+
+function createListItem(text) {
+  const li = document.createElement('li');
+  li.textContent = text;
+  elements.push(li);  // Stored in array
+  document.getElementById('list').appendChild(li);
+}
+
+function clearList() {
+  document.getElementById('list').innerHTML = '';
+  // DOM cleared, but 'elements' array still holds references!
+  // Those DOM nodes can't be garbage collected
+}
+
+// ✅ FIX: Clear references when removing DOM
+function clearList() {
+  document.getElementById('list').innerHTML = '';
+  elements.length = 0;  // Clear the array too!
+}
+
+// Or better: Don't store DOM references unnecessarily
+function createListItem(text) {
+  const li = document.createElement('li');
+  li.textContent = text;
+  document.getElementById('list').appendChild(li);
+  // No external reference stored
+}
+```
+
+<InfoBox type="warning">
+**Detached DOM trees** are a major source of leaks in Single Page Applications (SPAs). When you remove elements from the page, make sure no JavaScript variables still reference them!
+</InfoBox>
+
+<ProgressCheckpoint section="common-leaks" xpReward={25} />
+
+---
+
+## Section 3: Detecting Memory Leaks
+
+### Using Chrome DevTools
+
+Chrome's DevTools has powerful memory profiling tools:
+
+```javascript
+// Step 1: Open DevTools (F12)
+// Step 2: Go to "Memory" tab
+// Step 3: Take a "Heap snapshot"
+
+// Workflow for finding leaks:
+// 1. Take snapshot BEFORE the action
+// 2. Perform the suspected leaky action multiple times
+// 3. Take snapshot AFTER
+// 4. Compare snapshots - look for objects that grew
+
+// Pro tip: Force garbage collection before snapshots
+// Click the trash can icon in DevTools
+```
+
+### Memory Timeline
+
+```javascript
+// Use Performance Monitor for real-time tracking:
+// 1. DevTools → More tools → Performance Monitor
+// 2. Watch "JS Heap Size" over time
+// 3. If it keeps growing without dropping, you have a leak!
+
+// Or use the Performance tab:
+// 1. Check "Memory" checkbox
+// 2. Record while using your app
+// 3. Look for the memory graph - should have a sawtooth pattern
+//    (grows, then drops when GC runs)
+// 4. If it only grows, never drops = leak!
+```
+
+### Programmatic Detection
+
+```javascript
+// Check memory usage in code (Chrome/Node.js)
+if (performance.memory) {
+  console.log('Memory Info:');
+  console.log('Used:', Math.round(performance.memory.usedJSHeapSize / 1048576), 'MB');
+  console.log('Total:', Math.round(performance.memory.totalJSHeapSize / 1048576), 'MB');
+  console.log('Limit:', Math.round(performance.memory.jsHeapSizeLimit / 1048576), 'MB');
+}
+
+// Node.js memory tracking
+// const used = process.memoryUsage();
+// console.log('Heap Used:', Math.round(used.heapUsed / 1048576), 'MB');
+```
+
+<CodePlayground
+  initialCode={`// Memory monitoring helper
+
+class MemoryMonitor {
+  constructor() {
+    this.snapshots = [];
+  }
+  
+  takeSnapshot(label = 'Snapshot') {
+    if (typeof performance !== 'undefined' && performance.memory) {
+      const snapshot = {
+        label,
+        timestamp: Date.now(),
+        usedMB: Math.round(performance.memory.usedJSHeapSize / 1048576 * 100) / 100
+      };
+      this.snapshots.push(snapshot);
+      console.log(\`📸 \${label}: \${snapshot.usedMB} MB\`);
+      return snapshot;
+    } else {
+      console.log("Memory API not available in this environment");
+      return null;
+    }
+  }
+  
+  compare() {
+    if (this.snapshots.length < 2) {
+      console.log("Need at least 2 snapshots to compare");
+      return;
+    }
+    
+    const first = this.snapshots[0];
+    const last = this.snapshots[this.snapshots.length - 1];
+    const diff = last.usedMB - first.usedMB;
+    
+    console.log(\`\\n📊 Memory Change:\`);
+    console.log(\`   Start: \${first.usedMB} MB (\${first.label})\`);
+    console.log(\`   End: \${last.usedMB} MB (\${last.label})\`);
+    console.log(\`   Diff: \${diff > 0 ? '+' : ''}\${diff.toFixed(2)} MB\`);
+    
+    if (diff > 10) {
+      console.log("⚠️ Significant memory increase detected!");
+    }
+  }
+}
+
+// Usage example
+const monitor = new MemoryMonitor();
+monitor.takeSnapshot('Initial');
+
+// Simulate some work
+const tempData = [];
+for (let i = 0; i < 10000; i++) {
+  tempData.push({ index: i, data: 'test'.repeat(100) });
+}
+
+monitor.takeSnapshot('After allocation');
+monitor.compare();`}
+  title="Memory Monitoring"
+/>
+
+<ProgressCheckpoint section="detection-tools" xpReward={25} />
+
+---
+
+## Section 4: Prevention Patterns
+
+### Use WeakMap and WeakSet
+
+For caches and metadata that shouldn't prevent garbage collection:
+
+```javascript
+// ❌ Regular Map keeps keys alive forever
+const cache = new Map();
+let user = { id: 1, name: 'Alice' };
+cache.set(user, computeExpensiveData(user));
+
+user = null;  // Want to free the user object
+// But cache still holds a reference! User can't be collected.
+
+// ✅ WeakMap allows keys to be garbage collected
+const cache = new WeakMap();
+let user = { id: 1, name: 'Alice' };
+cache.set(user, computeExpensiveData(user));
+
+user = null;  // User object can now be collected!
+// WeakMap entry automatically disappears
+```
+
+### Implement Cleanup Functions
+
+Always provide a way to clean up:
+
+```javascript
+// React-style cleanup pattern
+function useDataFetcher(url) {
+  let data = null;
+  let intervalId = null;
+  let abortController = null;
+  
+  function start() {
+    abortController = new AbortController();
+    
+    intervalId = setInterval(async () => {
+      try {
+        const response = await fetch(url, { 
+          signal: abortController.signal 
+        });
+        data = await response.json();
+      } catch (e) {
+        if (e.name !== 'AbortError') throw e;
+      }
+    }, 5000);
+  }
+  
+  function cleanup() {
+    // Clear interval
+    if (intervalId) {
+      clearInterval(intervalId);
+      intervalId = null;
+    }
+    
+    // Abort pending requests
+    if (abortController) {
+      abortController.abort();
+      abortController = null;
+    }
+    
+    // Clear data
+    data = null;
+  }
+  
+  return { start, cleanup, getData: () => data };
+}
+
+// Usage
+const fetcher = useDataFetcher('/api/data');
+fetcher.start();
+
+// Later, when done:
+fetcher.cleanup();
+```
+
+### Bounded Collections
+
+Limit the size of caches and buffers:
+
+```javascript
+// LRU (Least Recently Used) Cache
+class LRUCache {
+  constructor(maxSize = 100) {
+    this.maxSize = maxSize;
+    this.cache = new Map();
+  }
+  
+  get(key) {
+    if (!this.cache.has(key)) return undefined;
+    
+    // Move to end (most recently used)
+    const value = this.cache.get(key);
+    this.cache.delete(key);
+    this.cache.set(key, value);
+    return value;
+  }
+  
+  set(key, value) {
+    // Delete if exists (to update position)
+    if (this.cache.has(key)) {
+      this.cache.delete(key);
+    }
+    
+    // Add to end
+    this.cache.set(key, value);
+    
+    // Remove oldest if over limit
+    if (this.cache.size > this.maxSize) {
+      const firstKey = this.cache.keys().next().value;
+      this.cache.delete(firstKey);
+    }
+  }
+  
+  clear() {
+    this.cache.clear();
+  }
+}
+
+const imageCache = new LRUCache(50);  // Max 50 images
+```
+
+### Event Listener Best Practices
+
+```javascript
+// Use AbortController for easy cleanup (modern approach)
+const controller = new AbortController();
+
+element.addEventListener('click', handleClick, { signal: controller.signal });
+element.addEventListener('mouseover', handleHover, { signal: controller.signal });
+element.addEventListener('keydown', handleKey, { signal: controller.signal });
+
+// One call removes ALL listeners!
+controller.abort();
+
+// Use { once: true } for one-time listeners
+button.addEventListener('click', () => {
+  console.log('This only fires once!');
+}, { once: true });
+// Automatically removed after first trigger
+```
+
+### Quick Knowledge Check
+
+<Quiz id="leak-cause-quiz">
+  <Question>What causes a memory leak in JavaScript?</Question>
+  <Answer>Using too many variables</Answer>
+  <Answer>Creating large objects</Answer>
+  <Answer correct>Keeping references to objects that are no longer needed</Answer>
+  <Answer>Using closures</Answer>
+</Quiz>
+
+<Quiz id="weakmap-quiz">
+  <Question>Why use WeakMap instead of Map for caching?</Question>
+  <Answer>WeakMap is faster</Answer>
+  <Answer correct>WeakMap allows keys to be garbage collected when no other references exist</Answer>
+  <Answer>WeakMap uses less memory</Answer>
+  <Answer>WeakMap is newer</Answer>
+</Quiz>
+
+<Quiz id="event-leak-quiz">
+  <Question>How do you prevent memory leaks from event listeners?</Question>
+  <Answer>Use arrow functions</Answer>
+  <Answer>Add listeners only once</Answer>
+  <Answer correct>Remove listeners when they're no longer needed</Answer>
+  <Answer>Use inline handlers</Answer>
+</Quiz>
+
+### Summary
+
+| Leak Type | Cause | Prevention |
+|:----------|:------|:-----------|
+| **Event Listeners** | Not removed when done | `removeEventListener()` or `AbortController` |
+| **Timers** | `setInterval` never cleared | Always `clearInterval()` |
+| **Closures** | Capturing large objects | Only capture needed values |
+| **Detached DOM** | References to removed elements | Clear references when removing |
+| **Growing Collections** | Unbounded arrays/maps | Use bounded caches, WeakMap |
+
+<KeyConcept title="Memory Leak Prevention Checklist">
+✅ Remove event listeners when components unmount  
+✅ Clear intervals and timeouts  
+✅ Use WeakMap/WeakSet for caches  
+✅ Implement cleanup functions  
+✅ Bound collection sizes  
+✅ Profile memory regularly during development  
+</KeyConcept>
+
+<ProgressCheckpoint section="prevention-patterns" xpReward={25} />

@@ -1,0 +1,18 @@
+{
+  "id": "memory-lifecycle",
+  "title": "Memory Lifecycle",
+  "description": "Understand how JavaScript allocates, uses, and releases memory throughout your application's execution.",
+  "milestone": "memory-management",
+  "order": 1,
+  "sections": [
+    "memory-basics",
+    "allocation-phase",
+    "usage-phase",
+    "release-phase"
+  ],
+  "singleLevel": true,
+  "estimatedMinutes": 12,
+  "xpReward": 75,
+  "prerequisites": [],
+  "tags": ["javascript", "memory", "allocation", "lifecycle", "performance"]
+}

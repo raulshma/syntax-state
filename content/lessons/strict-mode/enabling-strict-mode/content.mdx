@@ -1,0 +1,448 @@
+# Enabling Strict Mode
+
+Strict mode can be enabled at different levels of your code - from entire scripts to individual functions. Understanding where and how to enable it gives you fine-grained control over which parts of your codebase benefit from its protections.
+
+---
+
+## Section 1: Script-Level Strict Mode
+
+### The Global Switch
+
+To enable strict mode for an entire script, place the directive `"use strict";` at the very beginning of the file, before any other statements.
+
+```javascript
+// script.js
+"use strict";
+
+// Everything in this file is now in strict mode
+let userName = "Alice";
+const MAX_ITEMS = 100;
+
+function processData(data) {
+  // This function is in strict mode too
+  return data.map(item => item.value);
+}
+```
+
+<InfoBox type="warning">
+**Critical Rule**: The `"use strict";` directive must be the very first statement in the script. Only comments and whitespace can precede it. If anything else comes before it, the directive is ignored.
+</InfoBox>
+
+<CodePlayground
+  initialCode={`// CORRECT: "use strict" is first
+"use strict";
+
+let x = 10;
+console.log("Strict mode enabled:", x);
+
+// Try to create an accidental global
+try {
+  undeclaredVar = "oops";
+} catch (e) {
+  console.log("Error caught:", e.name);
+}
+
+// -----------------------------------
+// INCORRECT examples (don't do these):
+// -----------------------------------
+
+// BAD: Something before the directive
+// let y = 5;
+// "use strict";  // This is just a string, not a directive!
+
+// BAD: In a block
+// {
+//   "use strict";  // Doesn't work in blocks
+// }
+
+console.log("Script completed successfully");`}
+  title="Script-Level Strict Mode"
+/>
+
+### The Directive Syntax
+
+The strict mode directive is intentionally designed as a string literal expression:
+
+```javascript
+// Both forms are valid:
+"use strict";
+'use strict';
+
+// Why a string? For backward compatibility!
+// Old JavaScript engines see it as a harmless string expression
+// New engines recognize it as a directive
+```
+
+| Placement | Effect |
+|:----------|:-------|
+| First line of script | Entire script in strict mode |
+| After any statement | Ignored (just a string) |
+| Inside a block `{}` | Ignored (doesn't apply to blocks) |
+
+<ProgressCheckpoint section="script-level" xpReward={15} />
+
+---
+
+## Section 2: Function-Level Strict Mode
+
+### Targeted Strict Mode
+
+You can enable strict mode for individual functions, leaving the rest of your code in sloppy mode. This is useful when adding new code to legacy projects.
+
+```javascript
+// Global scope - sloppy mode
+var globalVar = "I'm global";
+
+function legacyFunction() {
+  // This function is in sloppy mode
+  oldStyleVar = "This creates a global";  // Works (unfortunately)
+}
+
+function modernFunction() {
+  "use strict";
+  // Only this function is in strict mode
+  let localVar = "I'm properly declared";
+  // undeclaredVar = "oops";  // Would throw ReferenceError
+}
+
+function anotherLegacy() {
+  // Back to sloppy mode
+  anotherGlobal = "Another accidental global";
+}
+```
+
+<CodePlayground
+  initialCode={`// Function-level strict mode demonstration
+
+// Sloppy mode function
+function sloppyFunction() {
+  sloppyGlobal = "Created in sloppy mode";
+  console.log("Sloppy function ran");
+}
+
+// Strict mode function
+function strictFunction() {
+  "use strict";
+  
+  // Properly declared variable
+  let localVar = "I'm local";
+  console.log("Strict function - localVar:", localVar);
+  
+  // This would throw an error:
+  // strictGlobal = "Would fail";
+}
+
+// Nested functions inherit strict mode
+function outerStrict() {
+  "use strict";
+  
+  function innerFunction() {
+    // Also in strict mode (inherited)
+    let inner = "I'm strict too";
+    console.log("Inner function:", inner);
+  }
+  
+  innerFunction();
+}
+
+// Run the functions
+sloppyFunction();
+console.log("Global created:", typeof sloppyGlobal !== 'undefined');
+
+strictFunction();
+outerStrict();`}
+  title="Function-Level Strict Mode"
+/>
+
+### Important Restriction: Simple Parameters Only
+
+The `"use strict"` directive can only be used in functions with simple parameters. Using it with default parameters, rest parameters, or destructured parameters causes a SyntaxError.
+
+```javascript
+// VALID: Simple parameters
+function valid(a, b, c) {
+  "use strict";
+  return a + b + c;
+}
+
+// INVALID: Default parameters
+function invalid1(a = 1, b = 2) {
+  "use strict";  // SyntaxError!
+  return a + b;
+}
+
+// INVALID: Rest parameters
+function invalid2(...args) {
+  "use strict";  // SyntaxError!
+  return args.length;
+}
+
+// INVALID: Destructured parameters
+function invalid3({ x, y }) {
+  "use strict";  // SyntaxError!
+  return x + y;
+}
+```
+
+<InfoBox type="tip">
+**Solution**: If you need strict mode with modern parameter syntax, enable it at the script level or use ES6 modules (which are automatically strict).
+</InfoBox>
+
+<ProgressCheckpoint section="function-level" xpReward={20} />
+
+---
+
+## Section 3: Module-Level Strict Mode
+
+### Automatic Strict Mode in ES6 Modules
+
+When you use ES6 modules (with `import` and `export`), strict mode is automatically enabled for the entire module. No directive needed.
+
+```javascript
+// math-utils.js (ES6 module)
+// No "use strict" needed - it's automatic!
+
+export function add(a, b) {
+  // This is in strict mode
+  return a + b;
+}
+
+export function multiply(a, b) {
+  // This is also in strict mode
+  return a * b;
+}
+
+// This would throw an error:
+// undeclaredVar = 10;  // ReferenceError
+```
+
+```javascript
+// main.js (ES6 module)
+import { add, multiply } from './math-utils.js';
+
+// This entire file is in strict mode
+const result = add(5, 3);
+console.log(result);
+
+// Strict mode catches mistakes:
+// typoVariable = "oops";  // ReferenceError
+```
+
+<CodePlayground
+  initialCode={`// Simulating ES6 module behavior
+// (In real modules, strict mode is automatic)
+
+// Imagine this is a module file:
+const MathModule = (() => {
+  "use strict";  // Modules have this automatically
+  
+  function add(a, b) {
+    return a + b;
+  }
+  
+  function subtract(a, b) {
+    return a - b;
+  }
+  
+  // Private helper (not exported)
+  function validate(n) {
+    if (typeof n !== 'number') {
+      throw new TypeError('Expected a number');
+    }
+    return true;
+  }
+  
+  return { add, subtract };
+})();
+
+// Using the "module"
+console.log("5 + 3 =", MathModule.add(5, 3));
+console.log("10 - 4 =", MathModule.subtract(10, 4));
+
+// The module's strict mode protects it internally
+console.log("Module functions work correctly!");`}
+  title="Module-Level Strict Mode (Simulated)"
+/>
+
+### Why Modules Are Strict by Default
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│           WHY ES6 MODULES USE STRICT MODE                    │
+├─────────────────────────────────────────────────────────────┤
+│  1. Modules are a modern feature - no legacy concerns        │
+│  2. Module scope prevents global pollution anyway            │
+│  3. Strict mode aligns with module design philosophy         │
+│  4. Enables better static analysis and tree-shaking          │
+│  5. Consistent behavior across all module code               │
+└─────────────────────────────────────────────────────────────┘
+```
+
+<ProgressCheckpoint section="module-level" xpReward={15} />
+
+---
+
+## Section 4: Class-Level Strict Mode
+
+### Classes Are Always Strict
+
+All code inside a class body - including methods, getters, setters, and static blocks - runs in strict mode automatically.
+
+```javascript
+// Even without "use strict" at the top...
+
+class User {
+  constructor(name) {
+    // This is in strict mode
+    this.name = name;
+    // undeclared = "oops";  // Would throw ReferenceError
+  }
+  
+  greet() {
+    // This is in strict mode
+    return `Hello, ${this.name}!`;
+  }
+  
+  static createGuest() {
+    // Static methods are also in strict mode
+    return new User("Guest");
+  }
+  
+  get displayName() {
+    // Getters are in strict mode
+    return this.name.toUpperCase();
+  }
+  
+  set displayName(value) {
+    // Setters are in strict mode
+    this.name = value;
+  }
+}
+
+// Code outside the class may or may not be strict
+// depending on the script/module context
+const user = new User("Alice");
+```
+
+<CodePlayground
+  initialCode={`// Class bodies are always in strict mode
+
+class Calculator {
+  constructor() {
+    this.result = 0;
+  }
+  
+  add(value) {
+    // Strict mode - must declare variables
+    let temp = this.result + value;
+    this.result = temp;
+    return this;
+  }
+  
+  multiply(value) {
+    // Strict mode catches errors
+    this.result *= value;
+    return this;
+  }
+  
+  getResult() {
+    return this.result;
+  }
+  
+  // Static method - also strict
+  static describe() {
+    return "A simple calculator class";
+  }
+}
+
+// Using the class
+const calc = new Calculator();
+const result = calc.add(5).multiply(3).getResult();
+
+console.log("5 + 0, then * 3 =", result);
+console.log("Description:", Calculator.describe());
+
+// Class expressions are also strict
+const Counter = class {
+  constructor() {
+    this.count = 0;
+  }
+  
+  increment() {
+    // Strict mode here too
+    this.count++;
+    return this.count;
+  }
+};
+
+const counter = new Counter();
+console.log("Count:", counter.increment(), counter.increment(), counter.increment());`}
+  title="Class-Level Strict Mode"
+/>
+
+### Summary: Where Strict Mode Applies
+
+| Context | Strict Mode | How to Enable |
+|:--------|:------------|:--------------|
+| Regular script | Optional | Add `"use strict";` at top |
+| Individual function | Optional | Add `"use strict";` in function body |
+| ES6 module | Automatic | Just use `import`/`export` |
+| Class body | Automatic | Just use `class` syntax |
+| `eval()` code | Depends | Inherits from calling context |
+
+### Quick Knowledge Check
+
+<Quiz id="enable-script-quiz">
+  <Question>Where must "use strict"; be placed to enable strict mode for an entire script?</Question>
+  <Answer>Anywhere in the file</Answer>
+  <Answer correct>At the very beginning, before any other statements</Answer>
+  <Answer>Inside the first function</Answer>
+  <Answer>At the end of the file</Answer>
+</Quiz>
+
+<Quiz id="enable-module-quiz">
+  <Question>How do you enable strict mode in an ES6 module?</Question>
+  <Answer>Add "use strict"; at the top</Answer>
+  <Answer>Use a special import statement</Answer>
+  <Answer correct>It's automatic - no action needed</Answer>
+  <Answer>Set a module configuration option</Answer>
+</Quiz>
+
+<Quiz id="enable-params-quiz">
+  <Question>What happens if you use "use strict"; in a function with default parameters?</Question>
+  <Answer>It works normally</Answer>
+  <Answer>It's ignored</Answer>
+  <Answer correct>It throws a SyntaxError</Answer>
+  <Answer>It only applies to the default values</Answer>
+</Quiz>
+
+### Best Practices
+
+```javascript
+// RECOMMENDED: Use ES6 modules for automatic strict mode
+// file: app.js
+import { helper } from './utils.js';
+export function main() { /* strict by default */ }
+
+// ALTERNATIVE: Script-level strict mode
+// file: legacy-script.js
+"use strict";
+// All code here is strict
+
+// MIGRATION: Function-level for gradual adoption
+// file: mixed-codebase.js
+function oldCode() {
+  // Leave as-is for now
+}
+
+function newFeature() {
+  "use strict";
+  // New code benefits from strict mode
+}
+```
+
+<KeyConcept title="What's Next?">
+Now that you know how to enable strict mode, let's explore exactly what changes when strict mode is active - from error handling to scope management to security improvements.
+</KeyConcept>
+
+<ProgressCheckpoint section="class-level" xpReward={15} />

@@ -1,0 +1,18 @@
+{
+  "id": "memory-leaks",
+  "title": "Memory Leaks",
+  "description": "Identify, prevent, and fix common memory leaks in JavaScript applications to keep your apps fast and responsive.",
+  "milestone": "memory-management",
+  "order": 3,
+  "sections": [
+    "leak-basics",
+    "common-leaks",
+    "detection-tools",
+    "prevention-patterns"
+  ],
+  "singleLevel": true,
+  "estimatedMinutes": 18,
+  "xpReward": 95,
+  "prerequisites": ["garbage-collection"],
+  "tags": ["javascript", "memory-leaks", "debugging", "performance", "devtools"]
+}

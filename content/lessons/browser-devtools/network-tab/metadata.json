@@ -1,0 +1,18 @@
+{
+  "id": "network-tab",
+  "title": "Network Tab",
+  "description": "Inspect HTTP requests, analyze response times, and debug API calls using the Network panel.",
+  "milestone": "browser-devtools",
+  "order": 3,
+  "singleLevel": true,
+  "estimatedMinutes": 16,
+  "xpReward": 85,
+  "sections": [
+    "network-basics",
+    "inspecting-requests",
+    "filtering-searching",
+    "throttling-simulation"
+  ],
+  "prerequisites": ["console-api"],
+  "tags": ["javascript", "devtools", "network", "http", "api"]
+}

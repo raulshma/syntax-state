@@ -1,0 +1,552 @@
+# Strict Mode Changes
+
+Strict mode introduces numerous behavioral changes to JavaScript. These changes fall into four main categories: converting mistakes into errors, simplifying scope management, making `eval` and `arguments` safer, and improving security. Let's explore each in detail.
+
+---
+
+## Section 1: Converting Mistakes into Errors
+
+### Accidental Global Variables
+
+The most common mistake strict mode catches is accidentally creating global variables through typos or missing declarations.
+
+```javascript
+"use strict";
+
+let userName = "Alice";
+
+// Typo creates a ReferenceError instead of a global
+// userNmae = "Bob";  // ReferenceError: userNmae is not defined
+
+// Without strict mode, this would silently create
+// a global variable named 'userNmae'
+```
+
+<CodePlayground
+  initialCode={`"use strict";
+
+// Demonstration: Catching undeclared variables
+
+function processUser(name) {
+  // Correct: properly declared
+  let greeting = "Hello";
+  
+  // Try uncommenting this line to see the error:
+  // greting = "Hi";  // ReferenceError - typo!
+  
+  console.log(greeting + ", " + name + "!");
+}
+
+processUser("Alice");
+
+// Another common mistake: forgetting 'let' in loops
+function sumArray(numbers) {
+  let total = 0;
+  
+  for (let i = 0; i < numbers.length; i++) {
+    // Correct: 'i' is declared with 'let'
+    total += numbers[i];
+  }
+  
+  // Try this mistake:
+  // for (j = 0; j < numbers.length; j++) {
+  //   total += numbers[j];  // ReferenceError: j is not defined
+  // }
+  
+  return total;
+}
+
+console.log("Sum:", sumArray([1, 2, 3, 4, 5]));`}
+  title="Catching Undeclared Variables"
+/>
+
+### Silent Assignment Failures
+
+In sloppy mode, certain assignments fail silently. Strict mode makes them throw errors.
+
+```javascript
+"use strict";
+
+// 1. Assigning to non-writable properties
+const obj = {};
+Object.defineProperty(obj, "x", { value: 42, writable: false });
+// obj.x = 100;  // TypeError: Cannot assign to read only property
+
+// 2. Assigning to getter-only properties
+const config = {
+  get apiKey() { return "secret-key"; }
+};
+// config.apiKey = "new-key";  // TypeError: Cannot set property
+
+// 3. Assigning to non-extensible objects
+const frozen = Object.freeze({ name: "Immutable" });
+// frozen.name = "Changed";  // TypeError
+// frozen.newProp = "value"; // TypeError
+
+// 4. Assigning to primitives
+// false.true = "value";     // TypeError
+// (42).answer = "life";     // TypeError
+// "string".char = "s";      // TypeError
+```
+
+<CodePlayground
+  initialCode={`"use strict";
+
+// Silent failures become loud errors
+
+// Example 1: Non-writable property
+const settings = {};
+Object.defineProperty(settings, 'version', {
+  value: '1.0.0',
+  writable: false
+});
+
+console.log("Version:", settings.version);
+
+try {
+  settings.version = '2.0.0';  // TypeError in strict mode
+} catch (e) {
+  console.log("Error caught:", e.message);
+}
+
+// Example 2: Frozen object
+const constants = Object.freeze({
+  PI: 3.14159,
+  E: 2.71828
+});
+
+console.log("PI:", constants.PI);
+
+try {
+  constants.PI = 3.14;  // TypeError in strict mode
+} catch (e) {
+  console.log("Error caught:", e.message);
+}
+
+try {
+  constants.NEW = 100;  // TypeError - can't add properties
+} catch (e) {
+  console.log("Error caught:", e.message);
+}
+
+// Example 3: Getter-only property
+const user = {
+  _name: "Alice",
+  get name() { return this._name; }
+  // No setter defined!
+};
+
+console.log("Name:", user.name);
+
+try {
+  user.name = "Bob";  // TypeError in strict mode
+} catch (e) {
+  console.log("Error caught:", e.message);
+}`}
+  title="Silent Failures Become Errors"
+/>
+
+### Deletion Restrictions
+
+Strict mode throws errors when you try to delete things that can't be deleted.
+
+```javascript
+"use strict";
+
+// Cannot delete non-configurable properties
+// delete Object.prototype;  // TypeError
+
+// Cannot delete variables
+let x = 10;
+// delete x;  // SyntaxError
+
+// Cannot delete function arguments
+function test(a) {
+  // delete a;  // SyntaxError
+}
+
+// CAN delete configurable properties
+const obj = { prop: "value" };
+delete obj.prop;  // Works fine - obj.prop is configurable
+```
+
+### Duplicate Parameter Names
+
+Strict mode forbids duplicate parameter names, which can hide bugs.
+
+```javascript
+// Sloppy mode allows this (but it's confusing!)
+function sloppySum(a, a, c) {
+  return a + a + c;  // Which 'a'? The second one shadows the first!
+}
+console.log(sloppySum(1, 2, 3));  // Returns 7, not 6!
+
+// Strict mode catches this
+// function strictSum(a, a, c) {  // SyntaxError: Duplicate parameter name
+//   "use strict";
+//   return a + a + c;
+// }
+```
+
+### Legacy Octal Literals
+
+Strict mode forbids the confusing `0`-prefixed octal syntax.
+
+```javascript
+"use strict";
+
+// FORBIDDEN: Legacy octal (0-prefix)
+// const octal = 0644;  // SyntaxError
+
+// ALLOWED: Modern octal (0o-prefix)
+const octal = 0o644;  // Clear and explicit
+console.log(octal);   // 420
+
+// ALLOWED: Other number formats
+const hex = 0xFF;     // Hexadecimal
+const binary = 0b1010; // Binary
+```
+
+<ProgressCheckpoint section="error-changes" xpReward={20} />
+
+---
+
+## Section 2: Simplifying Scope Management
+
+### The `with` Statement is Forbidden
+
+The `with` statement creates ambiguous scope and is completely forbidden in strict mode.
+
+```javascript
+"use strict";
+
+const obj = { x: 10, y: 20 };
+
+// FORBIDDEN in strict mode:
+// with (obj) {
+//   console.log(x);  // Is this obj.x or a variable x?
+//   z = 30;          // Does this create obj.z or a global z?
+// }
+
+// CORRECT: Be explicit
+console.log(obj.x);
+obj.z = 30;
+```
+
+<InfoBox type="info">
+**Why `with` is problematic**: The JavaScript engine cannot determine at compile time whether a name inside `with` refers to an object property or an outer variable. This prevents optimizations and makes code unpredictable.
+</InfoBox>
+
+### `eval` Doesn't Leak Variables
+
+In strict mode, variables declared inside `eval` stay inside `eval`.
+
+<CodePlayground
+  initialCode={`"use strict";
+
+// In strict mode, eval has its own scope
+
+// Variables declared in eval don't leak out
+eval("var evalVar = 'I stay inside eval'");
+
+// Check if evalVar leaked
+try {
+  console.log(evalVar);
+} catch (e) {
+  console.log("evalVar is not accessible:", e.name);
+}
+
+// The eval can still return values
+const result = eval("2 + 2");
+console.log("Eval result:", result);
+
+// And access outer variables (read-only effectively)
+const outerVar = "I'm outside";
+const evalResult = eval("outerVar + ' - accessed from eval'");
+console.log(evalResult);
+
+// But it can't create variables in outer scope
+eval("var attemptedLeak = 'leaked?'");
+try {
+  console.log(attemptedLeak);
+} catch (e) {
+  console.log("No leak occurred:", e.name);
+}`}
+  title="eval Scope Containment"
+/>
+
+### Block-Scoped Function Declarations
+
+In strict mode, function declarations inside blocks are scoped to that block.
+
+```javascript
+"use strict";
+
+function example() {
+  console.log(typeof blockFunc);  // undefined
+  
+  if (true) {
+    function blockFunc() {
+      return "I'm block-scoped";
+    }
+    console.log(blockFunc());  // Works inside the block
+  }
+  
+  // In strict mode, blockFunc is not accessible here
+  // console.log(blockFunc());  // ReferenceError
+}
+```
+
+<ProgressCheckpoint section="scope-changes" xpReward={20} />
+
+---
+
+## Section 3: Making `eval` and `arguments` Safer
+
+### `eval` and `arguments` Cannot Be Reassigned
+
+Strict mode treats `eval` and `arguments` as keywords that cannot be bound or assigned.
+
+```javascript
+"use strict";
+
+// All of these are SyntaxErrors:
+
+// eval = 17;
+// arguments++;
+// ++eval;
+
+// let eval;
+// let arguments;
+
+// function eval() {}
+// function arguments() {}
+
+// function x(eval) {}
+// function y(arguments) {}
+
+// const obj = { set p(arguments) {} };
+
+// try {} catch (eval) {}
+// try {} catch (arguments) {}
+```
+
+### No Syncing Between Parameters and `arguments`
+
+In strict mode, the `arguments` object doesn't sync with named parameters.
+
+<CodePlayground
+  initialCode={`"use strict";
+
+// In strict mode, arguments and parameters are independent
+
+function demonstrateArguments(a, b) {
+  console.log("Initial values:");
+  console.log("  a:", a);
+  console.log("  b:", b);
+  console.log("  arguments[0]:", arguments[0]);
+  console.log("  arguments[1]:", arguments[1]);
+  
+  // Modify the parameter
+  a = 100;
+  
+  console.log("\\nAfter a = 100:");
+  console.log("  a:", a);
+  console.log("  arguments[0]:", arguments[0]);  // Still original!
+  
+  // Modify arguments
+  arguments[1] = 200;
+  
+  console.log("\\nAfter arguments[1] = 200:");
+  console.log("  b:", b);  // Still original!
+  console.log("  arguments[1]:", arguments[1]);
+}
+
+demonstrateArguments(1, 2);
+
+// In sloppy mode, a and arguments[0] would stay in sync
+// In strict mode, they're independent copies`}
+  title="arguments Independence"
+/>
+
+### Comparison Table
+
+| Behavior | Sloppy Mode | Strict Mode |
+|:---------|:------------|:------------|
+| `eval` as variable name | Allowed | SyntaxError |
+| `arguments` as variable name | Allowed | SyntaxError |
+| Parameter-arguments sync | Synced | Independent |
+| `eval` variable leaking | Leaks to outer scope | Contained |
+
+<ProgressCheckpoint section="eval-arguments" xpReward={20} />
+
+---
+
+## Section 4: Security and `this` Changes
+
+### No `this` Substitution
+
+One of the most important strict mode changes affects the `this` keyword in functions.
+
+```javascript
+"use strict";
+
+function showThis() {
+  console.log(this);
+}
+
+// In sloppy mode: this would be the global object (window/global)
+// In strict mode: this is undefined
+showThis();  // undefined
+
+// When called as a method, 'this' works normally
+const obj = {
+  method: showThis
+};
+obj.method();  // obj
+
+// With call/apply/bind, 'this' is exactly what you pass
+showThis.call(null);       // null (not converted to global)
+showThis.call(undefined);  // undefined (not converted to global)
+showThis.call(42);         // 42 (not boxed to Number object)
+```
+
+<CodePlayground
+  initialCode={`"use strict";
+
+// The 'this' keyword behaves differently in strict mode
+
+function regularFunction() {
+  return this;
+}
+
+// Called without context - 'this' is undefined
+console.log("Direct call:", regularFunction());
+
+// Called as method - 'this' is the object
+const obj = {
+  name: "MyObject",
+  getThis: regularFunction
+};
+console.log("Method call:", obj.getThis());
+
+// With call() - 'this' is exactly what you pass
+console.log("call(null):", regularFunction.call(null));
+console.log("call(42):", regularFunction.call(42));
+console.log("call('hello'):", regularFunction.call('hello'));
+
+// Arrow functions always inherit 'this' from enclosing scope
+const arrowFunc = () => this;
+console.log("Arrow function:", arrowFunc());
+
+// Practical example: avoiding accidental global access
+function Counter() {
+  this.count = 0;
+  
+  // In sloppy mode, forgetting 'new' would set global.count
+  // In strict mode, 'this' is undefined, causing an error
+}
+
+// Correct usage
+const counter = new Counter();
+console.log("Counter created:", counter.count);
+
+// Incorrect usage would throw in strict mode
+// const broken = Counter();  // TypeError: Cannot set property 'count' of undefined`}
+  title="this Keyword in Strict Mode"
+/>
+
+### Why This Matters for Security
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│              SECURITY BENEFITS OF STRICT MODE                │
+├─────────────────────────────────────────────────────────────┤
+│  1. No accidental global object access via 'this'           │
+│  2. eval() can't introduce variables into outer scope       │
+│  3. arguments.callee and arguments.caller are forbidden     │
+│  4. Can't access function.caller or function.arguments      │
+│  5. Prevents some forms of code injection                   │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Forbidden Properties
+
+Strict mode forbids access to certain "magic" properties that can leak information.
+
+```javascript
+"use strict";
+
+function restricted() {
+  // These throw TypeErrors in strict mode:
+  // arguments.callee  - reference to current function
+  // arguments.caller  - reference to calling function
+}
+
+function caller() {
+  restricted();
+  // restricted.caller     // TypeError
+  // restricted.arguments  // TypeError
+}
+```
+
+### Quick Knowledge Check
+
+<Quiz id="changes-global-quiz">
+  <Question>What happens when you assign to an undeclared variable in strict mode?</Question>
+  <Answer>Creates a global variable</Answer>
+  <Answer>Creates a local variable</Answer>
+  <Answer correct>Throws a ReferenceError</Answer>
+  <Answer>Silently fails</Answer>
+</Quiz>
+
+<Quiz id="changes-this-quiz">
+  <Question>What is 'this' inside a regular function called without context in strict mode?</Question>
+  <Answer>The global object (window)</Answer>
+  <Answer>An empty object</Answer>
+  <Answer correct>undefined</Answer>
+  <Answer>null</Answer>
+</Quiz>
+
+<Quiz id="changes-with-quiz">
+  <Question>What happens if you use the 'with' statement in strict mode?</Question>
+  <Answer>It works normally</Answer>
+  <Answer>It's deprecated but allowed</Answer>
+  <Answer correct>It throws a SyntaxError</Answer>
+  <Answer>It's converted to object destructuring</Answer>
+</Quiz>
+
+<Quiz id="changes-eval-quiz">
+  <Question>In strict mode, what happens to variables declared inside eval()?</Question>
+  <Answer>They become global variables</Answer>
+  <Answer correct>They stay contained within eval's scope</Answer>
+  <Answer>They're added to the calling function's scope</Answer>
+  <Answer>They cause a SyntaxError</Answer>
+</Quiz>
+
+### Complete Changes Summary
+
+| Category | Change | Sloppy Mode | Strict Mode |
+|:---------|:-------|:------------|:------------|
+| **Errors** | Undeclared assignment | Creates global | ReferenceError |
+| | Non-writable assignment | Silent fail | TypeError |
+| | Delete non-configurable | Silent fail | TypeError |
+| | Duplicate parameters | Allowed | SyntaxError |
+| | Octal literals (0644) | Allowed | SyntaxError |
+| **Scope** | `with` statement | Allowed | SyntaxError |
+| | `eval` variables | Leak out | Contained |
+| **eval/arguments** | As identifiers | Allowed | SyntaxError |
+| | Parameter sync | Synced | Independent |
+| **Security** | `this` in functions | Global object | undefined |
+| | `arguments.callee` | Allowed | TypeError |
+
+<KeyConcept title="Strict Mode Mastery">
+You now understand the complete picture of strict mode:
+- **What it is**: A restricted, safer variant of JavaScript
+- **How to enable it**: Script-level, function-level, or automatic in modules/classes
+- **What it changes**: Error handling, scope rules, eval/arguments behavior, and security
+
+Modern JavaScript development with ES6 modules means you're likely already using strict mode. Understanding these changes helps you write better code and debug issues when they arise.
+</KeyConcept>
+
+<ProgressCheckpoint section="security-changes" xpReward={25} />

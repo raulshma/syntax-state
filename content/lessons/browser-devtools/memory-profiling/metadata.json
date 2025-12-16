@@ -1,0 +1,18 @@
+{
+  "id": "memory-profiling",
+  "title": "Memory Profiling",
+  "description": "Detect memory leaks, analyze heap snapshots, and optimize memory usage in your JavaScript applications.",
+  "milestone": "browser-devtools",
+  "order": 5,
+  "singleLevel": true,
+  "estimatedMinutes": 18,
+  "xpReward": 90,
+  "sections": [
+    "memory-concepts",
+    "heap-snapshots",
+    "allocation-timeline",
+    "fixing-leaks"
+  ],
+  "prerequisites": ["performance-profiling"],
+  "tags": ["javascript", "devtools", "memory", "optimization", "debugging"]
+}
