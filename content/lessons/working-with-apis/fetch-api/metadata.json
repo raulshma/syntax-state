@@ -1,0 +1,18 @@
+{
+  "id": "fetch-api",
+  "title": "Fetch API",
+  "description": "Master the modern Fetch API - a cleaner, Promise-based way to make HTTP requests in JavaScript.",
+  "milestone": "working-with-apis",
+  "order": 2,
+  "singleLevel": true,
+  "estimatedMinutes": 18,
+  "xpReward": 90,
+  "sections": [
+    "fetch-basics",
+    "request-options",
+    "response-handling",
+    "advanced-fetch"
+  ],
+  "prerequisites": ["working-with-apis/xmlhttprequest"],
+  "tags": ["javascript", "api", "fetch", "http", "promises"]
+}

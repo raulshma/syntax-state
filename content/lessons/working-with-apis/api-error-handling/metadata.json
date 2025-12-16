@@ -1,0 +1,18 @@
+{
+  "id": "api-error-handling",
+  "title": "Error Handling in API Calls",
+  "description": "Build robust applications by properly handling network errors, HTTP errors, and edge cases in API calls.",
+  "milestone": "working-with-apis",
+  "order": 4,
+  "singleLevel": true,
+  "estimatedMinutes": 15,
+  "xpReward": 85,
+  "sections": [
+    "error-types",
+    "try-catch-patterns",
+    "http-status-codes",
+    "resilient-requests"
+  ],
+  "prerequisites": ["working-with-apis/handling-json"],
+  "tags": ["javascript", "api", "errors", "http", "resilience"]
+}

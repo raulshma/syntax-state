@@ -1,0 +1,316 @@
+# XMLHttpRequest: The Original AJAX
+
+Before `fetch()` existed, XMLHttpRequest (XHR) was THE way to make HTTP requests from JavaScript. While modern code typically uses Fetch, understanding XHR helps you work with legacy code and appreciate how far we've come!
+
+---
+
+## Section 1: XHR Basics
+
+### The Messenger Analogy 📬
+
+Think of XHR like sending a messenger to get information:
+
+1. **Create** the messenger (`new XMLHttpRequest()`)
+2. **Tell them** where to go and what to do (`open()`)
+3. **Send them** on their way (`send()`)
+4. **Wait** for them to return with the response
+
+```javascript
+// The classic XHR pattern
+const xhr = new XMLHttpRequest();
+xhr.open('GET', 'https://api.example.com/data');
+xhr.onload = function() {
+  if (xhr.status === 200) {
+    console.log('Success:', xhr.responseText);
+  }
+};
+xhr.send();
+```
+
+<CodePlayground
+  initialCode={`// Basic XMLHttpRequest example
+// Note: This uses a mock API for demonstration
+
+const xhr = new XMLHttpRequest();
+
+// Configure the request
+xhr.open('GET', 'https://jsonplaceholder.typicode.com/posts/1');
+
+// Set up the callback for when the request completes
+xhr.onload = function() {
+  if (xhr.status === 200) {
+    console.log('Status:', xhr.status);
+    console.log('Response:', xhr.responseText);
+    
+    // Parse JSON response
+    const data = JSON.parse(xhr.responseText);
+    console.log('Title:', data.title);
+  } else {
+    console.log('Error:', xhr.status);
+  }
+};
+
+// Handle network errors
+xhr.onerror = function() {
+  console.log('Network error occurred');
+};
+
+// Send the request
+xhr.send();
+console.log('Request sent! Waiting for response...');`}
+  height={350}
+/>
+
+<KeyConcept title="XHR is Asynchronous">
+XHR requests don't block your code. The `onload` callback runs later when the response arrives. This is the foundation of AJAX (Asynchronous JavaScript and XML).
+</KeyConcept>
+
+<ProgressCheckpoint section="xhr-basics" xpReward={20} />
+
+---
+
+## Section 2: XHR Methods and Properties
+
+### The XHR Lifecycle
+
+| Method | Purpose |
+|:-------|:--------|
+| `open(method, url)` | Configure the request |
+| `send(body?)` | Send the request |
+| `setRequestHeader(name, value)` | Set HTTP headers |
+| `abort()` | Cancel the request |
+
+| Property | Description |
+|:---------|:------------|
+| `readyState` | Current state (0-4) |
+| `status` | HTTP status code (200, 404, etc.) |
+| `statusText` | HTTP status message |
+| `responseText` | Response as text |
+| `responseType` | Expected response type |
+
+
+```javascript
+// Ready states explained
+// 0: UNSENT - open() not called yet
+// 1: OPENED - open() called
+// 2: HEADERS_RECEIVED - send() called, headers received
+// 3: LOADING - downloading response
+// 4: DONE - operation complete
+```
+
+<CodePlayground
+  initialCode={`// XHR with different HTTP methods
+
+// GET request (default)
+function getData(url) {
+  const xhr = new XMLHttpRequest();
+  xhr.open('GET', url);
+  xhr.onload = () => console.log('GET:', JSON.parse(xhr.responseText));
+  xhr.send();
+}
+
+// POST request with JSON body
+function postData(url, data) {
+  const xhr = new XMLHttpRequest();
+  xhr.open('POST', url);
+  
+  // Important: Set content type for JSON
+  xhr.setRequestHeader('Content-Type', 'application/json');
+  
+  xhr.onload = () => {
+    console.log('POST response:', JSON.parse(xhr.responseText));
+  };
+  
+  // Send JSON string as body
+  xhr.send(JSON.stringify(data));
+}
+
+// Example usage
+getData('https://jsonplaceholder.typicode.com/posts/1');
+
+postData('https://jsonplaceholder.typicode.com/posts', {
+  title: 'My New Post',
+  body: 'This is the content',
+  userId: 1
+});
+
+console.log('Requests sent...');`}
+  height={380}
+/>
+
+<InfoBox type="tip">
+**Setting Headers**: Always set `Content-Type: application/json` when sending JSON data. Without it, the server might not parse your data correctly!
+</InfoBox>
+
+<ProgressCheckpoint section="xhr-methods" xpReward={20} />
+
+---
+
+## Section 3: XHR Events
+
+### Tracking Request Progress
+
+XHR provides several events to track the request lifecycle:
+
+| Event | When it Fires |
+|:------|:--------------|
+| `loadstart` | Request starts |
+| `progress` | Data is being received |
+| `load` | Request completed successfully |
+| `error` | Network error occurred |
+| `abort` | Request was cancelled |
+| `timeout` | Request timed out |
+| `loadend` | Request finished (success or failure) |
+
+<CodePlayground
+  initialCode={`// XHR events demonstration
+
+const xhr = new XMLHttpRequest();
+
+// Track all events
+xhr.addEventListener('loadstart', () => {
+  console.log('🚀 Request started');
+});
+
+xhr.addEventListener('progress', (event) => {
+  if (event.lengthComputable) {
+    const percent = (event.loaded / event.total) * 100;
+    console.log('📊 Progress:', percent.toFixed(1) + '%');
+  } else {
+    console.log('📊 Loaded:', event.loaded, 'bytes');
+  }
+});
+
+xhr.addEventListener('load', () => {
+  console.log('✅ Request completed');
+  console.log('Status:', xhr.status, xhr.statusText);
+});
+
+xhr.addEventListener('error', () => {
+  console.log('❌ Network error');
+});
+
+xhr.addEventListener('timeout', () => {
+  console.log('⏰ Request timed out');
+});
+
+xhr.addEventListener('loadend', () => {
+  console.log('🏁 Request finished (success or failure)');
+});
+
+// Set timeout (in milliseconds)
+xhr.timeout = 5000;
+
+// Make the request
+xhr.open('GET', 'https://jsonplaceholder.typicode.com/posts');
+xhr.send();`}
+  height={420}
+/>
+
+### The `readystatechange` Event
+
+The older way to track XHR progress:
+
+```javascript
+xhr.onreadystatechange = function() {
+  console.log('Ready state:', xhr.readyState);
+  
+  if (xhr.readyState === 4) { // DONE
+    if (xhr.status === 200) {
+      console.log('Success!');
+    } else {
+      console.log('Error:', xhr.status);
+    }
+  }
+};
+```
+
+<ProgressCheckpoint section="xhr-events" xpReward={20} />
+
+---
+
+## Section 4: Practical XHR Patterns
+
+### Wrapping XHR in a Promise
+
+Modern code often wraps XHR in a Promise for cleaner async handling:
+
+<CodePlayground
+  initialCode={`// Promise-based XHR wrapper
+
+function request(method, url, data = null) {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open(method, url);
+    
+    if (data) {
+      xhr.setRequestHeader('Content-Type', 'application/json');
+    }
+    
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        try {
+          resolve(JSON.parse(xhr.responseText));
+        } catch {
+          resolve(xhr.responseText);
+        }
+      } else {
+        reject(new Error(xhr.status + ': ' + xhr.statusText));
+      }
+    };
+    
+    xhr.onerror = () => reject(new Error('Network error'));
+    xhr.ontimeout = () => reject(new Error('Request timeout'));
+    
+    xhr.timeout = 10000;
+    xhr.send(data ? JSON.stringify(data) : null);
+  });
+}
+
+// Now we can use async/await!
+async function demo() {
+  try {
+    console.log('Fetching post...');
+    const post = await request('GET', 'https://jsonplaceholder.typicode.com/posts/1');
+    console.log('Got post:', post.title);
+    
+    console.log('Creating new post...');
+    const newPost = await request('POST', 'https://jsonplaceholder.typicode.com/posts', {
+      title: 'My Post',
+      body: 'Content here',
+      userId: 1
+    });
+    console.log('Created:', newPost);
+  } catch (error) {
+    console.error('Error:', error.message);
+  }
+}
+
+demo();`}
+  height={480}
+/>
+
+<Quiz id="xhr-quiz">
+  <Question>What does XHR stand for?</Question>
+  <Answer>XML Hypertext Request</Answer>
+  <Answer correct>XMLHttpRequest</Answer>
+  <Answer>Extended HTTP Request</Answer>
+  <Answer>XML HTTP Response</Answer>
+</Quiz>
+
+### XHR vs Fetch Comparison
+
+| Feature | XHR | Fetch |
+|:--------|:----|:------|
+| Syntax | Callback-based | Promise-based |
+| Progress events | ✅ Built-in | ❌ Requires streams |
+| Abort | `xhr.abort()` | `AbortController` |
+| Timeout | `xhr.timeout` | Manual with `AbortController` |
+| JSON parsing | Manual | `response.json()` |
+| Browser support | IE7+ | Modern browsers |
+
+<InfoBox type="info">
+**When to use XHR today?** Use XHR when you need upload progress events or must support very old browsers. Otherwise, prefer the Fetch API!
+</InfoBox>
+
+<ProgressCheckpoint section="xhr-practical" xpReward={20} />

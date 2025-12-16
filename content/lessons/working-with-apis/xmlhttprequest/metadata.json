@@ -1,0 +1,18 @@
+{
+  "id": "xmlhttprequest",
+  "title": "XMLHttpRequest (XHR)",
+  "description": "Learn the original way to make HTTP requests in JavaScript - XMLHttpRequest, the foundation of AJAX.",
+  "milestone": "working-with-apis",
+  "order": 1,
+  "singleLevel": true,
+  "estimatedMinutes": 15,
+  "xpReward": 80,
+  "sections": [
+    "xhr-basics",
+    "xhr-methods",
+    "xhr-events",
+    "xhr-practical"
+  ],
+  "prerequisites": ["async-javascript/promises"],
+  "tags": ["javascript", "api", "xhr", "ajax", "http"]
+}

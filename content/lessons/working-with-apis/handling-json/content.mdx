@@ -1,0 +1,330 @@
+# Handling JSON: The Language of APIs
+
+JSON (JavaScript Object Notation) is the universal format for data exchange on the web. It's human-readable, lightweight, and native to JavaScript. Master JSON handling to work effectively with any API!
+
+---
+
+## Section 1: JSON Basics
+
+### What is JSON?
+
+JSON is a text format that looks almost exactly like JavaScript objects, but with stricter rules:
+
+```javascript
+// JavaScript Object (flexible)
+const jsObject = {
+  name: 'Alice',        // Unquoted keys OK
+  age: 25,
+  'has-job': true,      // Quoted keys OK too
+  greet() { }           // Methods allowed
+};
+
+// JSON (strict rules)
+{
+  "name": "Alice",      // Keys MUST be quoted
+  "age": 25,            // No trailing commas
+  "hasJob": true        // No methods, no undefined
+}
+```
+
+<JsonPlayground />
+
+### JSON Rules
+
+| Rule | Valid JSON | Invalid JSON |
+|:-----|:-----------|:-------------|
+| Keys must be strings | `{"name": "Alice"}` | `{name: "Alice"}` |
+| Strings use double quotes | `"hello"` | `'hello'` |
+| No trailing commas | `[1, 2, 3]` | `[1, 2, 3,]` |
+| No comments | - | `// comment` |
+| No undefined | `null` | `undefined` |
+| No functions | - | `"fn": function(){}` |
+
+<CodePlayground
+  initialCode={`// JSON data types
+
+const validJson = {
+  "string": "Hello, World!",
+  "number": 42,
+  "float": 3.14,
+  "boolean": true,
+  "null": null,
+  "array": [1, 2, 3],
+  "object": {
+    "nested": "value"
+  }
+};
+
+console.log("Valid JSON types:");
+console.log(JSON.stringify(validJson, null, 2));
+
+// These CANNOT be in JSON:
+// - undefined
+// - functions
+// - Symbol
+// - BigInt (without custom handling)
+// - Dates (become strings)
+// - RegExp (become empty objects)
+
+const problematic = {
+  date: new Date(),
+  regex: /test/,
+  fn: () => {},
+  undef: undefined
+};
+
+console.log("\\nProblematic values become:");
+console.log(JSON.stringify(problematic, null, 2));
+// date becomes string, fn and undef are removed, regex becomes {}`}
+  height={380}
+/>
+
+<ProgressCheckpoint section="json-basics" xpReward={15} />
+
+---
+
+## Section 2: Parsing JSON
+
+### JSON.parse() - String to Object
+
+Convert a JSON string into a JavaScript object:
+
+```javascript
+const jsonString = '{"name": "Alice", "age": 25}';
+const obj = JSON.parse(jsonString);
+
+console.log(obj.name); // "Alice"
+console.log(obj.age);  // 25
+```
+
+
+<CodePlayground
+  initialCode={`// JSON.parse() examples
+
+// Basic parsing
+const simple = JSON.parse('{"name": "Alice", "age": 25}');
+console.log("Parsed:", simple);
+
+// Parsing arrays
+const arr = JSON.parse('[1, 2, 3, "four", true]');
+console.log("Array:", arr);
+
+// Nested objects
+const nested = JSON.parse(\`{
+  "user": {
+    "name": "Bob",
+    "address": {
+      "city": "NYC"
+    }
+  }
+}\`);
+console.log("Nested:", nested.user.address.city);
+
+// With reviver function (transform values during parsing)
+const withDates = JSON.parse(
+  '{"created": "2024-01-15T10:30:00Z", "name": "Event"}',
+  (key, value) => {
+    // Convert date strings to Date objects
+    if (key === 'created') {
+      return new Date(value);
+    }
+    return value;
+  }
+);
+console.log("With reviver:", withDates);
+console.log("Is Date?", withDates.created instanceof Date);`}
+  height={350}
+/>
+
+<InfoBox type="warning">
+**Always Handle Parse Errors!** Invalid JSON will throw a `SyntaxError`. Always wrap `JSON.parse()` in try-catch when parsing external data.
+</InfoBox>
+
+```javascript
+// Safe JSON parsing
+function safeJsonParse(str, fallback = null) {
+  try {
+    return JSON.parse(str);
+  } catch (error) {
+    console.error('Invalid JSON:', error.message);
+    return fallback;
+  }
+}
+
+safeJsonParse('{"valid": true}');  // { valid: true }
+safeJsonParse('not json');          // null (fallback)
+safeJsonParse('{invalid}', {});     // {} (custom fallback)
+```
+
+<ProgressCheckpoint section="parsing-json" xpReward={20} />
+
+---
+
+## Section 3: Stringifying JSON
+
+### JSON.stringify() - Object to String
+
+Convert a JavaScript object into a JSON string:
+
+```javascript
+const obj = { name: 'Alice', age: 25 };
+const jsonString = JSON.stringify(obj);
+
+console.log(jsonString); // '{"name":"Alice","age":25}'
+```
+
+<CodePlayground
+  initialCode={`// JSON.stringify() options
+
+const user = {
+  name: "Alice",
+  age: 25,
+  email: "alice@example.com",
+  password: "secret123",
+  preferences: {
+    theme: "dark",
+    notifications: true
+  }
+};
+
+// Basic stringify
+console.log("Basic:", JSON.stringify(user));
+
+// Pretty print with indentation
+console.log("\\nPretty (2 spaces):");
+console.log(JSON.stringify(user, null, 2));
+
+// With replacer array (whitelist keys)
+console.log("\\nOnly name and email:");
+console.log(JSON.stringify(user, ["name", "email"], 2));
+
+// With replacer function (transform/filter)
+const safe = JSON.stringify(user, (key, value) => {
+  // Hide sensitive data
+  if (key === "password") return undefined;
+  // Transform values
+  if (key === "email") return value.replace(/@.*/, "@***");
+  return value;
+}, 2);
+console.log("\\nFiltered:");
+console.log(safe);
+
+// Custom tab indentation
+console.log("\\nWith tabs:");
+console.log(JSON.stringify(user, null, "\\t"));`}
+  height={420}
+/>
+
+### Custom Serialization with toJSON
+
+Objects can define how they're serialized:
+
+```javascript
+const user = {
+  name: 'Alice',
+  password: 'secret',
+  
+  // Custom serialization
+  toJSON() {
+    return {
+      name: this.name
+      // password is excluded!
+    };
+  }
+};
+
+JSON.stringify(user); // '{"name":"Alice"}'
+```
+
+<ProgressCheckpoint section="stringify-json" xpReward={20} />
+
+---
+
+## Section 4: JSON Patterns in Practice
+
+### Working with API Responses
+
+<CodePlayground
+  initialCode={`// Real-world JSON patterns
+
+// 1. Fetch and parse JSON
+async function fetchUser(id) {
+  const response = await fetch(
+    'https://jsonplaceholder.typicode.com/users/' + id
+  );
+  
+  if (!response.ok) {
+    throw new Error('User not found');
+  }
+  
+  return response.json(); // Automatically parses JSON
+}
+
+// 2. Send JSON to API
+async function createPost(post) {
+  const response = await fetch('https://jsonplaceholder.typicode.com/posts', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json' // Important!
+    },
+    body: JSON.stringify(post) // Convert to JSON string
+  });
+  
+  return response.json();
+}
+
+// 3. Deep clone objects with JSON
+function deepClone(obj) {
+  return JSON.parse(JSON.stringify(obj));
+}
+
+const original = { a: 1, b: { c: 2 } };
+const clone = deepClone(original);
+clone.b.c = 999;
+
+console.log("Original:", original.b.c); // Still 2!
+console.log("Clone:", clone.b.c);       // 999
+
+// 4. Local storage (always uses strings)
+const settings = { theme: 'dark', fontSize: 16 };
+localStorage.setItem('settings', JSON.stringify(settings));
+
+const loaded = JSON.parse(localStorage.getItem('settings') || '{}');
+console.log("From storage:", loaded);
+
+// Demo API calls
+async function demo() {
+  const user = await fetchUser(1);
+  console.log("Fetched user:", user.name);
+  
+  const newPost = await createPost({
+    title: 'My Post',
+    body: 'Content',
+    userId: 1
+  });
+  console.log("Created post:", newPost);
+}
+
+demo();`}
+  height={480}
+/>
+
+<Quiz id="json-quiz">
+  <Question>Which of these is valid JSON?</Question>
+  <Answer>{`{name: "Alice"}`}</Answer>
+  <Answer>{`{'name': 'Alice'}`}</Answer>
+  <Answer correct>{`{"name": "Alice"}`}</Answer>
+  <Answer>{`{"name": "Alice",}`}</Answer>
+</Quiz>
+
+### Common JSON Gotchas
+
+| Issue | Problem | Solution |
+|:------|:--------|:---------|
+| Dates | Become strings | Use reviver to convert back |
+| Circular refs | Throws error | Use custom replacer or library |
+| undefined | Gets removed | Use null instead |
+| BigInt | Throws error | Convert to string first |
+| Functions | Get removed | Don't include in JSON |
+
+<ProgressCheckpoint section="json-patterns" xpReward={15} />

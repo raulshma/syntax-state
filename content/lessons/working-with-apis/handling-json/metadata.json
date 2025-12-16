@@ -1,0 +1,18 @@
+{
+  "id": "handling-json",
+  "title": "Handling JSON",
+  "description": "Learn to parse, stringify, and work with JSON data - the universal language of web APIs.",
+  "milestone": "working-with-apis",
+  "order": 3,
+  "singleLevel": true,
+  "estimatedMinutes": 12,
+  "xpReward": 70,
+  "sections": [
+    "json-basics",
+    "parsing-json",
+    "stringify-json",
+    "json-patterns"
+  ],
+  "prerequisites": ["working-with-apis/fetch-api"],
+  "tags": ["javascript", "json", "api", "data", "serialization"]
+}
