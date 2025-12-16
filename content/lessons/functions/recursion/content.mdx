@@ -1,0 +1,354 @@
+# Recursion: Functions That Call Themselves
+
+Recursion is when a function calls itself to solve a problem by breaking it into smaller, similar sub-problems. It's like Russian nesting dolls - each doll contains a smaller version of itself until you reach the tiniest one.
+
+---
+
+## Section 1: Recursion Basics
+
+### The Mirror Analogy 🪞
+
+Imagine standing between two mirrors facing each other. You see infinite reflections, each smaller than the last. Recursion works similarly - a function creates "reflections" of itself, each handling a smaller piece of the problem.
+
+```javascript
+function countdown(n) {
+  // Base case: stop when we reach 0
+  if (n <= 0) {
+    console.log("Blast off! 🚀");
+    return;
+  }
+  
+  // Recursive case: do work, then call self with smaller input
+  console.log(n);
+  countdown(n - 1); // Call itself with n-1
+}
+
+countdown(5);
+// 5, 4, 3, 2, 1, Blast off! 🚀
+```
+
+<CodePlayground
+  initialCode={`// Basic recursion - countdown
+
+function countdown(n) {
+  // Base case - when to stop
+  if (n <= 0) {
+    console.log("🚀 Blast off!");
+    return;
+  }
+  
+  // Do something
+  console.log(n + "...");
+  
+  // Recursive call with smaller problem
+  countdown(n - 1);
+}
+
+countdown(5);
+
+console.log("---");
+
+// Another example: sum of numbers from 1 to n
+function sumTo(n) {
+  // Base case
+  if (n <= 1) return n;
+  
+  // Recursive case: n + sum of everything before n
+  return n + sumTo(n - 1);
+}
+
+console.log("Sum 1 to 5:", sumTo(5));  // 15 (1+2+3+4+5)
+console.log("Sum 1 to 10:", sumTo(10)); // 55`}
+  height={350}
+/>
+
+<KeyConcept title="Two Essential Parts of Recursion">
+1. **Base Case**: The condition that stops the recursion (prevents infinite loops!)
+2. **Recursive Case**: The function calls itself with a "smaller" or "simpler" input
+</KeyConcept>
+
+<ProgressCheckpoint section="recursion-basics" xpReward={20} />
+
+---
+
+## Section 2: The Base Case
+
+### Your Emergency Brake 🛑
+
+The base case is crucial - without it, your function would call itself forever (until the browser crashes with a "Maximum call stack exceeded" error).
+
+```javascript
+// ❌ No base case - INFINITE RECURSION!
+function broken(n) {
+  console.log(n);
+  broken(n - 1); // Never stops!
+}
+// broken(5); // Don't run this!
+
+// ✅ With base case - safe recursion
+function safe(n) {
+  if (n <= 0) return; // Base case stops it
+  console.log(n);
+  safe(n - 1);
+}
+```
+
+
+<CodePlayground
+  initialCode={`// The importance of base cases
+
+// Classic example: Factorial
+// 5! = 5 × 4 × 3 × 2 × 1 = 120
+
+function factorial(n) {
+  // Base case: 0! and 1! both equal 1
+  if (n <= 1) {
+    console.log("Base case reached: factorial(" + n + ") = 1");
+    return 1;
+  }
+  
+  // Recursive case
+  console.log("Computing: " + n + " × factorial(" + (n-1) + ")");
+  return n * factorial(n - 1);
+}
+
+console.log("Result:", factorial(5));
+
+console.log("---");
+
+// Multiple base cases example
+function fibonacci(n) {
+  // Two base cases!
+  if (n === 0) return 0;
+  if (n === 1) return 1;
+  
+  // Recursive case
+  return fibonacci(n - 1) + fibonacci(n - 2);
+}
+
+console.log("Fibonacci sequence:");
+for (let i = 0; i <= 10; i++) {
+  console.log("fib(" + i + ") =", fibonacci(i));
+}`}
+  height={400}
+/>
+
+<InfoBox type="warning">
+**Stack Overflow Alert!** Every recursive call adds to the "call stack". Too many calls without reaching a base case will crash your program. Always ensure your base case is reachable!
+</InfoBox>
+
+<ProgressCheckpoint section="base-case" xpReward={20} />
+
+---
+
+## Section 3: The Call Stack
+
+### Visualizing Recursion
+
+When a function calls itself, JavaScript keeps track of each call in a "call stack". Think of it like a stack of plates - each new call adds a plate on top, and they're removed (resolved) from top to bottom.
+
+```javascript
+function factorial(n) {
+  if (n <= 1) return 1;
+  return n * factorial(n - 1);
+}
+
+factorial(4);
+// Call stack builds up:
+// factorial(4) waits for factorial(3)
+//   factorial(3) waits for factorial(2)
+//     factorial(2) waits for factorial(1)
+//       factorial(1) returns 1 (base case!)
+//     factorial(2) returns 2 * 1 = 2
+//   factorial(3) returns 3 * 2 = 6
+// factorial(4) returns 4 * 6 = 24
+```
+
+<CodePlayground
+  initialCode={`// Visualizing the call stack
+
+function factorial(n, depth = 0) {
+  const indent = "  ".repeat(depth);
+  console.log(indent + "→ factorial(" + n + ") called");
+  
+  if (n <= 1) {
+    console.log(indent + "← factorial(" + n + ") returns 1 (base case)");
+    return 1;
+  }
+  
+  const result = n * factorial(n - 1, depth + 1);
+  console.log(indent + "← factorial(" + n + ") returns " + result);
+  return result;
+}
+
+console.log("Final result:", factorial(5));
+
+console.log("\\n---\\n");
+
+// Trace a simpler example
+function countDown(n, depth = 0) {
+  const indent = "│ ".repeat(depth);
+  
+  if (n <= 0) {
+    console.log(indent + "└─ Base case: return");
+    return;
+  }
+  
+  console.log(indent + "├─ countDown(" + n + ")");
+  countDown(n - 1, depth + 1);
+  console.log(indent + "└─ Back from countDown(" + (n-1) + ")");
+}
+
+countDown(3);`}
+  height={400}
+/>
+
+<ProgressCheckpoint section="call-stack" xpReward={25} />
+
+---
+
+## Section 4: Practical Recursion
+
+### Real-World Examples
+
+Recursion shines when working with:
+- **Tree structures** (file systems, DOM, org charts)
+- **Nested data** (JSON, configurations)
+- **Divide-and-conquer algorithms** (sorting, searching)
+
+#### Traversing Nested Objects
+
+```javascript
+const fileSystem = {
+  name: "root",
+  type: "folder",
+  children: [
+    {
+      name: "documents",
+      type: "folder",
+      children: [
+        { name: "resume.pdf", type: "file" },
+        { name: "cover-letter.docx", type: "file" }
+      ]
+    },
+    { name: "photo.jpg", type: "file" }
+  ]
+};
+
+function listAllFiles(node, path = "") {
+  const currentPath = path + "/" + node.name;
+  
+  if (node.type === "file") {
+    console.log(currentPath);
+    return;
+  }
+  
+  // It's a folder - recurse into children
+  node.children.forEach(child => listAllFiles(child, currentPath));
+}
+```
+
+<CodePlayground
+  initialCode={`// Practical recursion examples
+
+// 1. Deep clone an object
+function deepClone(obj) {
+  // Base cases
+  if (obj === null || typeof obj !== "object") {
+    return obj;
+  }
+  
+  if (Array.isArray(obj)) {
+    return obj.map(item => deepClone(item));
+  }
+  
+  // Recursive case: clone each property
+  const cloned = {};
+  for (const key in obj) {
+    cloned[key] = deepClone(obj[key]);
+  }
+  return cloned;
+}
+
+const original = {
+  name: "Alice",
+  address: { city: "NYC", zip: "10001" },
+  hobbies: ["reading", "coding"]
+};
+
+const clone = deepClone(original);
+clone.address.city = "LA";
+clone.hobbies.push("gaming");
+
+console.log("Original:", original);
+console.log("Clone:", clone);
+
+console.log("---");
+
+// 2. Flatten nested arrays
+function flatten(arr) {
+  let result = [];
+  
+  for (const item of arr) {
+    if (Array.isArray(item)) {
+      // Recursive case: flatten nested array
+      result = result.concat(flatten(item));
+    } else {
+      // Base case: just add the item
+      result.push(item);
+    }
+  }
+  
+  return result;
+}
+
+const nested = [1, [2, 3], [4, [5, 6, [7]]]];
+console.log("Flattened:", flatten(nested));
+
+console.log("---");
+
+// 3. Find all paths in a tree
+const menu = {
+  name: "Home",
+  children: [
+    { name: "Products", children: [
+      { name: "Electronics", children: [] },
+      { name: "Books", children: [] }
+    ]},
+    { name: "About", children: [] }
+  ]
+};
+
+function getAllPaths(node, currentPath = []) {
+  const path = [...currentPath, node.name];
+  
+  if (!node.children || node.children.length === 0) {
+    return [path.join(" > ")];
+  }
+  
+  return node.children.flatMap(child => getAllPaths(child, path));
+}
+
+console.log("All paths:");
+getAllPaths(menu).forEach(p => console.log("  " + p));`}
+  height={500}
+/>
+
+<Quiz id="recursion-quiz">
+  <Question>What happens if a recursive function has no base case?</Question>
+  <Answer>It returns undefined</Answer>
+  <Answer>It runs once and stops</Answer>
+  <Answer correct>It causes infinite recursion and crashes</Answer>
+  <Answer>It automatically creates a base case</Answer>
+</Quiz>
+
+### Recursion vs Iteration
+
+| Aspect | Recursion | Iteration (Loops) |
+|:-------|:----------|:------------------|
+| Readability | Often cleaner for tree/nested data | Better for simple sequences |
+| Performance | Can be slower (call stack overhead) | Generally faster |
+| Memory | Uses call stack (can overflow) | Constant memory |
+| Best for | Trees, nested structures, divide-and-conquer | Arrays, simple repetition |
+
+<ProgressCheckpoint section="practical-recursion" xpReward={25} />

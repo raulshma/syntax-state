@@ -1,0 +1,18 @@
+{
+  "id": "arrow-functions",
+  "title": "Arrow Functions",
+  "description": "Discover ES6 arrow functions - the modern, concise syntax for writing functions in JavaScript.",
+  "milestone": "functions",
+  "order": 3,
+  "singleLevel": true,
+  "estimatedMinutes": 15,
+  "xpReward": 85,
+  "sections": [
+    "arrow-syntax",
+    "implicit-return",
+    "this-binding",
+    "when-not-to-use"
+  ],
+  "prerequisites": ["functions/function-expressions"],
+  "tags": ["javascript", "functions", "arrow", "es6", "this"]
+}

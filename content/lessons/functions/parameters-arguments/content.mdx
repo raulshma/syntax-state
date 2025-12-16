@@ -1,0 +1,283 @@
+# Parameters and Arguments: Data Flow in Functions
+
+Understanding the difference between parameters and arguments is fundamental to mastering functions. Think of parameters as the "slots" in a function, and arguments as the "values" you plug into those slots.
+
+---
+
+## Section 1: Parameters vs Arguments
+
+### The Mailbox Analogy 📬
+
+Imagine a mailbox with labeled slots:
+- **Parameters** are the labels on the slots ("Letters", "Packages", "Bills")
+- **Arguments** are the actual items you put in those slots
+
+```javascript
+// Parameters are the names in the function definition
+function sendEmail(to, subject, body) {
+  //              ↑    ↑        ↑ These are PARAMETERS
+  console.log(`Sending to: ${to}`);
+  console.log(`Subject: ${subject}`);
+  console.log(`Body: ${body}`);
+}
+
+// Arguments are the values passed when calling
+sendEmail("alice@example.com", "Hello!", "How are you?");
+//        ↑                    ↑         ↑ These are ARGUMENTS
+```
+
+<CodePlayground
+  initialCode={`// Parameters vs Arguments demonstration
+
+function introduce(name, age, city) {
+  // name, age, city are PARAMETERS (placeholders)
+  console.log("Hi, I'm " + name);
+  console.log("I'm " + age + " years old");
+  console.log("I live in " + city);
+}
+
+// "Alice", 25, "New York" are ARGUMENTS (actual values)
+introduce("Alice", 25, "New York");
+
+console.log("---");
+
+// Different arguments, same function
+introduce("Bob", 30, "London");`}
+  height={280}
+/>
+
+<KeyConcept title="Remember the Difference">
+- **Parameters** = Variables listed in the function definition (the "placeholders")
+- **Arguments** = Actual values passed to the function when called (the "data")
+</KeyConcept>
+
+<ProgressCheckpoint section="params-vs-args" xpReward={20} />
+
+---
+
+## Section 2: The Arguments Object
+
+### A Hidden Treasure in Functions
+
+Every regular function (not arrow functions!) has access to a special `arguments` object containing all passed arguments.
+
+```javascript
+function showArguments() {
+  console.log(arguments);        // Array-like object
+  console.log(arguments.length); // Number of arguments
+  console.log(arguments[0]);     // First argument
+}
+
+showArguments("a", "b", "c");
+// Arguments(3) ['a', 'b', 'c']
+// 3
+// 'a'
+```
+
+
+<CodePlayground
+  initialCode={`// The arguments object in action
+
+function sum() {
+  // No parameters defined, but we can still access arguments!
+  let total = 0;
+  
+  for (let i = 0; i < arguments.length; i++) {
+    total += arguments[i];
+  }
+  
+  return total;
+}
+
+console.log(sum(1, 2));           // 3
+console.log(sum(1, 2, 3, 4, 5));  // 15
+console.log(sum(10, 20, 30));     // 60
+
+// Note: arguments is array-LIKE, not a real array
+// To use array methods, convert it first:
+function sumModern() {
+  const args = Array.from(arguments);
+  return args.reduce((a, b) => a + b, 0);
+}
+
+console.log(sumModern(1, 2, 3)); // 6`}
+  height={320}
+/>
+
+<InfoBox type="warning">
+**Important**: Arrow functions do NOT have their own `arguments` object! Use rest parameters instead (covered in a later lesson).
+```javascript
+const arrowFunc = () => {
+  console.log(arguments); // ReferenceError in strict mode!
+};
+```
+</InfoBox>
+
+<ProgressCheckpoint section="arguments-object" xpReward={20} />
+
+---
+
+## Section 3: Passing by Value vs Reference
+
+### How JavaScript Passes Data
+
+JavaScript passes arguments differently based on the data type:
+
+| Type | Passed By | What Happens |
+|:-----|:----------|:-------------|
+| Primitives (string, number, boolean) | **Value** | A copy is made |
+| Objects (arrays, objects, functions) | **Reference** | Same object is shared |
+
+```javascript
+// Primitives: passed by VALUE (copy)
+function changeNumber(num) {
+  num = 100;
+  console.log("Inside:", num); // 100
+}
+
+let myNum = 5;
+changeNumber(myNum);
+console.log("Outside:", myNum); // Still 5! (unchanged)
+
+// Objects: passed by REFERENCE
+function changeObject(obj) {
+  obj.name = "Changed!";
+  console.log("Inside:", obj.name); // "Changed!"
+}
+
+let myObj = { name: "Original" };
+changeObject(myObj);
+console.log("Outside:", myObj.name); // "Changed!" (modified!)
+```
+
+<CodePlayground
+  initialCode={`// Understanding pass by value vs reference
+
+// PRIMITIVES - Changes don't affect original
+function tryToChange(value) {
+  value = "modified";
+  console.log("Inside function:", value);
+}
+
+let original = "original";
+tryToChange(original);
+console.log("After function:", original); // Still "original"
+
+console.log("---");
+
+// OBJECTS - Changes DO affect original
+function modifyArray(arr) {
+  arr.push("new item");
+  console.log("Inside function:", arr);
+}
+
+let myArray = ["item1", "item2"];
+modifyArray(myArray);
+console.log("After function:", myArray); // Has "new item"!
+
+console.log("---");
+
+// To avoid modifying original, create a copy
+function safeModify(arr) {
+  const copy = [...arr]; // Spread operator creates copy
+  copy.push("safe item");
+  return copy;
+}
+
+let original2 = ["a", "b"];
+let modified = safeModify(original2);
+console.log("Original:", original2); // Unchanged!
+console.log("Modified:", modified);  // Has new item`}
+  height={380}
+/>
+
+<ProgressCheckpoint section="passing-by-value" xpReward={20} />
+
+---
+
+## Section 4: Practical Patterns
+
+### Flexible Function Signatures
+
+```javascript
+// Optional parameters (check if provided)
+function greet(name, greeting) {
+  if (greeting === undefined) {
+    greeting = "Hello";
+  }
+  return greeting + ", " + name + "!";
+}
+
+console.log(greet("Alice"));           // "Hello, Alice!"
+console.log(greet("Bob", "Hi"));       // "Hi, Bob!"
+```
+
+### Destructuring Parameters
+
+```javascript
+// Object destructuring in parameters
+function createUser({ name, email, age = 18 }) {
+  return {
+    name,
+    email,
+    age,
+    createdAt: new Date()
+  };
+}
+
+const user = createUser({
+  name: "Alice",
+  email: "alice@example.com"
+  // age will default to 18
+});
+```
+
+<CodePlayground
+  initialCode={`// Modern parameter patterns
+
+// 1. Object destructuring for cleaner APIs
+function displayProduct({ name, price, inStock = true }) {
+  console.log("Product:", name);
+  console.log("Price: $" + price);
+  console.log("Available:", inStock ? "Yes" : "No");
+}
+
+displayProduct({ name: "Laptop", price: 999 });
+
+console.log("---");
+
+// 2. Array destructuring
+function getFirstAndLast([first, ...rest]) {
+  const last = rest[rest.length - 1];
+  return { first, last };
+}
+
+console.log(getFirstAndLast([1, 2, 3, 4, 5]));
+
+console.log("---");
+
+// 3. Combining patterns
+function processOrder({ items, customer: { name } }, discount = 0) {
+  const total = items.reduce((sum, item) => sum + item.price, 0);
+  const finalPrice = total * (1 - discount);
+  console.log("Customer:", name);
+  console.log("Items:", items.length);
+  console.log("Total after " + (discount * 100) + "% discount: $" + finalPrice);
+}
+
+processOrder({
+  items: [{ price: 10 }, { price: 20 }],
+  customer: { name: "Alice" }
+}, 0.1);`}
+  height={400}
+/>
+
+<Quiz id="params-quiz">
+  <Question>What happens when you modify an object passed to a function?</Question>
+  <Answer>A copy is modified, original stays the same</Answer>
+  <Answer correct>The original object is modified</Answer>
+  <Answer>JavaScript throws an error</Answer>
+  <Answer>The function returns undefined</Answer>
+</Quiz>
+
+<ProgressCheckpoint section="practical-patterns" xpReward={15} />

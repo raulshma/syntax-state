@@ -1,0 +1,18 @@
+{
+  "id": "default-parameters",
+  "title": "Default Parameters",
+  "description": "Learn how to set fallback values for function parameters when arguments are not provided.",
+  "milestone": "functions",
+  "order": 5,
+  "singleLevel": true,
+  "estimatedMinutes": 10,
+  "xpReward": 65,
+  "sections": [
+    "default-syntax",
+    "expressions-as-defaults",
+    "order-matters",
+    "real-world-usage"
+  ],
+  "prerequisites": ["functions/parameters-arguments"],
+  "tags": ["javascript", "functions", "default", "parameters", "es6"]
+}

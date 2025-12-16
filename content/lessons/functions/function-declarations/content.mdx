@@ -1,0 +1,252 @@
+# Function Declarations: Building Blocks of JavaScript
+
+Think of functions like recipes in a cookbook. You write the recipe once, and then you can make that dish anytime you want, as many times as you want. Functions work the same way - you define them once, then call them whenever needed.
+
+---
+
+## Section 1: What Are Functions?
+
+### The Recipe Analogy 🍳
+
+Imagine you're a chef. Every time someone orders pancakes, you don't reinvent the recipe - you follow the same steps:
+
+1. Mix flour, eggs, and milk
+2. Heat the pan
+3. Pour batter
+4. Flip when bubbly
+5. Serve!
+
+A **function** is exactly like this recipe - a reusable set of instructions.
+
+```javascript
+// The "recipe" (function)
+function makePancakes(servings) {
+  const batter = mixIngredients(servings);
+  const pancakes = cook(batter);
+  return pancakes;
+}
+
+// "Order" pancakes anytime!
+makePancakes(2);  // Makes 2 servings
+makePancakes(10); // Makes 10 servings for a party!
+```
+
+<InfoBox type="info">
+**Functions** are reusable blocks of code that perform a specific task. They help you write DRY (Don't Repeat Yourself) code!
+</InfoBox>
+
+### Why Functions Matter
+
+| Without Functions | With Functions |
+|:------------------|:---------------|
+| Copy-paste code everywhere | Write once, use anywhere |
+| Hard to fix bugs (fix in many places) | Fix in one place |
+| Code is long and messy | Code is organized and clean |
+| Difficult to understand | Self-documenting with good names |
+
+<ProgressCheckpoint section="what-are-functions" xpReward={15} />
+
+---
+
+## Section 2: Function Declaration Syntax
+
+### The Anatomy of a Function
+
+A function declaration has four key parts:
+
+```javascript
+function greet(name) {
+  const message = "Hello, " + name + "!";
+  return message;
+}
+```
+
+<CodePlayground
+  initialCode={`// Let's break down a function declaration
+
+function greet(name) {
+  // 1. 'function' keyword - tells JavaScript "this is a function"
+  // 2. 'greet' - the function's name (how you'll call it)
+  // 3. '(name)' - parameters (inputs the function accepts)
+  // 4. { ... } - the function body (what it does)
+  
+  const message = "Hello, " + name + "!";
+  return message; // 'return' sends back a value
+}
+
+// Call the function with an argument
+const result = greet("World");
+console.log(result);
+
+// Call it again with different input
+console.log(greet("JavaScript"));`}
+  height={350}
+/>
+
+### Key Components Explained
+
+| Component | Purpose | Example |
+|:----------|:--------|:--------|
+| `function` keyword | Declares a function | `function` |
+| Name | Identifies the function | `greet` |
+| Parameters | Input placeholders | `(name)` |
+| Body | Code to execute | `{ ... }` |
+| `return` | Output value | `return message` |
+
+<KeyConcept title="Parameters vs Arguments">
+- **Parameters** are the names listed in the function definition (like `name` in `function greet(name)`)
+- **Arguments** are the actual values passed when calling the function (like `"World"` in `greet("World")`)
+</KeyConcept>
+
+<ProgressCheckpoint section="declaration-syntax" xpReward={20} />
+
+---
+
+## Section 3: Hoisting Magic ✨
+
+### Functions That Time Travel
+
+Here's something that surprises many developers - you can call a function declaration **before** it appears in your code!
+
+```javascript
+// This works! 🎉
+sayHello(); // "Hello!"
+
+function sayHello() {
+  console.log("Hello!");
+}
+```
+
+This is called **hoisting**. JavaScript "lifts" function declarations to the top of their scope before executing any code.
+
+<HoistingSimulator />
+
+### How Hoisting Works
+
+Think of it like a theater production:
+
+1. **Rehearsal (Compilation)**: JavaScript reads through your code and "registers" all function declarations
+2. **Show Time (Execution)**: JavaScript runs your code, and all functions are already available
+
+```javascript
+// What you write:
+console.log(add(2, 3)); // Works!
+
+function add(a, b) {
+  return a + b;
+}
+
+// What JavaScript "sees":
+// function add(a, b) { return a + b; }  ← Hoisted to top!
+// console.log(add(2, 3));
+```
+
+<InfoBox type="warning">
+**Important**: Only function **declarations** are hoisted, not function expressions! We'll cover this difference in the next lesson.
+</InfoBox>
+
+<Quiz id="hoisting-quiz">
+  <Question>What will this code output?</Question>
+  ```javascript
+  console.log(multiply(3, 4));
+  
+  function multiply(a, b) {
+    return a * b;
+  }
+  ```
+  <Answer correct>12</Answer>
+  <Answer>undefined</Answer>
+  <Answer>ReferenceError</Answer>
+  <Answer>NaN</Answer>
+</Quiz>
+
+<ProgressCheckpoint section="hoisting-magic" xpReward={20} />
+
+---
+
+## Section 4: Best Practices
+
+### Naming Your Functions
+
+Good function names are like good book titles - they tell you what to expect.
+
+```javascript
+// ❌ Bad names - unclear what they do
+function doStuff() { }
+function process() { }
+function handle() { }
+
+// ✅ Good names - action verbs that describe the task
+function calculateTotal() { }
+function validateEmail() { }
+function formatDate() { }
+function getUserById() { }
+```
+
+<InfoBox type="tip">
+**Naming Convention**: Use **camelCase** and start with a **verb** that describes the action: `get`, `set`, `calculate`, `validate`, `format`, `create`, `delete`, `update`, `fetch`, `render`
+</InfoBox>
+
+### Single Responsibility Principle
+
+Each function should do **one thing** and do it well.
+
+```javascript
+// ❌ Does too many things
+function processUser(user) {
+  validateUser(user);
+  saveToDatabase(user);
+  sendWelcomeEmail(user);
+  updateAnalytics(user);
+  logActivity(user);
+}
+
+// ✅ Each function has one job
+function validateUser(user) { /* validation only */ }
+function saveUser(user) { /* database only */ }
+function sendWelcomeEmail(user) { /* email only */ }
+```
+
+### Keep Functions Short
+
+If your function is longer than 20-30 lines, consider breaking it into smaller functions.
+
+<CodePlayground
+  initialCode={`// Practice: Write a function that calculates the area of a rectangle
+
+function calculateRectangleArea(width, height) {
+  // Your code here
+  return width * height;
+}
+
+// Test your function
+console.log(calculateRectangleArea(5, 3));  // Should output: 15
+console.log(calculateRectangleArea(10, 4)); // Should output: 40
+
+// Bonus: Write a function that calculates the perimeter
+function calculatePerimeter(width, height) {
+  return 2 * (width + height);
+}
+
+console.log(calculatePerimeter(5, 3)); // Should output: 16`}
+  height={300}
+/>
+
+### Summary
+
+| Concept | Key Point |
+|:--------|:----------|
+| **Function Declaration** | `function name(params) { body }` |
+| **Hoisting** | Declarations are available before their line in code |
+| **Naming** | Use verbs, camelCase, be descriptive |
+| **Single Responsibility** | One function = one task |
+
+<Quiz id="best-practices-quiz">
+  <Question>Which is the best function name for a function that checks if a user is logged in?</Question>
+  <Answer>check()</Answer>
+  <Answer>user()</Answer>
+  <Answer correct>isUserLoggedIn()</Answer>
+  <Answer>doLogin()</Answer>
+</Quiz>
+
+<ProgressCheckpoint section="best-practices" xpReward={20} />

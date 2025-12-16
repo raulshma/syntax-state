@@ -78,6 +78,9 @@ import { ThisKeywordVisualizer as ThisKeywordVisualizerBase } from './ThisKeywor
 // Loop Visualizer component
 import { LoopVisualizer as LoopVisualizerBase } from './LoopVisualizer';
 
+// Function Visualizer component
+import { FunctionVisualizer as FunctionVisualizerBase } from './FunctionVisualizer';
+
 // Wrap all interactive components with error boundaries
 export const CodePlayground = withErrorBoundary(CodePlaygroundBase, 'CodePlayground');
 export const VariableVisualizer = withErrorBoundary(VariableVisualizerBase, 'VariableVisualizer');
@@ -130,6 +133,9 @@ export const ThisKeywordVisualizer = withErrorBoundary(ThisKeywordVisualizerBase
 
 // Loop Visualizer
 export const LoopVisualizer = withErrorBoundary(LoopVisualizerBase, 'LoopVisualizer');
+
+// Function Visualizer
+export const FunctionVisualizer = withErrorBoundary(FunctionVisualizerBase, 'FunctionVisualizer');
 
 // Re-export types
 export type {
@@ -345,6 +351,11 @@ export type {
   LoopState,
 } from './LoopVisualizer';
 
+export type {
+  FunctionVisualizerProps,
+  FunctionExample,
+} from './FunctionVisualizer';
+
 // Export base components for testing
 export { CodePlaygroundBase };
 export { VariableVisualizerBase };
@@ -387,3 +398,4 @@ export { KeyedCollectionExplorerBase };
 export { JsonPlaygroundBase };
 export { ThisKeywordVisualizerBase };
 export { LoopVisualizerBase };
+export { FunctionVisualizerBase };

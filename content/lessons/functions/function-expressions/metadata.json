@@ -1,0 +1,18 @@
+{
+  "id": "function-expressions",
+  "title": "Function Expressions",
+  "description": "Master function expressions - assigning functions to variables for flexible, dynamic code patterns.",
+  "milestone": "functions",
+  "order": 2,
+  "singleLevel": true,
+  "estimatedMinutes": 10,
+  "xpReward": 70,
+  "sections": [
+    "expression-basics",
+    "anonymous-vs-named",
+    "when-to-use",
+    "practical-examples"
+  ],
+  "prerequisites": ["functions/function-declarations"],
+  "tags": ["javascript", "functions", "expressions", "anonymous"]
+}

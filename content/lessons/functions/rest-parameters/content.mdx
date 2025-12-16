@@ -1,0 +1,270 @@
+# Rest Parameters: Handling Variable Arguments
+
+The rest parameter syntax (`...`) allows a function to accept an indefinite number of arguments as an array. It's like having a "catch-all" basket for extra arguments!
+
+---
+
+## Section 1: Rest Parameter Syntax
+
+### Collecting Arguments into an Array
+
+The rest parameter uses three dots (`...`) followed by a name. It collects all remaining arguments into a real array.
+
+```javascript
+function sum(...numbers) {
+  // 'numbers' is a real array containing all arguments
+  return numbers.reduce((total, num) => total + num, 0);
+}
+
+console.log(sum(1, 2));           // 3
+console.log(sum(1, 2, 3, 4, 5));  // 15
+console.log(sum(10));             // 10
+console.log(sum());               // 0
+```
+
+<CodePlayground
+  initialCode={`// Rest parameters collect arguments into an array
+
+function logAll(...items) {
+  console.log("Type:", typeof items);  // "object"
+  console.log("Is Array:", Array.isArray(items));  // true
+  console.log("Items:", items);
+  console.log("Count:", items.length);
+}
+
+logAll("apple", "banana", "cherry");
+
+console.log("---");
+
+// Use array methods directly!
+function findMax(...numbers) {
+  return Math.max(...numbers);
+}
+
+console.log("Max:", findMax(3, 7, 2, 9, 1));
+
+// Calculate average
+function average(...nums) {
+  if (nums.length === 0) return 0;
+  const sum = nums.reduce((a, b) => a + b, 0);
+  return sum / nums.length;
+}
+
+console.log("Average:", average(10, 20, 30, 40));`}
+  height={320}
+/>
+
+<KeyConcept title="Rest = Real Array">
+Unlike the old `arguments` object, rest parameters give you a **real array** with all array methods available (map, filter, reduce, etc.)!
+</KeyConcept>
+
+<ProgressCheckpoint section="rest-syntax" xpReward={20} />
+
+---
+
+## Section 2: Rest vs Arguments Object
+
+### Why Rest Parameters Are Better
+
+| Feature | `arguments` | Rest Parameters |
+|:--------|:------------|:----------------|
+| Type | Array-like object | Real Array |
+| Array methods | ❌ Need conversion | ✅ Built-in |
+| Arrow functions | ❌ Not available | ✅ Works |
+| Named | ❌ Always `arguments` | ✅ You choose |
+| Partial collection | ❌ All or nothing | ✅ Collect remaining |
+
+
+```javascript
+// Old way with arguments (doesn't work in arrow functions)
+function oldSum() {
+  // Must convert to array first
+  const nums = Array.from(arguments);
+  return nums.reduce((a, b) => a + b, 0);
+}
+
+// Modern way with rest (works everywhere!)
+const newSum = (...nums) => nums.reduce((a, b) => a + b, 0);
+```
+
+<CodePlayground
+  initialCode={`// Rest parameters work in arrow functions!
+
+// This works perfectly
+const multiply = (...numbers) => {
+  return numbers.reduce((product, num) => product * num, 1);
+};
+
+console.log(multiply(2, 3, 4)); // 24
+
+// arguments would NOT work here:
+// const broken = () => {
+//   console.log(arguments); // ReferenceError!
+// };
+
+// Rest gives you a descriptive name
+const logMessages = (...messages) => {
+  messages.forEach((msg, i) => {
+    console.log((i + 1) + ":", msg);
+  });
+};
+
+logMessages("Hello", "World", "!");`}
+  height={280}
+/>
+
+<ProgressCheckpoint section="rest-vs-arguments" xpReward={15} />
+
+---
+
+## Section 3: Combining with Regular Parameters
+
+### Rest Must Come Last
+
+You can have regular parameters before the rest parameter, but rest must always be the **last** parameter.
+
+```javascript
+// ✅ Correct - rest is last
+function greetAll(greeting, ...names) {
+  return names.map(name => `${greeting}, ${name}!`);
+}
+
+console.log(greetAll("Hello", "Alice", "Bob", "Charlie"));
+// ["Hello, Alice!", "Hello, Bob!", "Hello, Charlie!"]
+
+// ❌ Wrong - rest must be last
+// function broken(...items, lastItem) { } // SyntaxError!
+```
+
+<CodePlayground
+  initialCode={`// Combining regular and rest parameters
+
+// First param is required, rest are optional
+function createTeam(leader, ...members) {
+  return {
+    leader,
+    members,
+    size: members.length + 1
+  };
+}
+
+console.log(createTeam("Alice"));
+console.log(createTeam("Bob", "Charlie", "Diana"));
+
+console.log("---");
+
+// Multiple regular params before rest
+function sendEmail(from, to, ...ccList) {
+  console.log("From:", from);
+  console.log("To:", to);
+  console.log("CC:", ccList.length > 0 ? ccList.join(", ") : "None");
+}
+
+sendEmail("boss@company.com", "team@company.com");
+sendEmail("boss@company.com", "team@company.com", "hr@company.com", "legal@company.com");
+
+console.log("---");
+
+// Practical: printf-style formatting
+function format(template, ...values) {
+  return template.replace(/{(\d+)}/g, (match, index) => {
+    return values[index] !== undefined ? values[index] : match;
+  });
+}
+
+console.log(format("Hello, {0}! You have {1} messages.", "Alice", 5));`}
+  height={380}
+/>
+
+<InfoBox type="warning">
+**Rule**: Only ONE rest parameter is allowed, and it must be the LAST parameter!
+```javascript
+// ❌ Multiple rest parameters - SyntaxError
+function broken(...a, ...b) { }
+
+// ❌ Rest not last - SyntaxError  
+function alsobroken(...items, last) { }
+```
+</InfoBox>
+
+<ProgressCheckpoint section="combining-with-regular" xpReward={20} />
+
+---
+
+## Section 4: Rest and Spread Connection
+
+### Two Sides of the Same Coin
+
+The `...` syntax has two uses:
+- **Rest** (in function parameters): Collects multiple values INTO an array
+- **Spread** (in function calls/arrays): Expands an array INTO multiple values
+
+```javascript
+// REST: Collect into array
+function sum(...numbers) {  // numbers = [1, 2, 3]
+  return numbers.reduce((a, b) => a + b, 0);
+}
+
+// SPREAD: Expand from array
+const nums = [1, 2, 3];
+console.log(sum(...nums));  // Same as sum(1, 2, 3)
+```
+
+<CodePlayground
+  initialCode={`// Rest collects, Spread expands
+
+// REST: Collecting arguments
+function joinWords(...words) {
+  return words.join(" ");
+}
+
+console.log(joinWords("Hello", "beautiful", "world"));
+
+// SPREAD: Expanding an array
+const greetings = ["Hi", "Hello", "Hey"];
+console.log(joinWords(...greetings));
+
+console.log("---");
+
+// Combining both!
+function mergeArrays(separator, ...arrays) {
+  // arrays is [[1,2], [3,4], [5,6]]
+  return arrays.flat().join(separator);
+}
+
+console.log(mergeArrays("-", [1, 2], [3, 4], [5, 6]));
+
+// Pass arrays using spread
+const arr1 = [1, 2];
+const arr2 = [3, 4];
+console.log(mergeArrays(", ", arr1, arr2));
+
+console.log("---");
+
+// Real-world: Wrapper function
+function logWithTimestamp(...args) {
+  const timestamp = new Date().toISOString();
+  console.log("[" + timestamp + "]", ...args);
+}
+
+logWithTimestamp("User logged in", { userId: 123 });`}
+  height={380}
+/>
+
+<Quiz id="rest-quiz">
+  <Question>Where must the rest parameter be placed in a function's parameter list?</Question>
+  <Answer>First</Answer>
+  <Answer>Anywhere</Answer>
+  <Answer correct>Last</Answer>
+  <Answer>It doesn't matter</Answer>
+</Quiz>
+
+### Summary
+
+| Concept | Syntax | Purpose |
+|:--------|:-------|:--------|
+| Rest parameter | `function f(...args)` | Collect arguments into array |
+| With regular params | `function f(a, b, ...rest)` | Collect remaining arguments |
+| Spread in call | `f(...array)` | Expand array into arguments |
+
+<ProgressCheckpoint section="spread-connection" xpReward={20} />

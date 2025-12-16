@@ -1,0 +1,18 @@
+{
+  "id": "parameters-arguments",
+  "title": "Parameters and Arguments",
+  "description": "Understand the difference between parameters and arguments, and how data flows into functions.",
+  "milestone": "functions",
+  "order": 4,
+  "singleLevel": true,
+  "estimatedMinutes": 12,
+  "xpReward": 75,
+  "sections": [
+    "params-vs-args",
+    "arguments-object",
+    "passing-by-value",
+    "practical-patterns"
+  ],
+  "prerequisites": ["functions/function-declarations"],
+  "tags": ["javascript", "functions", "parameters", "arguments"]
+}

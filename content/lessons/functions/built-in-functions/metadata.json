@@ -1,0 +1,18 @@
+{
+  "id": "built-in-functions",
+  "title": "Built-in Functions",
+  "description": "Explore JavaScript's essential built-in functions for common tasks like parsing, encoding, and timing.",
+  "milestone": "functions",
+  "order": 10,
+  "singleLevel": true,
+  "estimatedMinutes": 12,
+  "xpReward": 70,
+  "sections": [
+    "global-functions",
+    "parsing-functions",
+    "encoding-functions",
+    "timing-functions"
+  ],
+  "prerequisites": [],
+  "tags": ["javascript", "functions", "built-in", "global"]
+}

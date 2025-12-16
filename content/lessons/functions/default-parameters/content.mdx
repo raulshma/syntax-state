@@ -1,0 +1,307 @@
+# Default Parameters: Smart Fallback Values
+
+Default parameters let you specify fallback values for function parameters. If an argument isn't provided (or is `undefined`), the default kicks in. This ES6 feature makes your functions more robust and your code cleaner.
+
+---
+
+## Section 1: Default Parameter Syntax
+
+### The Old Way vs The New Way
+
+Before ES6, handling missing arguments was verbose:
+
+```javascript
+// ❌ Old way - manual checking
+function greet(name) {
+  name = name || "Guest";  // Problematic with falsy values!
+  return "Hello, " + name;
+}
+
+// ✅ ES6 way - clean and clear
+function greetModern(name = "Guest") {
+  return "Hello, " + name;
+}
+```
+
+<CodePlayground
+  initialCode={`// Default parameters in action
+
+function createProfile(name = "Anonymous", age = 0, country = "Unknown") {
+  return {
+    name,
+    age,
+    country,
+    createdAt: new Date().toISOString()
+  };
+}
+
+// All defaults
+console.log(createProfile());
+
+// Partial arguments
+console.log(createProfile("Alice"));
+
+// All arguments
+console.log(createProfile("Bob", 25, "USA"));
+
+// Skip middle parameter with undefined
+console.log(createProfile("Charlie", undefined, "UK"));`}
+  height={300}
+/>
+
+<KeyConcept title="When Defaults Trigger">
+Default values are used when the argument is `undefined` (including when not provided). Other falsy values like `null`, `0`, `""`, or `false` do NOT trigger defaults!
+</KeyConcept>
+
+```javascript
+function test(value = "default") {
+  console.log(value);
+}
+
+test();          // "default" - no argument
+test(undefined); // "default" - explicitly undefined
+test(null);      // null - NOT default!
+test(0);         // 0 - NOT default!
+test("");        // "" - NOT default!
+test(false);     // false - NOT default!
+```
+
+<ProgressCheckpoint section="default-syntax" xpReward={20} />
+
+---
+
+## Section 2: Expressions as Defaults
+
+### Dynamic Default Values
+
+Default parameters can be any expression - not just static values!
+
+```javascript
+// Function calls as defaults
+function getTimestamp() {
+  return Date.now();
+}
+
+function logEvent(message, timestamp = getTimestamp()) {
+  console.log(`[${timestamp}] ${message}`);
+}
+
+// Each call gets a fresh timestamp
+logEvent("User logged in");
+logEvent("User clicked button");
+```
+
+
+<CodePlayground
+  initialCode={`// Expressions as default values
+
+// 1. Function calls
+function generateId() {
+  return Math.random().toString(36).substr(2, 9);
+}
+
+function createItem(name, id = generateId()) {
+  return { name, id };
+}
+
+console.log(createItem("Apple"));
+console.log(createItem("Banana"));
+console.log(createItem("Cherry", "custom-id"));
+
+console.log("---");
+
+// 2. Calculations
+function calculatePrice(base, tax = base * 0.1) {
+  return base + tax;
+}
+
+console.log(calculatePrice(100));      // 110 (10% tax)
+console.log(calculatePrice(100, 20));  // 120 (custom tax)
+
+console.log("---");
+
+// 3. Object/Array literals
+function addToCart(item, cart = []) {
+  cart.push(item);
+  return cart;
+}
+
+console.log(addToCart("Apple"));
+console.log(addToCart("Banana"));`}
+  height={350}
+/>
+
+<InfoBox type="warning">
+**Gotcha**: Default expressions are evaluated at call time, not definition time. This means each function call gets a fresh default value!
+```javascript
+function addItem(item, list = []) {
+  list.push(item);
+  return list;
+}
+
+console.log(addItem("a")); // ["a"]
+console.log(addItem("b")); // ["b"] - NOT ["a", "b"]!
+```
+</InfoBox>
+
+<ProgressCheckpoint section="expressions-as-defaults" xpReward={20} />
+
+---
+
+## Section 3: Order Matters
+
+### Using Earlier Parameters in Later Defaults
+
+Parameters are initialized left-to-right, so later parameters can reference earlier ones:
+
+```javascript
+function createRectangle(width, height = width) {
+  // If height not provided, make it a square!
+  return { width, height, area: width * height };
+}
+
+console.log(createRectangle(5));     // { width: 5, height: 5, area: 25 }
+console.log(createRectangle(5, 10)); // { width: 5, height: 10, area: 50 }
+```
+
+<CodePlayground
+  initialCode={`// Parameter order and dependencies
+
+// Later params can use earlier params
+function greet(name, greeting = "Hello", message = greeting + ", " + name + "!") {
+  return message;
+}
+
+console.log(greet("Alice"));
+console.log(greet("Bob", "Hi"));
+console.log(greet("Charlie", "Hey", "Custom message for Charlie"));
+
+console.log("---");
+
+// Practical example: URL builder
+function buildUrl(
+  path,
+  baseUrl = "https://api.example.com",
+  fullUrl = baseUrl + path
+) {
+  return fullUrl;
+}
+
+console.log(buildUrl("/users"));
+console.log(buildUrl("/posts", "https://blog.example.com"));
+
+console.log("---");
+
+// Calculate with dependencies
+function calculateShipping(weight, ratePerKg = 5, total = weight * ratePerKg) {
+  return { weight, ratePerKg, total };
+}
+
+console.log(calculateShipping(10));
+console.log(calculateShipping(10, 3));`}
+  height={350}
+/>
+
+<InfoBox type="info">
+**Note**: You cannot reference later parameters in earlier defaults - they haven't been initialized yet!
+```javascript
+// ❌ This will error!
+function broken(a = b, b = 1) { } // ReferenceError: b is not defined
+```
+</InfoBox>
+
+<ProgressCheckpoint section="order-matters" xpReward={15} />
+
+---
+
+## Section 4: Real-World Usage
+
+### Common Patterns
+
+```javascript
+// Configuration objects with defaults
+function fetchData(url, options = {}) {
+  const config = {
+    method: options.method || "GET",
+    headers: options.headers || {},
+    timeout: options.timeout || 5000
+  };
+  console.log(`Fetching ${url} with`, config);
+}
+
+fetchData("/api/users");
+fetchData("/api/posts", { method: "POST" });
+```
+
+### Destructuring with Defaults
+
+```javascript
+// Combine destructuring and defaults for powerful APIs
+function createUser({
+  name = "Anonymous",
+  email = "",
+  role = "user",
+  active = true
+} = {}) {
+  return { name, email, role, active };
+}
+
+console.log(createUser());
+console.log(createUser({ name: "Alice" }));
+console.log(createUser({ name: "Admin", role: "admin" }));
+```
+
+<CodePlayground
+  initialCode={`// Real-world default parameter patterns
+
+// 1. API request helper
+function request(endpoint, {
+  method = "GET",
+  body = null,
+  headers = { "Content-Type": "application/json" }
+} = {}) {
+  console.log("Request:", method, endpoint);
+  console.log("Headers:", headers);
+  if (body) console.log("Body:", body);
+  return { endpoint, method, body, headers };
+}
+
+request("/users");
+request("/users", { method: "POST", body: { name: "Alice" } });
+
+console.log("---");
+
+// 2. Logger with levels
+function log(message, level = "info", timestamp = new Date().toISOString()) {
+  const prefix = {
+    info: "ℹ️",
+    warn: "⚠️",
+    error: "❌"
+  };
+  console.log(prefix[level] + " [" + timestamp + "] " + message);
+}
+
+log("Application started");
+log("Disk space low", "warn");
+log("Connection failed", "error");`}
+  height={380}
+/>
+
+<Quiz id="defaults-quiz">
+  <Question>What value triggers a default parameter?</Question>
+  <Answer>null</Answer>
+  <Answer>0</Answer>
+  <Answer>false</Answer>
+  <Answer correct>undefined</Answer>
+</Quiz>
+
+### Summary
+
+| Feature | Example |
+|:--------|:--------|
+| Basic default | `function f(x = 10)` |
+| Expression default | `function f(x = Date.now())` |
+| Reference earlier param | `function f(a, b = a * 2)` |
+| Destructuring + defaults | `function f({ x = 1 } = {})` |
+
+<ProgressCheckpoint section="real-world-usage" xpReward={20} />

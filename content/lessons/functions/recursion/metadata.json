@@ -1,0 +1,18 @@
+{
+  "id": "recursion",
+  "title": "Recursion",
+  "description": "Master recursive functions - functions that call themselves to solve problems by breaking them into smaller pieces.",
+  "milestone": "functions",
+  "order": 9,
+  "singleLevel": true,
+  "estimatedMinutes": 15,
+  "xpReward": 90,
+  "sections": [
+    "recursion-basics",
+    "base-case",
+    "call-stack",
+    "practical-recursion"
+  ],
+  "prerequisites": ["functions/closures"],
+  "tags": ["javascript", "functions", "recursion", "algorithms"]
+}

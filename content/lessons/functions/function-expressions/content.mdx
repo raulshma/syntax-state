@@ -1,0 +1,287 @@
+# Function Expressions: Functions as Values
+
+In JavaScript, functions are "first-class citizens" - they can be treated like any other value. You can store them in variables, pass them around, and even return them from other functions. This is the power of function expressions!
+
+---
+
+## Section 1: Expression Basics
+
+### Functions Are Values
+
+Think of a function expression like putting a recipe card in a box. The box (variable) holds the recipe (function), and you can pass that box to anyone who needs it.
+
+```javascript
+// Function Declaration (the traditional way)
+function greet() {
+  return "Hello!";
+}
+
+// Function Expression (function as a value)
+const greet = function() {
+  return "Hello!";
+};
+```
+
+<CodePlayground
+  initialCode={`// Function expressions assign functions to variables
+
+const sayHello = function() {
+  return "Hello, World!";
+};
+
+// Call it just like a regular function
+console.log(sayHello());
+
+// You can reassign it (if using let)
+let greeting = function() {
+  return "Hi there!";
+};
+
+console.log(greeting());
+
+// Reassign to a different function
+greeting = function() {
+  return "Hey!";
+};
+
+console.log(greeting());`}
+  height={300}
+/>
+
+<KeyConcept title="Key Difference: No Hoisting!">
+Unlike function declarations, function expressions are **NOT hoisted**. You must define them before you use them.
+</KeyConcept>
+
+```javascript
+// ❌ This will ERROR!
+console.log(add(2, 3)); // ReferenceError: Cannot access 'add' before initialization
+
+const add = function(a, b) {
+  return a + b;
+};
+
+// ✅ This works - defined before use
+const subtract = function(a, b) {
+  return a - b;
+};
+
+console.log(subtract(5, 3)); // 2
+```
+
+<ProgressCheckpoint section="expression-basics" xpReward={20} />
+
+---
+
+## Section 2: Anonymous vs Named Expressions
+
+### Anonymous Functions
+
+Most function expressions are **anonymous** - they don't have a name after the `function` keyword.
+
+```javascript
+// Anonymous function expression
+const multiply = function(a, b) {
+  return a * b;
+};
+```
+
+### Named Function Expressions
+
+You can also give the function a name. This is useful for:
+- **Recursion** (calling itself)
+- **Debugging** (better stack traces)
+
+```javascript
+// Named function expression
+const factorial = function fact(n) {
+  if (n <= 1) return 1;
+  return n * fact(n - 1); // Can call itself by name!
+};
+
+console.log(factorial(5)); // 120
+// Note: 'fact' is only accessible inside the function
+// console.log(fact(5)); // ReferenceError!
+```
+
+<CodePlayground
+  initialCode={`// Named function expressions are great for recursion
+
+const countdown = function count(n) {
+  console.log(n);
+  if (n > 0) {
+    count(n - 1); // Calls itself using the internal name
+  } else {
+    console.log("Blast off! 🚀");
+  }
+};
+
+countdown(5);
+
+// The name 'count' is only visible inside the function
+// This would error: count(3);`}
+  height={280}
+/>
+
+<InfoBox type="tip">
+**Pro Tip**: Named function expressions show the function name in error stack traces, making debugging easier!
+</InfoBox>
+
+<ProgressCheckpoint section="anonymous-vs-named" xpReward={15} />
+
+---
+
+## Section 3: When to Use Function Expressions
+
+### Perfect Use Cases
+
+Function expressions shine in specific scenarios:
+
+| Use Case | Why Expressions Work Better |
+|:---------|:---------------------------|
+| **Callbacks** | Pass functions to other functions |
+| **Conditional Functions** | Define different functions based on conditions |
+| **Closures** | Create functions with private data |
+| **IIFEs** | Immediately execute a function |
+
+### Callbacks - The Most Common Use
+
+```javascript
+// Array methods love function expressions
+const numbers = [1, 2, 3, 4, 5];
+
+// Filter with a function expression
+const evens = numbers.filter(function(num) {
+  return num % 2 === 0;
+});
+
+console.log(evens); // [2, 4]
+
+// Map with a function expression
+const doubled = numbers.map(function(num) {
+  return num * 2;
+});
+
+console.log(doubled); // [2, 4, 6, 8, 10]
+```
+
+### Conditional Function Assignment
+
+```javascript
+// Choose different behavior based on conditions
+const environment = "development";
+
+const log = environment === "development"
+  ? function(msg) { console.log(`[DEV] ${msg}`); }
+  : function(msg) { /* do nothing in production */ };
+
+log("Testing..."); // Only logs in development
+```
+
+<CodePlayground
+  initialCode={`// Function expressions as callbacks
+
+const fruits = ["apple", "banana", "cherry", "date"];
+
+// forEach with function expression
+fruits.forEach(function(fruit, index) {
+  console.log(index + 1 + ". " + fruit);
+});
+
+console.log("---");
+
+// find with function expression
+const longFruit = fruits.find(function(fruit) {
+  return fruit.length > 5;
+});
+
+console.log("First long fruit:", longFruit);`}
+  height={280}
+/>
+
+<ProgressCheckpoint section="when-to-use" xpReward={15} />
+
+---
+
+## Section 4: Practical Examples
+
+### Storing Functions in Objects
+
+```javascript
+const calculator = {
+  add: function(a, b) { return a + b; },
+  subtract: function(a, b) { return a - b; },
+  multiply: function(a, b) { return a * b; },
+  divide: function(a, b) { return b !== 0 ? a / b : "Cannot divide by zero"; }
+};
+
+console.log(calculator.add(10, 5));      // 15
+console.log(calculator.multiply(4, 3));  // 12
+```
+
+### Functions in Arrays
+
+```javascript
+const operations = [
+  function(x) { return x + 1; },  // increment
+  function(x) { return x * 2; },  // double
+  function(x) { return x ** 2; }  // square
+];
+
+let value = 5;
+operations.forEach(function(operation) {
+  value = operation(value);
+  console.log(value);
+});
+// 6, 12, 144
+```
+
+<CodePlayground
+  initialCode={`// Build a simple event system with function expressions
+
+const eventHandlers = {};
+
+// Register an event handler
+eventHandlers.onClick = function(element) {
+  console.log("Clicked on:", element);
+};
+
+eventHandlers.onHover = function(element) {
+  console.log("Hovering over:", element);
+};
+
+// Simulate events
+eventHandlers.onClick("Button");
+eventHandlers.onHover("Menu");
+
+// You can even store multiple handlers in an array
+const clickHandlers = [
+  function() { console.log("Handler 1 executed"); },
+  function() { console.log("Handler 2 executed"); },
+];
+
+// Execute all handlers
+clickHandlers.forEach(function(handler) {
+  handler();
+});`}
+  height={320}
+/>
+
+### Summary: Declaration vs Expression
+
+| Feature | Declaration | Expression |
+|:--------|:------------|:-----------|
+| Syntax | `function name() {}` | `const name = function() {}` |
+| Hoisting | ✅ Yes | ❌ No |
+| Can be anonymous | ❌ No | ✅ Yes |
+| Use as callback | Possible | Common |
+| Conditional definition | Awkward | Natural |
+
+<Quiz id="expression-quiz">
+  <Question>What happens when you try to call a function expression before it's defined?</Question>
+  <Answer>It returns undefined</Answer>
+  <Answer correct>ReferenceError is thrown</Answer>
+  <Answer>It works due to hoisting</Answer>
+  <Answer>It returns null</Answer>
+</Quiz>
+
+<ProgressCheckpoint section="practical-examples" xpReward={25} />

@@ -1,0 +1,359 @@
+# IIFE: Immediately Invoked Function Expressions
+
+An IIFE (pronounced "iffy") is a function that runs immediately after it's defined. It's a powerful pattern for creating private scopes and avoiding global namespace pollution.
+
+---
+
+## Section 1: What is an IIFE?
+
+### The Self-Running Function
+
+Imagine a firework that lights itself - that's an IIFE! It's defined and executed in one go.
+
+```javascript
+// Regular function - must be called separately
+function greet() {
+  console.log("Hello!");
+}
+greet(); // Need to call it
+
+// IIFE - runs immediately!
+(function() {
+  console.log("Hello from IIFE!");
+})(); // Runs right away!
+```
+
+<CodePlayground
+  initialCode={`// IIFE runs immediately when defined
+
+// This executes right away!
+(function() {
+  console.log("I ran immediately!");
+  const secret = "hidden value";
+  console.log("Secret inside:", secret);
+})();
+
+// 'secret' is not accessible here
+// console.log(secret); // ReferenceError!
+
+console.log("---");
+
+// IIFE with a return value
+const result = (function() {
+  const a = 10;
+  const b = 20;
+  return a + b;
+})();
+
+console.log("Result:", result); // 30
+
+// Arrow function IIFE
+(() => {
+  console.log("Arrow IIFE!");
+})();`}
+  height={320}
+/>
+
+<KeyConcept title="Why 'Immediately Invoked'?">
+The `()` at the end calls the function right after it's defined. The wrapping `()` around the function makes JavaScript treat it as an expression rather than a declaration.
+</KeyConcept>
+
+<ProgressCheckpoint section="what-is-iife" xpReward={20} />
+
+---
+
+## Section 2: IIFE Syntax Variations
+
+### Different Ways to Write IIFEs
+
+```javascript
+// Classic syntax (most common)
+(function() {
+  console.log("Classic IIFE");
+})();
+
+// Alternative parentheses placement
+(function() {
+  console.log("Alternative style");
+}());
+
+// Arrow function IIFE
+(() => {
+  console.log("Arrow IIFE");
+})();
+
+// With parameters
+(function(name) {
+  console.log("Hello, " + name);
+})("World");
+
+// Named IIFE (useful for recursion/debugging)
+(function factorial(n) {
+  if (n <= 1) return 1;
+  return n * factorial(n - 1);
+})(5); // 120
+```
+
+
+<CodePlayground
+  initialCode={`// Different IIFE syntax styles
+
+// 1. Classic with outer parentheses
+(function() {
+  console.log("Style 1: (function(){})()");
+})();
+
+// 2. Parentheses inside
+(function() {
+  console.log("Style 2: (function(){}())");
+}());
+
+// 3. Arrow function IIFE
+(() => {
+  console.log("Style 3: Arrow IIFE");
+})();
+
+// 4. Async IIFE (for top-level await alternative)
+(async () => {
+  console.log("Style 4: Async IIFE");
+  // await someAsyncOperation();
+})();
+
+// 5. IIFE with parameters
+((greeting, name) => {
+  console.log(greeting + ", " + name + "!");
+})("Hello", "World");
+
+// 6. IIFE returning a value
+const config = (() => {
+  const env = "production";
+  return {
+    apiUrl: env === "production" 
+      ? "https://api.example.com" 
+      : "http://localhost:3000",
+    debug: env !== "production"
+  };
+})();
+
+console.log("Config:", config);`}
+  height={400}
+/>
+
+<InfoBox type="tip">
+**Why the wrapping parentheses?** Without them, JavaScript sees `function` at the start of a line and expects a function declaration (which requires a name). The parentheses force JavaScript to treat it as an expression.
+</InfoBox>
+
+<ProgressCheckpoint section="iife-syntax" xpReward={20} />
+
+---
+
+## Section 3: The Module Pattern
+
+### Creating Private State
+
+Before ES6 modules, IIFEs were THE way to create private variables and expose only what you wanted.
+
+```javascript
+const Counter = (function() {
+  // Private variable - not accessible outside
+  let count = 0;
+  
+  // Public interface - returned object
+  return {
+    increment() { return ++count; },
+    decrement() { return --count; },
+    getCount() { return count; }
+  };
+})();
+
+Counter.increment(); // 1
+Counter.increment(); // 2
+console.log(Counter.getCount()); // 2
+// console.log(Counter.count); // undefined - it's private!
+```
+
+<CodePlayground
+  initialCode={`// The Module Pattern with IIFE
+
+const BankAccount = (function() {
+  // Private state
+  let balance = 0;
+  const transactionHistory = [];
+  
+  // Private function
+  function logTransaction(type, amount) {
+    transactionHistory.push({
+      type,
+      amount,
+      date: new Date().toISOString(),
+      balance
+    });
+  }
+  
+  // Public API
+  return {
+    deposit(amount) {
+      if (amount > 0) {
+        balance += amount;
+        logTransaction("deposit", amount);
+        return true;
+      }
+      return false;
+    },
+    
+    withdraw(amount) {
+      if (amount > 0 && amount <= balance) {
+        balance -= amount;
+        logTransaction("withdrawal", amount);
+        return true;
+      }
+      return false;
+    },
+    
+    getBalance() {
+      return balance;
+    },
+    
+    getHistory() {
+      return [...transactionHistory]; // Return copy
+    }
+  };
+})();
+
+BankAccount.deposit(100);
+BankAccount.deposit(50);
+BankAccount.withdraw(30);
+
+console.log("Balance:", BankAccount.getBalance());
+console.log("History:", BankAccount.getHistory());
+
+// Can't access private variables!
+// console.log(BankAccount.balance); // undefined
+// console.log(BankAccount.transactionHistory); // undefined`}
+  height={450}
+/>
+
+<KeyConcept title="The Module Pattern">
+1. Create an IIFE that contains private variables/functions
+2. Return an object with public methods
+3. Public methods can access private state via closure
+4. Outside code can only use the public interface
+</KeyConcept>
+
+<ProgressCheckpoint section="module-pattern" xpReward={25} />
+
+---
+
+## Section 4: Modern Alternatives
+
+### When to Use IIFEs Today
+
+With ES6 modules and block-scoped variables (`let`/`const`), IIFEs are less common but still useful:
+
+| Use Case | IIFE Still Useful? | Modern Alternative |
+|:---------|:-------------------|:-------------------|
+| Private scope | Sometimes | ES6 Modules |
+| Avoid global pollution | Sometimes | `let`/`const` + blocks |
+| One-time initialization | ✅ Yes | - |
+| Async initialization | ✅ Yes | Top-level await (modules) |
+| Legacy browser support | ✅ Yes | - |
+
+```javascript
+// Modern: Block scope with let/const
+{
+  const privateVar = "I'm block-scoped";
+  console.log(privateVar);
+}
+// privateVar is not accessible here
+
+// But IIFE is still great for complex initialization
+const config = (() => {
+  // Complex setup logic
+  const env = process.env.NODE_ENV || "development";
+  const baseUrl = env === "production" 
+    ? "https://api.prod.com"
+    : "http://localhost:3000";
+  
+  return Object.freeze({ env, baseUrl });
+})();
+```
+
+<CodePlayground
+  initialCode={`// Modern uses for IIFE
+
+// 1. Complex object initialization
+const APP_CONFIG = (() => {
+  const isDev = true; // Would check environment
+  
+  return {
+    apiUrl: isDev ? "http://localhost:3000" : "https://api.example.com",
+    features: {
+      darkMode: true,
+      analytics: !isDev
+    },
+    version: "1.0.0"
+  };
+})();
+
+console.log("Config:", APP_CONFIG);
+
+// 2. Async IIFE for initialization
+(async () => {
+  console.log("Starting async initialization...");
+  // Simulate async operation
+  await new Promise(resolve => setTimeout(resolve, 100));
+  console.log("Async initialization complete!");
+})();
+
+// 3. Avoiding variable leakage in loops (legacy pattern)
+// Modern: use let instead
+for (let i = 0; i < 3; i++) {
+  setTimeout(() => console.log("Modern loop:", i), 150);
+}
+
+// 4. Creating singleton instances
+const Logger = (() => {
+  let instance = null;
+  
+  function createLogger() {
+    return {
+      log: (msg) => console.log("[LOG]", msg),
+      error: (msg) => console.error("[ERROR]", msg)
+    };
+  }
+  
+  return {
+    getInstance() {
+      if (!instance) {
+        instance = createLogger();
+      }
+      return instance;
+    }
+  };
+})();
+
+const logger1 = Logger.getInstance();
+const logger2 = Logger.getInstance();
+console.log("Same instance?", logger1 === logger2); // true
+logger1.log("Hello from singleton!");`}
+  height={450}
+/>
+
+<Quiz id="iife-quiz">
+  <Question>What is the main purpose of wrapping a function in parentheses for an IIFE?</Question>
+  <Answer>To make it run faster</Answer>
+  <Answer correct>To make JavaScript treat it as an expression, not a declaration</Answer>
+  <Answer>To enable async functionality</Answer>
+  <Answer>To create a named function</Answer>
+</Quiz>
+
+### Summary
+
+| Pattern | Syntax | Use Case |
+|:--------|:-------|:---------|
+| Basic IIFE | `(function() {})()` | One-time execution |
+| Arrow IIFE | `(() => {})()` | Modern, concise |
+| Module Pattern | `const M = (function() { return {...} })()` | Private state |
+| Async IIFE | `(async () => {})()` | Async initialization |
+
+<ProgressCheckpoint section="modern-alternatives" xpReward={15} />

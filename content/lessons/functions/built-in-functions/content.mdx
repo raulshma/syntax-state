@@ -1,0 +1,311 @@
+# Built-in Functions: JavaScript's Toolbox
+
+JavaScript comes with many built-in functions that are available globally - no imports needed! These utility functions handle common tasks like parsing numbers, encoding URLs, and working with timers.
+
+---
+
+## Section 1: Global Functions Overview
+
+### Your Swiss Army Knife 🔧
+
+Global functions are available everywhere in your JavaScript code. They're like tools that come pre-installed with the language.
+
+```javascript
+// These work anywhere - no setup needed!
+parseInt("42");           // Parse string to integer
+parseFloat("3.14");       // Parse string to float
+isNaN(NaN);              // Check if Not-a-Number
+isFinite(100);           // Check if finite number
+encodeURI("hello world"); // Encode URL
+eval("2 + 2");           // Execute string as code (dangerous!)
+```
+
+<CodePlayground
+  initialCode={`// Overview of global functions
+
+// Number-related
+console.log("parseInt('42'):", parseInt("42"));
+console.log("parseFloat('3.14'):", parseFloat("3.14"));
+console.log("isNaN(NaN):", isNaN(NaN));
+console.log("isNaN('hello'):", isNaN("hello"));
+console.log("isFinite(100):", isFinite(100));
+console.log("isFinite(Infinity):", isFinite(Infinity));
+
+console.log("---");
+
+// String/URI encoding
+console.log("encodeURI:", encodeURI("hello world"));
+console.log("decodeURI:", decodeURI("hello%20world"));
+
+console.log("---");
+
+// Type checking (modern alternatives)
+console.log("Number.isNaN(NaN):", Number.isNaN(NaN));
+console.log("Number.isFinite(100):", Number.isFinite(100));
+console.log("Number.isInteger(5):", Number.isInteger(5));
+console.log("Number.isInteger(5.5):", Number.isInteger(5.5));`}
+  height={350}
+/>
+
+<InfoBox type="warning">
+**Avoid `eval()`!** It executes strings as code, which is a major security risk. There's almost always a better alternative.
+```javascript
+// ❌ Dangerous - never do this with user input!
+eval(userInput);
+
+// ✅ Use JSON.parse for data
+JSON.parse('{"name": "Alice"}');
+```
+</InfoBox>
+
+<ProgressCheckpoint section="global-functions" xpReward={15} />
+
+---
+
+## Section 2: Parsing Functions
+
+### Converting Strings to Numbers
+
+JavaScript provides several ways to convert strings to numbers:
+
+| Function | Purpose | Example |
+|:---------|:--------|:--------|
+| `parseInt(str, radix)` | String → Integer | `parseInt("42")` → `42` |
+| `parseFloat(str)` | String → Float | `parseFloat("3.14")` → `3.14` |
+| `Number(value)` | Any → Number | `Number("42")` → `42` |
+| `+value` | Unary plus | `+"42"` → `42` |
+
+```javascript
+// parseInt - parses until it hits a non-digit
+parseInt("42px");      // 42 (stops at 'p')
+parseInt("3.14");      // 3 (stops at '.')
+parseInt("abc");       // NaN
+
+// The radix (base) parameter is important!
+parseInt("10", 2);     // 2 (binary)
+parseInt("10", 8);     // 8 (octal)
+parseInt("10", 16);    // 16 (hexadecimal)
+parseInt("ff", 16);    // 255
+```
+
+
+<CodePlayground
+  initialCode={`// Parsing functions in detail
+
+// parseInt - extracts integers
+console.log("parseInt examples:");
+console.log("  '42' →", parseInt("42"));
+console.log("  '42px' →", parseInt("42px"));     // Stops at 'p'
+console.log("  '3.99' →", parseInt("3.99"));     // Truncates decimal
+console.log("  'abc' →", parseInt("abc"));       // NaN
+console.log("  '  42  ' →", parseInt("  42  ")); // Trims whitespace
+
+console.log("\\nRadix (base) examples:");
+console.log("  '10' base 2 →", parseInt("10", 2));   // Binary: 2
+console.log("  '10' base 8 →", parseInt("10", 8));   // Octal: 8
+console.log("  '10' base 16 →", parseInt("10", 16)); // Hex: 16
+console.log("  'ff' base 16 →", parseInt("ff", 16)); // Hex: 255
+
+console.log("\\nparseFloat examples:");
+console.log("  '3.14' →", parseFloat("3.14"));
+console.log("  '3.14.15' →", parseFloat("3.14.15")); // Stops at second dot
+console.log("  '314e-2' →", parseFloat("314e-2"));   // Scientific notation
+
+console.log("\\nNumber() vs parseInt():");
+console.log("  Number('42px') →", Number("42px"));   // NaN (stricter)
+console.log("  parseInt('42px') →", parseInt("42px")); // 42 (lenient)
+console.log("  Number('') →", Number(""));           // 0
+console.log("  parseInt('') →", parseInt(""));       // NaN`}
+  height={400}
+/>
+
+<KeyConcept title="Always Specify the Radix!">
+Always pass the second argument (radix) to `parseInt()` to avoid unexpected results:
+```javascript
+// Without radix - can be unpredictable
+parseInt("08");     // Could be 8 or 0 depending on engine
+
+// With radix - always predictable
+parseInt("08", 10); // Always 8
+```
+</KeyConcept>
+
+<ProgressCheckpoint section="parsing-functions" xpReward={20} />
+
+---
+
+## Section 3: Encoding Functions
+
+### Working with URLs and Special Characters
+
+When building URLs or handling special characters, encoding functions are essential:
+
+| Function | Purpose | Example |
+|:---------|:--------|:--------|
+| `encodeURI()` | Encode full URL | Preserves `:/?#` etc. |
+| `decodeURI()` | Decode full URL | Reverses encodeURI |
+| `encodeURIComponent()` | Encode URL part | Encodes everything |
+| `decodeURIComponent()` | Decode URL part | Reverses encodeURIComponent |
+
+```javascript
+const url = "https://example.com/search?q=hello world&lang=en";
+
+// encodeURI - for full URLs (preserves structure)
+encodeURI(url);
+// "https://example.com/search?q=hello%20world&lang=en"
+
+// encodeURIComponent - for URL parts (encodes everything)
+encodeURIComponent("hello world&lang=en");
+// "hello%20world%26lang%3Den"
+```
+
+<CodePlayground
+  initialCode={`// URL encoding functions
+
+const searchTerm = "JavaScript & TypeScript";
+const baseUrl = "https://example.com/search";
+
+// encodeURIComponent for query parameters
+const safeParam = encodeURIComponent(searchTerm);
+console.log("Encoded param:", safeParam);
+
+const fullUrl = baseUrl + "?q=" + safeParam;
+console.log("Full URL:", fullUrl);
+
+console.log("---");
+
+// Decoding
+console.log("Decoded:", decodeURIComponent(safeParam));
+
+console.log("---");
+
+// encodeURI vs encodeURIComponent
+const testString = "hello world?foo=bar&baz=qux";
+
+console.log("encodeURI:");
+console.log("  ", encodeURI(testString));
+// Preserves ? & =
+
+console.log("encodeURIComponent:");
+console.log("  ", encodeURIComponent(testString));
+// Encodes ? & = too
+
+console.log("---");
+
+// Practical: Building a URL with multiple params
+function buildUrl(base, params) {
+  const queryString = Object.entries(params)
+    .map(([key, value]) => 
+      encodeURIComponent(key) + "=" + encodeURIComponent(value)
+    )
+    .join("&");
+  
+  return base + "?" + queryString;
+}
+
+const url = buildUrl("https://api.example.com/search", {
+  query: "JavaScript functions",
+  page: 1,
+  filter: "recent & popular"
+});
+
+console.log("Built URL:", url);`}
+  height={420}
+/>
+
+<ProgressCheckpoint section="encoding-functions" xpReward={20} />
+
+---
+
+## Section 4: Timing Functions
+
+### Scheduling Code Execution
+
+JavaScript provides functions to run code after a delay or at intervals:
+
+| Function | Purpose | Returns |
+|:---------|:--------|:--------|
+| `setTimeout(fn, ms)` | Run once after delay | Timer ID |
+| `setInterval(fn, ms)` | Run repeatedly | Timer ID |
+| `clearTimeout(id)` | Cancel setTimeout | - |
+| `clearInterval(id)` | Cancel setInterval | - |
+
+<TimerPlayground />
+
+```javascript
+// Run once after 1 second
+const timeoutId = setTimeout(() => {
+  console.log("This runs after 1 second");
+}, 1000);
+
+// Run every 500ms
+const intervalId = setInterval(() => {
+  console.log("This runs every 500ms");
+}, 500);
+
+// Cancel them
+clearTimeout(timeoutId);
+clearInterval(intervalId);
+```
+
+<CodePlayground
+  initialCode={`// Timing functions demonstration
+
+console.log("Starting timers...");
+
+// setTimeout - runs once after delay
+setTimeout(() => {
+  console.log("⏰ 500ms timeout fired!");
+}, 500);
+
+setTimeout(() => {
+  console.log("⏰ 1000ms timeout fired!");
+}, 1000);
+
+// Passing arguments to the callback
+setTimeout((name, emoji) => {
+  console.log(emoji + " Hello, " + name + "!");
+}, 750, "World", "👋");
+
+// setInterval with clearInterval
+let count = 0;
+const intervalId = setInterval(() => {
+  count++;
+  console.log("🔄 Interval tick:", count);
+  
+  if (count >= 3) {
+    clearInterval(intervalId);
+    console.log("✅ Interval stopped after 3 ticks");
+  }
+}, 400);
+
+// Note: setTimeout with 0ms still runs asynchronously
+console.log("This logs first (synchronous)");
+setTimeout(() => console.log("This logs later (async, 0ms)"), 0);
+console.log("This logs second (synchronous)");`}
+  height={380}
+/>
+
+<InfoBox type="tip">
+**Timing is not guaranteed!** `setTimeout(fn, 1000)` means "run after *at least* 1000ms". If the main thread is busy, it may take longer.
+</InfoBox>
+
+<Quiz id="builtin-quiz">
+  <Question>What's the difference between encodeURI() and encodeURIComponent()?</Question>
+  <Answer>encodeURI is faster</Answer>
+  <Answer correct>encodeURI preserves URL structure characters like ? and &</Answer>
+  <Answer>encodeURIComponent only works with ASCII</Answer>
+  <Answer>There is no difference</Answer>
+</Quiz>
+
+### Summary
+
+| Category | Functions |
+|:---------|:----------|
+| **Parsing** | `parseInt()`, `parseFloat()`, `Number()` |
+| **Validation** | `isNaN()`, `isFinite()`, `Number.isNaN()` |
+| **Encoding** | `encodeURI()`, `encodeURIComponent()` |
+| **Decoding** | `decodeURI()`, `decodeURIComponent()` |
+| **Timing** | `setTimeout()`, `setInterval()`, `clearTimeout()`, `clearInterval()` |
+
+<ProgressCheckpoint section="timing-functions" xpReward={20} />

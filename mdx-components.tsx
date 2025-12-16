@@ -96,6 +96,7 @@ import { IndexedCollectionVisualizer } from '@/components/learn/interactive/java
 import { KeyedCollectionExplorer } from '@/components/learn/interactive/javascript/KeyedCollectionExplorer';
 import { JsonPlayground } from '@/components/learn/interactive/javascript/JsonPlayground';
 import { LoopVisualizer } from '@/components/learn/interactive/javascript/LoopVisualizer';
+import { FunctionVisualizer } from '@/components/learn/interactive/javascript/FunctionVisualizer';
 
 // React Lesson Components
 import {
@@ -348,6 +349,7 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
     JsonPlayground,
     ThisKeywordVisualizer,
     LoopVisualizer,
+    FunctionVisualizer,
 
     // React Lesson Components
     ReactPlayground,

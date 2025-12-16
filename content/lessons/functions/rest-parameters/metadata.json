@@ -1,0 +1,18 @@
+{
+  "id": "rest-parameters",
+  "title": "Rest Parameters",
+  "description": "Master the rest parameter syntax to handle an indefinite number of arguments as an array.",
+  "milestone": "functions",
+  "order": 6,
+  "singleLevel": true,
+  "estimatedMinutes": 10,
+  "xpReward": 70,
+  "sections": [
+    "rest-syntax",
+    "rest-vs-arguments",
+    "combining-with-regular",
+    "spread-connection"
+  ],
+  "prerequisites": ["functions/parameters-arguments"],
+  "tags": ["javascript", "functions", "rest", "spread", "es6"]
+}

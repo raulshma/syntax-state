@@ -1,0 +1,18 @@
+{
+  "id": "iife",
+  "title": "IIFE (Immediately Invoked Function Expression)",
+  "description": "Learn the IIFE pattern for creating private scopes and avoiding global namespace pollution.",
+  "milestone": "functions",
+  "order": 7,
+  "singleLevel": true,
+  "estimatedMinutes": 12,
+  "xpReward": 80,
+  "sections": [
+    "what-is-iife",
+    "iife-syntax",
+    "module-pattern",
+    "modern-alternatives"
+  ],
+  "prerequisites": ["functions/function-expressions"],
+  "tags": ["javascript", "functions", "iife", "scope", "module"]
+}

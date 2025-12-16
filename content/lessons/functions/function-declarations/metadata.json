@@ -1,0 +1,18 @@
+{
+  "id": "function-declarations",
+  "title": "Function Declarations",
+  "description": "Learn the fundamental way to define reusable blocks of code in JavaScript using function declarations.",
+  "milestone": "functions",
+  "order": 1,
+  "singleLevel": true,
+  "estimatedMinutes": 12,
+  "xpReward": 75,
+  "sections": [
+    "what-are-functions",
+    "declaration-syntax",
+    "hoisting-magic",
+    "best-practices"
+  ],
+  "prerequisites": [],
+  "tags": ["javascript", "functions", "declarations", "hoisting"]
+}

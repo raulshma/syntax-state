@@ -1,0 +1,18 @@
+{
+  "id": "closures",
+  "title": "Closures",
+  "description": "Understand closures - one of JavaScript's most powerful features for creating private state and factory functions.",
+  "milestone": "functions",
+  "order": 8,
+  "singleLevel": true,
+  "estimatedMinutes": 18,
+  "xpReward": 100,
+  "sections": [
+    "closure-concept",
+    "lexical-scope",
+    "practical-closures",
+    "common-pitfalls"
+  ],
+  "prerequisites": ["functions/iife"],
+  "tags": ["javascript", "functions", "closures", "scope", "advanced"]
+}
