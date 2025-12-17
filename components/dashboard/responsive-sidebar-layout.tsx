@@ -2,9 +2,9 @@
 
 import * as React from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { MobileSidebar } from "./mobile-sidebar";
 import { MobileHeader } from "./mobile-header";
 import type { SidebarData } from "./sidebar";
+import { MobileBottomNav } from "./mobile-bottom-nav";
 
 import { SidebarProvider, useSidebar } from "./sidebar-context";
 import { cn } from "@/lib/utils";
@@ -56,22 +56,17 @@ function ResponsiveSidebarLayoutContent({
         data-pet-edge-container
         data-pet-edge-id="content"
       >
-        {/* Mobile header with hamburger menu */}
+        {/* Mobile header (navigation is handled by bottom tab bar) */}
         {isMobile && (
-          <MobileHeader
-            menuTrigger={
-              <MobileSidebar
-                isAdmin={sidebarData.isAdmin}
-                usage={sidebarData.usage}
-                user={sidebarData.user}
-              />
-            }
-          />
+          <MobileHeader />
         )}
 
         {/* Main content */}
         {children}
       </div>
+
+      {/* Mobile bottom navigation */}
+      {isMobile && <MobileBottomNav sidebarData={sidebarData} />}
 
       <PixelPetOverlay
         initialPreferences={sidebarData.pixelPet}

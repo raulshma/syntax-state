@@ -23,7 +23,8 @@ import { Badge } from '@/components/ui/badge';
 import { Header } from '@/components/landing/header';
 import { Footer } from '@/components/landing/footer';
 import { getPublicJourneyBySlug } from '@/lib/actions/public-journeys';
-import { getObjectiveTitle } from '@/lib/utils/lesson-utils';
+import { MDXRemote, type MDXRemoteSerializeResult } from 'next-mdx-remote';
+import { useMDXComponents } from '@/mdx-components';
 import type { PublicJourney, PublicJourneyNode } from '@/lib/db/schemas/visibility';
 
 /**
@@ -49,6 +50,7 @@ function MilestoneCard({
   onToggle: () => void;
 }) {
   const isMilestone = node.type === 'milestone';
+  const mdxComponents = useMDXComponents({});
   
   return (
     <motion.div
@@ -141,7 +143,27 @@ function MilestoneCard({
                         <div className="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0 text-xs font-medium">
                           {objIndex + 1}
                         </div>
-                        <span className="text-sm text-foreground">{getObjectiveTitle(objective)}</span>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between gap-3">
+                            <span className="text-sm text-foreground">{objective.title}</span>
+                            {objective.contentPublic && (
+                              <Badge variant="secondary" className="text-[10px] uppercase tracking-wider">
+                                content
+                              </Badge>
+                            )}
+                          </div>
+
+                          {objective.contentMdx && (
+                            <div className="mt-3 rounded-xl border border-border/60 bg-background/60 p-4">
+                              <article className="prose prose-sm dark:prose-invert max-w-none">
+                                <MDXRemote
+                                  {...(objective.contentMdx as MDXRemoteSerializeResult)}
+                                  components={mdxComponents}
+                                />
+                              </article>
+                            </div>
+                          )}
+                        </div>
                       </li>
                     ))}
                   </ul>

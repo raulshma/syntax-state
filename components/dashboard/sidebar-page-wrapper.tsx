@@ -33,7 +33,7 @@ export function SidebarPageWrapper({ children }: SidebarPageWrapperProps) {
   }
 
   return (
-    <main className="flex-1 relative min-w-0 max-w-full z-10">
+    <main className="flex-1 relative min-w-0 max-w-full z-10 pb-[calc(env(safe-area-inset-bottom,0px)+76px)] md:pb-0">
       <div
         className={`relative ${paddingClass} overflow-x-hidden w-full max-w-full`}
       >

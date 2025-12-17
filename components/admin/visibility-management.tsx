@@ -12,6 +12,7 @@ import {
   Map as MapIcon,
   Target,
   CheckCircle2,
+  BookOpen,
 } from "lucide-react";
 import {
   Card,
@@ -22,6 +23,8 @@ import {
 } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Collapsible,
   CollapsibleContent,
@@ -30,7 +33,9 @@ import {
 import { cn } from "@/lib/utils";
 import {
   toggleVisibility,
+  toggleVisibilityBatch,
   getJourneyVisibilityDetails,
+  toggleObjectiveContentVisibility,
 } from "@/lib/actions/visibility-admin";
 import type {
   VisibilityOverview,
@@ -49,6 +54,66 @@ export function VisibilityManagement({ initialData }: VisibilityManagementProps)
   const [expandedjourneys, setExpandedjourneys] = useState<Set<string>>(() => new Set<string>());
   const [journeyDetails, setjourneyDetails] = useState<Map<string, JourneyVisibilityDetails>>(() => new Map<string, JourneyVisibilityDetails>());
   const [loadingDetails, setLoadingDetails] = useState<Set<string>>(() => new Set<string>());
+  const [selectedJourneys, setSelectedJourneys] = useState<Set<string>>(() => new Set<string>());
+
+  const allJourneySlugs = data.journeys.map(j => j.slug);
+  const allJourneysSelected = allJourneySlugs.length > 0 && selectedJourneys.size === allJourneySlugs.length;
+  const someJourneysSelected = selectedJourneys.size > 0 && !allJourneysSelected;
+
+  const toggleJourneySelected = (slug: string, selected: boolean) => {
+    setSelectedJourneys(prev => {
+      const next = new Set(prev);
+      if (selected) next.add(slug);
+      else next.delete(slug);
+      return next;
+    });
+  };
+
+  const setAllJourneysSelected = (selected: boolean) => {
+    setSelectedJourneys(selected ? new Set(allJourneySlugs) : new Set());
+  };
+
+  const applyJourneyBulkVisibility = async (isPublic: boolean) => {
+    const slugs = Array.from(selectedJourneys);
+    if (slugs.length === 0) return;
+
+    // Optimistic update
+    setData(prev => {
+      const journeys = prev.journeys.map(j => (selectedJourneys.has(j.slug) ? { ...j, isPublic } : j));
+      const publicJourneys = journeys.filter(j => j.isPublic).length;
+      return {
+        ...prev,
+        journeys,
+        stats: {
+          ...prev.stats,
+          publicJourneys,
+        },
+      };
+    });
+
+    const result = await toggleVisibilityBatch(
+      'journey',
+      slugs.map(slug => ({ entityId: slug, isPublic }))
+    );
+
+    if ('success' in result && !result.success) {
+      // Re-fetch would be ideal; for now revert by flipping back.
+      setData(prev => {
+        const journeys = prev.journeys.map(j => (selectedJourneys.has(j.slug) ? { ...j, isPublic: !isPublic } : j));
+        const publicJourneys = journeys.filter(j => j.isPublic).length;
+        return {
+          ...prev,
+          journeys,
+          stats: {
+            ...prev.stats,
+            publicJourneys,
+          },
+        };
+      });
+    } else {
+      setSelectedJourneys(new Set());
+    }
+  };
 
   const togglejourneyExpanded = async (slug: string) => {
     const newExpanded = new Set<string>(expandedjourneys);
@@ -119,6 +184,49 @@ export function VisibilityManagement({ initialData }: VisibilityManagementProps)
         </CardDescription>
       </CardHeader>
       <CardContent className="p-6 md:p-8">
+        <div className="flex flex-col gap-3 mb-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <Checkbox
+                checked={allJourneysSelected ? true : someJourneysSelected ? 'indeterminate' : false}
+                onCheckedChange={(checked) => setAllJourneysSelected(Boolean(checked))}
+                aria-label="Select all journeys"
+              />
+              <span className="text-sm text-muted-foreground">
+                {selectedJourneys.size > 0 ? `${selectedJourneys.size} selected` : 'Select journeys for bulk actions'}
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={selectedJourneys.size === 0}
+                onClick={() => applyJourneyBulkVisibility(true)}
+              >
+                Make public
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={selectedJourneys.size === 0}
+                onClick={() => applyJourneyBulkVisibility(false)}
+              >
+                Make private
+              </Button>
+              {selectedJourneys.size > 0 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSelectedJourneys(new Set())}
+                >
+                  Clear
+                </Button>
+              )}
+            </div>
+          </div>
+        </div>
+
         <div className="space-y-3">
           {data.journeys.length === 0 ? (
             <div className="text-center py-12">
@@ -130,6 +238,8 @@ export function VisibilityManagement({ initialData }: VisibilityManagementProps)
               <JourneyVisibilityItem
                 key={journey.slug}
                 journey={journey}
+                selected={selectedJourneys.has(journey.slug)}
+                onSelectedChange={(selected) => toggleJourneySelected(journey.slug, selected)}
                 isExpanded={expandedjourneys.has(journey.slug)}
                 details={journeyDetails.get(journey.slug)}
                 isLoadingDetails={loadingDetails.has(journey.slug)}
@@ -150,6 +260,8 @@ export function VisibilityManagement({ initialData }: VisibilityManagementProps)
 
 interface JourneyVisibilityItemProps {
   journey: JourneyVisibilityInfo;
+  selected: boolean;
+  onSelectedChange: (selected: boolean) => void;
   isExpanded: boolean;
   details?: JourneyVisibilityDetails;
   isLoadingDetails: boolean;
@@ -160,6 +272,8 @@ interface JourneyVisibilityItemProps {
 
 function JourneyVisibilityItem({
   journey,
+  selected,
+  onSelectedChange,
   isExpanded,
   details,
   isLoadingDetails,
@@ -179,6 +293,12 @@ function JourneyVisibilityItem({
     <Collapsible open={isExpanded} onOpenChange={onToggleExpand}>
       <div className="rounded-2xl border border-border/50 bg-secondary/20 overflow-hidden">
         <div className="flex items-center gap-4 p-4">
+          <Checkbox
+            checked={selected}
+            onCheckedChange={(checked) => onSelectedChange(Boolean(checked))}
+            aria-label={`Select journey ${journey.title}`}
+            onClick={(e) => e.stopPropagation()}
+          />
           <CollapsibleTrigger className="flex items-center gap-3 flex-1 text-left hover:bg-secondary/30 -m-2 p-2 rounded-xl transition-colors">
             <motion.div
               animate={{ rotate: isExpanded ? 90 : 0 }}
@@ -253,6 +373,76 @@ interface MilestonesListProps {
 
 function MilestonesList({ milestones, journeySlug, journeyIsPublic, onUpdate }: MilestonesListProps) {
   const [expandedMilestones, setExpandedMilestones] = useState<Set<string>>(() => new Set<string>());
+  const [selectedMilestones, setSelectedMilestones] = useState<Set<string>>(() => new Set<string>());
+
+  const allMilestoneIds = milestones.map(m => m.nodeId);
+  const allMilestonesSelected = allMilestoneIds.length > 0 && selectedMilestones.size === allMilestoneIds.length;
+  const someMilestonesSelected = selectedMilestones.size > 0 && !allMilestonesSelected;
+
+  const toggleMilestoneSelected = (nodeId: string, selected: boolean) => {
+    setSelectedMilestones(prev => {
+      const next = new Set(prev);
+      if (selected) next.add(nodeId);
+      else next.delete(nodeId);
+      return next;
+    });
+  };
+
+  const setAllMilestonesSelected = (selected: boolean) => {
+    setSelectedMilestones(selected ? new Set(allMilestoneIds) : new Set());
+  };
+
+  const applyMilestoneBulkVisibility = async (isPublic: boolean) => {
+    const nodeIds = Array.from(selectedMilestones);
+    if (nodeIds.length === 0) return;
+
+    // Optimistic update
+    onUpdate(
+      milestones.map(m => {
+        if (!selectedMilestones.has(m.nodeId)) return m;
+        const nextIsPublic = isPublic;
+        const nextEffectivelyPublic = journeyIsPublic && nextIsPublic;
+        return {
+          ...m,
+          isPublic: nextIsPublic,
+          effectivelyPublic: nextEffectivelyPublic,
+          objectives: m.objectives.map(o => ({
+            ...o,
+            effectivelyPublic: journeyIsPublic && nextIsPublic && o.isPublic,
+            effectivelyContentPublic: journeyIsPublic && nextIsPublic && o.isPublic && o.contentPublic,
+          })),
+        };
+      })
+    );
+
+    const result = await toggleVisibilityBatch(
+      'milestone',
+      nodeIds.map(id => ({ entityId: id, isPublic, parentJourneySlug: journeySlug }))
+    );
+
+    if ('success' in result && !result.success) {
+      // revert
+      onUpdate(
+        milestones.map(m => {
+          if (!selectedMilestones.has(m.nodeId)) return m;
+          const nextIsPublic = !isPublic;
+          const nextEffectivelyPublic = journeyIsPublic && nextIsPublic;
+          return {
+            ...m,
+            isPublic: nextIsPublic,
+            effectivelyPublic: nextEffectivelyPublic,
+            objectives: m.objectives.map(o => ({
+              ...o,
+              effectivelyPublic: journeyIsPublic && nextIsPublic && o.isPublic,
+              effectivelyContentPublic: journeyIsPublic && nextIsPublic && o.isPublic && o.contentPublic,
+            })),
+          };
+        })
+      );
+    } else {
+      setSelectedMilestones(new Set());
+    }
+  };
 
   const toggleMilestoneExpanded = (nodeId: string) => {
     setExpandedMilestones(prev => {
@@ -343,6 +533,57 @@ function MilestonesList({ milestones, journeySlug, journeyIsPublic, onUpdate }: 
     }
   };
 
+  const handleAllObjectivesVisibilityChange = async (
+    milestone: MilestoneVisibilityInfo,
+    isPublic: boolean
+  ) => {
+    // Optimistic update
+    onUpdate(
+      milestones.map(m =>
+        m.nodeId === milestone.nodeId
+          ? {
+              ...m,
+              objectives: m.objectives.map(o => ({
+                ...o,
+                isPublic,
+                effectivelyPublic: journeyIsPublic && m.isPublic && isPublic,
+                effectivelyContentPublic: journeyIsPublic && m.isPublic && isPublic && o.contentPublic,
+              })),
+            }
+          : m
+      )
+    );
+
+    const result = await toggleVisibilityBatch(
+      'objective',
+      milestone.objectives.map(o => ({
+        entityId: `${milestone.nodeId}-${o.index}`,
+        isPublic,
+        parentJourneySlug: journeySlug,
+        parentMilestoneId: milestone.nodeId,
+      }))
+    );
+
+    if ('success' in result && !result.success) {
+      // Revert
+      onUpdate(
+        milestones.map(m =>
+          m.nodeId === milestone.nodeId
+            ? {
+                ...m,
+                objectives: m.objectives.map(o => ({
+                  ...o,
+                  isPublic: !isPublic,
+                  effectivelyPublic: journeyIsPublic && m.isPublic && !isPublic,
+                  effectivelyContentPublic: journeyIsPublic && m.isPublic && !isPublic && o.contentPublic,
+                })),
+              }
+            : m
+        )
+      );
+    }
+  };
+
   if (milestones.length === 0) {
     return (
       <div className="text-center py-6 text-muted-foreground text-sm">
@@ -353,17 +594,107 @@ function MilestonesList({ milestones, journeySlug, journeyIsPublic, onUpdate }: 
 
   return (
     <div className="p-4 space-y-2">
+      <div className="flex flex-wrap items-center justify-between gap-3 pb-2">
+        <div className="flex items-center gap-3">
+          <Checkbox
+            checked={allMilestonesSelected ? true : someMilestonesSelected ? 'indeterminate' : false}
+            onCheckedChange={(checked) => setAllMilestonesSelected(Boolean(checked))}
+            aria-label="Select all milestones"
+          />
+          <span className="text-xs text-muted-foreground">
+            {selectedMilestones.size > 0 ? `${selectedMilestones.size} selected` : 'Select milestones'}
+          </span>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={selectedMilestones.size === 0}
+            onClick={() => applyMilestoneBulkVisibility(true)}
+          >
+            Make public
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={selectedMilestones.size === 0}
+            onClick={() => applyMilestoneBulkVisibility(false)}
+          >
+            Make private
+          </Button>
+          {selectedMilestones.size > 0 && (
+            <Button variant="ghost" size="sm" onClick={() => setSelectedMilestones(new Set())}>
+              Clear
+            </Button>
+          )}
+        </div>
+      </div>
+
       {milestones.map((milestone) => (
         <MilestoneVisibilityItem
           key={milestone.nodeId}
           milestone={milestone}
           journeyIsPublic={journeyIsPublic}
           isExpanded={expandedMilestones.has(milestone.nodeId)}
+          selected={selectedMilestones.has(milestone.nodeId)}
+          onSelectedChange={(selected) => toggleMilestoneSelected(milestone.nodeId, selected)}
           onToggleExpand={() => toggleMilestoneExpanded(milestone.nodeId)}
           onVisibilityChange={(isPublic) => handleMilestoneVisibilityChange(milestone, isPublic)}
           onObjectiveVisibilityChange={(objective, isPublic) =>
             handleObjectiveVisibilityChange(milestone, objective, isPublic)
           }
+          onAllObjectivesVisibilityChange={(isPublic) => handleAllObjectivesVisibilityChange(milestone, isPublic)}
+          onObjectiveContentVisibilityChange={async (objective, contentPublic) => {
+            // Optimistic update
+            onUpdate(
+              milestones.map(m =>
+                m.nodeId === milestone.nodeId
+                  ? {
+                      ...m,
+                      objectives: m.objectives.map(o =>
+                        o.index === objective.index
+                          ? {
+                              ...o,
+                              contentPublic,
+                              effectivelyContentPublic: journeyIsPublic && m.isPublic && o.isPublic && contentPublic,
+                            }
+                          : o
+                      ),
+                    }
+                  : m
+              )
+            );
+
+            const objectiveEntityId = `${milestone.nodeId}-${objective.index}`;
+            const result = await toggleObjectiveContentVisibility(
+              objectiveEntityId,
+              contentPublic,
+              journeySlug,
+              milestone.nodeId
+            );
+
+            if ('success' in result && !result.success) {
+              // Revert
+              onUpdate(
+                milestones.map(m =>
+                  m.nodeId === milestone.nodeId
+                    ? {
+                        ...m,
+                        objectives: m.objectives.map(o =>
+                          o.index === objective.index
+                            ? {
+                                ...o,
+                                contentPublic: !contentPublic,
+                                effectivelyContentPublic: journeyIsPublic && m.isPublic && o.isPublic && !contentPublic,
+                              }
+                            : o
+                        ),
+                      }
+                    : m
+                )
+              );
+            }
+          }}
         />
       ))}
     </div>
@@ -375,18 +706,26 @@ interface MilestoneVisibilityItemProps {
   milestone: MilestoneVisibilityInfo;
   journeyIsPublic: boolean;
   isExpanded: boolean;
+  selected: boolean;
+  onSelectedChange: (selected: boolean) => void;
   onToggleExpand: () => void;
   onVisibilityChange: (isPublic: boolean) => void;
   onObjectiveVisibilityChange: (objective: ObjectiveVisibilityInfo, isPublic: boolean) => void;
+  onAllObjectivesVisibilityChange: (isPublic: boolean) => void;
+  onObjectiveContentVisibilityChange: (objective: ObjectiveVisibilityInfo, contentPublic: boolean) => void;
 }
 
 function MilestoneVisibilityItem({
   milestone,
   journeyIsPublic,
   isExpanded,
+  selected,
+  onSelectedChange,
   onToggleExpand,
   onVisibilityChange,
   onObjectiveVisibilityChange,
+  onAllObjectivesVisibilityChange,
+  onObjectiveContentVisibilityChange,
 }: MilestoneVisibilityItemProps) {
   const [isPending, startTransition] = useTransition();
   const effectivelyPublic = journeyIsPublic && milestone.isPublic;
@@ -401,6 +740,12 @@ function MilestoneVisibilityItem({
     <Collapsible open={isExpanded} onOpenChange={onToggleExpand}>
       <div className="rounded-xl border border-border/30 bg-background/50 overflow-hidden">
         <div className="flex items-center gap-3 p-3">
+          <Checkbox
+            checked={selected}
+            onCheckedChange={(checked) => onSelectedChange(Boolean(checked))}
+            aria-label={`Select milestone ${milestone.title}`}
+            onClick={(e) => e.stopPropagation()}
+          />
           <CollapsibleTrigger className="flex items-center gap-2 flex-1 text-left hover:bg-secondary/30 -m-1.5 p-1.5 rounded-lg transition-colors">
             <motion.div
               animate={{ rotate: isExpanded ? 90 : 0 }}
@@ -442,8 +787,32 @@ function MilestoneVisibilityItem({
                 animate={{ opacity: 1, height: "auto" }}
                 exit={{ opacity: 0, height: 0 }}
                 transition={{ duration: 0.2 }}
-                className="border-t border-border/30 p-3 space-y-1.5"
+                className="border-t border-border/30 p-3 space-y-2"
               >
+                <div className="flex flex-wrap items-center justify-between gap-2 pb-1">
+                  <span className="text-[11px] text-muted-foreground">
+                    Objective bulk actions
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-7 px-2 text-xs"
+                      onClick={() => onAllObjectivesVisibilityChange(true)}
+                    >
+                      All public
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-7 px-2 text-xs"
+                      onClick={() => onAllObjectivesVisibilityChange(false)}
+                    >
+                      All private
+                    </Button>
+                  </div>
+                </div>
+
                 {milestone.objectives.map((objective) => (
                   <ObjectiveVisibilityItem
                     key={objective.index}
@@ -451,6 +820,7 @@ function MilestoneVisibilityItem({
                     milestoneIsPublic={milestone.isPublic}
                     journeyIsPublic={journeyIsPublic}
                     onVisibilityChange={(isPublic) => onObjectiveVisibilityChange(objective, isPublic)}
+                    onContentVisibilityChange={(contentPublic) => onObjectiveContentVisibilityChange(objective, contentPublic)}
                   />
                 ))}
               </motion.div>
@@ -467,6 +837,7 @@ interface ObjectiveVisibilityItemProps {
   milestoneIsPublic: boolean;
   journeyIsPublic: boolean;
   onVisibilityChange: (isPublic: boolean) => void;
+  onContentVisibilityChange: (contentPublic: boolean) => void;
 }
 
 function ObjectiveVisibilityItem({
@@ -474,6 +845,7 @@ function ObjectiveVisibilityItem({
   milestoneIsPublic,
   journeyIsPublic,
   onVisibilityChange,
+  onContentVisibilityChange,
 }: ObjectiveVisibilityItemProps) {
   const [isPending, startTransition] = useTransition();
   const effectivelyPublic = journeyIsPublic && milestoneIsPublic && objective.isPublic;
@@ -491,6 +863,36 @@ function ObjectiveVisibilityItem({
         <CheckCircle2 className="w-3 h-3 text-emerald-500" />
       </div>
       <p className="flex-1 text-xs text-foreground/80 truncate">{objective.title}</p>
+
+      {/* Content visibility toggle (objective-specific) */}
+      <div
+        className={cn(
+          'flex items-center gap-1',
+          objective.effectivelyContentPublic
+            ? 'text-emerald-600 dark:text-emerald-400'
+            : objective.contentPublic
+              ? 'text-amber-600 dark:text-amber-400'
+              : 'text-muted-foreground'
+        )}
+        title={
+          objective.effectivelyContentPublic
+            ? 'Lesson content will be visible on public explore'
+            : objective.contentPublic
+              ? 'Content is enabled but not effectively public (check parent/objective visibility)'
+              : 'Lesson content is hidden on public explore'
+        }
+      >
+        <BookOpen className="w-3 h-3" />
+        <Switch
+          checked={objective.contentPublic}
+          onCheckedChange={(checked) => {
+            startTransition(() => onContentVisibilityChange(checked));
+          }}
+          disabled={isPending}
+          className="scale-75"
+        />
+      </div>
+
       <EffectiveVisibilityIndicator
         isPublic={objective.isPublic}
         effectivelyPublic={effectivelyPublic}

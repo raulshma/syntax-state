@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
-import fs from 'fs/promises';
+import { readFile } from 'fs/promises';
 import path from 'path';
 import type { ExperienceLevel } from '@/lib/db/schemas/lesson-progress';
 import { resolvePathWithinRoot } from '@/lib/utils/safe-path';
@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
         { status: 400 }
       );
     }
-    const source = await fs.readFile(mdxPath, 'utf-8');
+    const source = await readFile(mdxPath, 'utf-8');
     console.log('[API] Loaded content, first 100 chars:', source.substring(0, 100));
     
     // Allow caching - lesson MDX content is static

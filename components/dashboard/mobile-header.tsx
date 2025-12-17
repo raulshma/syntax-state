@@ -8,8 +8,8 @@ import { Logo } from "@/components/ui/logo";
 import Link from "next/link";
 
 interface MobileHeaderProps {
-  /** Slot for the hamburger menu trigger (MobileSidebar component) */
-  menuTrigger: React.ReactNode;
+  /** Optional slot for a menu trigger (was used for the hamburger sidebar) */
+  menuTrigger?: React.ReactNode;
   /** Optional title to display in the header */
   title?: string;
   /** Whether to show a back button instead of the logo */
@@ -38,7 +38,7 @@ export function MobileHeader({
     <header data-mobile-header className="md:hidden sticky top-0 z-40 flex items-center justify-between h-14 px-4 border-b bg-background">
       {/* Left side: Menu trigger */}
       <div className="flex items-center gap-2">
-        {menuTrigger}
+        {menuTrigger ?? <div className="w-[44px]" />}
       </div>
 
       {/* Center: Logo or Title */}

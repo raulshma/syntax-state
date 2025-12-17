@@ -7,7 +7,11 @@ export default function manifest(): MetadataRoute.Manifest {
     description:
       "AI-Powered Learning Preparation - Ace your next technical interview",
     start_url: "/",
+    scope: "/",
+    id: "/",
     display: "standalone",
+    // Prefer fullscreen where supported; fallback to standalone.
+    display_override: ["fullscreen", "standalone"],
     background_color: "#0a0a0a",
     theme_color: "#0a0a0a",
     orientation: "portrait-primary",

@@ -108,8 +108,6 @@ export function Header() {
 
   const navLinks = [
     { href: "#how-it-works", label: "How it Works" },
-    { href: "#features", label: "Features" },
-    { href: "#community", label: "Community" },
     { href: "/explore", label: "Explore Journeys", isRoute: true },
   ];
 

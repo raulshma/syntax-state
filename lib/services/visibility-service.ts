@@ -8,11 +8,13 @@ import {
 } from '@/lib/db/repositories/visibility-repository';
 import { getJourneysCollection } from '@/lib/db/collections';
 import { logVisibilityChange } from './audit-log';
+import { logAdminAction } from './audit-log';
 import type {
   EntityType,
   VisibilitySetting,
   PublicJourney,
   PublicJourneyNode,
+  PublicLearningObjective,
   VisibilityOverview,
   JourneyVisibilityInfo,
   JourneyVisibilityDetails,
@@ -20,6 +22,35 @@ import type {
   ObjectiveVisibilityInfo,
 } from '@/lib/db/schemas/visibility';
 import type { JourneyDocument } from '@/lib/db/collections';
+import { getObjectiveLessonId, getObjectiveTitle } from '@/lib/utils/lesson-utils';
+import { getLessonContent, resolveLessonPath } from '@/lib/actions/lessons';
+
+function parseObjectiveIndexFromEntityId(entityId: string, parentMilestoneId: string): number | null {
+  // Supported historical/canonical formats:
+  // 1) `${milestoneId}-${index}`
+  // 2) `${milestoneId}-objective-${index}`
+  // 3) `${milestoneId}-objective-${index}` variants (anything ending in `-${index}`)
+
+  if (!entityId) return null;
+  if (entityId.startsWith(`${parentMilestoneId}-objective-`)) {
+    const tail = entityId.slice(`${parentMilestoneId}-objective-`.length);
+    const idx = Number.parseInt(tail, 10);
+    return Number.isFinite(idx) ? idx : null;
+  }
+
+  if (entityId.startsWith(`${parentMilestoneId}-`)) {
+    const tail = entityId.slice(`${parentMilestoneId}-`.length);
+    // If tail contains more dashes (e.g. objective-3), try last segment.
+    const last = tail.split('-').pop() ?? '';
+    const idx = Number.parseInt(last, 10);
+    return Number.isFinite(idx) ? idx : null;
+  }
+
+  // Last-resort fallback: last segment
+  const last = entityId.split('-').pop() ?? '';
+  const idx = Number.parseInt(last, 10);
+  return Number.isFinite(idx) ? idx : null;
+}
 
 /**
  * Visibility Error for handling visibility-related errors
@@ -253,15 +284,44 @@ async function filterJourneyForPublic(
     }
 
     const objectiveSettings = await getVisibilityByParent('objective', node.id);
-    const publicObjectiveIndices = new Set(
-      objectiveSettings
-        .filter(s => s.isPublic)
-        .map(s => parseInt(s.entityId.split('-').pop() || '0', 10))
-    );
+    const objectiveSettingByIndex = new Map<number, VisibilitySetting>();
+    for (const setting of objectiveSettings) {
+      const index = parseObjectiveIndexFromEntityId(setting.entityId, node.id);
+      if (index === null) continue;
+      objectiveSettingByIndex.set(index, setting);
+    }
 
-    const publicObjectives = node.learningObjectives.filter((_, index) => 
-      publicObjectiveIndices.has(index)
-    );
+    const publicObjectives: PublicLearningObjective[] = [];
+    for (let index = 0; index < node.learningObjectives.length; index++) {
+      const setting = objectiveSettingByIndex.get(index);
+      if (!setting?.isPublic) continue;
+
+      const objective = node.learningObjectives[index];
+      const title = getObjectiveTitle(objective);
+      const lessonId = getObjectiveLessonId(objective);
+      const contentPublic = setting.contentPublic ?? false;
+
+      let contentMdx: PublicLearningObjective['contentMdx'] | undefined;
+
+      // Only load MDX when explicitly allowed (to keep public explore fast)
+      if (contentPublic) {
+        const lessonPath = await resolveLessonPath(node.id, lessonId, journey.slug);
+        if (lessonPath) {
+          // For multi-level lessons, default to beginner for public preview.
+          const mdx = await getLessonContent(lessonPath, 'beginner');
+          if (mdx) {
+            contentMdx = mdx;
+          }
+        }
+      }
+
+      publicObjectives.push({
+        title,
+        lessonId,
+        contentPublic,
+        ...(contentMdx ? { contentMdx } : {}),
+      });
+    }
 
     publicNodes.push({
       id: node.id,
@@ -381,23 +441,27 @@ export const getJourneyVisibilityDetails = cache(async (
     const effectivelyPublic = isJourneyPublic && isMilestonePublic;
     
     const objectiveSettings = await getVisibilityByParent('objective', node.id);
-    const objectiveVisibilityMap = new Map(
-      objectiveSettings.map(s => [s.entityId, s.isPublic])
-    );
+    const objectiveSettingByIndex = new Map<number, VisibilitySetting>();
+    for (const setting of objectiveSettings) {
+      const index = parseObjectiveIndexFromEntityId(setting.entityId, node.id);
+      if (index === null) continue;
+      objectiveSettingByIndex.set(index, setting);
+    }
     
-    const objectives: ObjectiveVisibilityInfo[] = node.learningObjectives.map(
-      (obj, index) => {
-        const objectiveId = `${node.id}-objective-${index}`;
-        const isObjectivePublic = objectiveVisibilityMap.get(objectiveId) ?? false;
-        
-        return {
-          index,
-          title: typeof obj === 'string' ? obj : obj.title,
-          isPublic: isObjectivePublic,
-          effectivelyPublic: effectivelyPublic && isObjectivePublic,
-        };
-      }
-    );
+    const objectives: ObjectiveVisibilityInfo[] = node.learningObjectives.map((obj, index) => {
+      const setting = objectiveSettingByIndex.get(index);
+      const isObjectivePublic = setting?.isPublic ?? false;
+      const contentPublic = setting?.contentPublic ?? false;
+
+      return {
+        index,
+        title: typeof obj === 'string' ? obj : obj.title,
+        isPublic: isObjectivePublic,
+        effectivelyPublic: effectivelyPublic && isObjectivePublic,
+        contentPublic,
+        effectivelyContentPublic: effectivelyPublic && isObjectivePublic && contentPublic,
+      };
+    });
     
     milestones.push({
       nodeId: node.id,
@@ -419,3 +483,42 @@ export const getJourneyVisibilityDetails = cache(async (
     milestones,
   };
 });
+
+/**
+ * Update objective "contentPublic" without changing its isPublic value.
+ * This controls whether lesson content is included in public explore.
+ */
+export async function updateObjectiveContentVisibility(
+  adminId: string,
+  objectiveEntityId: string,
+  contentPublic: boolean,
+  parentJourneySlug: string,
+  parentMilestoneId: string
+): Promise<VisibilitySetting> {
+  await validateParentExists('objective', parentJourneySlug, parentMilestoneId);
+
+  const currentSetting = await getVisibility('objective', objectiveEntityId);
+  const oldValue = currentSetting?.contentPublic ?? null;
+
+  // Use generic audit log entry (keeps the strict VisibilityChangeLogEntry schema unchanged)
+  await logAdminAction('objective_content_visibility_change', adminId, undefined, {
+    entityType: 'objective',
+    entityId: objectiveEntityId,
+    oldValue,
+    newValue: contentPublic,
+    parentJourneySlug,
+    parentMilestoneId,
+  });
+
+  const newSetting = await setVisibility({
+    entityType: 'objective',
+    entityId: objectiveEntityId,
+    isPublic: currentSetting?.isPublic ?? false,
+    contentPublic,
+    parentJourneySlug,
+    parentMilestoneId,
+    updatedBy: adminId,
+  });
+
+  return newSetting;
+}

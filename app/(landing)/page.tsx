@@ -8,10 +8,12 @@ import { CommunityFeed } from "@/components/landing/community-feed";
 import { PricingPreview } from "@/components/landing/pricing-preview";
 import { CTASection } from "@/components/landing/cta-section";
 import { Footer } from "@/components/landing/footer";
+import { PwaSignedInRedirect } from "@/components/landing/pwa-signed-in-redirect";
 
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-background font-sans antialiased">
+      <PwaSignedInRedirect />
       <Header />
       <main>
         <Hero />
