@@ -223,9 +223,9 @@ export function TestPyramidExplorer({
               {selectedLayer ? (
                 <motion.div
                   key={selectedLayer.id}
-                  initial={shouldReduceMotion ? false : { opacity: 0, x: 20 }}
+                  initial={shouldReduceMotion ? undefined : { opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  exit={shouldReduceMotion ? false : { opacity: 0, x: -20 }}
+                  exit={shouldReduceMotion ? undefined : { opacity: 0, x: -20 }}
                   className={cn(
                     'p-4 rounded-xl border',
                     colorClasses[selectedLayer.color as keyof typeof colorClasses].bg,

@@ -316,9 +316,9 @@ export function BuildPipelineVisualizer({
                     <AnimatePresence>
                       {isExpanded && (
                         <motion.div
-                          initial={shouldReduceMotion ? false : { height: 0, opacity: 0 }}
+                          initial={shouldReduceMotion ? undefined : { height: 0, opacity: 0 }}
                           animate={{ height: 'auto', opacity: 1 }}
-                          exit={shouldReduceMotion ? false : { height: 0, opacity: 0 }}
+                          exit={shouldReduceMotion ? undefined : { height: 0, opacity: 0 }}
                           transition={shouldReduceMotion ? { duration: 0 } : { duration: 0.2 }}
                           className="mt-4 pt-4 border-t border-border/50"
                         >
@@ -335,7 +335,7 @@ export function BuildPipelineVisualizer({
                                     file={file}
                                     isHighlighted={relatedFiles.has(file)}
                                     onHover={setHoveredFile}
-                                    shouldReduceMotion={shouldReduceMotion}
+                                    shouldReduceMotion={shouldReduceMotion ?? undefined}
                                   />
                                 ))}
                               </div>
@@ -353,7 +353,7 @@ export function BuildPipelineVisualizer({
                                     file={file}
                                     isHighlighted={relatedFiles.has(file)}
                                     onHover={setHoveredFile}
-                                    shouldReduceMotion={shouldReduceMotion}
+                                    shouldReduceMotion={shouldReduceMotion ?? undefined}
                                   />
                                 ))}
                               </div>
@@ -435,7 +435,7 @@ interface FileItemProps {
 function FileItem({ file, isHighlighted, onHover, shouldReduceMotion }: FileItemProps) {
   return (
     <motion.div
-      initial={shouldReduceMotion ? false : { opacity: 0, x: -10 }}
+      initial={shouldReduceMotion ? undefined : { opacity: 0, x: -10 }}
       animate={{ 
         opacity: 1, 
         x: 0,

@@ -3,7 +3,7 @@
  * These are NOT server actions, just helper functions
  */
 
-import type { LearningObjective } from '@/lib/db/schemas/roadmap';
+import type { LearningObjective } from '@/lib/db/schemas/journey';
 
 /**
  * Convert objective title to lesson slug

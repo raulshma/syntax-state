@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 const items = [
     {
         id: 1,
-        title: "Frontend Roadmap",
+        title: "Frontend journey",
         subtitle: "Build Modern UIs",
         description:
             "A guided path through React, TypeScript, performance, accessibility, and real-world patterns.",
@@ -34,7 +34,7 @@ const items = [
         title: "System Design",
         subtitle: "Architect Scalable Systems",
         description:
-            "Learn core concepts and patterns with a roadmap you can actually follow week to week.",
+            "Learn core concepts and patterns with a journey you can actually follow week to week.",
         color: "text-purple-500",
         bg: "bg-purple-500/10",
         gradient: "from-purple-600 to-purple-900",
@@ -87,7 +87,7 @@ export function ShowcaseScroll() {
             <div className="max-w-7xl mx-auto px-6 mb-16 flex items-end justify-between">
                 <div>
                     <h2 className="text-4xl md:text-6xl font-bold tracking-tight mb-6 text-foreground">
-                        Roadmaps that actually guide you.
+                        journeys that actually guide you.
                     </h2>
                     <p className="text-xl text-muted-foreground max-w-xl leading-relaxed">
                         Learning paths, lessons, and practice tools built to help you make consistent progress.

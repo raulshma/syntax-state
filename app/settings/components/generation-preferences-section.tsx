@@ -214,7 +214,7 @@ export function GenerationPreferencesSection({
 }
 
 interface PreferenceSliderProps {
-  icon: React.ElementType;
+  icon: React.ComponentType<{ className?: string }>;
   label: string;
   description?: string;
   value: number;

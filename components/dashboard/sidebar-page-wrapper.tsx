@@ -26,9 +26,9 @@ export function SidebarPageWrapper({ children }: SidebarPageWrapperProps) {
 
   if (pathname === "/ai-chat" || pathname?.includes("/ai-chat")) {
     paddingClass = paddingConfig.none;
-  } else if (pathname && /^\/roadmaps\/[^/]+$/.test(pathname)) {
-    // Apply small padding ONLY to the roadmap ID page (viewer + sidebar layout)
-    // This excludes nested routes like /roadmaps/[slug]/learn/...
+  } else if (pathname && /^\/journeys\/[^/]+$/.test(pathname)) {
+    // Apply small padding ONLY to the journey ID page (viewer + sidebar layout)
+    // This excludes nested routes like /journeys/[slug]/learn/...
     paddingClass = paddingConfig.small;
   }
 

@@ -279,7 +279,7 @@ export function TypeCastingVisualizer({
     };
   }, [isPlaying, currentIndex, showConversion, examples.length, duration]);
 
-  const handlePlayPause = useCallback(() => {
+  const handlePlayPause = () => {
     if (currentIndex >= examples.length - 1 && showConversion) {
       setCurrentIndex(0);
       setShowConversion(false);
@@ -287,13 +287,13 @@ export function TypeCastingVisualizer({
     } else {
       setIsPlaying((prev) => !prev);
     }
-  }, [currentIndex, examples.length, showConversion]);
+  };
 
-  const handleReset = useCallback(() => {
+  const handleReset = () => {
     setIsPlaying(false);
     setCurrentIndex(0);
     setShowConversion(false);
-  }, []);
+  };
 
   const handleSpeedChange = useCallback((newSpeed: AnimationSpeed) => {
     setSpeed(newSpeed);

@@ -9,7 +9,7 @@ import {
 import {
   updateVisibility,
   getVisibilityOverview as getVisibilityOverviewService,
-  getRoadmapVisibilityDetails as getRoadmapVisibilityDetailsService,
+  getJourneyVisibilityDetails as getJourneyVisibilityDetailsService,
 } from "@/lib/services/visibility-service";
 import { setVisibilityBatch } from "@/lib/db/repositories/visibility-repository";
 import { logVisibilityChange } from "@/lib/services/audit-log";
@@ -18,7 +18,7 @@ import type {
   EntityType,
   VisibilitySetting,
   VisibilityOverview,
-  RoadmapVisibilityDetails,
+  JourneyVisibilityDetails,
 } from "@/lib/db/schemas/visibility";
 
 /**
@@ -49,19 +49,17 @@ export interface VisibilityErrorResult {
 /**
  * Toggle visibility for a single entity
  * 
- * @param entityType - Type of entity (roadmap, milestone, objective)
+ * @param entityType - Type of entity (journey, milestone, objective)
  * @param entityId - Identifier of the entity
  * @param isPublic - New visibility state
- * @param parentRoadmapSlug - Parent roadmap slug (required for milestones/objectives)
+ * @param parentJourneySlug - Parent journey slug (required for milestones/objectives)
  * @param parentMilestoneId - Parent milestone ID (required for objectives)
- * 
- * Requirements: 1.1, 1.2, 1.3, 2.1, 2.2
  */
 export async function toggleVisibility(
   entityType: EntityType,
   entityId: string,
   isPublic: boolean,
-  parentRoadmapSlug?: string,
+  parentJourneySlug?: string,
   parentMilestoneId?: string
 ): Promise<VisibilityResult | VisibilityErrorResult | UnauthorizedResponse> {
   return requireAdmin(async () => {
@@ -76,15 +74,15 @@ export async function toggleVisibility(
         entityType,
         entityId,
         isPublic,
-        parentRoadmapSlug,
+        parentJourneySlug,
         parentMilestoneId
       );
 
       // Invalidate relevant caches
       revalidatePath("/admin");
-      if (entityType === "roadmap") {
-        revalidatePath("/roadmaps");
-        revalidatePath(`/roadmaps/${entityId}`);
+      if (entityType === "journey") {
+        revalidatePath("/journeys");
+        revalidatePath(`/journeys/${entityId}`);
       }
 
       return { success: true, setting };
@@ -102,7 +100,7 @@ export async function toggleVisibility(
 export interface BatchVisibilityUpdate {
   entityId: string;
   isPublic: boolean;
-  parentRoadmapSlug?: string;
+  parentJourneySlug?: string;
   parentMilestoneId?: string;
 }
 
@@ -111,10 +109,8 @@ export interface BatchVisibilityUpdate {
  * 
  * All updates are performed atomically using bulkWrite.
  * 
- * @param entityType - Type of entities (roadmap, milestone, objective)
+ * @param entityType - Type of entities (journey, milestone, objective)
  * @param updates - Array of updates with entityId and isPublic values
- * 
- * Requirements: 7.4, 8.4
  */
 export async function toggleVisibilityBatch(
   entityType: EntityType,
@@ -138,7 +134,6 @@ export async function toggleVisibilityBatch(
       );
       
       // Create audit logs for each change BEFORE updating
-      // This ensures audit log is created before returning success (Requirement 6.1-6.4)
       await Promise.all(
         updates.map(async (update, index) => {
           const currentSetting = currentSettings[index];
@@ -150,7 +145,7 @@ export async function toggleVisibilityBatch(
             update.entityId,
             oldValue,
             update.isPublic,
-            update.parentRoadmapSlug,
+            update.parentJourneySlug,
             update.parentMilestoneId
           );
         })
@@ -162,7 +157,7 @@ export async function toggleVisibilityBatch(
           entityType,
           entityId: update.entityId,
           isPublic: update.isPublic,
-          parentRoadmapSlug: update.parentRoadmapSlug,
+          parentJourneySlug: update.parentJourneySlug,
           parentMilestoneId: update.parentMilestoneId,
           updatedBy: user.clerkId,
         }))
@@ -170,11 +165,11 @@ export async function toggleVisibilityBatch(
 
       // Invalidate relevant caches
       revalidatePath("/admin");
-      if (entityType === "roadmap") {
-        revalidatePath("/roadmaps");
-        // Revalidate each roadmap page
+      if (entityType === "journey") {
+        revalidatePath("/journeys");
+        // Revalidate each journey page
         for (const update of updates) {
-          revalidatePath(`/roadmaps/${update.entityId}`);
+          revalidatePath(`/journeys/${update.entityId}`);
         }
       }
 
@@ -193,9 +188,7 @@ export async function toggleVisibilityBatch(
 /**
  * Get visibility overview for admin UI
  * 
- * Returns all roadmaps with their visibility status and stats.
- * 
- * Requirements: 5.1, 5.2, 5.3
+ * Returns all journeys with their visibility status and stats.
  */
 export async function getVisibilityOverview(): Promise<
   VisibilityOverview | VisibilityErrorResult | UnauthorizedResponse
@@ -212,20 +205,18 @@ export async function getVisibilityOverview(): Promise<
 }
 
 /**
- * Get detailed visibility information for a specific roadmap
+ * Get detailed visibility information for a specific journey
  * 
- * Returns the roadmap with all milestones and objectives and their visibility status.
+ * Returns the journey with all milestones and objectives and their visibility status.
  * 
- * @param roadmapSlug - Slug of the roadmap to get details for
- * 
- * Requirements: 5.2, 5.3
+ * @param journeySlug - Slug of the journey to get details for
  */
-export async function getRoadmapVisibilityDetails(
-  roadmapSlug: string
-): Promise<RoadmapVisibilityDetails | null | VisibilityErrorResult | UnauthorizedResponse> {
+export async function getJourneyVisibilityDetails(
+  journeySlug: string
+): Promise<JourneyVisibilityDetails | null | VisibilityErrorResult | UnauthorizedResponse> {
   return requireAdmin(async () => {
     try {
-      const details = await getRoadmapVisibilityDetailsService(roadmapSlug);
+      const details = await getJourneyVisibilityDetailsService(journeySlug);
       return details;
     } catch (error) {
       const message = error instanceof Error ? error.message : "Unknown error";

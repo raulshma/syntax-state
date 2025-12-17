@@ -90,6 +90,27 @@ const response = await fetch('/api/users');
 const users = await response.json();
 expect(users[0].name).toBe('Test User');`,
   },
+  module: {
+    title: 'Module Mocking',
+    description: 'Replace imported modules with mocked implementations',
+    realSteps: [
+      { id: '1', label: "import { getUser } from './user'", description: 'Module import' },
+      { id: '2', label: 'Call getUser()', description: 'Calls into real module' },
+      { id: '3', label: 'Return real data', description: 'Real module returns data' },
+    ],
+    mockedSteps: [
+      { id: '1', label: "import { getUser } from './user'", description: 'Module import' },
+      { id: '2', label: 'Mock module with vi.mock()', description: 'Mock replaces implementation', isMocked: true },
+      { id: '3', label: 'Return mock data', description: 'Mocked module returns controlled data', isMocked: true },
+    ],
+    code: `// Mock a module
+vi.mock('./user', () => ({
+  getUser: () => ({ id: 1, name: 'Mock User' })
+}));
+
+const user = getUser();
+expect(user.name).toBe('Mock User');`,
+  },
   timer: {
     title: 'Timer Mocking',
     description: 'Control time-based functions like setTimeout and setInterval',
@@ -250,10 +271,10 @@ export function MockingVisualizer({
             <h4 className="text-sm font-medium text-muted-foreground mb-4">
               Execution Flow {showMocked && <span className="text-purple-400">(Mocked)</span>}
             </h4>
-            {steps.map((step, index) => (
+            {steps.map((step: Step, index: number) => (
               <motion.div
                 key={step.id}
-                initial={shouldReduceMotion ? false : { opacity: 0, x: -10 }}
+                initial={shouldReduceMotion ? undefined : { opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: index * 0.1 }}
                 className={cn(

@@ -149,7 +149,7 @@ export const getVisibilityByParent = cache(async (
   
   // Determine which parent field to query based on entity type
   const parentField = entityType === 'milestone' 
-    ? 'parentRoadmapSlug' 
+    ? 'parentJourneySlug' 
     : 'parentMilestoneId';
   
   const docs = await collection

@@ -62,7 +62,7 @@ export function ViewBuilder({ mode = 'beginner' }: ViewBuilderProps) {
   };
 
   return (
-    <div className="p-6 rounded-xl bg-gradient-to-br from-slate-900 to-slate-800 border border-slate-700/50 shadow-xl">
+    <div className="p-6 rounded-xl bg-linear-to-br from-slate-900 to-slate-800 border border-slate-700/50 shadow-xl">
       <div className="flex items-center gap-3 mb-6">
         <div className="p-2 rounded-lg bg-cyan-500/20">
           <Eye className="h-5 w-5 text-cyan-400" />
@@ -75,7 +75,7 @@ export function ViewBuilder({ mode = 'beginner' }: ViewBuilderProps) {
         <div className="p-4 rounded-lg bg-slate-800/50 border border-slate-700/50 mb-6">
           <p className="text-white font-medium">What is a View?</p>
           <p className="text-slate-400 text-sm mt-1">
-            💡 A view is like a "saved search" or a "virtual table". It doesn't store data itself - 
+            💡 A view is like a &quot;saved search&quot; or a &quot;virtual table&quot;. It doesn&apos;t store data itself - 
             it just remembers which columns from which tables you want to see together.
           </p>
         </div>

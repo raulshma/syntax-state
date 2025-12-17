@@ -73,8 +73,8 @@ export async function ensureIndexes(): Promise<void> {
     ),
     // Index for public entity queries
     visibilitySettings.createIndex({ entityType: 1, isPublic: 1 }),
-    // Index for parent-based queries (milestones by roadmap)
-    visibilitySettings.createIndex({ parentRoadmapSlug: 1 }),
+    // Index for parent-based queries (milestones by journey)
+    visibilitySettings.createIndex({ parentJourneySlug: 1 }),
     // Index for parent-based queries (objectives by milestone)
     visibilitySettings.createIndex({ parentMilestoneId: 1 }),
   ]);

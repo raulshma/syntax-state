@@ -663,26 +663,26 @@ export interface TokenUsageTrend {
 }
 
 // ============================================
-// Roadmap Analytics Types
+// journey Analytics Types
 // ============================================
 
-export interface RoadmapAnalyticsStats {
-  totalActiveRoadmaps: number;
-  roadmapsStarted30d: number;
-  activeRoadmapUsers7d: number;
+export interface journeyAnalyticsStats {
+  totalActiveJourneys: number;
+  journeysStarted30d: number;
+  activeJourneyUsers7d: number;
   nodeCompletions30d: number;
   avgOverallProgressActive7d: number;
 }
 
-export interface RoadmapTrendData {
+export interface journeyTrendData {
   date: string;
-  roadmapsStarted: number;
+  journeysStarted: number;
   nodeCompletions: number;
 }
 
-export interface PopularRoadmapData {
-  roadmapSlug: string;
-  roadmapTitle: string;
+export interface PopularJourneyData {
+  journeySlug: string;
+  journeyTitle: string;
   count: number;
   percentage: number;
 }

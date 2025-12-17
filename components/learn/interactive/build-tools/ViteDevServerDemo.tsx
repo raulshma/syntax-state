@@ -169,7 +169,7 @@ export function ViteDevServerDemo({ autoStart = false }: ViteDevServerDemoProps)
           {/* Startup Time */}
           {startupTime !== null && (
             <motion.div
-              initial={shouldReduceMotion ? false : { opacity: 0, y: -10 }}
+              initial={shouldReduceMotion ? undefined : { opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               className="mb-4 p-3 rounded-lg bg-green-500/10 border border-green-500/30"
             >

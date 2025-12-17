@@ -1,7 +1,7 @@
 /**
  * Property-based tests for visibility schema validation
  * 
- * **Feature: roadmap-public-visibility, Property 1: Visibility Setting Round-Trip**
+ * **Feature: journey-public-visibility, Property 1: Visibility Setting Round-Trip**
  * **Validates: Requirements 1.1, 1.2, 2.1, 2.2, 3.1, 3.2**
  */
 
@@ -17,12 +17,12 @@ import {
 } from './visibility';
 
 // Arbitrary generators for property tests
-const entityTypeArb = fc.constantFrom<EntityType>('roadmap', 'milestone', 'objective');
+const entityTypeArb = fc.constantFrom<EntityType>('journey', 'milestone', 'objective');
 
 const entityIdArb = fc.string({ minLength: 1, maxLength: 50 })
   .filter(s => s.trim().length > 0);
 
-const roadmapSlugArb = fc.stringMatching(/^[a-z0-9][a-z0-9-]{0,48}[a-z0-9]$|^[a-z0-9]$/)
+const journeySlugArb = fc.stringMatching(/^[a-z0-9][a-z0-9-]{0,48}[a-z0-9]$|^[a-z0-9]$/)
   .filter(s => s.length >= 1 && s.length <= 50);
 
 const adminIdArb = fc.string({ minLength: 1, maxLength: 100 })
@@ -33,7 +33,7 @@ const createVisibilitySettingArb = fc.record({
   entityType: entityTypeArb,
   entityId: entityIdArb,
   isPublic: fc.boolean(),
-  parentRoadmapSlug: fc.option(roadmapSlugArb, { nil: undefined }),
+  parentJourneySlug: fc.option(journeySlugArb, { nil: undefined }),
   parentMilestoneId: fc.option(entityIdArb, { nil: undefined }),
   updatedBy: adminIdArb,
 });
@@ -48,7 +48,7 @@ const visibilitySettingArb = fc.record({
   entityType: entityTypeArb,
   entityId: entityIdArb,
   isPublic: fc.boolean(),
-  parentRoadmapSlug: fc.option(roadmapSlugArb, { nil: undefined }),
+  parentJourneySlug: fc.option(journeySlugArb, { nil: undefined }),
   parentMilestoneId: fc.option(entityIdArb, { nil: undefined }),
   updatedBy: adminIdArb,
   updatedAt: validDateArb,
@@ -57,7 +57,7 @@ const visibilitySettingArb = fc.record({
 
 describe('Visibility Schema Property Tests', () => {
   /**
-   * **Feature: roadmap-public-visibility, Property 1: Visibility Setting Round-Trip**
+   * **Feature: journey-public-visibility, Property 1: Visibility Setting Round-Trip**
    * 
    * For any valid visibility setting, serializing (parsing) and then accessing
    * its properties should return the same values.
@@ -76,7 +76,7 @@ describe('Visibility Schema Property Tests', () => {
           expect(parsed.entityType).toBe(setting.entityType);
           expect(parsed.entityId).toBe(setting.entityId);
           expect(parsed.isPublic).toBe(setting.isPublic);
-          expect(parsed.parentRoadmapSlug).toBe(setting.parentRoadmapSlug);
+          expect(parsed.parentJourneySlug).toBe(setting.parentJourneySlug);
           expect(parsed.parentMilestoneId).toBe(setting.parentMilestoneId);
           expect(parsed.updatedBy).toBe(setting.updatedBy);
           expect(parsed.updatedAt.getTime()).toBe(setting.updatedAt.getTime());
@@ -98,7 +98,7 @@ describe('Visibility Schema Property Tests', () => {
           expect(parsed.entityType).toBe(setting.entityType);
           expect(parsed.entityId).toBe(setting.entityId);
           expect(parsed.isPublic).toBe(setting.isPublic);
-          expect(parsed.parentRoadmapSlug).toBe(setting.parentRoadmapSlug);
+          expect(parsed.parentJourneySlug).toBe(setting.parentJourneySlug);
           expect(parsed.parentMilestoneId).toBe(setting.parentMilestoneId);
           expect(parsed.updatedBy).toBe(setting.updatedBy);
           
@@ -123,7 +123,7 @@ describe('Visibility Schema Property Tests', () => {
     });
 
     it('should reject invalid entity types', () => {
-      const invalidTypes = ['invalid', 'ROADMAP', 'Milestone', '', 'node', 'topic'];
+      const invalidTypes = ['invalid', 'journey', 'Milestone', '', 'node', 'topic'];
       for (const invalidType of invalidTypes) {
         const result = EntityTypeSchema.safeParse(invalidType);
         expect(result.success).toBe(false);
@@ -149,29 +149,29 @@ describe('Visibility Schema Property Tests', () => {
     it('should preserve parent references for hierarchical entities', () => {
       fc.assert(
         fc.property(
-          roadmapSlugArb,
+          journeySlugArb,
           entityIdArb,
           createVisibilitySettingArb,
           (parentSlug, parentMilestoneId, baseSetting) => {
-            // Test milestone with parent roadmap
+            // Test milestone with parent journey
             const milestoneSetting: CreateVisibilitySetting = {
               ...baseSetting,
               entityType: 'milestone',
-              parentRoadmapSlug: parentSlug,
+              parentJourneySlug: parentSlug,
               parentMilestoneId: undefined,
             };
             const parsedMilestone = CreateVisibilitySettingSchema.parse(milestoneSetting);
-            expect(parsedMilestone.parentRoadmapSlug).toBe(parentSlug);
+            expect(parsedMilestone.parentJourneySlug).toBe(parentSlug);
             
             // Test objective with parent milestone
             const objectiveSetting: CreateVisibilitySetting = {
               ...baseSetting,
               entityType: 'objective',
-              parentRoadmapSlug: parentSlug,
+              parentJourneySlug: parentSlug,
               parentMilestoneId: parentMilestoneId,
             };
             const parsedObjective = CreateVisibilitySettingSchema.parse(objectiveSetting);
-            expect(parsedObjective.parentRoadmapSlug).toBe(parentSlug);
+            expect(parsedObjective.parentJourneySlug).toBe(parentSlug);
             expect(parsedObjective.parentMilestoneId).toBe(parentMilestoneId);
             
             return true;

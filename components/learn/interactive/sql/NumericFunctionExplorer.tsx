@@ -90,7 +90,7 @@ function NumberLine({ value, result, func }: { value: number; result: number; fu
   return (
     <div className="relative h-24 mt-6 mb-8">
       {/* Number line */}
-      <div className="absolute left-4 right-4 top-12 h-1 bg-gradient-to-r from-blue-500/30 via-blue-500 to-blue-500/30 rounded-full" />
+      <div className="absolute left-4 right-4 top-12 h-1 bg-linear-to-r from-blue-500/30 via-blue-500 to-blue-500/30 rounded-full" />
       
       {/* Integer markers */}
       {integers.map((int) => {
@@ -159,8 +159,8 @@ function NumberLine({ value, result, func }: { value: number; result: number; fu
           <div className={cn(
             'h-0.5 w-full',
             func === 'FLOOR' || (func === 'ROUND' && result < value) 
-              ? 'bg-gradient-to-l from-emerald-500 to-blue-500'
-              : 'bg-gradient-to-r from-blue-500 to-emerald-500'
+              ? 'bg-linear-to-l from-emerald-500 to-blue-500'
+              : 'bg-linear-to-r from-blue-500 to-emerald-500'
           )} />
         </motion.div>
       )}
@@ -194,7 +194,7 @@ export function NumericFunctionExplorer({ mode = 'beginner' }: NumericFunctionEx
   };
 
   return (
-    <div className="p-6 rounded-xl bg-gradient-to-br from-slate-900 to-slate-800 border border-slate-700/50 shadow-xl">
+    <div className="p-6 rounded-xl bg-linear-to-br from-slate-900 to-slate-800 border border-slate-700/50 shadow-xl">
       <div className="flex items-center gap-3 mb-6">
         <div className="p-2 rounded-lg bg-blue-500/20">
           <Calculator className="h-5 w-5 text-blue-400" />
@@ -231,7 +231,7 @@ export function NumericFunctionExplorer({ mode = 'beginner' }: NumericFunctionEx
         className="p-4 rounded-lg bg-slate-800/50 border border-slate-700/50 mb-6"
       >
         <div className="flex items-start gap-3">
-          <Info className="h-5 w-5 text-blue-400 mt-0.5 flex-shrink-0" />
+          <Info className="h-5 w-5 text-blue-400 mt-0.5 shrink-0" />
           <div>
             <p className="text-white font-medium">{funcInfo.description}</p>
             {mode === 'beginner' && (
@@ -306,7 +306,7 @@ export function NumericFunctionExplorer({ mode = 'beginner' }: NumericFunctionEx
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="p-4 rounded-lg bg-gradient-to-r from-emerald-500/20 to-blue-500/20 border border-emerald-500/30"
+          className="p-4 rounded-lg bg-linear-to-r from-emerald-500/20 to-blue-500/20 border border-emerald-500/30"
         >
           <div className="flex items-center gap-3">
             <code className="text-lg text-slate-300">
@@ -337,7 +337,7 @@ export function NumericFunctionExplorer({ mode = 'beginner' }: NumericFunctionEx
           <h4 className="text-amber-400 font-medium mb-2">⚠️ Edge Cases to Consider</h4>
           <ul className="text-sm text-slate-300 space-y-1">
             <li>• FLOOR(-4.7) = -5 (rounds toward negative infinity)</li>
-            <li>• ROUND(2.5) behavior varies by database (banker's rounding)</li>
+            <li>• ROUND(2.5) behavior varies by database (banker&apos;s rounding)</li>
             <li>• MOD with negative numbers: sign follows dividend in most DBs</li>
             <li>• ABS(NULL) = NULL (null-safe in all databases)</li>
           </ul>

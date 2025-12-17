@@ -5,8 +5,8 @@ import {
   getInterviewsCollection,
   getAILogsCollection,
   getSettingsCollection,
-  getRoadmapsCollection,
-  getUserRoadmapProgressCollection,
+  getJourneysCollection,
+  getUserJourneyProgressCollection,
 } from "@/lib/db/collections";
 import { getVisibilityOverview } from "@/lib/services/visibility-service";
 import { isSearchEnabled } from "@/lib/services/search-service";
@@ -23,9 +23,9 @@ import type {
   PlanDistribution,
   TokenUsageTrend,
   FullTieredModelConfig,
-  RoadmapAnalyticsStats,
-  RoadmapTrendData,
-  PopularRoadmapData,
+  journeyAnalyticsStats,
+  journeyTrendData,
+  PopularJourneyData,
 } from "./admin";
 import type { VisibilityOverview } from "@/lib/db/schemas/visibility";
 
@@ -64,9 +64,9 @@ export async function getAdminDashboardData(): Promise<
       tokenUsageTrends: TokenUsageTrend[];
       topCompanies: PopularTopicData[];
       modelUsage: Array<{ model: string; count: number; percentage: number }>;
-      roadmapStats: RoadmapAnalyticsStats;
-      roadmapTrends: RoadmapTrendData[];
-      popularRoadmaps: PopularRoadmapData[];
+      journeyStats: journeyAnalyticsStats;
+      journeyTrends: journeyTrendData[];
+      popularJourneys: PopularJourneyData[];
       concurrencyLimit: number;
       tieredModelConfig: FullTieredModelConfig;
       aiToolsConfig: AIToolConfig[];
@@ -92,15 +92,15 @@ async function fetchAllAdminData() {
     interviewsCollection,
     aiLogsCollection,
     settingsCollection,
-    roadmapsCollection,
-    userRoadmapProgressCollection,
+    journeysCollection,
+    userjourneyProgressCollection,
   ] = await Promise.all([
     getUsersCollection(),
     getInterviewsCollection(),
     getAILogsCollection(),
     getSettingsCollection(),
-    getRoadmapsCollection(),
-    getUserRoadmapProgressCollection(),
+    getJourneysCollection(),
+    getUserJourneyProgressCollection(),
   ]);
 
   const now = new Date();
@@ -142,15 +142,15 @@ async function fetchAllAdminData() {
     tierLowDoc,
     aiToolsConfigDoc,
 
-    // Roadmap analytics
-    totalActiveRoadmaps,
-    roadmapsStarted30d,
-    activeRoadmapUsers7dDistinct,
+    // journey analytics
+    totalActivejourneys,
+    journeysStarted30d,
+    activejourneyUsers7dDistinct,
     nodeCompletions30dAgg,
     avgProgressActive7dAgg,
-    roadmapStartsAgg,
-    roadmapNodeCompletionsAgg,
-    popularRoadmapsAgg,
+    journeyStartsAgg,
+    journeyNodeCompletionsAgg,
+    popularjourneysAgg,
   ] = await Promise.all([
     // Basic counts
     usersCollection.countDocuments(),
@@ -312,16 +312,16 @@ async function fetchAllAdminData() {
     settingsCollection.findOne({ key: SETTINGS_KEYS.MODEL_TIER_LOW }),
     settingsCollection.findOne({ key: SETTINGS_KEYS.AI_TOOLS_CONFIG }),
 
-    // Roadmap analytics
-    roadmapsCollection.countDocuments({ isActive: true }),
-    userRoadmapProgressCollection.countDocuments({ startedAt: { $gte: thirtyDaysAgo } }),
-    userRoadmapProgressCollection.distinct("userId", {
+    // journey analytics
+    journeysCollection.countDocuments({ isActive: true }),
+    userjourneyProgressCollection.countDocuments({ startedAt: { $gte: thirtyDaysAgo } }),
+    userjourneyProgressCollection.distinct("userId", {
       $or: [
         { lastActivityAt: { $gte: oneWeekAgo } },
         { updatedAt: { $gte: oneWeekAgo } },
       ],
     }),
-    userRoadmapProgressCollection
+    userjourneyProgressCollection
       .aggregate([
         { $match: { "nodeProgress.completedAt": { $gte: thirtyDaysAgo } } },
         { $unwind: "$nodeProgress" },
@@ -329,7 +329,7 @@ async function fetchAllAdminData() {
         { $group: { _id: null, count: { $sum: 1 } } },
       ])
       .toArray(),
-    userRoadmapProgressCollection
+    userjourneyProgressCollection
       .aggregate([
         {
           $match: {
@@ -342,7 +342,7 @@ async function fetchAllAdminData() {
         { $group: { _id: null, avg: { $avg: { $ifNull: ["$overallProgress", 0] } } } },
       ])
       .toArray(),
-    userRoadmapProgressCollection
+    userjourneyProgressCollection
       .aggregate([
         { $match: { startedAt: { $gte: thirtyDaysAgo } } },
         {
@@ -356,7 +356,7 @@ async function fetchAllAdminData() {
         { $sort: { _id: 1 as const } },
       ])
       .toArray(),
-    userRoadmapProgressCollection
+    userjourneyProgressCollection
       .aggregate([
         { $match: { "nodeProgress.completedAt": { $gte: thirtyDaysAgo } } },
         { $unwind: "$nodeProgress" },
@@ -376,7 +376,7 @@ async function fetchAllAdminData() {
         { $sort: { _id: 1 as const } },
       ])
       .toArray(),
-    userRoadmapProgressCollection
+    userjourneyProgressCollection
       .aggregate([
         {
           $match: {
@@ -386,76 +386,76 @@ async function fetchAllAdminData() {
             ],
           },
         },
-        { $group: { _id: "$roadmapSlug", count: { $sum: 1 } } },
+        { $group: { _id: "$journeySlug", count: { $sum: 1 } } },
         { $sort: { count: -1 as const } },
         { $limit: 10 },
       ])
       .toArray(),
   ]);
 
-  // Roadmap stats
+  // journey stats
   const nodeCompletions30d = (nodeCompletions30dAgg[0] as any)?.count ?? 0;
   const avgOverallProgressActive7d = Math.round(
     ((avgProgressActive7dAgg[0] as any)?.avg as number) || 0
   );
 
-  const roadmapStats: RoadmapAnalyticsStats = {
-    totalActiveRoadmaps: totalActiveRoadmaps as number,
-    roadmapsStarted30d: roadmapsStarted30d as number,
-    activeRoadmapUsers7d: Array.isArray(activeRoadmapUsers7dDistinct)
-      ? activeRoadmapUsers7dDistinct.length
+  const journeyStats: journeyAnalyticsStats = {
+    totalActiveJourneys: totalActivejourneys as number,
+    journeysStarted30d: journeysStarted30d as number,
+    activeJourneyUsers7d: Array.isArray(activejourneyUsers7dDistinct)
+      ? activejourneyUsers7dDistinct.length
       : 0,
     nodeCompletions30d: nodeCompletions30d as number,
     avgOverallProgressActive7d,
   };
 
-  // Roadmap trends (fill last 30 days)
+  // journey trends (fill last 30 days)
   const startsMap = new Map(
-    (roadmapStartsAgg as any[]).map((d: any) => [String(d._id), Number(d.count) || 0])
+    (journeyStartsAgg as any[]).map((d: any) => [String(d._id), Number(d.count) || 0])
   );
   const nodeCompletionsMap = new Map(
-    (roadmapNodeCompletionsAgg as any[]).map((d: any) => [String(d._id), Number(d.count) || 0])
+    (journeyNodeCompletionsAgg as any[]).map((d: any) => [String(d._id), Number(d.count) || 0])
   );
 
-  const roadmapTrends: RoadmapTrendData[] = [];
+  const journeyTrends: journeyTrendData[] = [];
   for (let i = 0; i <= 30; i++) {
     const date = new Date(now.getTime() - (30 - i) * 24 * 60 * 60 * 1000);
     const dateStr = date.toISOString().split("T")[0];
-    roadmapTrends.push({
+    journeyTrends.push({
       date: dateStr,
-      roadmapsStarted: startsMap.get(dateStr) ?? 0,
+      journeysStarted: startsMap.get(dateStr) ?? 0,
       nodeCompletions: nodeCompletionsMap.get(dateStr) ?? 0,
     });
   }
 
-  // Popular roadmaps (30d active) + titles
-  const popularRoadmapTotal = (popularRoadmapsAgg as any[]).reduce(
+  // Popular journeys (30d active) + titles
+  const popularjourneyTotal = (popularjourneysAgg as any[]).reduce(
     (sum: number, r: any) => sum + (Number(r.count) || 0),
     0
   );
 
-  const popularSlugs = (popularRoadmapsAgg as any[])
+  const popularSlugs = (popularjourneysAgg as any[])
     .map((r: any) => String(r._id))
     .filter(Boolean);
 
   const titleMap = new Map<string, string>();
   if (popularSlugs.length > 0) {
-    const roadmapDocs = await roadmapsCollection
+    const journeyDocs = await journeysCollection
       .find({ slug: { $in: popularSlugs } }, { projection: { slug: 1, title: 1 } })
       .toArray();
-    for (const r of roadmapDocs as any[]) {
+    for (const r of journeyDocs as any[]) {
       titleMap.set(String(r.slug), String(r.title));
     }
   }
 
-  const popularRoadmaps: PopularRoadmapData[] = (popularRoadmapsAgg as any[]).map((r: any) => {
+  const popularJourneys: PopularJourneyData[] = (popularjourneysAgg as any[]).map((r: any) => {
     const count = Number(r.count) || 0;
     const slug = String(r._id);
     return {
-      roadmapSlug: slug,
-      roadmapTitle: titleMap.get(slug) ?? slug,
+      journeySlug: slug,
+      journeyTitle: titleMap.get(slug) ?? slug,
       count,
-      percentage: popularRoadmapTotal > 0 ? Math.round((count / popularRoadmapTotal) * 100) : 0,
+      percentage: popularjourneyTotal > 0 ? Math.round((count / popularjourneyTotal) * 100) : 0,
     };
   });
 
@@ -667,9 +667,9 @@ async function fetchAllAdminData() {
     tokenUsageTrends,
     topCompanies,
     modelUsage,
-    roadmapStats,
-    roadmapTrends,
-    popularRoadmaps,
+    journeyStats,
+    journeyTrends,
+    popularJourneys,
     concurrencyLimit: (concurrencyDoc?.value as number) ?? 3,
     tieredModelConfig,
     aiToolsConfig,

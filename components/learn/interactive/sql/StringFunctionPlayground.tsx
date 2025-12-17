@@ -165,9 +165,9 @@ function CharacterVisualizer({
 
       {/* Arrow */}
       <div className="flex items-center gap-2 text-slate-500">
-        <div className="flex-1 h-px bg-gradient-to-r from-transparent via-slate-600 to-transparent" />
+        <div className="flex-1 h-px bg-linear-to-r from-transparent via-slate-600 to-transparent" />
         <span className="text-xs uppercase tracking-wider">{func}</span>
-        <div className="flex-1 h-px bg-gradient-to-r from-transparent via-slate-600 to-transparent" />
+        <div className="flex-1 h-px bg-linear-to-r from-transparent via-slate-600 to-transparent" />
       </div>
 
       {/* Result visualization */}
@@ -235,7 +235,7 @@ export function StringFunctionPlayground({ mode = 'beginner' }: StringFunctionPl
     : functions;
 
   return (
-    <div className="p-6 rounded-xl bg-gradient-to-br from-slate-900 to-slate-800 border border-slate-700/50 shadow-xl">
+    <div className="p-6 rounded-xl bg-linear-to-br from-slate-900 to-slate-800 border border-slate-700/50 shadow-xl">
       <div className="flex items-center gap-3 mb-6">
         <div className="p-2 rounded-lg bg-purple-500/20">
           <Type className="h-5 w-5 text-purple-400" />
@@ -389,7 +389,7 @@ export function StringFunctionPlayground({ mode = 'beginner' }: StringFunctionPl
                 <p className="text-sm text-slate-400">
                   <span className="text-slate-300 font-medium">SQL: </span>
                   <code className="text-purple-400">
-                    SELECT {selectedFunction}('{inputValue}'
+                    SELECT {selectedFunction}(&apos;{inputValue}&apos;
                     {funcInfo.needsSecondInput && `, '${secondInput}'`}
                     {funcInfo.needsNumbers && selectedFunction === 'SUBSTRING' && `, ${startPos}, ${length}`}
                     {funcInfo.needsNumbers && selectedFunction !== 'SUBSTRING' && `, ${length}`}

@@ -63,7 +63,7 @@ const CONFIDENCE_COLORS: Record<string, string> = {
   'High': '#22c55e',
 };
 
-const ROADMAP_BUCKET_COLORS: Record<string, string> = {
+const journey_BUCKET_COLORS: Record<string, string> = {
   '0%': '#94a3b8',
   '1–25%': '#60a5fa',
   '26–50%': '#3b82f6',
@@ -72,7 +72,7 @@ const ROADMAP_BUCKET_COLORS: Record<string, string> = {
   '100%': '#f59e0b',
 };
 
-const roadmapCompletionChartConfig: ChartConfig = {
+const journeyCompletionChartConfig: ChartConfig = {
   nodeCompletions: {
     label: 'Node Completions',
     color: '#3b82f6',
@@ -92,7 +92,7 @@ function StatCard({
 }: {
   title: string;
   value: number | string;
-  icon: React.ElementType;
+  icon: React.ComponentType<{ className?: string }>;
   colorClass: string;
 }) {
   return (
@@ -121,7 +121,7 @@ function ProgressList<T extends { count: number; percentage: number }>({
 }: {
   title: string;
   description: string;
-  icon: React.ElementType;
+  icon: React.ComponentType<{ className?: string }>;
   items: T[];
   labelKey: keyof T;
   colorMap?: Record<string, string>;
@@ -192,7 +192,7 @@ function DonutChart<T extends { count: number; percentage: number }>({
 }: {
   title: string;
   description: string;
-  icon: React.ElementType;
+  icon: React.ComponentType<{ className?: string }>;
   data: T[];
   labelKey: keyof T;
   colorMap: Record<string, string>;
@@ -260,7 +260,7 @@ function DonutChart<T extends { count: number; percentage: number }>({
                     {data.map((entry) => (
                       <Cell
                         key={String(entry[labelKey])}
-                        fill={colorMap[entry[labelKey] as string] || '#94a3b8'}
+                        fill={colorMap[String(entry[labelKey])] || '#94a3b8'}
                         style={{ cursor: 'pointer' }}
                       />
                     ))}
@@ -296,7 +296,7 @@ function DonutChart<T extends { count: number; percentage: number }>({
                         className={`w-2.5 h-2.5 rounded-full shadow-sm ring-2 ring-white/10 transition-all duration-300 ${
                           isActive ? 'scale-125 ring-4' : ''
                         }`}
-                        style={{ backgroundColor: colorMap[label] || '#94a3b8' }}
+                        style={{ backgroundColor: colorMap[String(label)] || '#94a3b8' }}
                       />
                       <span className="font-medium text-sm text-foreground/90">{label}</span>
                     </div>
@@ -328,10 +328,10 @@ export function UserAnalyticsDashboard({ data }: UserAnalyticsDashboardProps) {
     topCompanies,
     topSkills,
     confidenceDistribution,
-    roadmapStats,
-    roadmapNodeCompletionTrends,
-    topRoadmaps,
-    roadmapProgressBuckets,
+    journeyStats,
+    journeyNodeCompletionTrends,
+    topjourneys,
+    journeyProgressBuckets,
   } = data;
 
   const formattedTrends = interviewTrends.map((d) => ({
@@ -339,13 +339,13 @@ export function UserAnalyticsDashboard({ data }: UserAnalyticsDashboardProps) {
     formattedDate: formatDate(d.date),
   }));
 
-  const formattedRoadmapTrends = roadmapNodeCompletionTrends.map((d) => ({
+  const formattedjourneyTrends = journeyNodeCompletionTrends.map((d) => ({
     ...d,
     formattedDate: formatDate(d.date),
   }));
 
-  const topRoadmapListItems = topRoadmaps.map((r) => ({
-    roadmap: r.roadmapTitle,
+  const topjourneyListItems = topjourneys.map((r) => ({
+    journey: r.journeyTitle,
     count: r.nodesCompleted,
     percentage: r.overallProgress,
   }));
@@ -397,7 +397,7 @@ export function UserAnalyticsDashboard({ data }: UserAnalyticsDashboardProps) {
         />
       </motion.div>
 
-      {/* Roadmap Summary */}
+      {/* journey Summary */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -405,26 +405,26 @@ export function UserAnalyticsDashboard({ data }: UserAnalyticsDashboardProps) {
         className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
       >
         <StatCard
-          title="Roadmaps Started"
-          value={roadmapStats.roadmapsStarted}
+          title="journeys Started"
+          value={journeyStats.journeysStarted}
           icon={Map}
           colorClass="text-blue-500"
         />
         <StatCard
-          title="Active Roadmaps (7d)"
-          value={roadmapStats.activeRoadmaps7d}
+          title="Active journeys (7d)"
+          value={journeyStats.activejourneys7d}
           icon={Activity}
           colorClass="text-green-500"
         />
         <StatCard
           title="Nodes Completed"
-          value={roadmapStats.totalNodesCompleted}
+          value={journeyStats.totalNodesCompleted}
           icon={CheckCircle2}
           colorClass="text-violet-500"
         />
         <StatCard
           title="Time Spent (hrs)"
-          value={Math.round((roadmapStats.totalTimeSpentMinutes || 0) / 60)}
+          value={Math.round((journeyStats.totalTimeSpentMinutes || 0) / 60)}
           icon={Clock}
           colorClass="text-amber-500"
         />
@@ -533,7 +533,7 @@ export function UserAnalyticsDashboard({ data }: UserAnalyticsDashboardProps) {
         />
       </motion.div>
 
-      {/* Roadmap Charts */}
+      {/* journey Charts */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -546,18 +546,18 @@ export function UserAnalyticsDashboard({ data }: UserAnalyticsDashboardProps) {
               <div className="p-2.5 rounded-xl bg-blue-500/10 text-blue-500">
                 <CheckCircle2 className="w-5 h-5" />
               </div>
-              <CardTitle className="text-xl font-bold tracking-tight">Roadmap Activity</CardTitle>
+              <CardTitle className="text-xl font-bold tracking-tight">journey Activity</CardTitle>
             </div>
             <CardDescription className="text-base text-muted-foreground/80 ml-1">
               Node completions over the last 30 days
             </CardDescription>
           </CardHeader>
           <CardContent className="p-8 pt-4">
-            {formattedRoadmapTrends.some((d) => (d.nodeCompletions ?? 0) > 0) ? (
-              <ChartContainer config={roadmapCompletionChartConfig} className="h-[300px] w-full">
-                <AreaChart data={formattedRoadmapTrends} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+            {formattedjourneyTrends.some((d) => (d.nodeCompletions ?? 0) > 0) ? (
+              <ChartContainer config={journeyCompletionChartConfig} className="h-[300px] w-full">
+                <AreaChart data={formattedjourneyTrends} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                   <defs>
-                    <linearGradient id="colorRoadmapCompletions" x1="0" y1="0" x2="0" y2="1">
+                    <linearGradient id="colorjourneyCompletions" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="var(--color-nodeCompletions)" stopOpacity={0.25} />
                       <stop offset="95%" stopColor="var(--color-nodeCompletions)" stopOpacity={0} />
                     </linearGradient>
@@ -583,7 +583,7 @@ export function UserAnalyticsDashboard({ data }: UserAnalyticsDashboardProps) {
                     type="monotone"
                     dataKey="nodeCompletions"
                     stroke="var(--color-nodeCompletions)"
-                    fill="url(#colorRoadmapCompletions)"
+                    fill="url(#colorjourneyCompletions)"
                     strokeWidth={3}
                   />
                 </AreaChart>
@@ -591,19 +591,19 @@ export function UserAnalyticsDashboard({ data }: UserAnalyticsDashboardProps) {
             ) : (
               <div className="h-[300px] flex flex-col items-center justify-center border-2 border-dashed border-border/30 rounded-3xl bg-secondary/10">
                 <Map className="w-12 h-12 text-muted-foreground/30 mb-4" />
-                <p className="text-base font-medium text-muted-foreground">No roadmap activity yet</p>
+                <p className="text-base font-medium text-muted-foreground">No journey activity yet</p>
               </div>
             )}
           </CardContent>
         </Card>
 
         <DonutChart
-          title="Roadmap Progress"
-          description="Your roadmaps grouped by progress"
+          title="journey Progress"
+          description="Your journeys grouped by progress"
           icon={Map}
-          data={roadmapProgressBuckets}
+          data={journeyProgressBuckets}
           labelKey="bucket"
-          colorMap={ROADMAP_BUCKET_COLORS}
+          colorMap={journey_BUCKET_COLORS}
         />
       </motion.div>
 
@@ -630,7 +630,7 @@ export function UserAnalyticsDashboard({ data }: UserAnalyticsDashboardProps) {
         />
       </motion.div>
 
-      {/* Roadmap Lists */}
+      {/* journey Lists */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -638,11 +638,11 @@ export function UserAnalyticsDashboard({ data }: UserAnalyticsDashboardProps) {
         className="grid grid-cols-1 gap-6"
       >
         <ProgressList
-          title="Top Roadmaps"
-          description="Your most progressed roadmaps"
+          title="Top journeys"
+          description="Your most progressed journeys"
           icon={Map}
-          items={topRoadmapListItems}
-          labelKey="roadmap"
+          items={topjourneyListItems}
+          labelKey="journey"
           colorMap={{}}
         />
       </motion.div>

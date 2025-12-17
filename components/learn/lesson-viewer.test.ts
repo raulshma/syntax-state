@@ -48,6 +48,7 @@ describe('LessonViewer - Progress Tracking Integration', () => {
   const mockMdxSource: MDXRemoteSerializeResult = {
     compiledSource: '',
     scope: {},
+    frontmatter: {},
   };
 
   const defaultProps = {
@@ -55,7 +56,7 @@ describe('LessonViewer - Progress Tracking Integration', () => {
     lessonTitle: 'Build Tools',
     milestoneId: 'javascript',
     milestoneTitle: 'JavaScript',
-    roadmapSlug: 'frontend',
+    journeySlug: 'frontend',
     mdxSource: mockMdxSource,
     sections: ['introduction', 'package-managers', 'bundlers'],
     initialLevel: 'beginner' as ExperienceLevel,
@@ -108,7 +109,9 @@ describe('LessonViewer - Progress Tracking Integration', () => {
     const result = await getLessonProgressAction('javascript/build-tools', 'intermediate');
     
     expect(result.success).toBe(true);
-    expect(result.data?.sectionsCompleted).toContain('bundlers');
+    if (result.success) {
+      expect(result.data?.sectionsCompleted).toContain('bundlers');
+    }
   });
 
   it('should handle section completion with retry logic', async () => {

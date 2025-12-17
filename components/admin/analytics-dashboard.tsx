@@ -48,9 +48,9 @@ import type {
   PopularTopicData,
   PlanDistribution,
   TokenUsageTrend,
-  RoadmapAnalyticsStats,
-  RoadmapTrendData,
-  PopularRoadmapData,
+  journeyAnalyticsStats,
+  journeyTrendData,
+  PopularJourneyData,
 } from "@/lib/actions/admin";
 
 interface AnalyticsDashboardProps {
@@ -60,9 +60,9 @@ interface AnalyticsDashboardProps {
   tokenUsageTrends: TokenUsageTrend[];
   topCompanies: PopularTopicData[];
   modelUsage: Array<{ model: string; count: number; percentage: number }>;
-  roadmapStats: RoadmapAnalyticsStats;
-  roadmapTrends: RoadmapTrendData[];
-  popularRoadmaps: PopularRoadmapData[];
+  journeyStats: journeyAnalyticsStats;
+  journeyTrends: journeyTrendData[];
+  popularJourneys: PopularJourneyData[];
 }
 
 const usageChartConfig: ChartConfig = {
@@ -95,9 +95,9 @@ const tokenChartConfig: ChartConfig = {
   },
 };
 
-const roadmapChartConfig: ChartConfig = {
-  roadmapsStarted: {
-    label: "Roadmaps Started",
+const journeyChartConfig: ChartConfig = {
+  journeysStarted: {
+    label: "journeys Started",
     color: "#3b82f6", // Bright blue
   },
   nodeCompletions: {
@@ -187,9 +187,9 @@ export function AnalyticsDashboard({
   tokenUsageTrends,
   topCompanies,
   modelUsage,
-  roadmapStats,
-  roadmapTrends,
-  popularRoadmaps,
+  journeyStats,
+  journeyTrends,
+  popularJourneys,
 }: AnalyticsDashboardProps) {
   const [activePieIndex, setActivePieIndex] = useState<number | undefined>(undefined);
   
@@ -198,8 +198,8 @@ export function AnalyticsDashboard({
   const aiRequestTrend = calculateTrend(usageTrends.map((d) => d.aiRequests));
   const userTrend = calculateTrend(usageTrends.map((d) => d.users));
 
-  const roadmapStartTrend = calculateTrend(roadmapTrends.map((d) => d.roadmapsStarted));
-  const roadmapCompletionTrend = calculateTrend(roadmapTrends.map((d) => d.nodeCompletions));
+  const journeyStartTrend = calculateTrend(journeyTrends.map((d) => d.journeysStarted));
+  const journeyCompletionTrend = calculateTrend(journeyTrends.map((d) => d.nodeCompletions));
 
   // Format data for charts - ensure numeric values
   // Tokens are scaled to thousands (K) for better chart readability
@@ -219,9 +219,9 @@ export function AnalyticsDashboard({
     formattedDate: formatDate(d.date),
   }));
 
-  const formattedRoadmapTrends = roadmapTrends.map((d) => ({
+  const formattedjourneyTrends = journeyTrends.map((d) => ({
     ...d,
-    roadmapsStarted: Number(d.roadmapsStarted) || 0,
+    journeysStarted: Number(d.journeysStarted) || 0,
     nodeCompletions: Number(d.nodeCompletions) || 0,
     formattedDate: formatDate(d.date),
   }));
@@ -443,19 +443,19 @@ export function AnalyticsDashboard({
         </CardContent>
       </Card>
 
-      {/* Roadmap Summary */}
+      {/* journey Summary */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
         <SummaryCard
-          title="Roadmaps Started (30d)"
-          value={roadmapStats.roadmapsStarted30d}
-          trend={roadmapStartTrend}
+          title="journeys Started (30d)"
+          value={journeyStats.journeysStarted30d}
+          trend={journeyStartTrend}
           icon={Map}
           colorClass="text-blue-500"
           bgColorClass="bg-blue-500/10"
         />
         <SummaryCard
-          title="Active Roadmap Users (7d)"
-          value={roadmapStats.activeRoadmapUsers7d}
+          title="Active journey Users (7d)"
+          value={journeyStats.activeJourneyUsers7d}
           trend={{ value: 0, isPositive: true }}
           icon={Users}
           colorClass="text-green-500"
@@ -463,8 +463,8 @@ export function AnalyticsDashboard({
         />
         <SummaryCard
           title="Node Completions (30d)"
-          value={roadmapStats.nodeCompletions30d}
-          trend={roadmapCompletionTrend}
+          value={journeyStats.nodeCompletions30d}
+          trend={journeyCompletionTrend}
           icon={CheckCircle2}
           colorClass="text-violet-500"
           bgColorClass="bg-violet-500/10"
@@ -472,7 +472,7 @@ export function AnalyticsDashboard({
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Roadmap Trends */}
+        {/* journey Trends */}
         <Card className="border-0 shadow-xl shadow-black/5 dark:shadow-black/20 bg-card/80  rounded-3xl overflow-hidden">
           <CardHeader className="p-6 md:p-8 border-b border-border/50">
             <div className="flex items-center gap-3">
@@ -480,7 +480,7 @@ export function AnalyticsDashboard({
                 <Map className="w-5 h-5 text-blue-500" />
               </div>
               <div>
-                <CardTitle className="text-xl font-bold">Roadmap Trends</CardTitle>
+                <CardTitle className="text-xl font-bold">journey Trends</CardTitle>
                 <CardDescription className="mt-1">
                   Starts and node completions over the last 30 days
                 </CardDescription>
@@ -488,13 +488,13 @@ export function AnalyticsDashboard({
             </div>
           </CardHeader>
           <CardContent className="p-6 md:p-8">
-            {formattedRoadmapTrends.length > 0 ? (
-              <ChartContainer config={roadmapChartConfig} className="h-[300px] w-full">
-                <AreaChart data={formattedRoadmapTrends} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+            {formattedjourneyTrends.length > 0 ? (
+              <ChartContainer config={journeyChartConfig} className="h-[300px] w-full">
+                <AreaChart data={formattedjourneyTrends} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                   <defs>
-                    <linearGradient id="colorRoadmapsStarted" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="var(--color-roadmapsStarted)" stopOpacity={0.35} />
-                      <stop offset="95%" stopColor="var(--color-roadmapsStarted)" stopOpacity={0} />
+                    <linearGradient id="colorjourneysStarted" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="var(--color-journeysStarted)" stopOpacity={0.35} />
+                      <stop offset="95%" stopColor="var(--color-journeysStarted)" stopOpacity={0} />
                     </linearGradient>
                     <linearGradient id="colorNodeCompletions" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="var(--color-nodeCompletions)" stopOpacity={0.25} />
@@ -521,9 +521,9 @@ export function AnalyticsDashboard({
                   <ChartLegend content={<ChartLegendContent />} />
                   <Area
                     type="monotone"
-                    dataKey="roadmapsStarted"
-                    stroke="var(--color-roadmapsStarted)"
-                    fill="url(#colorRoadmapsStarted)"
+                    dataKey="journeysStarted"
+                    stroke="var(--color-journeysStarted)"
+                    fill="url(#colorjourneysStarted)"
                     strokeWidth={2}
                     animationBegin={0}
                     animationDuration={900}
@@ -543,31 +543,31 @@ export function AnalyticsDashboard({
               <div className="h-[300px] flex flex-col items-center justify-center border-2 border-dashed border-border/50 rounded-2xl bg-secondary/20">
                 <Map className="w-10 h-10 text-muted-foreground/50 mb-3" />
                 <p className="text-sm text-muted-foreground font-medium">
-                  No roadmap data available yet
+                  No journey data available yet
                 </p>
               </div>
             )}
           </CardContent>
         </Card>
 
-        {/* Popular Roadmaps */}
+        {/* Popular journeys */}
         <Card className="border-0 shadow-xl shadow-black/5 dark:shadow-black/20 bg-card/80  rounded-3xl overflow-hidden">
           <CardHeader className="p-6 md:p-8 border-b border-border/50">
-            <CardTitle className="text-lg font-bold">Popular Roadmaps (30d)</CardTitle>
-            <CardDescription className="mt-1">Most engaged roadmaps (unique users)</CardDescription>
+            <CardTitle className="text-lg font-bold">Popular journeys (30d)</CardTitle>
+            <CardDescription className="mt-1">Most engaged journeys (unique users)</CardDescription>
           </CardHeader>
           <CardContent className="p-6 md:p-8">
-            {popularRoadmaps.length > 0 ? (
+            {popularJourneys.length > 0 ? (
               <div className="space-y-4">
-                {popularRoadmaps.map((r, i) => (
-                  <div key={r.roadmapSlug} className="group">
+                {popularJourneys.map((r, i) => (
+                  <div key={r.journeySlug} className="group">
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-3 flex-1 min-w-0">
                         <span className="flex items-center justify-center w-6 h-6 rounded-full bg-secondary text-xs font-medium text-muted-foreground">
                           {i + 1}
                         </span>
                         <span className="text-sm font-medium text-foreground truncate">
-                          {r.roadmapTitle}
+                          {r.journeyTitle}
                         </span>
                       </div>
                       <span className="text-xs font-mono text-muted-foreground bg-secondary px-2 py-1 rounded-md">
@@ -591,7 +591,7 @@ export function AnalyticsDashboard({
                 <div className="w-12 h-12 rounded-full bg-secondary/50 flex items-center justify-center mb-3">
                   <Map className="w-6 h-6 text-muted-foreground/50" />
                 </div>
-                <p className="text-sm text-muted-foreground">No roadmap data yet</p>
+                <p className="text-sm text-muted-foreground">No journey data yet</p>
               </div>
             )}
           </CardContent>

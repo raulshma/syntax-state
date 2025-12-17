@@ -35,7 +35,7 @@ interface LessonViewerProps {
   lessonTitle: string;
   milestoneId: string;
   milestoneTitle: string;
-  roadmapSlug: string;
+  journeySlug: string;
   mdxSource: MDXRemoteSerializeResult;
   sections: string[];
   initialLevel: ExperienceLevel;
@@ -55,7 +55,7 @@ export function LessonViewer({
   lessonTitle,
   milestoneId,
   milestoneTitle,
-  roadmapSlug,
+  journeySlug,
   mdxSource: initialMdxSource,
   sections,
   initialLevel,
@@ -294,7 +294,7 @@ export function LessonViewer({
       <div className="mb-8">
         {/* Breadcrumb */}
         <Link
-          href={`/roadmaps/${roadmapSlug}`}
+          href={`/journeys/${journeySlug}`}
           className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mb-4"
         >
           <ArrowLeft className="w-4 h-4" />
@@ -421,10 +421,10 @@ export function LessonViewer({
       {/* Navigation */}
       <div className="mt-12 pt-8 border-t border-border">
         <div className="flex justify-between">
-          <Link href={`/roadmaps/${roadmapSlug}`}>
+          <Link href={`/journeys/${journeySlug}`}>
             <Button variant="outline">
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Roadmap
+              Back to journey
             </Button>
           </Link>
           {/* Could add "Next Lesson" button here */}

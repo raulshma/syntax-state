@@ -32,7 +32,7 @@ export interface VisibilityChangeLogEntry {
   createdAt: Date;
   /** Visibility change specific details */
   details: {
-    /** Type of entity (roadmap, milestone, objective) */
+    /** Type of entity (journey, milestone, objective) */
     entityType: EntityType;
     /** Identifier of the entity */
     entityId: string;
@@ -40,8 +40,8 @@ export interface VisibilityChangeLogEntry {
     oldValue: boolean | null;
     /** New visibility value */
     newValue: boolean;
-    /** Parent roadmap slug (for milestones and objectives) */
-    parentRoadmapSlug?: string;
+    /** Parent journey slug (for milestones and objectives) */
+    parentJourneySlug?: string;
     /** Parent milestone ID (for objectives) */
     parentMilestoneId?: string;
   };
@@ -205,7 +205,7 @@ export async function queryAuditLogs(options: {
  * - timestamp: When the change occurred
  * - oldValue: Previous visibility value (null if new)
  * - newValue: New visibility value
- * - entityType: Type of entity (roadmap, milestone, objective)
+ * - entityType: Type of entity (journey, milestone, objective)
  * - entityId: Identifier of the entity
  * 
  * @param adminId - Clerk ID of the admin making the change
@@ -213,14 +213,14 @@ export async function queryAuditLogs(options: {
  * @param entityId - Identifier of the entity
  * @param oldValue - Previous visibility value (null if entity didn't exist)
  * @param newValue - New visibility value
- * @param parentRoadmapSlug - Parent roadmap slug (for milestones/objectives)
+ * @param parentJourneySlug - Parent journey slug (for milestones/objectives)
  * @param parentMilestoneId - Parent milestone ID (for objectives)
  * 
  * @example
  * ```typescript
  * await logVisibilityChange(
  *   adminClerkId,
- *   'roadmap',
+ *   'journey',
  *   'react-fundamentals',
  *   false,
  *   true
@@ -233,7 +233,7 @@ export async function logVisibilityChange(
   entityId: string,
   oldValue: boolean | null,
   newValue: boolean,
-  parentRoadmapSlug?: string,
+  parentJourneySlug?: string,
   parentMilestoneId?: string
 ): Promise<void> {
   try {
@@ -248,7 +248,7 @@ export async function logVisibilityChange(
         entityId,
         oldValue,
         newValue,
-        ...(parentRoadmapSlug && { parentRoadmapSlug }),
+        ...(parentJourneySlug && { parentJourneySlug }),
         ...(parentMilestoneId && { parentMilestoneId }),
       },
     };

@@ -18,7 +18,7 @@ vi.mock('@/lib/db/repositories/visibility-repository', () => ({
 }));
 
 vi.mock('@/lib/db/collections', () => ({
-  getRoadmapsCollection: vi.fn(),
+  getjourneysCollection: vi.fn(),
 }));
 
 vi.mock('./audit-log', () => ({
@@ -37,13 +37,13 @@ import {
   getVisibility,
   setVisibility,
 } from '@/lib/db/repositories/visibility-repository';
-import { getRoadmapsCollection } from '@/lib/db/collections';
+import { getJourneysCollection } from '@/lib/db/collections';
 import { logVisibilityChange } from './audit-log';
 
 // Arbitrary generators
-const entityTypeArb = fc.constantFrom<EntityType>('roadmap', 'milestone', 'objective');
+const entityTypeArb = fc.constantFrom<EntityType>('journey', 'milestone', 'objective');
 const entityIdArb = fc.string({ minLength: 1, maxLength: 50 }).filter(s => s.trim().length > 0);
-const roadmapSlugArb = fc.stringMatching(/^[a-z0-9][a-z0-9-]{0,48}[a-z0-9]$|^[a-z0-9]$/)
+const journeySlugArb = fc.stringMatching(/^[a-z0-9][a-z0-9-]{0,48}[a-z0-9]$|^[a-z0-9]$/)
   .filter(s => s.length >= 1 && s.length <= 50);
 const adminIdArb = fc.string({ minLength: 1, maxLength: 100 }).filter(s => s.trim().length > 0);
 
@@ -53,7 +53,7 @@ function createMockVisibilitySetting(
   entityType: EntityType,
   entityId: string,
   isPublic: boolean,
-  parentRoadmapSlug?: string,
+  parentJourneySlug?: string,
   parentMilestoneId?: string
 ): VisibilitySetting {
   return {
@@ -61,7 +61,7 @@ function createMockVisibilitySetting(
     entityType,
     entityId,
     isPublic,
-    parentRoadmapSlug,
+    parentJourneySlug,
     parentMilestoneId,
     updatedBy: 'admin-123',
     updatedAt: new Date(),
@@ -79,36 +79,36 @@ describe('Visibility Service Property Tests', () => {
   });
 
   /**
-   * **Feature: roadmap-public-visibility, Property 3: Hierarchical Visibility Override**
+   * **Feature: journey-public-visibility, Property 3: Hierarchical Visibility Override**
    * 
-   * For any entity with a private parent (roadmap for milestones, milestone for objectives),
+   * For any entity with a private parent (journey for milestones, milestone for objectives),
    * the effective visibility should be private regardless of the entity's own visibility setting.
    * 
    * **Validates: Requirements 2.3, 3.3**
    */
   describe('Property 3: Hierarchical Visibility Override', () => {
-    it('milestone with private parent roadmap should always be private', async () => {
+    it('milestone with private parent journey should always be private', async () => {
       await fc.assert(
         fc.asyncProperty(
-          roadmapSlugArb,
+          journeySlugArb,
           entityIdArb,
           fc.boolean(), // milestone's own visibility setting
-          async (roadmapSlug, milestoneId, milestoneIsPublic) => {
+          async (journeySlug, milestoneId, milestoneIsPublic) => {
             const mockGetVisibility = vi.mocked(getVisibility);
             
-            // Setup: milestone has some visibility setting, but parent roadmap is private
+            // Setup: milestone has some visibility setting, but parent journey is private
             mockGetVisibility.mockImplementation(async (type, id) => {
               if (type === 'milestone' && id === milestoneId) {
                 return createMockVisibilitySetting(
                   'milestone',
                   milestoneId,
                   milestoneIsPublic,
-                  roadmapSlug
+                  journeySlug
                 );
               }
-              if (type === 'roadmap' && id === roadmapSlug) {
-                // Parent roadmap is PRIVATE
-                return createMockVisibilitySetting('roadmap', roadmapSlug, false);
+              if (type === 'journey' && id === journeySlug) {
+                // Parent journey is PRIVATE
+                return createMockVisibilitySetting('journey', journeySlug, false);
               }
               return null;
             });
@@ -117,7 +117,7 @@ describe('Visibility Service Property Tests', () => {
             const result = await isPubliclyVisible('milestone', milestoneId);
             
             // Regardless of milestone's own setting, it should be private
-            // because parent roadmap is private
+            // because parent journey is private
             expect(result).toBe(false);
             
             return true;
@@ -130,21 +130,21 @@ describe('Visibility Service Property Tests', () => {
     it('objective with private parent milestone should always be private', async () => {
       await fc.assert(
         fc.asyncProperty(
-          roadmapSlugArb,
+          journeySlugArb,
           entityIdArb,
           entityIdArb,
           fc.boolean(), // objective's own visibility setting
-          async (roadmapSlug, milestoneId, objectiveId, objectiveIsPublic) => {
+          async (journeySlug, milestoneId, objectiveId, objectiveIsPublic) => {
             const mockGetVisibility = vi.mocked(getVisibility);
             
-            // Setup: objective has some visibility, milestone is private, roadmap is public
+            // Setup: objective has some visibility, milestone is private, journey is public
             mockGetVisibility.mockImplementation(async (type, id) => {
               if (type === 'objective' && id === objectiveId) {
                 return createMockVisibilitySetting(
                   'objective',
                   objectiveId,
                   objectiveIsPublic,
-                  roadmapSlug,
+                  journeySlug,
                   milestoneId
                 );
               }
@@ -154,12 +154,12 @@ describe('Visibility Service Property Tests', () => {
                   'milestone',
                   milestoneId,
                   false,
-                  roadmapSlug
+                  journeySlug
                 );
               }
-              if (type === 'roadmap' && id === roadmapSlug) {
-                // Roadmap is public
-                return createMockVisibilitySetting('roadmap', roadmapSlug, true);
+              if (type === 'journey' && id === journeySlug) {
+                // journey is public
+                return createMockVisibilitySetting('journey', journeySlug, true);
               }
               return null;
             });
@@ -177,25 +177,25 @@ describe('Visibility Service Property Tests', () => {
       );
     });
 
-    it('objective with private grandparent roadmap should always be private', async () => {
+    it('objective with private grandparent journey should always be private', async () => {
       await fc.assert(
         fc.asyncProperty(
-          roadmapSlugArb,
+          journeySlugArb,
           entityIdArb,
           entityIdArb,
           fc.boolean(), // objective's own visibility
           fc.boolean(), // milestone's own visibility
-          async (roadmapSlug, milestoneId, objectiveId, objectiveIsPublic, milestoneIsPublic) => {
+          async (journeySlug, milestoneId, objectiveId, objectiveIsPublic, milestoneIsPublic) => {
             const mockGetVisibility = vi.mocked(getVisibility);
             
-            // Setup: roadmap is private, milestone and objective have various settings
+            // Setup: journey is private, milestone and objective have various settings
             mockGetVisibility.mockImplementation(async (type, id) => {
               if (type === 'objective' && id === objectiveId) {
                 return createMockVisibilitySetting(
                   'objective',
                   objectiveId,
                   objectiveIsPublic,
-                  roadmapSlug,
+                  journeySlug,
                   milestoneId
                 );
               }
@@ -204,12 +204,12 @@ describe('Visibility Service Property Tests', () => {
                   'milestone',
                   milestoneId,
                   milestoneIsPublic,
-                  roadmapSlug
+                  journeySlug
                 );
               }
-              if (type === 'roadmap' && id === roadmapSlug) {
-                // Roadmap is PRIVATE
-                return createMockVisibilitySetting('roadmap', roadmapSlug, false);
+              if (type === 'journey' && id === journeySlug) {
+                // journey is PRIVATE
+                return createMockVisibilitySetting('journey', journeySlug, false);
               }
               return null;
             });
@@ -217,7 +217,7 @@ describe('Visibility Service Property Tests', () => {
             const result = await isPubliclyVisible('objective', objectiveId);
             
             // Regardless of objective's or milestone's own settings,
-            // it should be private because grandparent roadmap is private
+            // it should be private because grandparent journey is private
             expect(result).toBe(false);
             
             return true;
@@ -230,10 +230,10 @@ describe('Visibility Service Property Tests', () => {
     it('entity is public only when all ancestors are public', async () => {
       await fc.assert(
         fc.asyncProperty(
-          roadmapSlugArb,
+          journeySlugArb,
           entityIdArb,
           entityIdArb,
-          async (roadmapSlug, milestoneId, objectiveId) => {
+          async (journeySlug, milestoneId, objectiveId) => {
             const mockGetVisibility = vi.mocked(getVisibility);
             
             // Setup: all entities are public
@@ -243,7 +243,7 @@ describe('Visibility Service Property Tests', () => {
                   'objective',
                   objectiveId,
                   true,
-                  roadmapSlug,
+                  journeySlug,
                   milestoneId
                 );
               }
@@ -252,11 +252,11 @@ describe('Visibility Service Property Tests', () => {
                   'milestone',
                   milestoneId,
                   true,
-                  roadmapSlug
+                  journeySlug
                 );
               }
-              if (type === 'roadmap' && id === roadmapSlug) {
-                return createMockVisibilitySetting('roadmap', roadmapSlug, true);
+              if (type === 'journey' && id === journeySlug) {
+                return createMockVisibilitySetting('journey', journeySlug, true);
               }
               return null;
             });
@@ -277,29 +277,29 @@ describe('Visibility Service Property Tests', () => {
 
 
   /**
-   * **Feature: roadmap-public-visibility, Property 4: Parent Existence Validation**
+   * **Feature: journey-public-visibility, Property 4: Parent Existence Validation**
    * 
    * For any visibility change on a milestone or objective, the system should reject
-   * the change if the parent entity (roadmap or milestone) does not exist.
+   * the change if the parent entity (journey or milestone) does not exist.
    * 
    * **Validates: Requirements 2.4, 3.4**
    */
   describe('Property 4: Parent Existence Validation', () => {
-    it('milestone visibility change should be rejected when parent roadmap does not exist', async () => {
+    it('milestone visibility change should be rejected when parent journey does not exist', async () => {
       await fc.assert(
         fc.asyncProperty(
-          roadmapSlugArb,
+          journeySlugArb,
           entityIdArb,
           adminIdArb,
           fc.boolean(),
-          async (roadmapSlug, milestoneId, adminId, isPublic) => {
-            const mockGetRoadmapsCollection = vi.mocked(getRoadmapsCollection);
+          async (journeySlug, milestoneId, adminId, isPublic) => {
+            const mockGetJourneysCollection = vi.mocked(getJourneysCollection);
             
-            // Setup: roadmap does not exist
+            // Setup: journey does not exist
             const mockCollection = {
               findOne: vi.fn().mockResolvedValue(null),
             };
-            mockGetRoadmapsCollection.mockResolvedValue(mockCollection as never);
+            mockGetJourneysCollection.mockResolvedValue(mockCollection as never);
 
             // Attempt to update milestone visibility
             await expect(
@@ -308,7 +308,7 @@ describe('Visibility Service Property Tests', () => {
                 'milestone',
                 milestoneId,
                 isPublic,
-                roadmapSlug
+                journeySlug
               )
             ).rejects.toThrow(VisibilityError);
 
@@ -318,7 +318,7 @@ describe('Visibility Service Property Tests', () => {
                 'milestone',
                 milestoneId,
                 isPublic,
-                roadmapSlug
+                journeySlug
               );
             } catch (error) {
               expect(error).toBeInstanceOf(VisibilityError);
@@ -332,22 +332,22 @@ describe('Visibility Service Property Tests', () => {
       );
     });
 
-    it('objective visibility change should be rejected when parent roadmap does not exist', async () => {
+    it('objective visibility change should be rejected when parent journey does not exist', async () => {
       await fc.assert(
         fc.asyncProperty(
-          roadmapSlugArb,
+          journeySlugArb,
           entityIdArb,
           entityIdArb,
           adminIdArb,
           fc.boolean(),
-          async (roadmapSlug, milestoneId, objectiveId, adminId, isPublic) => {
-            const mockGetRoadmapsCollection = vi.mocked(getRoadmapsCollection);
+          async (journeySlug, milestoneId, objectiveId, adminId, isPublic) => {
+            const mockGetJourneysCollection = vi.mocked(getJourneysCollection);
             
-            // Setup: roadmap does not exist
+            // Setup: journey does not exist
             const mockCollection = {
               findOne: vi.fn().mockResolvedValue(null),
             };
-            mockGetRoadmapsCollection.mockResolvedValue(mockCollection as never);
+            mockGetJourneysCollection.mockResolvedValue(mockCollection as never);
 
             // Attempt to update objective visibility
             await expect(
@@ -356,7 +356,7 @@ describe('Visibility Service Property Tests', () => {
                 'objective',
                 objectiveId,
                 isPublic,
-                roadmapSlug,
+                journeySlug,
                 milestoneId
               )
             ).rejects.toThrow(VisibilityError);
@@ -367,7 +367,7 @@ describe('Visibility Service Property Tests', () => {
                 'objective',
                 objectiveId,
                 isPublic,
-                roadmapSlug,
+                journeySlug,
                 milestoneId
               );
             } catch (error) {
@@ -382,28 +382,28 @@ describe('Visibility Service Property Tests', () => {
       );
     });
 
-    it('objective visibility change should be rejected when parent milestone does not exist in roadmap', async () => {
+    it('objective visibility change should be rejected when parent milestone does not exist in journey', async () => {
       await fc.assert(
         fc.asyncProperty(
-          roadmapSlugArb,
+          journeySlugArb,
           entityIdArb,
           entityIdArb,
           adminIdArb,
           fc.boolean(),
-          async (roadmapSlug, milestoneId, objectiveId, adminId, isPublic) => {
-            const mockGetRoadmapsCollection = vi.mocked(getRoadmapsCollection);
+          async (journeySlug, milestoneId, objectiveId, adminId, isPublic) => {
+            const mockGetJourneysCollection = vi.mocked(getJourneysCollection);
             
-            // Setup: roadmap exists but milestone does not exist in it
-            const mockRoadmap = {
-              slug: roadmapSlug,
+            // Setup: journey exists but milestone does not exist in it
+            const mockjourney = {
+              slug: journeySlug,
               nodes: [
                 { id: 'other-milestone', title: 'Other Milestone' },
               ],
             };
             const mockCollection = {
-              findOne: vi.fn().mockResolvedValue(mockRoadmap),
+              findOne: vi.fn().mockResolvedValue(mockjourney),
             };
-            mockGetRoadmapsCollection.mockResolvedValue(mockCollection as never);
+            mockGetJourneysCollection.mockResolvedValue(mockCollection as never);
 
             // Attempt to update objective visibility with non-existent milestone
             await expect(
@@ -412,7 +412,7 @@ describe('Visibility Service Property Tests', () => {
                 'objective',
                 objectiveId,
                 isPublic,
-                roadmapSlug,
+                journeySlug,
                 milestoneId
               )
             ).rejects.toThrow(VisibilityError);
@@ -423,7 +423,7 @@ describe('Visibility Service Property Tests', () => {
                 'objective',
                 objectiveId,
                 isPublic,
-                roadmapSlug,
+                journeySlug,
                 milestoneId
               );
             } catch (error) {
@@ -438,30 +438,30 @@ describe('Visibility Service Property Tests', () => {
       );
     });
 
-    it('milestone visibility change should succeed when parent roadmap exists', async () => {
+    it('milestone visibility change should succeed when parent journey exists', async () => {
       await fc.assert(
         fc.asyncProperty(
-          roadmapSlugArb,
+          journeySlugArb,
           entityIdArb,
           adminIdArb,
           fc.boolean(),
-          async (roadmapSlug, milestoneId, adminId, isPublic) => {
-            const mockGetRoadmapsCollection = vi.mocked(getRoadmapsCollection);
+          async (journeySlug, milestoneId, adminId, isPublic) => {
+            const mockGetJourneysCollection = vi.mocked(getJourneysCollection);
             const mockGetVisibility = vi.mocked(getVisibility);
             const mockSetVisibility = vi.mocked(setVisibility);
             
-            // Setup: roadmap exists
-            const mockRoadmap = {
-              slug: roadmapSlug,
+            // Setup: journey exists
+            const mockjourney = {
+              slug: journeySlug,
               nodes: [{ id: milestoneId, title: 'Test Milestone' }],
             };
             const mockCollection = {
-              findOne: vi.fn().mockResolvedValue(mockRoadmap),
+              findOne: vi.fn().mockResolvedValue(mockjourney),
             };
-            mockGetRoadmapsCollection.mockResolvedValue(mockCollection as never);
+            mockGetJourneysCollection.mockResolvedValue(mockCollection as never);
             mockGetVisibility.mockResolvedValue(null);
             mockSetVisibility.mockResolvedValue(
-              createMockVisibilitySetting('milestone', milestoneId, isPublic, roadmapSlug)
+              createMockVisibilitySetting('milestone', milestoneId, isPublic, journeySlug)
             );
 
             // Should succeed
@@ -470,7 +470,7 @@ describe('Visibility Service Property Tests', () => {
               'milestone',
               milestoneId,
               isPublic,
-              roadmapSlug
+              journeySlug
             );
 
             expect(result.entityType).toBe('milestone');
@@ -484,32 +484,32 @@ describe('Visibility Service Property Tests', () => {
       );
     });
 
-    it('roadmap visibility change should succeed without parent validation', async () => {
+    it('journey visibility change should succeed without parent validation', async () => {
       await fc.assert(
         fc.asyncProperty(
-          roadmapSlugArb,
+          journeySlugArb,
           adminIdArb,
           fc.boolean(),
-          async (roadmapSlug, adminId, isPublic) => {
+          async (journeySlug, adminId, isPublic) => {
             const mockGetVisibility = vi.mocked(getVisibility);
             const mockSetVisibility = vi.mocked(setVisibility);
             
-            // Setup: no parent validation needed for roadmaps
+            // Setup: no parent validation needed for journeys
             mockGetVisibility.mockResolvedValue(null);
             mockSetVisibility.mockResolvedValue(
-              createMockVisibilitySetting('roadmap', roadmapSlug, isPublic)
+              createMockVisibilitySetting('journey', journeySlug, isPublic)
             );
 
             // Should succeed without any parent checks
             const result = await updateVisibility(
               adminId,
-              'roadmap',
-              roadmapSlug,
+              'journey',
+              journeySlug,
               isPublic
             );
 
-            expect(result.entityType).toBe('roadmap');
-            expect(result.entityId).toBe(roadmapSlug);
+            expect(result.entityType).toBe('journey');
+            expect(result.entityId).toBe(journeySlug);
             expect(result.isPublic).toBe(isPublic);
 
             return true;
@@ -522,7 +522,7 @@ describe('Visibility Service Property Tests', () => {
 
 
   /**
-   * **Feature: roadmap-public-visibility, Property 5: Public Content Filtering**
+   * **Feature: journey-public-visibility, Property 5: Public Content Filtering**
    * 
    * For any public content request, the returned data should only include entities
    * that are effectively public (considering hierarchical visibility rules).
@@ -530,27 +530,27 @@ describe('Visibility Service Property Tests', () => {
    * **Validates: Requirements 4.1, 4.2, 4.3, 4.4**
    */
   describe('Property 5: Public Content Filtering', () => {
-    it('getPublicRoadmapBySlug should return null for private roadmaps', async () => {
+    it('getPublicjourneyBySlug should return null for private journeys', async () => {
       // Import the function we need to test
-      const { getPublicRoadmapBySlug } = await import('./visibility-service');
+      const { getPublicJourneyBySlug } = await import('./visibility-service');
       
       await fc.assert(
         fc.asyncProperty(
-          roadmapSlugArb,
+          journeySlugArb,
           async (slug) => {
             const mockGetVisibility = vi.mocked(getVisibility);
             
-            // Setup: roadmap is private
+            // Setup: journey is private
             mockGetVisibility.mockImplementation(async (type, id) => {
-              if (type === 'roadmap' && id === slug) {
-                return createMockVisibilitySetting('roadmap', slug, false);
+              if (type === 'journey' && id === slug) {
+                return createMockVisibilitySetting('journey', slug, false);
               }
               return null;
             });
 
-            const result = await getPublicRoadmapBySlug(slug);
+            const result = await getPublicJourneyBySlug(slug);
             
-            // Private roadmap should return null
+            // Private journey should return null
             expect(result).toBeNull();
             
             return true;
@@ -560,26 +560,26 @@ describe('Visibility Service Property Tests', () => {
       );
     });
 
-    it('getPublicRoadmaps should only return roadmaps marked as public', async () => {
-      const { getPublicRoadmaps } = await import('./visibility-service');
+    it('getPublicjourneys should only return journeys marked as public', async () => {
+      const { getPublicJourneys } = await import('./visibility-service');
       const { findPublicEntities, getVisibilityByParent } = await import('@/lib/db/repositories/visibility-repository');
       
       await fc.assert(
         fc.asyncProperty(
-          fc.array(roadmapSlugArb, { minLength: 0, maxLength: 5 }),
+          fc.array(journeySlugArb, { minLength: 0, maxLength: 5 }),
           async (publicSlugs) => {
             const mockFindPublicEntities = vi.mocked(findPublicEntities);
-            const mockGetRoadmapsCollection = vi.mocked(getRoadmapsCollection);
+            const mockGetJourneysCollection = vi.mocked(getJourneysCollection);
             const mockGetVisibilityByParent = vi.mocked(getVisibilityByParent);
             
             // Setup: return the public slugs
             mockFindPublicEntities.mockResolvedValue(publicSlugs);
             
-            // Setup: mock roadmap documents
-            const mockRoadmaps = publicSlugs.map(slug => ({
-              _id: `roadmap-${slug}`,
+            // Setup: mock journey documents
+            const mockjourneys = publicSlugs.map(slug => ({
+              _id: `journey-${slug}`,
               slug,
-              title: `Roadmap ${slug}`,
+              title: `journey ${slug}`,
               description: 'Test description',
               category: 'frontend',
               difficulty: 5,
@@ -591,18 +591,18 @@ describe('Visibility Service Property Tests', () => {
             
             const mockCollection = {
               find: vi.fn().mockReturnValue({
-                toArray: vi.fn().mockResolvedValue(mockRoadmaps),
+                toArray: vi.fn().mockResolvedValue(mockjourneys),
               }),
             };
-            mockGetRoadmapsCollection.mockResolvedValue(mockCollection as never);
+            mockGetJourneysCollection.mockResolvedValue(mockCollection as never);
             mockGetVisibilityByParent.mockResolvedValue([]);
 
-            const result = await getPublicRoadmaps();
+            const result = await getPublicJourneys();
             
-            // Should return exactly the public roadmaps
+            // Should return exactly the public journeys
             expect(result.length).toBe(publicSlugs.length);
-            for (const roadmap of result) {
-              expect(publicSlugs).toContain(roadmap.slug);
+            for (const journey of result) {
+              expect(publicSlugs).toContain(journey.slug);
             }
             
             return true;
@@ -612,13 +612,13 @@ describe('Visibility Service Property Tests', () => {
       );
     });
 
-    it('filtered roadmap should only contain public milestones', async () => {
-      const { getPublicRoadmapBySlug } = await import('./visibility-service');
+    it('filtered journey should only contain public milestones', async () => {
+      const { getPublicJourneyBySlug } = await import('./visibility-service');
       const { getVisibilityByParent } = await import('@/lib/db/repositories/visibility-repository');
       
       await fc.assert(
         fc.asyncProperty(
-          roadmapSlugArb,
+          journeySlugArb,
           fc.array(entityIdArb, { minLength: 1, maxLength: 5 }),
           fc.array(fc.boolean(), { minLength: 1, maxLength: 5 }),
           async (slug, milestoneIds, milestoneVisibilities) => {
@@ -629,22 +629,22 @@ describe('Visibility Service Property Tests', () => {
             if (ids.length === 0) return true;
             
             const mockGetVisibility = vi.mocked(getVisibility);
-            const mockGetRoadmapsCollection = vi.mocked(getRoadmapsCollection);
+            const mockGetJourneysCollection = vi.mocked(getJourneysCollection);
             const mockGetVisibilityByParent = vi.mocked(getVisibilityByParent);
             
-            // Setup: roadmap is public
+            // Setup: journey is public
             mockGetVisibility.mockImplementation(async (type, id) => {
-              if (type === 'roadmap' && id === slug) {
-                return createMockVisibilitySetting('roadmap', slug, true);
+              if (type === 'journey' && id === slug) {
+                return createMockVisibilitySetting('journey', slug, true);
               }
               return null;
             });
             
-            // Setup: mock roadmap with milestones
-            const mockRoadmap = {
-              _id: `roadmap-${slug}`,
+            // Setup: mock journey with milestones
+            const mockjourney = {
+              _id: `journey-${slug}`,
               slug,
-              title: `Roadmap ${slug}`,
+              title: `journey ${slug}`,
               description: 'Test description',
               category: 'frontend',
               difficulty: 5,
@@ -664,9 +664,9 @@ describe('Visibility Service Property Tests', () => {
             };
             
             const mockCollection = {
-              findOne: vi.fn().mockResolvedValue(mockRoadmap),
+              findOne: vi.fn().mockResolvedValue(mockjourney),
             };
-            mockGetRoadmapsCollection.mockResolvedValue(mockCollection as never);
+            mockGetJourneysCollection.mockResolvedValue(mockCollection as never);
             
             // Setup: milestone visibility settings
             const milestoneSettings = ids.map((id, i) => 
@@ -679,7 +679,7 @@ describe('Visibility Service Property Tests', () => {
               return [];
             });
 
-            const result = await getPublicRoadmapBySlug(slug);
+            const result = await getPublicJourneyBySlug(slug);
             
             if (result) {
               // All returned nodes should be from public milestones
@@ -700,7 +700,7 @@ describe('Visibility Service Property Tests', () => {
 
 
   /**
-   * **Feature: roadmap-public-visibility, Property 7: Generic Visibility Check**
+   * **Feature: journey-public-visibility, Property 7: Generic Visibility Check**
    * 
    * For any entity type and identifier, the visibility check function should correctly
    * determine the effective visibility based on the entity's setting and its parent hierarchy.
@@ -708,24 +708,24 @@ describe('Visibility Service Property Tests', () => {
    * **Validates: Requirements 7.2**
    */
   describe('Property 7: Generic Visibility Check', () => {
-    it('isPubliclyVisible should work correctly for roadmap entity type', async () => {
+    it('isPubliclyVisible should work correctly for journey entity type', async () => {
       await fc.assert(
         fc.asyncProperty(
-          roadmapSlugArb,
+          journeySlugArb,
           fc.boolean(),
           async (slug, isPublic) => {
             const mockGetVisibility = vi.mocked(getVisibility);
             
             mockGetVisibility.mockImplementation(async (type, id) => {
-              if (type === 'roadmap' && id === slug) {
-                return createMockVisibilitySetting('roadmap', slug, isPublic);
+              if (type === 'journey' && id === slug) {
+                return createMockVisibilitySetting('journey', slug, isPublic);
               }
               return null;
             });
 
-            const result = await isPubliclyVisible('roadmap', slug);
+            const result = await isPubliclyVisible('journey', slug);
             
-            // Roadmap visibility should match its direct setting
+            // journey visibility should match its direct setting
             expect(result).toBe(isPublic);
             
             return true;
@@ -738,27 +738,27 @@ describe('Visibility Service Property Tests', () => {
     it('isPubliclyVisible should work correctly for milestone entity type', async () => {
       await fc.assert(
         fc.asyncProperty(
-          roadmapSlugArb,
+          journeySlugArb,
           entityIdArb,
           fc.boolean(),
           fc.boolean(),
-          async (roadmapSlug, milestoneId, roadmapPublic, milestonePublic) => {
+          async (journeySlug, milestoneId, journeyPublic, milestonePublic) => {
             const mockGetVisibility = vi.mocked(getVisibility);
             
             mockGetVisibility.mockImplementation(async (type, id) => {
-              if (type === 'roadmap' && id === roadmapSlug) {
-                return createMockVisibilitySetting('roadmap', roadmapSlug, roadmapPublic);
+              if (type === 'journey' && id === journeySlug) {
+                return createMockVisibilitySetting('journey', journeySlug, journeyPublic);
               }
               if (type === 'milestone' && id === milestoneId) {
-                return createMockVisibilitySetting('milestone', milestoneId, milestonePublic, roadmapSlug);
+                return createMockVisibilitySetting('milestone', milestoneId, milestonePublic, journeySlug);
               }
               return null;
             });
 
             const result = await isPubliclyVisible('milestone', milestoneId);
             
-            // Milestone is public only if both it and its parent roadmap are public
-            const expectedResult = roadmapPublic && milestonePublic;
+            // Milestone is public only if both it and its parent journey are public
+            const expectedResult = journeyPublic && milestonePublic;
             expect(result).toBe(expectedResult);
             
             return true;
@@ -771,32 +771,32 @@ describe('Visibility Service Property Tests', () => {
     it('isPubliclyVisible should work correctly for objective entity type', async () => {
       await fc.assert(
         fc.asyncProperty(
-          roadmapSlugArb,
+          journeySlugArb,
           entityIdArb,
           entityIdArb,
           fc.boolean(),
           fc.boolean(),
           fc.boolean(),
-          async (roadmapSlug, milestoneId, objectiveId, roadmapPublic, milestonePublic, objectivePublic) => {
+          async (journeySlug, milestoneId, objectiveId, journeyPublic, milestonePublic, objectivePublic) => {
             const mockGetVisibility = vi.mocked(getVisibility);
             
             mockGetVisibility.mockImplementation(async (type, id) => {
-              if (type === 'roadmap' && id === roadmapSlug) {
-                return createMockVisibilitySetting('roadmap', roadmapSlug, roadmapPublic);
+              if (type === 'journey' && id === journeySlug) {
+                return createMockVisibilitySetting('journey', journeySlug, journeyPublic);
               }
               if (type === 'milestone' && id === milestoneId) {
-                return createMockVisibilitySetting('milestone', milestoneId, milestonePublic, roadmapSlug);
+                return createMockVisibilitySetting('milestone', milestoneId, milestonePublic, journeySlug);
               }
               if (type === 'objective' && id === objectiveId) {
-                return createMockVisibilitySetting('objective', objectiveId, objectivePublic, roadmapSlug, milestoneId);
+                return createMockVisibilitySetting('objective', objectiveId, objectivePublic, journeySlug, milestoneId);
               }
               return null;
             });
 
             const result = await isPubliclyVisible('objective', objectiveId);
             
-            // Objective is public only if it, its milestone, and its roadmap are all public
-            const expectedResult = roadmapPublic && milestonePublic && objectivePublic;
+            // Objective is public only if it, its milestone, and its journey are all public
+            const expectedResult = journeyPublic && milestonePublic && objectivePublic;
             expect(result).toBe(expectedResult);
             
             return true;
@@ -846,7 +846,7 @@ describe('Visibility Service Property Tests', () => {
                   entityId,
                   isPublic: true,
                   // Missing parent references
-                  parentRoadmapSlug: undefined,
+                  parentJourneySlug: undefined,
                   parentMilestoneId: undefined,
                   updatedBy: 'admin-123',
                   updatedAt: new Date(),
@@ -870,7 +870,7 @@ describe('Visibility Service Property Tests', () => {
   });
 
   /**
-   * **Feature: roadmap-public-visibility, Property 6: Audit Log Completeness**
+   * **Feature: journey-public-visibility, Property 6: Audit Log Completeness**
    * 
    * For any visibility modification, the audit log entry should contain the admin user ID,
    * timestamp, previous value, new value, entity type, and entity ID.
@@ -881,11 +881,11 @@ describe('Visibility Service Property Tests', () => {
     it('visibility changes should create complete audit records with all required fields', async () => {
       await fc.assert(
         fc.asyncProperty(
-          roadmapSlugArb,
+          journeySlugArb,
           adminIdArb,
           fc.boolean(), // old value
           fc.boolean(), // new value
-          async (roadmapSlug, adminId, oldValue, newValue) => {
+          async (journeySlug, adminId, oldValue, newValue) => {
             const mockGetVisibility = vi.mocked(getVisibility);
             const mockSetVisibility = vi.mocked(setVisibility);
             const mockLogVisibilityChange = vi.mocked(logVisibilityChange);
@@ -895,14 +895,14 @@ describe('Visibility Service Property Tests', () => {
             
             // Setup: existing visibility setting
             mockGetVisibility.mockResolvedValue(
-              oldValue ? createMockVisibilitySetting('roadmap', roadmapSlug, oldValue) : null
+              oldValue ? createMockVisibilitySetting('journey', journeySlug, oldValue) : null
             );
             mockSetVisibility.mockResolvedValue(
-              createMockVisibilitySetting('roadmap', roadmapSlug, newValue)
+              createMockVisibilitySetting('journey', journeySlug, newValue)
             );
 
             // Perform visibility update
-            await updateVisibility(adminId, 'roadmap', roadmapSlug, newValue);
+            await updateVisibility(adminId, 'journey', journeySlug, newValue);
 
             // Verify audit log was called with complete information
             expect(mockLogVisibilityChange).toHaveBeenCalledTimes(1);
@@ -920,8 +920,8 @@ describe('Visibility Service Property Tests', () => {
             expect(loggedAdminId).toBe(adminId);
             
             // Requirement 6.4: entity type and identifier
-            expect(loggedEntityType).toBe('roadmap');
-            expect(loggedEntityId).toBe(roadmapSlug);
+            expect(loggedEntityType).toBe('journey');
+            expect(loggedEntityId).toBe(journeySlug);
             
             // Requirement 6.3: previous and new visibility values
             expect(loggedOldValue).toBe(oldValue ? oldValue : null);
@@ -934,48 +934,48 @@ describe('Visibility Service Property Tests', () => {
       );
     });
 
-    it('milestone visibility changes should include parent roadmap in audit log', async () => {
+    it('milestone visibility changes should include parent journey in audit log', async () => {
       await fc.assert(
         fc.asyncProperty(
-          roadmapSlugArb,
+          journeySlugArb,
           entityIdArb,
           adminIdArb,
           fc.boolean(),
-          async (roadmapSlug, milestoneId, adminId, newValue) => {
+          async (journeySlug, milestoneId, adminId, newValue) => {
             const mockGetVisibility = vi.mocked(getVisibility);
             const mockSetVisibility = vi.mocked(setVisibility);
-            const mockGetRoadmapsCollection = vi.mocked(getRoadmapsCollection);
+            const mockGetJourneysCollection = vi.mocked(getJourneysCollection);
             const mockLogVisibilityChange = vi.mocked(logVisibilityChange);
             
             // Clear previous calls
             mockLogVisibilityChange.mockClear();
             
-            // Setup: roadmap exists
-            const mockRoadmap = {
-              slug: roadmapSlug,
+            // Setup: journey exists
+            const mockjourney = {
+              slug: journeySlug,
               nodes: [{ id: milestoneId, title: 'Test Milestone' }],
             };
             const mockCollection = {
-              findOne: vi.fn().mockResolvedValue(mockRoadmap),
+              findOne: vi.fn().mockResolvedValue(mockjourney),
             };
-            mockGetRoadmapsCollection.mockResolvedValue(mockCollection as never);
+            mockGetJourneysCollection.mockResolvedValue(mockCollection as never);
             
             mockGetVisibility.mockResolvedValue(null);
             mockSetVisibility.mockResolvedValue(
-              createMockVisibilitySetting('milestone', milestoneId, newValue, roadmapSlug)
+              createMockVisibilitySetting('milestone', milestoneId, newValue, journeySlug)
             );
 
             // Perform visibility update
-            await updateVisibility(adminId, 'milestone', milestoneId, newValue, roadmapSlug);
+            await updateVisibility(adminId, 'milestone', milestoneId, newValue, journeySlug);
 
-            // Verify audit log includes parent roadmap slug
+            // Verify audit log includes parent journey slug
             expect(mockLogVisibilityChange).toHaveBeenCalledTimes(1);
             
             const callArgs = mockLogVisibilityChange.mock.calls[0];
             expect(callArgs[0]).toBe(adminId); // adminId
             expect(callArgs[1]).toBe('milestone'); // entityType
             expect(callArgs[2]).toBe(milestoneId); // entityId
-            expect(callArgs[5]).toBe(roadmapSlug); // parentRoadmapSlug
+            expect(callArgs[5]).toBe(journeySlug); // parentJourneySlug
             
             return true;
           }
@@ -984,40 +984,40 @@ describe('Visibility Service Property Tests', () => {
       );
     });
 
-    it('objective visibility changes should include parent milestone and roadmap in audit log', async () => {
+    it('objective visibility changes should include parent milestone and journey in audit log', async () => {
       await fc.assert(
         fc.asyncProperty(
-          roadmapSlugArb,
+          journeySlugArb,
           entityIdArb,
           entityIdArb,
           adminIdArb,
           fc.boolean(),
-          async (roadmapSlug, milestoneId, objectiveId, adminId, newValue) => {
+          async (journeySlug, milestoneId, objectiveId, adminId, newValue) => {
             const mockGetVisibility = vi.mocked(getVisibility);
             const mockSetVisibility = vi.mocked(setVisibility);
-            const mockGetRoadmapsCollection = vi.mocked(getRoadmapsCollection);
+            const mockGetJourneysCollection = vi.mocked(getJourneysCollection);
             const mockLogVisibilityChange = vi.mocked(logVisibilityChange);
             
             // Clear previous calls
             mockLogVisibilityChange.mockClear();
             
-            // Setup: roadmap with milestone exists
-            const mockRoadmap = {
-              slug: roadmapSlug,
+            // Setup: journey with milestone exists
+            const mockjourney = {
+              slug: journeySlug,
               nodes: [{ id: milestoneId, title: 'Test Milestone' }],
             };
             const mockCollection = {
-              findOne: vi.fn().mockResolvedValue(mockRoadmap),
+              findOne: vi.fn().mockResolvedValue(mockjourney),
             };
-            mockGetRoadmapsCollection.mockResolvedValue(mockCollection as never);
+            mockGetJourneysCollection.mockResolvedValue(mockCollection as never);
             
             mockGetVisibility.mockResolvedValue(null);
             mockSetVisibility.mockResolvedValue(
-              createMockVisibilitySetting('objective', objectiveId, newValue, roadmapSlug, milestoneId)
+              createMockVisibilitySetting('objective', objectiveId, newValue, journeySlug, milestoneId)
             );
 
             // Perform visibility update
-            await updateVisibility(adminId, 'objective', objectiveId, newValue, roadmapSlug, milestoneId);
+            await updateVisibility(adminId, 'objective', objectiveId, newValue, journeySlug, milestoneId);
 
             // Verify audit log includes both parent references
             expect(mockLogVisibilityChange).toHaveBeenCalledTimes(1);
@@ -1026,7 +1026,7 @@ describe('Visibility Service Property Tests', () => {
             expect(callArgs[0]).toBe(adminId); // adminId
             expect(callArgs[1]).toBe('objective'); // entityType
             expect(callArgs[2]).toBe(objectiveId); // entityId
-            expect(callArgs[5]).toBe(roadmapSlug); // parentRoadmapSlug
+            expect(callArgs[5]).toBe(journeySlug); // parentJourneySlug
             expect(callArgs[6]).toBe(milestoneId); // parentMilestoneId
             
             return true;

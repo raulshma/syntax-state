@@ -18,7 +18,7 @@ export function Hero() {
 
   const analysisSteps = [
     { text: "Understanding Goals...", color: "text-blue-500" },
-    { text: "Mapping Your Roadmap...", color: "text-purple-500" },
+    { text: "Mapping Your Journey...", color: "text-purple-500" },
     { text: "Recommending Lessons...", color: "text-orange-500" },
     { text: "Generating Practice...", color: "text-green-500" },
   ];
@@ -26,7 +26,7 @@ export function Hero() {
   return (
     <section className="relative min-h-[92vh] flex items-center justify-center overflow-hidden bg-background pt-20 pb-12">
       {/* Subtle animated background gradient */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-primary/5 via-background to-background opacity-50" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,var(--tw-gradient-stops))] from-primary/5 via-background to-background opacity-50" />
 
       <div className="relative z-10 max-w-[1200px] mx-auto px-6 text-center">
         <motion.div
@@ -36,11 +36,11 @@ export function Hero() {
         >
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary/50 border border-border/50 text-sm text-muted-foreground mb-8 backdrop-blur-sm">
             <Sparkles className="w-3 h-3" />
-            <span>AI-Powered Learning, Roadmaps, and Practice</span>
+            <span>AI-Powered Learning, Journeys, and Practice</span>
           </div>
           <h1 className="text-5xl sm:text-7xl md:text-8xl font-semibold tracking-tight text-foreground mb-8 leading-[1.05]">
             Master the <br className="hidden md:block" />
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">
+            <span className="bg-clip-text text-transparent bg-linear-to-r from-foreground to-foreground/70">
               skills for your next role.
             </span>
           </h1>
@@ -52,7 +52,7 @@ export function Hero() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
         >
-          Roadmaps, lessons, and AI chat tailored to you.
+          Journeys, lessons, and AI chat tailored to you.
           <br className="hidden sm:block" />
           Practice with mock interviews when you&apos;re ready.
         </motion.p>
@@ -72,7 +72,7 @@ export function Hero() {
               <ArrowRight className="w-5 h-5 ml-2" />
             </Button>
           </Link>
-          <Link href="/journeys">
+          <Link href="/explore">
             <Button
               variant="outline"
               size="lg"
@@ -100,12 +100,12 @@ export function Hero() {
             </div>
 
             {/* Content Area */}
-            <div className="pt-10 bg-gradient-to-br from-background via-background to-secondary/20 min-h-[400px] flex items-center justify-center relative">
+            <div className="pt-10 bg-linear-to-br from-background via-background to-secondary/20 min-h-[400px] flex items-center justify-center relative">
 
               {/* Scanning Effect */}
               <div className="absolute inset-0 pointer-events-none">
                 <motion.div
-                  className="w-full h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent absolute top-0"
+                  className="w-full h-1 bg-linear-to-r from-transparent via-primary/50 to-transparent absolute top-0"
                   animate={{ top: ["0%", "100%", "0%"] }}
                   transition={{ duration: 8, ease: "linear", repeat: Infinity }}
                 />

@@ -5,7 +5,7 @@ import { ArrowRight, Clock, Star } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { getRoadmapSkillLevel } from '@/lib/hooks/use-roadmap-skill-level';
+import { getJourneySkillLevel } from '@/lib/hooks/use-journey-skill-level';
 
 interface NextLessonSuggestionProps {
   lessonPath: string;
@@ -13,7 +13,7 @@ interface NextLessonSuggestionProps {
   description: string;
   estimatedMinutes: number;
   xpReward: number;
-  roadmapSlug: string;
+  journeySlug: string;
 }
 
 export function NextLessonSuggestion({
@@ -22,13 +22,13 @@ export function NextLessonSuggestion({
   description,
   estimatedMinutes,
   xpReward,
-  roadmapSlug,
+  journeySlug,
 }: NextLessonSuggestionProps) {
   // Extract milestone and lesson slug from path
   const [milestone, lessonSlug] = lessonPath.split('/');
   
-  // Get persisted skill level for this roadmap
-  const persistedLevel = getRoadmapSkillLevel(roadmapSlug);
+  // Get persisted skill level for this journey
+  const persistedLevel = getJourneySkillLevel(journeySlug);
   const levelParam = persistedLevel ? `?level=${persistedLevel}` : '';
   
   return (
@@ -66,7 +66,7 @@ export function NextLessonSuggestion({
             </div>
           </div>
           
-          <Link href={`/roadmaps/${roadmapSlug}/learn/${milestone}/${lessonSlug}${levelParam}`} className="w-full sm:w-auto">
+          <Link href={`/journeys/${journeySlug}/learn/${milestone}/${lessonSlug}${levelParam}`} className="w-full sm:w-auto">
             <Button className="gap-2 w-full sm:w-auto">
               Start Lesson
               <ArrowRight className="w-4 h-4" />

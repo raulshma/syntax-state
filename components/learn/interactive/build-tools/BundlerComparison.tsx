@@ -171,9 +171,9 @@ export function BundlerComparison({
       <AnimatePresence>
         {recommendation && (
           <motion.div
-            initial={shouldReduceMotion ? false : { height: 0, opacity: 0 }}
+            initial={shouldReduceMotion ? undefined : { height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
-            exit={shouldReduceMotion ? false : { height: 0, opacity: 0 }}
+            exit={shouldReduceMotion ? undefined : { height: 0, opacity: 0 }}
             transition={shouldReduceMotion ? { duration: 0 } : undefined}
             className="border-b border-border overflow-hidden"
           >
@@ -235,7 +235,7 @@ export function BundlerComparison({
                 {BUNDLER_FEATURES.map((feature, index) => (
                   <motion.tr
                     key={feature.name}
-                    initial={shouldReduceMotion ? false : { opacity: 0, y: 10 }}
+                    initial={shouldReduceMotion ? undefined : { opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={shouldReduceMotion ? { duration: 0 } : { delay: index * 0.05 }}
                     className="border-b border-border/50 hover:bg-secondary/30 transition-colors"
@@ -286,7 +286,7 @@ export function BundlerComparison({
                 return (
                   <motion.div
                     key={bundler}
-                    initial={shouldReduceMotion ? false : { opacity: 0, x: -20 }}
+                    initial={shouldReduceMotion ? undefined : { opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={shouldReduceMotion ? { duration: 0 } : { delay: index * 0.1 }}
                     className="space-y-2"

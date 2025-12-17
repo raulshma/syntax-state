@@ -178,7 +178,7 @@ export function EsbuildSpeedDemo({ moduleCount = 1000 }: EsbuildSpeedDemoProps) 
                   </div>
                   {result && (
                     <motion.span
-                      initial={shouldReduceMotion ? false : { opacity: 0, scale: 0.8 }}
+                      initial={shouldReduceMotion ? undefined : { opacity: 0, scale: 0.8 }}
                       animate={{ opacity: 1, scale: 1 }}
                       className={cn(
                         'text-sm font-mono font-bold',
@@ -247,7 +247,7 @@ export function EsbuildSpeedDemo({ moduleCount = 1000 }: EsbuildSpeedDemoProps) 
                     )}
                     {isComplete && (
                       <motion.div
-                        initial={shouldReduceMotion ? false : { opacity: 0 }}
+                        initial={shouldReduceMotion ? undefined : { opacity: 0 }}
                         animate={{ opacity: 1 }}
                         className="flex items-center gap-2 text-xs font-medium"
                       >
@@ -266,7 +266,7 @@ export function EsbuildSpeedDemo({ moduleCount = 1000 }: EsbuildSpeedDemoProps) 
         <AnimatePresence>
           {results.length === BUNDLERS.length && (
             <motion.div
-              initial={shouldReduceMotion ? false : { opacity: 0, y: 20 }}
+              initial={shouldReduceMotion ? undefined : { opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               className="mt-6 p-4 rounded-lg bg-yellow-500/10 border border-yellow-500/30"
             >

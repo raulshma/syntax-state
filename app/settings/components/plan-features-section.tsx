@@ -93,6 +93,12 @@ const FEATURE_INFO: Record<PlanFeature, { label: string; description: string; ic
     icon: <BarChart3 className="w-5 h-5" />,
     minPlan: 'PRO',
   },
+  pixel_pet: {
+    label: 'Pixel Pets',
+    description: '3D pixel companions that roam around your screen',
+    icon: <Sparkles className="w-5 h-5" />,
+    minPlan: 'PRO',
+  },
 };
 
 const ALL_FEATURES: PlanFeature[] = [

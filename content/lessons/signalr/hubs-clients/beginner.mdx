@@ -1,13 +1,13 @@
-# Hubs & Clients: Your Real-Time Control Center! 🎛️
+# Hubs & Clients: Your Real-Time Control Center
 
 Imagine a **radio station** where the DJ (Hub) can talk to different listeners (Clients) in different ways:
-- 📻 Broadcast to EVERYONE
-- 📞 Call just ONE person
-- 👥 Talk to a SPECIFIC group
+- Broadcast to EVERYONE
+- Call just ONE person
+- Talk to a SPECIFIC group
 
 That's exactly what SignalR Hubs do!
 
-## What is a Hub? 🏢
+## What is a Hub?
 
 A **Hub** is like a **central phone operator** that manages all communications between your server and clients.
 
@@ -47,11 +47,11 @@ The students can also press the button to talk back to the principal!
 
 <ProgressCheckpoint section="understanding-hubs" xpReward={10} />
 
-## Talking to Clients 💬
+## Talking to Clients
 
 The Hub has a special property called `Clients` that lets you choose WHO to send messages to.
 
-### 1. Talk to EVERYONE 🌍
+### 1. Talk to EVERYONE
 
 ```csharp
 public class ChatHub : Hub
@@ -66,7 +66,7 @@ public class ChatHub : Hub
 
 **Use Case**: Breaking news, system announcements
 
-### 2. Talk to the CALLER only 🔙
+### 2. Talk to the CALLER only
 
 ```csharp
 public async Task SendToMyself(string message)
@@ -78,7 +78,7 @@ public async Task SendToMyself(string message)
 
 **Use Case**: Confirmation messages, "You said: ..."
 
-### 3. Talk to OTHERS (not the caller) 👥
+### 3. Talk to OTHERS (not the caller)
 
 ```csharp
 public async Task SendToOthers(string message)
@@ -90,7 +90,7 @@ public async Task SendToOthers(string message)
 
 **Use Case**: "John is typing...", multiplayer game movements
 
-### 4. Talk to ONE specific person 📞
+### 4. Talk to ONE specific person
 
 ```csharp
 public async Task SendToSpecificPerson(string connectionId, string message)
@@ -123,7 +123,7 @@ public async Task SendToSpecificPerson(string connectionId, string message)
 
 <ProgressCheckpoint section="client-communication" xpReward={10} />
 
-## Client-Side: Listening for Messages 👂
+## Client-Side: Listening for Messages
 
 On the client (browser), you **listen** for messages the Hub sends:
 
@@ -170,12 +170,12 @@ connection.invoke("Echo", "Hello!");
 <InfoBox type="tip" title="Method Names Match!">
 The name you use in `SendAsync("EchoResponse")` on the server must **match exactly** with `connection.on("EchoResponse")` on the client!
 
-Think of it like tuning to the right radio station frequency 📻
+Think of it like tuning to the right radio station frequency
 </InfoBox>
 
 <ProgressCheckpoint section="connection-management" xpReward={10} />
 
-## Connection Lifecycle 🔄
+## Connection Lifecycle
 
 Every client has a **Connection ID** - like a phone number!
 
@@ -208,7 +208,7 @@ public class NotificationHub : Hub
 2. **User closes webpage** → `OnDisconnectedAsync()` fires
 3. **Connection ID** is assigned automatically (like getting a phone number)
 
-## Complete Chat Example 💬
+## Complete Chat Example
 
 **Server:**
 ```csharp
@@ -268,16 +268,16 @@ public class ChatHub : Hub
 </script>
 ```
 
-## Key Takeaways 🎯
+## Key Takeaways
 
-✅ **Hub** = Central communication center (like a phone operator)  
-✅ **Clients** property = Choose WHO receives messages  
-✅ **Clients.All** = Talk to everyone (broadcast)  
-✅ **Clients.Caller** = Reply to sender only  
-✅ **Clients.Client(id)** = Talk to specific person  
-✅ **Connection ID** = Unique identifier for each client  
-✅ **Method names must match** between server and client  
+**Hub** = Central communication center (like a phone operator)  
+**Clients** property = Choose WHO receives messages  
+**Clients.All** = Talk to everyone (broadcast)  
+**Clients.Caller** = Reply to sender only  
+**Clients.Client(id)** = Talk to specific person  
+**Connection ID** = Unique identifier for each client  
+**Method names must match** between server and client  
 
-> **Remember**: The Hub is like a DJ at a radio station - it can broadcast to everyone, talk to specific callers, or send private messages! 📻
+> **Remember**: The Hub is like a DJ at a radio station - it can broadcast to everyone, talk to specific callers, or send private messages!
 
-Next up: Let's learn about **Groups** for organizing clients! 👥
+Next up: Let's learn about **Groups** for organizing clients!

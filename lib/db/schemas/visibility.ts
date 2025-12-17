@@ -1,10 +1,10 @@
 import { z } from 'zod';
-import type { RoadmapCategory, RoadmapNodeType, NodePosition, RoadmapEdge, LearningObjective } from './roadmap';
+import type { JourneyCategory, JourneyNodeType, NodePosition, JourneyEdge, LearningObjective } from './journey';
 import type { DifficultyLevel } from './learning-path';
 
 // Entity types that can have visibility settings
 export const EntityTypeSchema = z.enum([
-  'roadmap',
+  'journey',
   'milestone',
   'objective',
 ]);
@@ -15,7 +15,7 @@ export const VisibilitySettingSchema = z.object({
   entityType: EntityTypeSchema,
   entityId: z.string().min(1),
   // Parent references for hierarchy
-  parentRoadmapSlug: z.string().optional(),
+  parentJourneySlug: z.string().optional(),
   parentMilestoneId: z.string().optional(),
   // Visibility flag
   isPublic: z.boolean().default(false),
@@ -44,24 +44,24 @@ export type VisibilitySetting = z.infer<typeof VisibilitySettingSchema>;
 export type CreateVisibilitySetting = z.infer<typeof CreateVisibilitySettingSchema>;
 export type UpdateVisibilitySetting = z.infer<typeof UpdateVisibilitySettingSchema>;
 
-// Public roadmap response types (filtered for public consumption)
-export interface PublicRoadmap {
+// Public journey response types (filtered for public consumption)
+export interface PublicJourney {
   slug: string;
   title: string;
   description: string;
-  category: RoadmapCategory;
+  category: JourneyCategory;
   difficulty: DifficultyLevel;
   estimatedHours: number;
   // Only public nodes included
-  nodes: PublicRoadmapNode[];
-  edges: RoadmapEdge[];
+  nodes: PublicJourneyNode[];
+  edges: JourneyEdge[];
 }
 
-export interface PublicRoadmapNode {
+export interface PublicJourneyNode {
   id: string;
   title: string;
   description?: string;
-  type: RoadmapNodeType;
+  type: JourneyNodeType;
   position: NodePosition;
   // Only public objectives included
   learningObjectives: LearningObjective[];
@@ -71,10 +71,10 @@ export interface PublicRoadmapNode {
 
 // Visibility overview types for admin UI
 export interface VisibilityOverview {
-  roadmaps: RoadmapVisibilityInfo[];
+  journeys: JourneyVisibilityInfo[];
   stats: {
-    totalRoadmaps: number;
-    publicRoadmaps: number;
+    totalJourneys: number;
+    publicJourneys: number;
     totalMilestones: number;
     publicMilestones: number;
     totalObjectives: number;
@@ -82,7 +82,7 @@ export interface VisibilityOverview {
   };
 }
 
-export interface RoadmapVisibilityInfo {
+export interface JourneyVisibilityInfo {
   slug: string;
   title: string;
   isPublic: boolean;
@@ -90,8 +90,8 @@ export interface RoadmapVisibilityInfo {
   publicMilestoneCount: number;
 }
 
-export interface RoadmapVisibilityDetails {
-  roadmap: RoadmapVisibilityInfo;
+export interface JourneyVisibilityDetails {
+  journey: JourneyVisibilityInfo;
   milestones: MilestoneVisibilityInfo[];
 }
 

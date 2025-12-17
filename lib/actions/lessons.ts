@@ -6,7 +6,7 @@ import { serialize } from 'next-mdx-remote/serialize';
 import remarkGfm from 'remark-gfm';
 import rehypeSlug from 'rehype-slug';
 import type { ExperienceLevel } from '@/lib/db/schemas/lesson-progress';
-import type { LearningObjective } from '@/lib/db/schemas/roadmap';
+import type { LearningObjective } from '@/lib/db/schemas/journey';
 import {
   type LessonMetadata,
   validateLessonMetadata,
@@ -148,9 +148,9 @@ import { buildLessonCandidatePaths } from '@/lib/utils/lesson-paths';
 export async function resolveLessonPath(
   milestoneId: string,
   lessonId: string,
-  roadmapSlug?: string
+  journeySlug?: string
 ): Promise<string | null> {
-  const candidatePaths = buildLessonCandidatePaths(milestoneId, lessonId, roadmapSlug);
+  const candidatePaths = buildLessonCandidatePaths(milestoneId, lessonId, journeySlug);
   
   for (const candidate of candidatePaths) {
     if (await lessonExists(candidate)) {
@@ -230,12 +230,12 @@ export async function findLessonPath(milestoneId: string, objective: LearningObj
     addPath(`${milestoneId}/${finalSlug}`);
   }
 
-  // For SQL roadmap: lessons are in sql/{lessonId}/ structure
+  // For SQL journey: lessons are in sql/{lessonId}/ structure
   // Try sql/ prefix as a fallback for SQL lessons
   addPath(`sql/${lessonId}`);
   addPath(`sql/${finalSlug}`);
 
-  // For EF Core roadmap: lessons are in entity-framework-core/{lessonId}/ structure
+  // For EF Core journey: lessons are in entity-framework-core/{lessonId}/ structure
   // Try entity-framework-core/ prefix as a fallback for EF Core lessons
   addPath(`entity-framework-core/${lessonId}`);
   addPath(`entity-framework-core/${finalSlug}`);
@@ -356,11 +356,11 @@ export async function getObjectivesWithLessons(
 }
 
 /**
- * Get lesson availability for an entire roadmap
+ * Get lesson availability for an entire journey
  * Optimized to reduce file system operations
  */
-export async function getRoadmapLessonAvailability(
-  roadmap: { nodes: { id: string; learningObjectives?: LearningObjective[] }[] }
+export async function getJourneyLessonAvailability(
+  journey: { nodes: { id: string; learningObjectives?: LearningObjective[] }[] }
 ): Promise<Record<string, ObjectiveLessonInfo[]>> {
   const results: Record<string, ObjectiveLessonInfo[]> = {};
   
@@ -368,8 +368,8 @@ export async function getRoadmapLessonAvailability(
   // In our system, the milestone ID is usually the first part of the lesson path
   // simpler for now: iterate all nodes with objectives
   
-  const nodesWithObjectives = roadmap.nodes.filter(
-    n => n.learningObjectives && n.learningObjectives.length > 0
+  const nodesWithObjectives = journey.nodes.filter(
+    (n: { id: string; learningObjectives?: LearningObjective[] }) => n.learningObjectives && n.learningObjectives.length > 0
   );
 
   // We'll process in parallel but limited concurrency if needed.
@@ -383,10 +383,10 @@ export async function getRoadmapLessonAvailability(
   // We can further optimize by reading directories once per unique milestone.
   
   await Promise.all(
-    nodesWithObjectives.map(async (node) => {
+    nodesWithObjectives.map(async (node: { id: string; learningObjectives?: LearningObjective[] }) => {
       // The node.id is traditionally used as the milestone directory for lessons associated with it
       // if the node is a milestone. If it's a topic, it might be nested?
-      // Based on `RoadmapSidebar`, it calls `getObjectivesWithLessons(node.id, ...)`
+      // Based on `JourneySidebar`, it calls `getObjectivesWithLessons(node.id, ...)`
       // So `node.id` is passed as `milestoneId`.
       
       const info = await getObjectivesWithLessons(node.id, node.learningObjectives || []);
@@ -564,11 +564,11 @@ export async function getNextLessonSuggestion(
 }
 
 // ============================================================================
-// Next Lesson Navigation (Roadmap-aware)
+// Next Lesson Navigation (Journey-aware)
 // ============================================================================
 
-import * as roadmapRepo from '@/lib/db/repositories/roadmap-repository';
-import type { RoadmapNode, RoadmapEdge, LearningObjective as RoadmapLearningObjective } from '@/lib/db/schemas/roadmap';
+import * as journeyRepo from '@/lib/db/repositories/journey-repository';
+import type { JourneyNode, JourneyEdge, LearningObjective as JourneyLearningObjective } from '@/lib/db/schemas/journey';
 
 /**
  * Navigation info for the "Go to Next Lesson" button
@@ -589,29 +589,29 @@ const EDGE_PRIORITY: Record<string, number> = {
 };
 
 /**
- * Get the next lesson based on roadmap structure
+ * Get the next lesson based on journey structure
  * 
  * Priority:
  * 1. Next sibling objective in the same node
  * 2. First objective of the target node via edges (sequential > recommended > optional)
  * 3. null if no next lesson found
  * 
- * Performance: Uses cached roadmap data from repository
+ * Performance: Uses cached journey data from repository
  */
 export async function getNextLessonNavigation(
   currentLessonPath: string,
   milestoneId: string,
-  roadmapSlug: string
+  journeySlug: string
 ): Promise<NextLessonNavigation | null> {
   try {
-    // Fetch roadmap (cached by React cache())
-    const roadmap = await roadmapRepo.findRoadmapBySlug(roadmapSlug);
-    if (!roadmap) {
+    // Fetch journey (cached by React cache())
+    const journey = await journeyRepo.findJourneyBySlug(journeySlug);
+    if (!journey) {
       return null;
     }
 
     // Find the current node containing this lesson
-    const currentNode = roadmap.nodes.find(node => node.id === milestoneId);
+    const currentNode = journey.nodes.find(node => node.id === milestoneId);
     if (!currentNode || !currentNode.learningObjectives) {
       return null;
     }
@@ -634,8 +634,8 @@ export async function getNextLessonNavigation(
 
     // Strategy 2: Follow edges to find next node
     const edgeResult = await findNextNodeLesson(
-      roadmap.nodes,
-      roadmap.edges,
+      journey.nodes,
+      journey.edges,
       milestoneId
     );
     if (edgeResult) {
@@ -651,7 +651,7 @@ export async function getNextLessonNavigation(
 
 /** Find the index of an objective by its lessonId */
 function findObjectiveIndexInNode(
-  objectives: RoadmapLearningObjective[],
+  objectives: JourneyLearningObjective[],
   lessonPath: string
 ): number {
   const lessonSlug = lessonPath.split('/').pop() || '';
@@ -668,7 +668,7 @@ function findObjectiveIndexInNode(
 
 /** Find the next sibling objective with a lesson in the same node */
 async function findNextSiblingLesson(
-  node: RoadmapNode,
+  node: JourneyNode,
   currentIndex: number,
   milestoneId: string
 ): Promise<NextLessonNavigation | null> {
@@ -700,8 +700,8 @@ async function findNextSiblingLesson(
 
 /** Find the first lesson in the next connected node via edges */
 async function findNextNodeLesson(
-  nodes: RoadmapNode[],
-  edges: RoadmapEdge[],
+  nodes: JourneyNode[],
+  edges: JourneyEdge[],
   currentNodeId: string
 ): Promise<NextLessonNavigation | null> {
   // Get outgoing edges from current node, sorted by priority
@@ -737,3 +737,4 @@ async function findNextNodeLesson(
 
   return null;
 }
+

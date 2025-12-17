@@ -73,16 +73,9 @@ const MAX_FEATURES = [
   },
 ];
 
-export function CheckoutSuccessDialog({ plan }: CheckoutSuccessDialogProps) {
-  const searchParams = useSearchParams();
-  const processedRef = useRef(false);
-
-  const [open, setOpen] = useState(false);
-  const [isUpgrade, setIsUpgrade] = useState(false);
-  const [displayPlan, setDisplayPlan] = useState(plan);
-
-  // Test payment notification
-  const TestPaymentNotice = () => (
+// Test payment notification component
+function TestPaymentNotice() {
+  return (
     <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/60 mb-4">
       <p className="text-xs font-semibold text-amber-700 dark:text-amber-400 mb-1">
         ⚠️ Test Payment
@@ -92,6 +85,15 @@ export function CheckoutSuccessDialog({ plan }: CheckoutSuccessDialogProps) {
       </p>
     </div>
   );
+}
+
+export function CheckoutSuccessDialog({ plan }: CheckoutSuccessDialogProps) {
+  const searchParams = useSearchParams();
+  const processedRef = useRef(false);
+
+  const [open, setOpen] = useState(false);
+  const [isUpgrade, setIsUpgrade] = useState(false);
+  const [displayPlan, setDisplayPlan] = useState(plan);
 
   // Use effect for state updates and URL cleanup
   React.useEffect(() => {

@@ -265,7 +265,7 @@ export function PackageManagerSimulator({
                   history.map((line) => (
                     <motion.div
                       key={line.id}
-                      initial={shouldReduceMotion ? false : { opacity: 0, y: 10 }}
+                      initial={shouldReduceMotion ? undefined : { opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={shouldReduceMotion ? { duration: 0 } : undefined}
                       className={cn(

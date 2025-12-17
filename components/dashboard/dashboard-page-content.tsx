@@ -8,15 +8,15 @@ import { useSharedHeader } from "./shared-header-context";
 import { DashboardContent } from "./dashboard-content";
 import { ViewTransitionLink } from "@/components/transitions/view-transition-link";
 import { StatsOverview } from "./stats-overview";
-import { RoadmapProgressCard } from "./roadmap-progress-card";
 import { LearningPathSummaryCard } from "./learning-path-summary-card";
 import type { DashboardInterviewData } from "@/lib/actions/dashboard";
-import type { UserRoadmapProgressSummary } from "@/lib/db/schemas/user-roadmap-progress";
+import type { UserJourneyProgressSummary } from "@/lib/db/schemas/user-journey-progress";
+import { JourneyProgressCard } from "./journey-progress-card";
 
 interface DashboardPageContentProps {
   interviews: DashboardInterviewData[];
   totalInterviews: number;
-  roadmapProgress: UserRoadmapProgressSummary[];
+  journeyProgress: UserJourneyProgressSummary[];
   stats: {
     total: number;
     active: number;
@@ -36,7 +36,7 @@ interface DashboardPageContentProps {
 export function DashboardPageContent({
   interviews,
   totalInterviews,
-  roadmapProgress,
+  journeyProgress,
   stats,
   learningPath,
   currentPage = 1,
@@ -52,7 +52,7 @@ export function DashboardPageContent({
     });
   }, [setHeader]);
 
-  const activeRoadmap = roadmapProgress.sort((a, b) => {
+  const activejourney = journeyProgress.sort((a, b) => {
     const dateA = new Date(a.lastActivityAt || a.updatedAt || 0).getTime();
     const dateB = new Date(b.lastActivityAt || b.updatedAt || 0).getTime();
     return dateB - dateA;
@@ -89,21 +89,21 @@ export function DashboardPageContent({
              )}
          </div>
 
-         {/* Roadmap Card */}
+         {/* journey Card */}
          <div className="min-h-[240px]">
-             {activeRoadmap ? (
-                 <RoadmapProgressCard progress={activeRoadmap} />
+             {activejourney ? (
+                 <JourneyProgressCard progress={activejourney} />
              ) : (
                   <div className="relative overflow-hidden rounded-3xl bg-card border border-border/50 hover:border-primary/20 transition-all duration-300 min-h-[240px] flex flex-col items-center justify-center text-center space-y-4 py-8 p-6">
                      <div className="w-12 h-12 rounded-full bg-secondary flex items-center justify-center">
                         <Map className="w-6 h-6 text-muted-foreground" />
                      </div>
                      <div className="space-y-1">
-                         <p className="font-medium">No active roadmap</p>
-                         <p className="text-sm text-muted-foreground">Pick a roadmap to start learning</p>
+                         <p className="font-medium">No active journey</p>
+                         <p className="text-sm text-muted-foreground">Pick a journey to start learning</p>
                      </div>
                      <Button variant="outline" size="sm" className="rounded-full" asChild>
-                         <Link href="/roadmaps">View All Roadmaps</Link>
+                         <Link href="/journeys">View All journeys</Link>
                      </Button>
                  </div>
              )}

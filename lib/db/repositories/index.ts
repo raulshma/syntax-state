@@ -6,3 +6,5 @@ export * from './feedback-repository';
 export * from './ai-conversation-repository';
 export * from './chat-image-repository';
 export * from './visibility-repository';
+export * from './journey-repository';
+export * from './user-journey-progress-repository';

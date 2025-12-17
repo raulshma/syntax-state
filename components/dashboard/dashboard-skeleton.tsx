@@ -68,7 +68,7 @@ export function DashboardSkeleton() {
             </div>
         </div>
 
-        {/* Roadmap Card Skeleton - Matches RoadmapProgressCard */}
+        {/* journey Card Skeleton - Matches journeyProgressCard */}
         <div className="relative overflow-hidden rounded-3xl border border-border bg-card/50 backdrop-blur-sm p-6 h-full flex flex-col justify-between">
              <div className="relative z-10 w-full space-y-6">
                  {/* Header */}

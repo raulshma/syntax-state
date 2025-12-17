@@ -260,9 +260,9 @@ export function E2EFlowVisualizer({
                 <AnimatePresence mode="wait">
                   <motion.div
                     key={currentStep}
-                    initial={shouldReduceMotion ? false : { opacity: 0, y: 10 }}
+                    initial={shouldReduceMotion ? undefined : { opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    exit={shouldReduceMotion ? false : { opacity: 0, y: -10 }}
+                    exit={shouldReduceMotion ? undefined : { opacity: 0, y: -10 }}
                     className="text-center"
                   >
                     <Monitor className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />

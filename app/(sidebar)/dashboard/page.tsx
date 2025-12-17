@@ -39,7 +39,7 @@ async function DashboardDataLoader({
 }) {
   const dashboardData = await getDashboardData(page, search, status);
 
-  const { interviews, stats, sidebar, learningPath, roadmapProgress, totalInterviews } = dashboardData;
+  const { interviews, stats, sidebar, learningPath, journeyProgress, totalInterviews } = dashboardData;
 
   return (
     <DashboardPageContent
@@ -47,7 +47,7 @@ async function DashboardDataLoader({
       totalInterviews={totalInterviews}
       stats={stats}
       learningPath={learningPath}
-      roadmapProgress={roadmapProgress}
+      journeyProgress={journeyProgress}
       plan={sidebar.usage.plan}
       currentPage={page}
     />

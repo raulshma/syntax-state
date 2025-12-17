@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils";
 const features = [
   {
     icon: Map,
-    title: "Interactive Roadmaps",
+    title: "Interactive Journeys",
     description: "Visual, guided paths that turn big goals into daily progress.",
     className: "md:col-span-2 md:row-span-2",
     gradient: "from-purple-500/20 via-blue-500/5 to-transparent",

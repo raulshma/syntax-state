@@ -61,20 +61,20 @@ describe('Visibility Repository', () => {
       it('should return null when no visibility setting exists', async () => {
         mockCollection.findOne.mockResolvedValue(null);
         
-        const result = await getVisibility('roadmap', 'test-roadmap');
+        const result = await getVisibility('journey', 'test-journey');
         
         expect(result).toBeNull();
         expect(mockCollection.findOne).toHaveBeenCalledWith({
-          entityType: 'roadmap',
-          entityId: 'test-roadmap',
+          entityType: 'journey',
+          entityId: 'test-journey',
         });
       });
 
       it('should return visibility setting when it exists', async () => {
         const mockDoc = {
           _id: 'vis-123',
-          entityType: 'roadmap',
-          entityId: 'test-roadmap',
+          entityType: 'journey',
+          entityId: 'test-journey',
           isPublic: true,
           updatedBy: 'admin-123',
           updatedAt: new Date(),
@@ -82,11 +82,11 @@ describe('Visibility Repository', () => {
         };
         mockCollection.findOne.mockResolvedValue(mockDoc);
         
-        const result = await getVisibility('roadmap', 'test-roadmap');
+        const result = await getVisibility('journey', 'test-journey');
         
         expect(result).not.toBeNull();
         expect(result?._id).toBe('vis-123');
-        expect(result?.entityType).toBe('roadmap');
+        expect(result?.entityType).toBe('journey');
         expect(result?.isPublic).toBe(true);
       });
     });
@@ -94,8 +94,8 @@ describe('Visibility Repository', () => {
     describe('setVisibility', () => {
       it('should create a new visibility setting', async () => {
         const setting: CreateVisibilitySetting = {
-          entityType: 'roadmap',
-          entityId: 'new-roadmap',
+          entityType: 'journey',
+          entityId: 'new-journey',
           isPublic: true,
           updatedBy: 'admin-123',
         };
@@ -111,7 +111,7 @@ describe('Visibility Repository', () => {
         const result = await setVisibility(setting);
         
         expect(result._id).toBe('new-vis-id');
-        expect(result.entityType).toBe('roadmap');
+        expect(result.entityType).toBe('journey');
         expect(result.isPublic).toBe(true);
         expect(mockCollection.findOneAndUpdate).toHaveBeenCalled();
       });
@@ -120,7 +120,7 @@ describe('Visibility Repository', () => {
         const setting: CreateVisibilitySetting = {
           entityType: 'milestone',
           entityId: 'milestone-1',
-          parentRoadmapSlug: 'frontend',
+          parentJourneySlug: 'frontend',
           isPublic: false,
           updatedBy: 'admin-456',
         };
@@ -136,7 +136,7 @@ describe('Visibility Repository', () => {
         const result = await setVisibility(setting);
         
         expect(result._id).toBe('existing-vis-id');
-        expect(result.parentRoadmapSlug).toBe('frontend');
+        expect(result.parentJourneySlug).toBe('frontend');
       });
     });
 
@@ -144,19 +144,19 @@ describe('Visibility Repository', () => {
       it('should return true when deletion succeeds', async () => {
         mockCollection.deleteOne.mockResolvedValue({ deletedCount: 1 });
         
-        const result = await deleteVisibility('roadmap', 'test-roadmap');
+        const result = await deleteVisibility('journey', 'test-journey');
         
         expect(result).toBe(true);
         expect(mockCollection.deleteOne).toHaveBeenCalledWith({
-          entityType: 'roadmap',
-          entityId: 'test-roadmap',
+          entityType: 'journey',
+          entityId: 'test-journey',
         });
       });
 
       it('should return false when no document was deleted', async () => {
         mockCollection.deleteOne.mockResolvedValue({ deletedCount: 0 });
         
-        const result = await deleteVisibility('roadmap', 'non-existent');
+        const result = await deleteVisibility('journey', 'non-existent');
         
         expect(result).toBe(false);
       });
@@ -166,7 +166,7 @@ describe('Visibility Repository', () => {
       it('should return true when setting exists', async () => {
         mockCollection.countDocuments.mockResolvedValue(1);
         
-        const result = await hasVisibilitySetting('roadmap', 'test-roadmap');
+        const result = await hasVisibilitySetting('journey', 'test-journey');
         
         expect(result).toBe(true);
       });
@@ -174,7 +174,7 @@ describe('Visibility Repository', () => {
       it('should return false when setting does not exist', async () => {
         mockCollection.countDocuments.mockResolvedValue(0);
         
-        const result = await hasVisibilitySetting('roadmap', 'non-existent');
+        const result = await hasVisibilitySetting('journey', 'non-existent');
         
         expect(result).toBe(false);
       });
@@ -184,7 +184,7 @@ describe('Visibility Repository', () => {
   describe('Batch Operations', () => {
     describe('getVisibilityBatch', () => {
       it('should return empty map for empty input', async () => {
-        const result = await getVisibilityBatch('roadmap', []);
+        const result = await getVisibilityBatch('journey', []);
         
         expect(result.size).toBe(0);
       });
@@ -193,8 +193,8 @@ describe('Visibility Repository', () => {
         const mockDocs = [
           {
             _id: 'vis-1',
-            entityType: 'roadmap',
-            entityId: 'roadmap-1',
+            entityType: 'journey',
+            entityId: 'journey-1',
             isPublic: true,
             updatedBy: 'admin-1',
             updatedAt: new Date(),
@@ -202,8 +202,8 @@ describe('Visibility Repository', () => {
           },
           {
             _id: 'vis-2',
-            entityType: 'roadmap',
-            entityId: 'roadmap-2',
+            entityType: 'journey',
+            entityId: 'journey-2',
             isPublic: false,
             updatedBy: 'admin-1',
             updatedAt: new Date(),
@@ -215,11 +215,11 @@ describe('Visibility Repository', () => {
           toArray: vi.fn().mockResolvedValue(mockDocs),
         });
         
-        const result = await getVisibilityBatch('roadmap', ['roadmap-1', 'roadmap-2']);
+        const result = await getVisibilityBatch('journey', ['journey-1', 'journey-2']);
         
         expect(result.size).toBe(2);
-        expect(result.get('roadmap-1')?.isPublic).toBe(true);
-        expect(result.get('roadmap-2')?.isPublic).toBe(false);
+        expect(result.get('journey-1')?.isPublic).toBe(true);
+        expect(result.get('journey-2')?.isPublic).toBe(false);
       });
     });
 
@@ -235,14 +235,14 @@ describe('Visibility Repository', () => {
           {
             entityType: 'milestone',
             entityId: 'milestone-1',
-            parentRoadmapSlug: 'frontend',
+            parentJourneySlug: 'frontend',
             isPublic: true,
             updatedBy: 'admin-1',
           },
           {
             entityType: 'milestone',
             entityId: 'milestone-2',
-            parentRoadmapSlug: 'frontend',
+            parentJourneySlug: 'frontend',
             isPublic: false,
             updatedBy: 'admin-1',
           },
@@ -274,17 +274,17 @@ describe('Visibility Repository', () => {
         mockCollection.find.mockReturnValue({
           project: vi.fn().mockReturnValue({
             toArray: vi.fn().mockResolvedValue([
-              { entityId: 'roadmap-1' },
-              { entityId: 'roadmap-3' },
+              { entityId: 'journey-1' },
+              { entityId: 'journey-3' },
             ]),
           }),
         });
         
-        const result = await findPublicEntities('roadmap');
+        const result = await findPublicEntities('journey');
         
-        expect(result).toEqual(['roadmap-1', 'roadmap-3']);
+        expect(result).toEqual(['journey-1', 'journey-3']);
         expect(mockCollection.find).toHaveBeenCalledWith({
-          entityType: 'roadmap',
+          entityType: 'journey',
           isPublic: true,
         });
       });
@@ -303,13 +303,13 @@ describe('Visibility Repository', () => {
     });
 
     describe('getVisibilityByParent', () => {
-      it('should query milestones by parent roadmap slug', async () => {
+      it('should query milestones by parent journey slug', async () => {
         const mockDocs = [
           {
             _id: 'vis-1',
             entityType: 'milestone',
             entityId: 'milestone-1',
-            parentRoadmapSlug: 'frontend',
+            parentjourneySlug: 'frontend',
             isPublic: true,
             updatedBy: 'admin-1',
             updatedAt: new Date(),
@@ -324,10 +324,10 @@ describe('Visibility Repository', () => {
         const result = await getVisibilityByParent('milestone', 'frontend');
         
         expect(result.length).toBe(1);
-        expect(result[0].parentRoadmapSlug).toBe('frontend');
+        expect(result[0].parentJourneySlug).toBe('frontend');
         expect(mockCollection.find).toHaveBeenCalledWith({
           entityType: 'milestone',
-          parentRoadmapSlug: 'frontend',
+          parentJourneySlug: 'frontend',
         });
       });
 

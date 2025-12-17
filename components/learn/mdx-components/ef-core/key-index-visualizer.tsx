@@ -376,7 +376,7 @@ function IndexesDemo({
         </div>
         <Button size="sm" onClick={runSearch} disabled={isSearching}>
           <Search className="w-3 h-3 mr-1" />
-          Search for "Charlie"
+          Search for &quot;Charlie&quot;
         </Button>
       </div>
 

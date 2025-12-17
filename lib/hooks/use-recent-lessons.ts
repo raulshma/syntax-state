@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 
 export interface RecentLesson {
-  roadmapSlug: string;
+  journeySlug: string;
   nodeId: string;
   lessonId: string;
   title: string;
@@ -34,7 +34,7 @@ export function useRecentLessons() {
       setRecentLessons(prev => {
         // Remove existing entry for the same lesson if it exists
         const filtered = prev.filter(
-          item => !(item.roadmapSlug === lesson.roadmapSlug && 
+          item => !(item.journeySlug === lesson.journeySlug && 
                     item.nodeId === lesson.nodeId && 
                     item.lessonId === lesson.lessonId)
         );

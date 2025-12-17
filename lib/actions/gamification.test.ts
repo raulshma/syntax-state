@@ -68,6 +68,7 @@ describe('Gamification Actions - CSS Lessons Progress Tracking', () => {
       const result = await markSectionCompleteAction(lessonId, sectionId, level);
 
       expect(result.success).toBe(true);
+      if (!result.success) throw new Error('Expected success');
       expect(result.data).toEqual({
         timestamp,
         sectionId,
@@ -111,7 +112,9 @@ describe('Gamification Actions - CSS Lessons Progress Tracking', () => {
       const result = await markSectionCompleteAction(lessonId, sectionId, level, 3);
 
       expect(result.success).toBe(false);
-      expect(result.error).toBeDefined();
+      if (!result.success) {
+        expect(result.error).toBeDefined();
+      }
       expect(mockMarkSectionComplete).toHaveBeenCalledTimes(3);
     });
 
@@ -123,7 +126,9 @@ describe('Gamification Actions - CSS Lessons Progress Tracking', () => {
       const result = await markSectionCompleteAction('css/grid', 'grid-basics', 'beginner');
 
       expect(result.success).toBe(false);
-      expect(result.error?.code).toBe('AUTH_ERROR');
+      if (!result.success) {
+        expect(result.error.code).toBe('AUTH_ERROR');
+      }
     });
   });
 
@@ -149,6 +154,7 @@ describe('Gamification Actions - CSS Lessons Progress Tracking', () => {
       const result = await getLessonProgressAction(lessonId, level);
 
       expect(result.success).toBe(true);
+      if (!result.success) throw new Error('Expected success');
       expect(result.data).toEqual({
         sectionsCompleted: ['introduction', 'basic-selectors', 'combinators'],
         quizAnswers: mockProgress.quizAnswers,
@@ -168,6 +174,7 @@ describe('Gamification Actions - CSS Lessons Progress Tracking', () => {
       const result = await getLessonProgressAction('css/animations', 'beginner');
 
       expect(result.success).toBe(true);
+      if (!result.success) throw new Error('Expected success');
       expect(result.data).toBeNull();
     });
 
@@ -177,7 +184,9 @@ describe('Gamification Actions - CSS Lessons Progress Tracking', () => {
       const result = await getLessonProgressAction('css/transforms', 'intermediate');
 
       expect(result.success).toBe(false);
-      expect(result.error?.code).toBe('DATABASE_ERROR');
+      if (!result.success) {
+        expect(result.error.code).toBe('DATABASE_ERROR');
+      }
     });
   });
 
@@ -279,7 +288,9 @@ describe('Gamification Actions - CSS Lessons Progress Tracking', () => {
       });
 
       const beginnerProgress = await getLessonProgressAction(lessonId, 'beginner');
-      expect(beginnerProgress.data?.sectionsCompleted).toHaveLength(2);
+      if (beginnerProgress.success) {
+        expect(beginnerProgress.data?.sectionsCompleted).toHaveLength(2);
+      }
 
       // Switch to intermediate - should have different progress
       mockGetLessonProgress.mockResolvedValueOnce({
@@ -291,7 +302,9 @@ describe('Gamification Actions - CSS Lessons Progress Tracking', () => {
       });
 
       const intermediateProgress = await getLessonProgressAction(lessonId, 'intermediate');
-      expect(intermediateProgress.data?.sectionsCompleted).toHaveLength(1);
+      if (intermediateProgress.success) {
+        expect(intermediateProgress.data?.sectionsCompleted).toHaveLength(1);
+      }
 
       // Switch back to beginner - original progress should be preserved
       mockGetLessonProgress.mockResolvedValueOnce({
@@ -304,7 +317,9 @@ describe('Gamification Actions - CSS Lessons Progress Tracking', () => {
       });
 
       const beginnerProgressAgain = await getLessonProgressAction(lessonId, 'beginner');
-      expect(beginnerProgressAgain.data?.sectionsCompleted).toHaveLength(2);
+      if (beginnerProgressAgain.success) {
+        expect(beginnerProgressAgain.data?.sectionsCompleted).toHaveLength(2);
+      }
     });
   });
 

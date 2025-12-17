@@ -30,12 +30,12 @@ import {
 import { cn } from "@/lib/utils";
 import {
   toggleVisibility,
-  getRoadmapVisibilityDetails,
+  getJourneyVisibilityDetails,
 } from "@/lib/actions/visibility-admin";
 import type {
   VisibilityOverview,
-  RoadmapVisibilityInfo,
-  RoadmapVisibilityDetails,
+  JourneyVisibilityInfo,
+  JourneyVisibilityDetails,
   MilestoneVisibilityInfo,
   ObjectiveVisibilityInfo,
 } from "@/lib/db/schemas/visibility";
@@ -46,23 +46,23 @@ interface VisibilityManagementProps {
 
 export function VisibilityManagement({ initialData }: VisibilityManagementProps) {
   const [data, setData] = useState(initialData);
-  const [expandedRoadmaps, setExpandedRoadmaps] = useState<Set<string>>(() => new Set<string>());
-  const [roadmapDetails, setRoadmapDetails] = useState<Map<string, RoadmapVisibilityDetails>>(() => new Map<string, RoadmapVisibilityDetails>());
+  const [expandedjourneys, setExpandedjourneys] = useState<Set<string>>(() => new Set<string>());
+  const [journeyDetails, setjourneyDetails] = useState<Map<string, JourneyVisibilityDetails>>(() => new Map<string, JourneyVisibilityDetails>());
   const [loadingDetails, setLoadingDetails] = useState<Set<string>>(() => new Set<string>());
 
-  const toggleRoadmapExpanded = async (slug: string) => {
-    const newExpanded = new Set<string>(expandedRoadmaps);
+  const togglejourneyExpanded = async (slug: string) => {
+    const newExpanded = new Set<string>(expandedjourneys);
     
     if (newExpanded.has(slug)) {
       newExpanded.delete(slug);
     } else {
       newExpanded.add(slug);
       // Load details if not already loaded
-      if (!roadmapDetails.has(slug)) {
+      if (!journeyDetails.has(slug)) {
         setLoadingDetails(prev => new Set<string>(prev).add(slug));
-        const result = await getRoadmapVisibilityDetails(slug);
+        const result = await getJourneyVisibilityDetails(slug);
         if (result && !("success" in result && result.success === false) && !("error" in result)) {
-          setRoadmapDetails(prev => new Map<string, RoadmapVisibilityDetails>(prev).set(slug, result));
+          setjourneyDetails(prev => new Map<string, JourneyVisibilityDetails>(prev).set(slug, result));
         }
         setLoadingDetails(prev => {
           const next = new Set<string>(prev);
@@ -72,34 +72,34 @@ export function VisibilityManagement({ initialData }: VisibilityManagementProps)
       }
     }
     
-    setExpandedRoadmaps(newExpanded);
+    setExpandedjourneys(newExpanded);
   };
 
-  const handleRoadmapVisibilityChange = async (roadmap: RoadmapVisibilityInfo, isPublic: boolean) => {
+  const handlejourneyVisibilityChange = async (journey: JourneyVisibilityInfo, isPublic: boolean) => {
     // Optimistic update
     setData(prev => ({
       ...prev,
-      roadmaps: prev.roadmaps.map(r =>
-        r.slug === roadmap.slug ? { ...r, isPublic } : r
+      journeys: prev.journeys.map(r =>
+        r.slug === journey.slug ? { ...r, isPublic } : r
       ),
       stats: {
         ...prev.stats,
-        publicRoadmaps: prev.stats.publicRoadmaps + (isPublic ? 1 : -1),
+        publicJourneys: prev.stats.publicJourneys + (isPublic ? 1 : -1),
       },
     }));
 
-    const result = await toggleVisibility("roadmap", roadmap.slug, isPublic);
+    const result = await toggleVisibility("journey", journey.slug, isPublic);
     
     if ("success" in result && !result.success) {
       // Revert on error
       setData(prev => ({
         ...prev,
-        roadmaps: prev.roadmaps.map(r =>
-          r.slug === roadmap.slug ? { ...r, isPublic: !isPublic } : r
+        journeys: prev.journeys.map(r =>
+          r.slug === journey.slug ? { ...r, isPublic: !isPublic } : r
         ),
         stats: {
           ...prev.stats,
-          publicRoadmaps: prev.stats.publicRoadmaps + (isPublic ? -1 : 1),
+          publicJourneys: prev.stats.publicJourneys + (isPublic ? -1 : 1),
         },
       }));
     }
@@ -115,28 +115,28 @@ export function VisibilityManagement({ initialData }: VisibilityManagementProps)
           <CardTitle className="text-xl font-bold">Visibility Management</CardTitle>
         </div>
         <CardDescription>
-          Control which roadmaps, milestones, and objectives are publicly visible
+          Control which journeys, milestones, and objectives are publicly visible
         </CardDescription>
       </CardHeader>
       <CardContent className="p-6 md:p-8">
         <div className="space-y-3">
-          {data.roadmaps.length === 0 ? (
+          {data.journeys.length === 0 ? (
             <div className="text-center py-12">
               <MapIcon className="w-12 h-12 mx-auto text-muted-foreground/50 mb-4" />
-              <p className="text-muted-foreground">No roadmaps found</p>
+              <p className="text-muted-foreground">No journeys found</p>
             </div>
           ) : (
-            data.roadmaps.map((roadmap) => (
-              <RoadmapVisibilityItem
-                key={roadmap.slug}
-                roadmap={roadmap}
-                isExpanded={expandedRoadmaps.has(roadmap.slug)}
-                details={roadmapDetails.get(roadmap.slug)}
-                isLoadingDetails={loadingDetails.has(roadmap.slug)}
-                onToggleExpand={() => toggleRoadmapExpanded(roadmap.slug)}
-                onVisibilityChange={(isPublic) => handleRoadmapVisibilityChange(roadmap, isPublic)}
+            data.journeys.map((journey) => (
+              <JourneyVisibilityItem
+                key={journey.slug}
+                journey={journey}
+                isExpanded={expandedjourneys.has(journey.slug)}
+                details={journeyDetails.get(journey.slug)}
+                isLoadingDetails={loadingDetails.has(journey.slug)}
+                onToggleExpand={() => togglejourneyExpanded(journey.slug)}
+                onVisibilityChange={(isPublic) => handlejourneyVisibilityChange(journey, isPublic)}
                 onDetailsUpdate={(details) => {
-                  setRoadmapDetails(prev => new Map<string, RoadmapVisibilityDetails>(prev).set(roadmap.slug, details));
+                  setjourneyDetails(prev => new Map<string, JourneyVisibilityDetails>(prev).set(journey.slug, details));
                 }}
               />
             ))
@@ -148,25 +148,25 @@ export function VisibilityManagement({ initialData }: VisibilityManagementProps)
 }
 
 
-interface RoadmapVisibilityItemProps {
-  roadmap: RoadmapVisibilityInfo;
+interface JourneyVisibilityItemProps {
+  journey: JourneyVisibilityInfo;
   isExpanded: boolean;
-  details?: RoadmapVisibilityDetails;
+  details?: JourneyVisibilityDetails;
   isLoadingDetails: boolean;
   onToggleExpand: () => void;
   onVisibilityChange: (isPublic: boolean) => void;
-  onDetailsUpdate: (details: RoadmapVisibilityDetails) => void;
+  onDetailsUpdate: (details: JourneyVisibilityDetails) => void;
 }
 
-function RoadmapVisibilityItem({
-  roadmap,
+function JourneyVisibilityItem({
+  journey,
   isExpanded,
   details,
   isLoadingDetails,
   onToggleExpand,
   onVisibilityChange,
   onDetailsUpdate,
-}: RoadmapVisibilityItemProps) {
+}: JourneyVisibilityItemProps) {
   const [isPending, startTransition] = useTransition();
 
   const handleToggle = (checked: boolean) => {
@@ -190,17 +190,17 @@ function RoadmapVisibilityItem({
               <MapIcon className="w-4 h-4 text-primary" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="font-medium text-foreground truncate">{roadmap.title}</p>
+              <p className="font-medium text-foreground truncate">{journey.title}</p>
               <p className="text-sm text-muted-foreground">
-                {roadmap.publicMilestoneCount}/{roadmap.milestoneCount} milestones public
+                {journey.publicMilestoneCount}/{journey.milestoneCount} milestones public
               </p>
             </div>
           </CollapsibleTrigger>
           
           <div className="flex items-center gap-3">
-            <VisibilityBadge isPublic={roadmap.isPublic} />
+            <VisibilityBadge isPublic={journey.isPublic} />
             <Switch
-              checked={roadmap.isPublic}
+              checked={journey.isPublic}
               onCheckedChange={handleToggle}
               disabled={isPending}
             />
@@ -224,8 +224,8 @@ function RoadmapVisibilityItem({
                 ) : details ? (
                   <MilestonesList
                     milestones={details.milestones}
-                    roadmapSlug={roadmap.slug}
-                    roadmapIsPublic={roadmap.isPublic}
+                    journeySlug={journey.slug}
+                    journeyIsPublic={journey.isPublic}
                     onUpdate={(milestones) => {
                       onDetailsUpdate({ ...details, milestones });
                     }}
@@ -246,12 +246,12 @@ function RoadmapVisibilityItem({
 
 interface MilestonesListProps {
   milestones: MilestoneVisibilityInfo[];
-  roadmapSlug: string;
-  roadmapIsPublic: boolean;
+  journeySlug: string;
+  journeyIsPublic: boolean;
   onUpdate: (milestones: MilestoneVisibilityInfo[]) => void;
 }
 
-function MilestonesList({ milestones, roadmapSlug, roadmapIsPublic, onUpdate }: MilestonesListProps) {
+function MilestonesList({ milestones, journeySlug, journeyIsPublic, onUpdate }: MilestonesListProps) {
   const [expandedMilestones, setExpandedMilestones] = useState<Set<string>>(() => new Set<string>());
 
   const toggleMilestoneExpanded = (nodeId: string) => {
@@ -271,7 +271,7 @@ function MilestonesList({ milestones, roadmapSlug, roadmapIsPublic, onUpdate }: 
     onUpdate(
       milestones.map(m =>
         m.nodeId === milestone.nodeId
-          ? { ...m, isPublic, effectivelyPublic: roadmapIsPublic && isPublic }
+          ? { ...m, isPublic, effectivelyPublic: journeyIsPublic && isPublic }
           : m
       )
     );
@@ -280,7 +280,7 @@ function MilestonesList({ milestones, roadmapSlug, roadmapIsPublic, onUpdate }: 
       "milestone",
       milestone.nodeId,
       isPublic,
-      roadmapSlug
+      journeySlug
     );
 
     if ("success" in result && !result.success) {
@@ -288,7 +288,7 @@ function MilestonesList({ milestones, roadmapSlug, roadmapIsPublic, onUpdate }: 
       onUpdate(
         milestones.map(m =>
           m.nodeId === milestone.nodeId
-            ? { ...m, isPublic: !isPublic, effectivelyPublic: roadmapIsPublic && !isPublic }
+            ? { ...m, isPublic: !isPublic, effectivelyPublic: journeyIsPublic && !isPublic }
             : m
         )
       );
@@ -308,7 +308,7 @@ function MilestonesList({ milestones, roadmapSlug, roadmapIsPublic, onUpdate }: 
               ...m,
               objectives: m.objectives.map(o =>
                 o.index === objective.index
-                  ? { ...o, isPublic, effectivelyPublic: roadmapIsPublic && m.isPublic && isPublic }
+                  ? { ...o, isPublic, effectivelyPublic: journeyIsPublic && m.isPublic && isPublic }
                   : o
               ),
             }
@@ -320,7 +320,7 @@ function MilestonesList({ milestones, roadmapSlug, roadmapIsPublic, onUpdate }: 
       "objective",
       `${milestone.nodeId}-${objective.index}`,
       isPublic,
-      roadmapSlug,
+      journeySlug,
       milestone.nodeId
     );
 
@@ -333,7 +333,7 @@ function MilestonesList({ milestones, roadmapSlug, roadmapIsPublic, onUpdate }: 
                 ...m,
                 objectives: m.objectives.map(o =>
                   o.index === objective.index
-                    ? { ...o, isPublic: !isPublic, effectivelyPublic: roadmapIsPublic && m.isPublic && !isPublic }
+                    ? { ...o, isPublic: !isPublic, effectivelyPublic: journeyIsPublic && m.isPublic && !isPublic }
                     : o
                 ),
               }
@@ -346,7 +346,7 @@ function MilestonesList({ milestones, roadmapSlug, roadmapIsPublic, onUpdate }: 
   if (milestones.length === 0) {
     return (
       <div className="text-center py-6 text-muted-foreground text-sm">
-        No milestones in this roadmap
+        No milestones in this journey
       </div>
     );
   }
@@ -357,7 +357,7 @@ function MilestonesList({ milestones, roadmapSlug, roadmapIsPublic, onUpdate }: 
         <MilestoneVisibilityItem
           key={milestone.nodeId}
           milestone={milestone}
-          roadmapIsPublic={roadmapIsPublic}
+          journeyIsPublic={journeyIsPublic}
           isExpanded={expandedMilestones.has(milestone.nodeId)}
           onToggleExpand={() => toggleMilestoneExpanded(milestone.nodeId)}
           onVisibilityChange={(isPublic) => handleMilestoneVisibilityChange(milestone, isPublic)}
@@ -373,7 +373,7 @@ function MilestonesList({ milestones, roadmapSlug, roadmapIsPublic, onUpdate }: 
 
 interface MilestoneVisibilityItemProps {
   milestone: MilestoneVisibilityInfo;
-  roadmapIsPublic: boolean;
+  journeyIsPublic: boolean;
   isExpanded: boolean;
   onToggleExpand: () => void;
   onVisibilityChange: (isPublic: boolean) => void;
@@ -382,14 +382,14 @@ interface MilestoneVisibilityItemProps {
 
 function MilestoneVisibilityItem({
   milestone,
-  roadmapIsPublic,
+  journeyIsPublic,
   isExpanded,
   onToggleExpand,
   onVisibilityChange,
   onObjectiveVisibilityChange,
 }: MilestoneVisibilityItemProps) {
   const [isPending, startTransition] = useTransition();
-  const effectivelyPublic = roadmapIsPublic && milestone.isPublic;
+  const effectivelyPublic = journeyIsPublic && milestone.isPublic;
 
   const handleToggle = (checked: boolean) => {
     startTransition(() => {
@@ -423,7 +423,7 @@ function MilestoneVisibilityItem({
             <EffectiveVisibilityIndicator
               isPublic={milestone.isPublic}
               effectivelyPublic={effectivelyPublic}
-              parentIsPrivate={!roadmapIsPublic}
+              parentIsPrivate={!journeyIsPublic}
             />
             <Switch
               checked={milestone.isPublic}
@@ -449,7 +449,7 @@ function MilestoneVisibilityItem({
                     key={objective.index}
                     objective={objective}
                     milestoneIsPublic={milestone.isPublic}
-                    roadmapIsPublic={roadmapIsPublic}
+                    journeyIsPublic={journeyIsPublic}
                     onVisibilityChange={(isPublic) => onObjectiveVisibilityChange(objective, isPublic)}
                   />
                 ))}
@@ -465,19 +465,19 @@ function MilestoneVisibilityItem({
 interface ObjectiveVisibilityItemProps {
   objective: ObjectiveVisibilityInfo;
   milestoneIsPublic: boolean;
-  roadmapIsPublic: boolean;
+  journeyIsPublic: boolean;
   onVisibilityChange: (isPublic: boolean) => void;
 }
 
 function ObjectiveVisibilityItem({
   objective,
   milestoneIsPublic,
-  roadmapIsPublic,
+  journeyIsPublic,
   onVisibilityChange,
 }: ObjectiveVisibilityItemProps) {
   const [isPending, startTransition] = useTransition();
-  const effectivelyPublic = roadmapIsPublic && milestoneIsPublic && objective.isPublic;
-  const parentIsPrivate = !roadmapIsPublic || !milestoneIsPublic;
+  const effectivelyPublic = journeyIsPublic && milestoneIsPublic && objective.isPublic;
+  const parentIsPrivate = !journeyIsPublic || !milestoneIsPublic;
 
   const handleToggle = (checked: boolean) => {
     startTransition(() => {

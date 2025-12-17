@@ -4,8 +4,8 @@ import { getAuthUserId } from "@/lib/auth/get-user";
 import { userRepository } from "@/lib/db/repositories/user-repository";
 import {
   getInterviewsCollection,
-  getRoadmapsCollection,
-  getUserRoadmapProgressCollection,
+  getJourneysCollection,
+  getUserJourneyProgressCollection,
 } from "@/lib/db/collections";
 
 export interface UserAnalyticsStats {
@@ -17,24 +17,24 @@ export interface UserAnalyticsStats {
   topicCompletionRate: number;
 }
 
-export interface UserRoadmapStats {
-  roadmapsStarted: number;
-  activeRoadmaps7d: number;
-  completedRoadmaps: number;
+export interface UserjourneyStats {
+  journeysStarted: number;
+  activejourneys7d: number;
+  completedjourneys: number;
   totalNodesCompleted: number;
   totalTimeSpentMinutes: number;
   avgOverallProgress: number;
   bestStreak: number;
 }
 
-export interface UserRoadmapTrend {
+export interface UserjourneyTrend {
   date: string;
   nodeCompletions: number;
 }
 
-export interface UserTopRoadmap {
-  roadmapSlug: string;
-  roadmapTitle: string;
+export interface UserTopjourney {
+  journeySlug: string;
+  journeyTitle: string;
   overallProgress: number;
   nodesCompleted: number;
   totalNodes: number;
@@ -42,7 +42,7 @@ export interface UserTopRoadmap {
   lastActivityAt?: string;
 }
 
-export interface UserRoadmapProgressBucket {
+export interface UserjourneyProgressBucket {
   bucket: string;
   count: number;
   percentage: number;
@@ -84,10 +84,10 @@ export interface UserAnalyticsDashboardData {
   topCompanies: UserCompanyData[];
   topSkills: UserSkillData[];
   confidenceDistribution: UserConfidenceData[];
-  roadmapStats: UserRoadmapStats;
-  roadmapNodeCompletionTrends: UserRoadmapTrend[];
-  topRoadmaps: UserTopRoadmap[];
-  roadmapProgressBuckets: UserRoadmapProgressBucket[];
+  journeyStats: UserjourneyStats;
+  journeyNodeCompletionTrends: UserjourneyTrend[];
+  topjourneys: UserTopjourney[];
+  journeyProgressBuckets: UserjourneyProgressBucket[];
 }
 
 /**
@@ -326,7 +326,7 @@ function clampPercent(n: number): number {
   return Math.max(0, Math.min(100, Math.round(n)));
 }
 
-function buildProgressBuckets(progresses: number[]): UserRoadmapProgressBucket[] {
+function buildProgressBuckets(progresses: number[]): UserjourneyProgressBucket[] {
   const buckets = [
     { key: "0%", test: (p: number) => p === 0 },
     { key: "1–25%", test: (p: number) => p >= 1 && p <= 25 },
@@ -355,20 +355,20 @@ function buildProgressBuckets(progresses: number[]): UserRoadmapProgressBucket[]
 }
 
 /**
- * Get roadmap-focused analytics for the current user.
- * Uses a small number of aggregation queries and a single lookup for roadmap titles.
+ * Get journey-focused analytics for the current user.
+ * Uses a small number of aggregation queries and a single lookup for journey titles.
  */
-export async function getUserRoadmapAnalytics(days: number = 30): Promise<{
-  stats: UserRoadmapStats;
-  nodeCompletionTrends: UserRoadmapTrend[];
-  topRoadmaps: UserTopRoadmap[];
-  progressBuckets: UserRoadmapProgressBucket[];
+export async function getUserjourneyAnalytics(days: number = 30): Promise<{
+  stats: UserjourneyStats;
+  nodeCompletionTrends: UserjourneyTrend[];
+  topjourneys: UserTopjourney[];
+  progressBuckets: UserjourneyProgressBucket[];
 } | null> {
   const auth = await requireProPlan();
   if (!auth) return null;
 
-  const progressCollection = await getUserRoadmapProgressCollection();
-  const roadmapsCollection = await getRoadmapsCollection();
+  const progressCollection = await getUserJourneyProgressCollection();
+  const journeysCollection = await getJourneysCollection();
 
   const now = new Date();
   const startDate = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
@@ -376,7 +376,7 @@ export async function getUserRoadmapAnalytics(days: number = 30): Promise<{
 
   const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 
-  // 1) Stats + small set of top roadmaps in parallel
+  // 1) Stats + small set of top journeys in parallel
   const [statsAgg, topProgressDocs] = await Promise.all([
     progressCollection
       .aggregate([
@@ -390,7 +390,7 @@ export async function getUserRoadmapAnalytics(days: number = 30): Promise<{
             lastActivityAt: 1,
             updatedAt: 1,
             startedAt: 1,
-            roadmapSlug: 1,
+            journeySlug: 1,
             timeSpentMinutes: {
               $sum: {
                 $ifNull: ["$nodeProgress.timeSpentMinutes", []],
@@ -401,8 +401,8 @@ export async function getUserRoadmapAnalytics(days: number = 30): Promise<{
         {
           $group: {
             _id: null,
-            roadmapsStarted: { $sum: 1 },
-            completedRoadmaps: {
+            journeysStarted: { $sum: 1 },
+            completedjourneys: {
               $sum: {
                 $cond: [
                   {
@@ -425,7 +425,7 @@ export async function getUserRoadmapAnalytics(days: number = 30): Promise<{
             totalTimeSpentMinutes: { $sum: "$timeSpentMinutes" },
             avgOverallProgress: { $avg: "$overallProgress" },
             bestStreak: { $max: "$streak" },
-            activeRoadmaps7d: {
+            activejourneys7d: {
               $sum: {
                 $cond: [
                   {
@@ -449,7 +449,7 @@ export async function getUserRoadmapAnalytics(days: number = 30): Promise<{
         { userId: auth.userId },
         {
           projection: {
-            roadmapSlug: 1,
+            journeySlug: 1,
             overallProgress: 1,
             nodesCompleted: 1,
             totalNodes: 1,
@@ -465,10 +465,10 @@ export async function getUserRoadmapAnalytics(days: number = 30): Promise<{
   ]);
 
   const statsRow = statsAgg[0] as any | undefined;
-  const stats: UserRoadmapStats = {
-    roadmapsStarted: (statsRow?.roadmapsStarted as number) ?? 0,
-    activeRoadmaps7d: (statsRow?.activeRoadmaps7d as number) ?? 0,
-    completedRoadmaps: (statsRow?.completedRoadmaps as number) ?? 0,
+  const stats: UserjourneyStats = {
+    journeysStarted: (statsRow?.journeysStarted as number) ?? 0,
+    activejourneys7d: (statsRow?.activejourneys7d as number) ?? 0,
+    completedjourneys: (statsRow?.completedjourneys as number) ?? 0,
     totalNodesCompleted: (statsRow?.totalNodesCompleted as number) ?? 0,
     totalTimeSpentMinutes: (statsRow?.totalTimeSpentMinutes as number) ?? 0,
     avgOverallProgress: clampPercent((statsRow?.avgOverallProgress as number) ?? 0),
@@ -476,24 +476,24 @@ export async function getUserRoadmapAnalytics(days: number = 30): Promise<{
   };
 
   const topSlugs = Array.from(
-    new Set(topProgressDocs.map((d) => String((d as any).roadmapSlug)))
+    new Set(topProgressDocs.map((d) => String((d as any).journeySlug)))
   ).filter(Boolean);
 
-  const roadmapTitleMap = new Map<string, string>();
+  const journeyTitleMap = new Map<string, string>();
   if (topSlugs.length > 0) {
-    const roadmapDocs = await roadmapsCollection
+    const journeyDocs = await journeysCollection
       .find(
         { slug: { $in: topSlugs } },
         { projection: { slug: 1, title: 1 } }
       )
       .toArray();
 
-    for (const r of roadmapDocs) {
-      roadmapTitleMap.set(String((r as any).slug), String((r as any).title));
+    for (const r of journeyDocs) {
+      journeyTitleMap.set(String((r as any).slug), String((r as any).title));
     }
   }
 
-  const topRoadmaps: UserTopRoadmap[] = topProgressDocs.map((doc: any) => {
+  const topjourneys: UserTopjourney[] = topProgressDocs.map((doc: any) => {
     const timeSpentMinutes = Array.isArray(doc.nodeProgress)
       ? doc.nodeProgress.reduce(
           (sum: number, np: any) => sum + (Number(np?.timeSpentMinutes) || 0),
@@ -502,8 +502,8 @@ export async function getUserRoadmapAnalytics(days: number = 30): Promise<{
       : 0;
 
     return {
-      roadmapSlug: String(doc.roadmapSlug),
-      roadmapTitle: roadmapTitleMap.get(String(doc.roadmapSlug)) ?? String(doc.roadmapSlug),
+      journeySlug: String(doc.journeySlug),
+      journeyTitle: journeyTitleMap.get(String(doc.journeySlug)) ?? String(doc.journeySlug),
       overallProgress: clampPercent(Number(doc.overallProgress) || 0),
       nodesCompleted: Number(doc.nodesCompleted) || 0,
       totalNodes: Number(doc.totalNodes) || 0,
@@ -538,7 +538,7 @@ export async function getUserRoadmapAnalytics(days: number = 30): Promise<{
     completionResults.map((r: any) => [String(r._id), Number(r.count) || 0])
   );
 
-  const nodeCompletionTrends: UserRoadmapTrend[] = [];
+  const nodeCompletionTrends: UserjourneyTrend[] = [];
   for (let i = 0; i <= days; i++) {
     const date = new Date(now.getTime() - (days - i) * 24 * 60 * 60 * 1000);
     const dateStr = date.toISOString().split("T")[0];
@@ -548,7 +548,7 @@ export async function getUserRoadmapAnalytics(days: number = 30): Promise<{
     });
   }
 
-  // 3) Progress buckets (based on all roadmap progresses)
+  // 3) Progress buckets (based on all journey progresses)
   const allProgressDocs = await progressCollection
     .find(
       { userId: auth.userId },
@@ -562,7 +562,7 @@ export async function getUserRoadmapAnalytics(days: number = 30): Promise<{
   return {
     stats,
     nodeCompletionTrends,
-    topRoadmaps,
+    topjourneys,
     progressBuckets,
   };
 }
@@ -582,7 +582,7 @@ export async function getUserAnalyticsDashboardData(): Promise<UserAnalyticsDash
     topCompanies,
     topSkills,
     confidenceDistribution,
-    roadmapAnalytics,
+    journeyAnalytics,
   ] =
     await Promise.all([
       getUserAnalyticsStats(),
@@ -591,7 +591,7 @@ export async function getUserAnalyticsDashboardData(): Promise<UserAnalyticsDash
       getUserTopCompanies(5),
       getUserTopSkills(8),
       getUserConfidenceDistribution(),
-      getUserRoadmapAnalytics(30),
+      getUserjourneyAnalytics(30),
     ]);
 
   return {
@@ -608,19 +608,19 @@ export async function getUserAnalyticsDashboardData(): Promise<UserAnalyticsDash
     topCompanies: topCompanies ?? [],
     topSkills: topSkills ?? [],
     confidenceDistribution: confidenceDistribution ?? [],
-    roadmapStats:
-      roadmapAnalytics?.stats ??
+    journeyStats:
+      journeyAnalytics?.stats ??
       ({
-        roadmapsStarted: 0,
-        activeRoadmaps7d: 0,
-        completedRoadmaps: 0,
+        journeysStarted: 0,
+        activejourneys7d: 0,
+        completedjourneys: 0,
         totalNodesCompleted: 0,
         totalTimeSpentMinutes: 0,
         avgOverallProgress: 0,
         bestStreak: 0,
-      } satisfies UserRoadmapStats),
-    roadmapNodeCompletionTrends: roadmapAnalytics?.nodeCompletionTrends ?? [],
-    topRoadmaps: roadmapAnalytics?.topRoadmaps ?? [],
-    roadmapProgressBuckets: roadmapAnalytics?.progressBuckets ?? [],
+      } satisfies UserjourneyStats),
+    journeyNodeCompletionTrends: journeyAnalytics?.nodeCompletionTrends ?? [],
+    topjourneys: journeyAnalytics?.topjourneys ?? [],
+    journeyProgressBuckets: journeyAnalytics?.progressBuckets ?? [],
   };
 }

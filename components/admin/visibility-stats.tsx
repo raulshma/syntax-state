@@ -17,8 +17,8 @@ interface VisibilityStatsProps {
 }
 
 export function VisibilityStats({ stats }: VisibilityStatsProps) {
-  const roadmapPercentage = stats.totalRoadmaps > 0
-    ? Math.round((stats.publicRoadmaps / stats.totalRoadmaps) * 100)
+  const journeyPercentage = stats.totalJourneys > 0
+    ? Math.round((stats.publicJourneys / stats.totalJourneys) * 100)
     : 0;
   const milestonePercentage = stats.totalMilestones > 0
     ? Math.round((stats.publicMilestones / stats.totalMilestones) * 100)
@@ -29,11 +29,11 @@ export function VisibilityStats({ stats }: VisibilityStatsProps) {
 
   const statItems = [
     {
-      label: "Roadmaps",
+      label: "Journeys",
       icon: MapIcon,
-      public: stats.publicRoadmaps,
-      total: stats.totalRoadmaps,
-      percentage: roadmapPercentage,
+      public: stats.publicJourneys,
+      total: stats.totalJourneys,
+      percentage: journeyPercentage,
       color: "primary",
     },
     {
@@ -64,7 +64,7 @@ export function VisibilityStats({ stats }: VisibilityStatsProps) {
           <CardTitle className="text-xl font-bold">Visibility Overview</CardTitle>
         </div>
         <CardDescription>
-          Summary of public content across all roadmaps
+          Summary of public content across all journeys
         </CardDescription>
       </CardHeader>
       <CardContent className="p-6 md:p-8">

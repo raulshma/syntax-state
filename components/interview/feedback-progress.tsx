@@ -75,7 +75,7 @@ function StatCard({
   subValue,
   trend,
 }: {
-  icon: React.ElementType;
+  icon: React.ComponentType<{ className?: string }>;
   label: string;
   value: string | number;
   subValue?: string;

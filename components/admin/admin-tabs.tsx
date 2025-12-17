@@ -50,9 +50,9 @@ import type {
   PopularTopicData,
   PlanDistribution,
   TokenUsageTrend,
-  RoadmapAnalyticsStats,
-  RoadmapTrendData,
-  PopularRoadmapData,
+  journeyAnalyticsStats,
+  journeyTrendData,
+  PopularJourneyData,
   AIToolConfig,
 } from "@/lib/actions/admin";
 import type { VisibilityOverview } from "@/lib/db/schemas/visibility";
@@ -70,9 +70,9 @@ interface AdminTabsProps {
   tokenUsageTrends: TokenUsageTrend[];
   topCompanies: PopularTopicData[];
   modelUsage: Array<{ model: string; count: number; percentage: number }>;
-  roadmapStats: RoadmapAnalyticsStats;
-  roadmapTrends: RoadmapTrendData[];
-  popularRoadmaps: PopularRoadmapData[];
+  journeyStats: journeyAnalyticsStats;
+  journeyTrends: journeyTrendData[];
+  popularJourneys: PopularJourneyData[];
   concurrencyLimit: number;
   tieredModelConfig: FullTieredModelConfig;
   aiToolsConfig: AIToolConfig[];
@@ -92,9 +92,9 @@ export function AdminTabs({
   tokenUsageTrends,
   topCompanies,
   modelUsage,
-  roadmapStats,
-  roadmapTrends,
-  popularRoadmaps,
+  journeyStats,
+  journeyTrends,
+  popularJourneys,
   concurrencyLimit,
   tieredModelConfig,
   aiToolsConfig,
@@ -216,9 +216,9 @@ export function AdminTabs({
             tokenUsageTrends={tokenUsageTrends}
             topCompanies={topCompanies}
             modelUsage={modelUsage}
-            roadmapStats={roadmapStats}
-            roadmapTrends={roadmapTrends}
-            popularRoadmaps={popularRoadmaps}
+            journeyStats={journeyStats}
+            journeyTrends={journeyTrends}
+            popularJourneys={popularJourneys}
           />
         </TabsContent>
 
@@ -424,18 +424,18 @@ function ConfigurationTab() {
   const [isReseeding, setIsReseeding] = useState(false);
   const [reseedResult, setReseedResult] = useState<{ success: boolean; message: string } | null>(null);
 
-  const handleReseedRoadmaps = async () => {
+  const handleReseedjourneys = async () => {
     setIsReseeding(true);
     setReseedResult(null);
     
     try {
-      const response = await fetch('/api/admin/reseed-roadmaps', { method: 'POST' });
+      const response = await fetch('/api/admin/reseed-journeys', { method: 'POST' });
       const data = await response.json();
       
       if (response.ok) {
         setReseedResult({ success: true, message: data.message });
       } else {
-        setReseedResult({ success: false, message: data.error || 'Failed to reseed roadmaps' });
+        setReseedResult({ success: false, message: data.error || 'Failed to reseed journeys' });
       }
     } catch (error) {
       setReseedResult({ success: false, message: 'Network error occurred' });
@@ -455,22 +455,22 @@ function ConfigurationTab() {
             <CardTitle className="text-xl font-bold">Data Configuration</CardTitle>
           </div>
           <CardDescription>
-            Manage roadmaps, lessons, and other platform data
+            Manage journeys, lessons, and other platform data
           </CardDescription>
         </CardHeader>
         <CardContent className="p-6 md:p-8 space-y-6">
-          {/* Roadmaps Section */}
+          {/* journeys Section */}
           <div className="p-6 rounded-2xl bg-secondary/30 border border-border/50">
             <div className="flex items-start justify-between gap-4">
               <div className="space-y-1">
-                <h3 className="font-semibold text-foreground">Reseed Roadmaps</h3>
+                <h3 className="font-semibold text-foreground">Reseed journeys</h3>
                 <p className="text-sm text-muted-foreground">
-                  Update the database with the latest roadmap data from the codebase. 
+                  Update the database with the latest journey data from the codebase. 
                   This will sync all milestones, objectives, and lesson mappings.
                 </p>
               </div>
               <Button
-                onClick={handleReseedRoadmaps}
+                onClick={handleReseedjourneys}
                 disabled={isReseeding}
                 variant="outline"
                 className="rounded-full px-6 shrink-0"
@@ -481,7 +481,7 @@ function ConfigurationTab() {
                     Reseeding...
                   </>
                 ) : (
-                  'Reseed Roadmaps'
+                  'Reseed journeys'
                 )}
               </Button>
             </div>

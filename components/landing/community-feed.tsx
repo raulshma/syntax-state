@@ -9,7 +9,7 @@ import Link from "next/link";
 
 const communityPreps = [
   {
-    role: "Frontend Roadmap",
+    role: "Frontend Journey",
     company: "React • TypeScript • Performance",
     topics: ["React", "System Design", "TypeScript"],
     views: 1240,
@@ -33,7 +33,7 @@ const communityPreps = [
     color: "bg-purple-500/10 text-purple-500",
   },
   {
-    role: "DevOps Roadmap",
+    role: "DevOps Journey",
     company: "Infrastructure • Delivery • Observability",
     topics: ["Kubernetes", "CI/CD", "Terraform"],
     views: 650,
@@ -57,7 +57,7 @@ export function CommunityFeed() {
               Community Paths.
             </h2>
             <p className="text-xl text-muted-foreground max-w-xl">
-              See what others are learning right now. Clone a roadmap and make it yours.
+              See what others are learning right now. Clone a Journey and make it yours.
             </p>
           </div>
           <Link href="/community">

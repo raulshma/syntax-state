@@ -70,7 +70,7 @@ export async function completeLessonAction(
     // Fetch and return the updated gamification profile
     const updatedProfile = await findByUserId(user._id);
     
-    revalidatePath('/roadmaps');
+    revalidatePath('/journeys');
     return { 
       success: true, 
       data: { 
@@ -105,7 +105,7 @@ export async function resetLessonAction(
     // Fetch and return the updated gamification profile
     const updatedProfile = await findByUserId(user._id);
     
-    revalidatePath('/roadmaps');
+    revalidatePath('/journeys');
     return { success: true, data: updatedProfile };
   } catch (error) {
     console.error('resetLessonAction error:', error);

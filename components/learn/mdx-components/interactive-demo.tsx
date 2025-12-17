@@ -787,7 +787,7 @@ function GitCommitMessageBuilderDemo() {
                 value={scope}
                 onChange={(e) => setScope(e.target.value)}
                 className="w-full px-3 py-2 rounded-lg bg-secondary border border-border text-foreground text-sm font-mono"
-                placeholder="auth / ui / api / roadmap"
+                placeholder="auth / ui / api / journey"
               />
             </div>
           </div>

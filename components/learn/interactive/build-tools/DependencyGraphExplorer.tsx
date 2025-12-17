@@ -216,9 +216,9 @@ export function DependencyGraphExplorer({
       <AnimatePresence>
         {showAddModule && (
           <motion.div
-            initial={shouldReduceMotion ? false : { height: 0, opacity: 0 }}
+            initial={shouldReduceMotion ? undefined : { height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
-            exit={shouldReduceMotion ? false : { height: 0, opacity: 0 }}
+            exit={shouldReduceMotion ? undefined : { height: 0, opacity: 0 }}
             transition={shouldReduceMotion ? { duration: 0 } : undefined}
             className="border-b border-border overflow-hidden"
           >

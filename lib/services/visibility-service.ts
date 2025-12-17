@@ -6,20 +6,20 @@ import {
   findPublicEntities,
   getVisibilityByParent,
 } from '@/lib/db/repositories/visibility-repository';
-import { getRoadmapsCollection } from '@/lib/db/collections';
+import { getJourneysCollection } from '@/lib/db/collections';
 import { logVisibilityChange } from './audit-log';
 import type {
   EntityType,
   VisibilitySetting,
-  PublicRoadmap,
-  PublicRoadmapNode,
+  PublicJourney,
+  PublicJourneyNode,
   VisibilityOverview,
-  RoadmapVisibilityInfo,
-  RoadmapVisibilityDetails,
+  JourneyVisibilityInfo,
+  JourneyVisibilityDetails,
   MilestoneVisibilityInfo,
   ObjectiveVisibilityInfo,
 } from '@/lib/db/schemas/visibility';
-import type { RoadmapDocument } from '@/lib/db/collections';
+import type { JourneyDocument } from '@/lib/db/collections';
 
 /**
  * Visibility Error for handling visibility-related errors
@@ -46,7 +46,7 @@ export class VisibilityError extends Error {
 
 /**
  * Check if an entity is publicly visible, considering hierarchical rules.
- * - If a roadmap is private, all its milestones and objectives are private
+ * - If a journey is private, all its milestones and objectives are private
  * - If a milestone is private, all its objectives are private
  */
 export const isPubliclyVisible = cache(async (
@@ -55,28 +55,24 @@ export const isPubliclyVisible = cache(async (
 ): Promise<boolean> => {
   const setting = await getVisibility(entityType, entityId);
 
-  // If no setting exists, default to private
   if (!setting || !setting.isPublic) {
     return false;
   }
 
-  // For roadmaps, just check the direct setting
-  if (entityType === 'roadmap') {
+  if (entityType === 'journey') {
     return setting.isPublic;
   }
 
-  // For milestones, check parent roadmap visibility
   if (entityType === 'milestone') {
-    if (!setting.parentRoadmapSlug) {
+    if (!setting.parentJourneySlug) {
       return false;
     }
-    const parentVisible = await isPubliclyVisible('roadmap', setting.parentRoadmapSlug);
+    const parentVisible = await isPubliclyVisible('journey', setting.parentJourneySlug);
     return parentVisible && setting.isPublic;
   }
 
-  // For objectives, check parent milestone and roadmap visibility
   if (entityType === 'objective') {
-    if (!setting.parentMilestoneId || !setting.parentRoadmapSlug) {
+    if (!setting.parentMilestoneId || !setting.parentJourneySlug) {
       return false;
     }
     const milestoneVisible = await isPubliclyVisible('milestone', setting.parentMilestoneId);
@@ -91,28 +87,26 @@ export const isPubliclyVisible = cache(async (
  */
 async function validateParentExists(
   entityType: EntityType,
-  parentRoadmapSlug?: string,
+  parentJourneySlug?: string,
   parentMilestoneId?: string
 ): Promise<void> {
-  if (entityType === 'roadmap') {
-    // Roadmaps have no parent to validate
+  if (entityType === 'journey') {
     return;
   }
 
   if (entityType === 'milestone') {
-    if (!parentRoadmapSlug) {
+    if (!parentJourneySlug) {
       throw new VisibilityError(
-        'Milestone visibility requires a parent roadmap slug',
+        'Milestone visibility requires a parent journey slug',
         VisibilityErrorCode.PARENT_NOT_FOUND,
         entityType
       );
     }
-    // Check if roadmap exists
-    const collection = await getRoadmapsCollection();
-    const roadmap = await collection.findOne({ slug: parentRoadmapSlug });
-    if (!roadmap) {
+    const collection = await getJourneysCollection();
+    const journey = await collection.findOne({ slug: parentJourneySlug });
+    if (!journey) {
       throw new VisibilityError(
-        `Parent roadmap '${parentRoadmapSlug}' not found`,
+        `Parent journey '${parentJourneySlug}' not found`,
         VisibilityErrorCode.PARENT_NOT_FOUND,
         entityType
       );
@@ -121,28 +115,26 @@ async function validateParentExists(
   }
 
   if (entityType === 'objective') {
-    if (!parentRoadmapSlug || !parentMilestoneId) {
+    if (!parentJourneySlug || !parentMilestoneId) {
       throw new VisibilityError(
-        'Objective visibility requires both parent roadmap slug and milestone ID',
+        'Objective visibility requires both parent journey slug and milestone ID',
         VisibilityErrorCode.PARENT_NOT_FOUND,
         entityType
       );
     }
-    // Check if roadmap exists
-    const collection = await getRoadmapsCollection();
-    const roadmap = await collection.findOne({ slug: parentRoadmapSlug });
-    if (!roadmap) {
+    const collection = await getJourneysCollection();
+    const journey = await collection.findOne({ slug: parentJourneySlug });
+    if (!journey) {
       throw new VisibilityError(
-        `Parent roadmap '${parentRoadmapSlug}' not found`,
+        `Parent journey '${parentJourneySlug}' not found`,
         VisibilityErrorCode.PARENT_NOT_FOUND,
         entityType
       );
     }
-    // Check if milestone exists in roadmap
-    const milestoneExists = roadmap.nodes.some(node => node.id === parentMilestoneId);
+    const milestoneExists = journey.nodes.some(node => node.id === parentMilestoneId);
     if (!milestoneExists) {
       throw new VisibilityError(
-        `Parent milestone '${parentMilestoneId}' not found in roadmap '${parentRoadmapSlug}'`,
+        `Parent milestone '${parentMilestoneId}' not found in journey '${parentJourneySlug}'`,
         VisibilityErrorCode.PARENT_NOT_FOUND,
         entityType
       );
@@ -159,34 +151,29 @@ export async function updateVisibility(
   entityType: EntityType,
   entityId: string,
   isPublic: boolean,
-  parentRoadmapSlug?: string,
+  parentJourneySlug?: string,
   parentMilestoneId?: string
 ): Promise<VisibilitySetting> {
-  // Validate parent exists
-  await validateParentExists(entityType, parentRoadmapSlug, parentMilestoneId);
+  await validateParentExists(entityType, parentJourneySlug, parentMilestoneId);
 
-  // Get current visibility for audit log
   const currentSetting = await getVisibility(entityType, entityId);
   const oldValue = currentSetting?.isPublic ?? null;
 
-  // Log the change for audit purposes BEFORE updating
-  // This ensures audit log is created before returning success (Requirement 6.1-6.4)
   await logVisibilityChange(
     adminId,
     entityType,
     entityId,
     oldValue,
     isPublic,
-    parentRoadmapSlug,
+    parentJourneySlug,
     parentMilestoneId
   );
 
-  // Update visibility
   const newSetting = await setVisibility({
     entityType,
     entityId,
     isPublic,
-    parentRoadmapSlug,
+    parentJourneySlug,
     parentMilestoneId,
     updatedBy: adminId,
   });
@@ -196,67 +183,61 @@ export async function updateVisibility(
 
 
 /**
- * Get all publicly visible roadmaps
+ * Get all publicly visible journeys
  */
-export const getPublicRoadmaps = cache(async (): Promise<PublicRoadmap[]> => {
-  // Get all roadmaps marked as public
-  const publicRoadmapSlugs = await findPublicEntities('roadmap');
+export const getPublicJourneys = cache(async (): Promise<PublicJourney[]> => {
+  const publicJourneySlugs = await findPublicEntities('journey');
   
-  if (publicRoadmapSlugs.length === 0) {
+  if (publicJourneySlugs.length === 0) {
     return [];
   }
 
-  // Fetch roadmap documents
-  const collection = await getRoadmapsCollection();
-  const roadmaps = await collection
-    .find({ slug: { $in: publicRoadmapSlugs }, isActive: true })
+  const collection = await getJourneysCollection();
+  const journeys = await collection
+    .find({ slug: { $in: publicJourneySlugs }, isActive: true })
     .toArray();
 
-  // Filter content for each roadmap
-  const publicRoadmaps: PublicRoadmap[] = [];
+  const publicJourneys: PublicJourney[] = [];
   
-  for (const roadmap of roadmaps) {
-    const publicRoadmap = await filterRoadmapForPublic(roadmap);
-    if (publicRoadmap) {
-      publicRoadmaps.push(publicRoadmap);
+  for (const journey of journeys) {
+    const publicJourney = await filterJourneyForPublic(journey);
+    if (publicJourney) {
+      publicJourneys.push(publicJourney);
     }
   }
 
-  return publicRoadmaps;
+  return publicJourneys;
 });
 
 /**
- * Get a specific public roadmap by slug with filtered content
+ * Get a specific public journey by slug with filtered content
  */
-export const getPublicRoadmapBySlug = cache(async (
+export const getPublicJourneyBySlug = cache(async (
   slug: string
-): Promise<PublicRoadmap | null> => {
-  // Check if roadmap is publicly visible
-  const isVisible = await isPubliclyVisible('roadmap', slug);
+): Promise<PublicJourney | null> => {
+  const isVisible = await isPubliclyVisible('journey', slug);
   if (!isVisible) {
     return null;
   }
 
-  // Fetch roadmap document
-  const collection = await getRoadmapsCollection();
-  const roadmap = await collection.findOne({ slug, isActive: true });
+  const collection = await getJourneysCollection();
+  const journey = await collection.findOne({ slug, isActive: true });
   
-  if (!roadmap) {
+  if (!journey) {
     return null;
   }
 
-  return filterRoadmapForPublic(roadmap);
+  return filterJourneyForPublic(journey);
 });
 
 /**
- * Filter roadmap content to only include publicly visible milestones and objectives
+ * Filter journey content to only include publicly visible milestones and objectives
  */
-async function filterRoadmapForPublic(
-  roadmap: RoadmapDocument
-): Promise<PublicRoadmap | null> {
-  const slug = roadmap.slug;
+async function filterJourneyForPublic(
+  journey: JourneyDocument
+): Promise<PublicJourney | null> {
+  const slug = journey.slug;
   
-  // Get visibility settings for all milestones in this roadmap
   const milestoneSettings = await getVisibilityByParent('milestone', slug);
   const publicMilestoneIds = new Set(
     milestoneSettings
@@ -264,16 +245,13 @@ async function filterRoadmapForPublic(
       .map(s => s.entityId)
   );
 
-  // Filter nodes to only include public milestones
-  const publicNodes: PublicRoadmapNode[] = [];
+  const publicNodes: PublicJourneyNode[] = [];
   
-  for (const node of roadmap.nodes) {
-    // Check if this node (milestone) is public
+  for (const node of journey.nodes) {
     if (!publicMilestoneIds.has(node.id)) {
       continue;
     }
 
-    // Get visibility settings for objectives in this milestone
     const objectiveSettings = await getVisibilityByParent('objective', node.id);
     const publicObjectiveIndices = new Set(
       objectiveSettings
@@ -281,7 +259,6 @@ async function filterRoadmapForPublic(
         .map(s => parseInt(s.entityId.split('-').pop() || '0', 10))
     );
 
-    // Filter learning objectives
     const publicObjectives = node.learningObjectives.filter((_, index) => 
       publicObjectiveIndices.has(index)
     );
@@ -298,19 +275,18 @@ async function filterRoadmapForPublic(
     });
   }
 
-  // Filter edges to only include connections between public nodes
   const publicNodeIds = new Set(publicNodes.map(n => n.id));
-  const publicEdges = roadmap.edges.filter(
+  const publicEdges = journey.edges.filter(
     edge => publicNodeIds.has(edge.source) && publicNodeIds.has(edge.target)
   );
 
   return {
-    slug: roadmap.slug,
-    title: roadmap.title,
-    description: roadmap.description,
-    category: roadmap.category,
-    difficulty: roadmap.difficulty,
-    estimatedHours: roadmap.estimatedHours,
+    slug: journey.slug,
+    title: journey.title,
+    description: journey.description,
+    category: journey.category,
+    difficulty: journey.difficulty,
+    estimatedHours: journey.estimatedHours,
     nodes: publicNodes,
     edges: publicEdges,
   };
@@ -321,33 +297,28 @@ async function filterRoadmapForPublic(
  * Get visibility overview for admin UI
  */
 export const getVisibilityOverview = cache(async (): Promise<VisibilityOverview> => {
-  const collection = await getRoadmapsCollection();
+  const collection = await getJourneysCollection();
   
-  // Get all active roadmaps
-  const roadmaps = await collection.find({ isActive: true }).toArray();
+  const journeys = await collection.find({ isActive: true }).toArray();
   
-  // Get all visibility settings
-  const roadmapSlugs = roadmaps.map(r => r.slug);
-  const roadmapVisibility = await getVisibilityBatch('roadmap', roadmapSlugs);
+  const journeySlugs = journeys.map(r => r.slug);
+  const journeyVisibility = await getVisibilityBatch('journey', journeySlugs);
   
-  // Calculate stats
   let totalMilestones = 0;
   let publicMilestones = 0;
   let totalObjectives = 0;
   let publicObjectives = 0;
   
-  const roadmapInfos: RoadmapVisibilityInfo[] = [];
+  const journeyInfos: JourneyVisibilityInfo[] = [];
   
-  for (const roadmap of roadmaps) {
-    const visibility = roadmapVisibility.get(roadmap.slug);
+  for (const journey of journeys) {
+    const visibility = journeyVisibility.get(journey.slug);
     const isPublic = visibility?.isPublic ?? false;
     
-    // Get milestone visibility for this roadmap
-    const milestoneSettings = await getVisibilityByParent('milestone', roadmap.slug);
+    const milestoneSettings = await getVisibilityByParent('milestone', journey.slug);
     const publicMilestoneCount = milestoneSettings.filter(s => s.isPublic).length;
     
-    // Count objectives
-    for (const node of roadmap.nodes) {
+    for (const node of journey.nodes) {
       totalMilestones++;
       if (milestoneSettings.some(s => s.entityId === node.id && s.isPublic)) {
         publicMilestones++;
@@ -356,25 +327,24 @@ export const getVisibilityOverview = cache(async (): Promise<VisibilityOverview>
       const objectiveCount = node.learningObjectives.length;
       totalObjectives += objectiveCount;
       
-      // Get objective visibility for this milestone
       const objectiveSettings = await getVisibilityByParent('objective', node.id);
       publicObjectives += objectiveSettings.filter(s => s.isPublic).length;
     }
     
-    roadmapInfos.push({
-      slug: roadmap.slug,
-      title: roadmap.title,
+    journeyInfos.push({
+      slug: journey.slug,
+      title: journey.title,
       isPublic,
-      milestoneCount: roadmap.nodes.length,
+      milestoneCount: journey.nodes.length,
       publicMilestoneCount,
     });
   }
   
   return {
-    roadmaps: roadmapInfos,
+    journeys: journeyInfos,
     stats: {
-      totalRoadmaps: roadmaps.length,
-      publicRoadmaps: roadmapInfos.filter(r => r.isPublic).length,
+      totalJourneys: journeys.length,
+      publicJourneys: journeyInfos.filter(r => r.isPublic).length,
       totalMilestones,
       publicMilestones,
       totalObjectives,
@@ -384,35 +354,32 @@ export const getVisibilityOverview = cache(async (): Promise<VisibilityOverview>
 });
 
 /**
- * Get detailed visibility information for a specific roadmap
+ * Get detailed visibility information for a specific journey
  */
-export const getRoadmapVisibilityDetails = cache(async (
-  roadmapSlug: string
-): Promise<RoadmapVisibilityDetails | null> => {
-  const collection = await getRoadmapsCollection();
-  const roadmap = await collection.findOne({ slug: roadmapSlug, isActive: true });
+export const getJourneyVisibilityDetails = cache(async (
+  journeySlug: string
+): Promise<JourneyVisibilityDetails | null> => {
+  const collection = await getJourneysCollection();
+  const journey = await collection.findOne({ slug: journeySlug, isActive: true });
   
-  if (!roadmap) {
+  if (!journey) {
     return null;
   }
   
-  // Get roadmap visibility
-  const roadmapVisibility = await getVisibility('roadmap', roadmapSlug);
-  const isRoadmapPublic = roadmapVisibility?.isPublic ?? false;
+  const journeyVisibility = await getVisibility('journey', journeySlug);
+  const isJourneyPublic = journeyVisibility?.isPublic ?? false;
   
-  // Get milestone visibility settings
-  const milestoneSettings = await getVisibilityByParent('milestone', roadmapSlug);
+  const milestoneSettings = await getVisibilityByParent('milestone', journeySlug);
   const milestoneVisibilityMap = new Map(
     milestoneSettings.map(s => [s.entityId, s.isPublic])
   );
   
   const milestones: MilestoneVisibilityInfo[] = [];
   
-  for (const node of roadmap.nodes) {
+  for (const node of journey.nodes) {
     const isMilestonePublic = milestoneVisibilityMap.get(node.id) ?? false;
-    const effectivelyPublic = isRoadmapPublic && isMilestonePublic;
+    const effectivelyPublic = isJourneyPublic && isMilestonePublic;
     
-    // Get objective visibility settings
     const objectiveSettings = await getVisibilityByParent('objective', node.id);
     const objectiveVisibilityMap = new Map(
       objectiveSettings.map(s => [s.entityId, s.isPublic])
@@ -442,11 +409,11 @@ export const getRoadmapVisibilityDetails = cache(async (
   }
   
   return {
-    roadmap: {
-      slug: roadmap.slug,
-      title: roadmap.title,
-      isPublic: isRoadmapPublic,
-      milestoneCount: roadmap.nodes.length,
+    journey: {
+      slug: journey.slug,
+      title: journey.title,
+      isPublic: isJourneyPublic,
+      milestoneCount: journey.nodes.length,
       publicMilestoneCount: milestoneSettings.filter(s => s.isPublic).length,
     },
     milestones,

@@ -60,13 +60,14 @@ function getDefaultPixelPetPreferences(): PixelPetPreferences {
   return {
     schemaVersion: 1,
     enabled: false,
-    selectedId: 'pixel_dog',
+    selectedId: 'dragon',
     surfaceId: 'app-shell',
     edge: 'bottom',
     progress: 0.5,
     offset: { x: 0, y: 0 },
     size: 1,
     position: { x: 100, y: 100 },
+    defaultOrientation: 0,
   };
 }
 

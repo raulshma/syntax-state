@@ -18,7 +18,7 @@ vi.mock('@/lib/auth/get-user', () => ({
 vi.mock('@/lib/services/visibility-service', () => ({
   updateVisibility: vi.fn(),
   getVisibilityOverview: vi.fn(),
-  getRoadmapVisibilityDetails: vi.fn(),
+  getjourneyVisibilityDetails: vi.fn(),
 }));
 
 // Mock the visibility repository
@@ -48,9 +48,9 @@ import {
 } from './visibility-admin';
 
 // Arbitrary generators
-const entityTypeArb = fc.constantFrom<EntityType>('roadmap', 'milestone', 'objective');
+const entityTypeArb = fc.constantFrom<EntityType>('journey', 'milestone', 'objective');
 const entityIdArb = fc.string({ minLength: 1, maxLength: 50 }).filter(s => s.trim().length > 0);
-const roadmapSlugArb = fc.stringMatching(/^[a-z0-9][a-z0-9-]{0,48}[a-z0-9]$|^[a-z0-9]$/)
+const journeySlugArb = fc.stringMatching(/^[a-z0-9][a-z0-9-]{0,48}[a-z0-9]$|^[a-z0-9]$/)
   .filter(s => s.length >= 1 && s.length <= 50);
 const adminIdArb = fc.string({ minLength: 1, maxLength: 100 }).filter(s => s.trim().length > 0);
 
@@ -60,7 +60,7 @@ function createMockVisibilitySetting(
   entityType: EntityType,
   entityId: string,
   isPublic: boolean,
-  parentRoadmapSlug?: string,
+  parentJourneySlug?: string,
   parentMilestoneId?: string
 ): VisibilitySetting {
   return {
@@ -68,7 +68,7 @@ function createMockVisibilitySetting(
     entityType,
     entityId,
     isPublic,
-    parentRoadmapSlug,
+    parentJourneySlug,
     parentMilestoneId,
     updatedBy: 'admin-123',
     updatedAt: new Date(),
@@ -86,7 +86,7 @@ describe('Visibility Admin Actions Property Tests', () => {
   });
 
   /**
-   * **Feature: roadmap-public-visibility, Property 2: Authorization Enforcement**
+   * **Feature: journey-public-visibility, Property 2: Authorization Enforcement**
    * 
    * For any visibility modification request from a non-admin user,
    * the system should reject the request and return an unauthorized error.
@@ -160,10 +160,10 @@ describe('Visibility Admin Actions Property Tests', () => {
     it('toggleVisibility should succeed for admin requests', async () => {
       await fc.assert(
         fc.asyncProperty(
-          roadmapSlugArb,
+          journeySlugArb,
           fc.boolean(),
           adminIdArb,
-          async (roadmapSlug, isPublic, adminId) => {
+          async (journeySlug, isPublic, adminId) => {
             const mockRequireAdmin = vi.mocked(requireAdmin);
             const mockGetAuthUser = vi.mocked(getAuthUser);
             const mockUpdateVisibility = vi.mocked(updateVisibilityService);
@@ -181,7 +181,7 @@ describe('Visibility Admin Actions Property Tests', () => {
               isAdmin: true,
             });
             
-            const mockSetting = createMockVisibilitySetting('roadmap', roadmapSlug, isPublic);
+            const mockSetting = createMockVisibilitySetting('journey', journeySlug, isPublic);
             mockUpdateVisibility.mockResolvedValue(mockSetting);
             
             // Setup: requireAdmin executes the function for admin
@@ -189,12 +189,12 @@ describe('Visibility Admin Actions Property Tests', () => {
               return fn();
             });
 
-            const result = await toggleVisibility('roadmap', roadmapSlug, isPublic);
+            const result = await toggleVisibility('journey', journeySlug, isPublic);
             
             // Should succeed
             expect(result).toHaveProperty('success', true);
             if ('setting' in result) {
-              expect(result.setting.entityId).toBe(roadmapSlug);
+              expect(result.setting.entityId).toBe(journeySlug);
               expect(result.setting.isPublic).toBe(isPublic);
             }
             
@@ -208,7 +208,7 @@ describe('Visibility Admin Actions Property Tests', () => {
 
 
   /**
-   * **Feature: roadmap-public-visibility, Property 8: Batch Update Consistency**
+   * **Feature: journey-public-visibility, Property 8: Batch Update Consistency**
    * 
    * For any batch visibility update, all specified entities should be updated atomically,
    * and reading back their visibility should reflect the batch update values.
@@ -220,7 +220,7 @@ describe('Visibility Admin Actions Property Tests', () => {
       await fc.assert(
         fc.asyncProperty(
           // Generate unique entityIds to avoid duplicate key issues
-          fc.uniqueArray(roadmapSlugArb, { minLength: 1, maxLength: 10 })
+          fc.uniqueArray(journeySlugArb, { minLength: 1, maxLength: 10 })
             .chain(entityIds => 
               fc.tuple(
                 fc.constant(entityIds),
@@ -260,7 +260,7 @@ describe('Visibility Admin Actions Property Tests', () => {
             
             // Setup: batch update returns the updated settings
             const expectedSettings = updates.map(u => 
-              createMockVisibilitySetting('roadmap', u.entityId, u.isPublic)
+              createMockVisibilitySetting('journey', u.entityId, u.isPublic)
             );
             mockSetVisibilityBatch.mockResolvedValue(expectedSettings);
             
@@ -269,7 +269,7 @@ describe('Visibility Admin Actions Property Tests', () => {
               return fn();
             });
 
-            const result = await toggleVisibilityBatch('roadmap', updates);
+            const result = await toggleVisibilityBatch('journey', updates);
             
             // Should succeed
             expect(result).toHaveProperty('success', true);
@@ -304,7 +304,7 @@ describe('Visibility Admin Actions Property Tests', () => {
         fc.asyncProperty(
           fc.array(
             fc.record({
-              entityId: roadmapSlugArb,
+              entityId: journeySlugArb,
               isPublic: fc.boolean(),
             }),
             { minLength: 1, maxLength: 5 }
@@ -338,7 +338,7 @@ describe('Visibility Admin Actions Property Tests', () => {
             
             // Setup: batch update returns the updated settings
             const expectedSettings = updates.map(u => 
-              createMockVisibilitySetting('roadmap', u.entityId, u.isPublic)
+              createMockVisibilitySetting('journey', u.entityId, u.isPublic)
             );
             mockSetVisibilityBatch.mockResolvedValue(expectedSettings);
             
@@ -347,7 +347,7 @@ describe('Visibility Admin Actions Property Tests', () => {
               return fn();
             });
 
-            await toggleVisibilityBatch('roadmap', updates);
+            await toggleVisibilityBatch('journey', updates);
             
             // Verify audit log was called for each entity
             expect(mockLogVisibilityChange).toHaveBeenCalledTimes(updates.length);
@@ -355,7 +355,7 @@ describe('Visibility Admin Actions Property Tests', () => {
             // Each audit log should have the correct admin ID
             for (const call of mockLogVisibilityChange.mock.calls) {
               expect(call[0]).toBe(adminId);
-              expect(call[1]).toBe('roadmap');
+              expect(call[1]).toBe('journey');
             }
             
             return true;
@@ -422,7 +422,7 @@ describe('Visibility Admin Actions Property Tests', () => {
             fc.record({
               entityId: entityIdArb,
               isPublic: fc.boolean(),
-              parentRoadmapSlug: roadmapSlugArb,
+              parentjourneySlug: journeySlugArb,
             }),
             { minLength: 1, maxLength: 5 }
           ),
@@ -454,7 +454,7 @@ describe('Visibility Admin Actions Property Tests', () => {
             
             // Setup: batch update returns the updated settings with parent refs
             const expectedSettings = updates.map(u => 
-              createMockVisibilitySetting('milestone', u.entityId, u.isPublic, u.parentRoadmapSlug)
+              createMockVisibilitySetting('milestone', u.entityId, u.isPublic, u.parentjourneySlug)
             );
             mockSetVisibilityBatch.mockResolvedValue(expectedSettings);
             
@@ -470,9 +470,9 @@ describe('Visibility Admin Actions Property Tests', () => {
             const batchCall = mockSetVisibilityBatch.mock.calls[0][0];
             
             for (let i = 0; i < updates.length; i++) {
-              const setting = batchCall.find((s: { entityId: string }) => s.entityId === updates[i].entityId);
+              const setting = batchCall.find((s: { entityId: string }) => s.entityId === updates[i].entityId) as { entityId: string; parentJourneySlug?: string } | undefined;
               expect(setting).toBeDefined();
-              expect(setting?.parentRoadmapSlug).toBe(updates[i].parentRoadmapSlug);
+              expect(setting?.parentJourneySlug).toBe(updates[i].parentjourneySlug);
             }
             
             return true;

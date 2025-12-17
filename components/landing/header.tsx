@@ -110,7 +110,7 @@ export function Header() {
     { href: "#how-it-works", label: "How it Works" },
     { href: "#features", label: "Features" },
     { href: "#community", label: "Community" },
-    { href: "/journeys", label: "Explore Journeys", isRoute: true },
+    { href: "/explore", label: "Explore Journeys", isRoute: true },
   ];
 
   return (
@@ -126,7 +126,7 @@ export function Header() {
           <ViewTransitionLink href="/" viewTransitionName="logo">
             <Logo />
           </ViewTransitionLink>
-          <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30 rounded-full">
+          <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-linear-to-r from-amber-500/20 to-orange-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30 rounded-full">
             {APP_STAGE}
           </span>
         </div>
@@ -234,7 +234,7 @@ export function Header() {
                       </p>
                     </div>
 
-                    <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent my-1" />
+                    <div className="h-px bg-linear-to-r from-transparent via-border to-transparent my-1" />
 
                     <DropdownMenuItem
                       onClick={() => {
@@ -268,7 +268,7 @@ export function Header() {
 
                     {/* Mobile-only items in dropdown */}
                     <div className="md:hidden">
-                      <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent my-1" />
+                      <div className="h-px bg-linear-to-r from-transparent via-border to-transparent my-1" />
                       
                       <DropdownMenuItem
                         onClick={() => window.open("https://github.com/raulshma/mylearningprep", "_blank")}
@@ -301,7 +301,7 @@ export function Header() {
                       </DropdownMenuItem>
                     </div>
 
-                    <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent my-1" />
+                    <div className="h-px bg-linear-to-r from-transparent via-border to-transparent my-1" />
 
                     <DropdownMenuItem
                       onClick={handleSignOut}

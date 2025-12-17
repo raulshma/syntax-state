@@ -5,7 +5,7 @@
 export function buildLessonCandidatePaths(
   milestoneId: string,
   lessonId: string,
-  roadmapSlug?: string
+  journeySlug?: string
 ): string[] {
   const candidatePaths: string[] = [];
   const seenPaths = new Set<string>();
@@ -39,16 +39,16 @@ export function buildLessonCandidatePaths(
     addPath(`${milestoneId}/${finalSlug}`);
   }
   
-  // Try roadmapSlug as category folder (e.g., "sql/learn-basics")
-  if (roadmapSlug) {
-    addPath(`${roadmapSlug}/${lessonId}`);
-    addPath(`${roadmapSlug}/${finalSlug}`);
+  // Try journeySlug as category folder (e.g., "sql/learn-basics")
+  if (journeySlug) {
+    addPath(`${journeySlug}/${lessonId}`);
+    addPath(`${journeySlug}/${finalSlug}`);
   }
   
   // Common category folders fallback
   const categoryFolders = ['sql', 'databases', 'javascript', 'typescript', 'entity-framework-core', 'ef-core-introduction', 'functions', 'working-with-apis', 'classes', 'type-casting', 'equality-comparisons', 'memory-management', 'modules', 'strict-mode', 'browser-devtools'];
   for (const category of categoryFolders) {
-    if (category !== roadmapSlug) {
+    if (category !== journeySlug) {
       addPath(`${category}/${lessonId}`);
       addPath(`${category}/${finalSlug}`);
     }

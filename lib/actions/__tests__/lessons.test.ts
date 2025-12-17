@@ -16,7 +16,7 @@ describe('buildLessonCandidatePaths', () => {
     });
   });
 
-  describe('SQL roadmap pattern', () => {
+  describe('SQL journey pattern', () => {
     it('should handle SQL lessons in sql/ folder (e.g., sql/learn-basics)', () => {
       const paths = buildLessonCandidatePaths(
         'learn-basics',
@@ -85,7 +85,7 @@ describe('buildLessonCandidatePaths', () => {
       expect(paths[0]).toBe('variables-data-types');
     });
 
-    it('should try roadmapSlug-prefixed paths before generic category fallbacks', () => {
+    it('should try journeySlug-prefixed paths before generic category fallbacks', () => {
       const paths = buildLessonCandidatePaths(
         'learn-basics',
         'learn-basics',
@@ -102,12 +102,12 @@ describe('buildLessonCandidatePaths', () => {
 
   describe('edge cases', () => {
     it('should handle empty lessonId gracefully', () => {
-      const paths = buildLessonCandidatePaths('milestone', '', 'roadmap');
+      const paths = buildLessonCandidatePaths('milestone', '', 'journey');
       expect(paths).toBeDefined();
       expect(Array.isArray(paths)).toBe(true);
     });
 
-    it('should handle undefined roadmapSlug', () => {
+    it('should handle undefined journeySlug', () => {
       const paths = buildLessonCandidatePaths(
         'csharp-basics',
         'variables-data-types'
@@ -121,7 +121,7 @@ describe('buildLessonCandidatePaths', () => {
       const paths = buildLessonCandidatePaths(
         'milestone',
         'a/b/c',
-        'roadmap'
+        'journey'
       );
       
       expect(paths).toContain('a/b/c');
@@ -133,7 +133,7 @@ describe('buildLessonCandidatePaths', () => {
   describe('real-world scenarios', () => {
     // These test cases match actual URLs that will be generated
     
-    it('should resolve /roadmaps/sql/learn/learn-basics/learn-basics', () => {
+    it('should resolve /journeys/sql/learn/learn-basics/learn-basics', () => {
       const paths = buildLessonCandidatePaths(
         'learn-basics',
         'learn-basics',
@@ -144,17 +144,17 @@ describe('buildLessonCandidatePaths', () => {
       expect(paths).toContain('sql/learn-basics');
     });
 
-    it('should resolve /roadmaps/sql/learn/dml/dml', () => {
+    it('should resolve /journeys/sql/learn/dml/dml', () => {
       const paths = buildLessonCandidatePaths('dml', 'dml', 'sql');
       expect(paths).toContain('sql/dml');
     });
 
-    it('should resolve /roadmaps/sql/learn/ddl/ddl', () => {
+    it('should resolve /journeys/sql/learn/ddl/ddl', () => {
       const paths = buildLessonCandidatePaths('ddl', 'ddl', 'sql');
       expect(paths).toContain('sql/ddl');
     });
 
-    it('should resolve /roadmaps/sql/learn/transactions/transactions', () => {
+    it('should resolve /journeys/sql/learn/transactions/transactions', () => {
       const paths = buildLessonCandidatePaths(
         'transactions',
         'transactions',
@@ -163,7 +163,7 @@ describe('buildLessonCandidatePaths', () => {
       expect(paths).toContain('sql/transactions');
     });
 
-    it('should resolve /roadmaps/dotnet/learn/csharp-basics/variables-data-types', () => {
+    it('should resolve /journeys/dotnet/learn/csharp-basics/variables-data-types', () => {
       const paths = buildLessonCandidatePaths(
         'csharp-basics',
         'variables-data-types',
@@ -172,7 +172,7 @@ describe('buildLessonCandidatePaths', () => {
       expect(paths).toContain('csharp-basics/variables-data-types');
     });
 
-    it('should resolve /roadmaps/dotnet/learn/databases/sql-fundamentals', () => {
+    it('should resolve /journeys/dotnet/learn/databases/sql-fundamentals', () => {
       const paths = buildLessonCandidatePaths(
         'databases',
         'sql-fundamentals',

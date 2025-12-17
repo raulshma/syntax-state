@@ -35,7 +35,7 @@ interface MiddlewareInfo {
   name: string;
   method: string;
   category: 'security' | 'performance' | 'routing' | 'processing';
-  icon: React.ElementType;
+  icon: React.ComponentType<{ className?: string }>;
   color: string;
   shortDescription: string;
   fullDescription: string;

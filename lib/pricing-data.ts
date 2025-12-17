@@ -79,7 +79,7 @@ export const PRICING_TIERS: PricingTier[] = [
       { name: `${FREE_INTERVIEW_LIMIT} interviews/month`, included: true },
       { name: `${FREE_ITERATION_LIMIT} iterations/month`, included: true },
       { name: `${FREE_CHAT_MESSAGE_LIMIT} AI chat messages/month`, included: true, tooltip: 'Chat with AI assistant for interview guidance' },
-      { name: 'Frontend & Backend Roadmaps', included: true },
+      { name: 'Frontend & Backend Journeys', included: true },
       { name: 'Basic Interactive Components', included: true },
       { name: 'Standard analogies', included: true },
       { name: 'AI tools (search, trends, etc.)', included: false, tooltip: 'Advanced AI tools including web search, tech trends analysis, and more' },
@@ -91,7 +91,7 @@ export const PRICING_TIERS: PricingTier[] = [
     previewFeatures: [
       `${FREE_INTERVIEW_LIMIT} interviews/month`,
       `${FREE_CHAT_MESSAGE_LIMIT} AI chat messages`,
-      'Frontend & Backend Roadmaps',
+      'Frontend & Backend Journeys',
       'Basic Interactive Components',
     ],
     cta: 'Get Started',
@@ -177,7 +177,7 @@ export const PRICING_TIERS: PricingTier[] = [
 ];
 
 export const COMPARISON_FEATURES: ComparisonFeature[] = [
-  { name: 'Roadmap Access', free: 'Web + Basic .NET', pro: 'Full Stack + Microservices', max: 'Full Stack + Microservices' },
+  { name: 'Journey Access', free: 'Web + Basic .NET', pro: 'Full Stack + Microservices', max: 'Full Stack + Microservices' },
   { name: 'Interactive Components', free: 'Basic Types', pro: 'Architecture Visualizers', max: 'System Design Scenarios' },
   { name: 'Monthly Interviews', free: `${FREE_INTERVIEW_LIMIT}`, pro: `${PRO_INTERVIEW_LIMIT}`, max: `${MAX_INTERVIEW_LIMIT}` },
   { name: 'Monthly Iterations', free: `${FREE_ITERATION_LIMIT}`, pro: `${PRO_ITERATION_LIMIT}`, max: `${MAX_ITERATION_LIMIT}` },

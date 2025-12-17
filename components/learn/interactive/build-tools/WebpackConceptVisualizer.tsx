@@ -269,7 +269,7 @@ export function WebpackConceptVisualizer({
             return (
               <motion.div
                 key={concept.id}
-                initial={shouldReduceMotion ? false : { opacity: 0, y: 10 }}
+                initial={shouldReduceMotion ? undefined : { opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 className={cn(
                   'rounded-lg border overflow-hidden transition-all',

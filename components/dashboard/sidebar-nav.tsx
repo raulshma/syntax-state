@@ -33,8 +33,8 @@ const navItems = [
     description: "Start preparing",
   },
   {
-    href: "/roadmaps",
-    label: "Roadmaps",
+    href: "/journeys",
+    label: "Journeys",
     icon: Map,
     description: "Learning paths",
   },

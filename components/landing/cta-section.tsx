@@ -54,7 +54,7 @@ export function CTASection() {
               viewport={{ once: true }}
               transition={{ delay: 0.4 }}
             >
-              Build real competency with roadmaps, lessons, AI chat, and practice.
+              Build real competency with journeys, lessons, AI chat, and practice.
             </motion.p>
 
             <motion.div

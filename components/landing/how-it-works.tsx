@@ -8,7 +8,7 @@ const steps = [
     icon: Map,
     step: "01",
     title: "Pick a goal",
-    description: "Choose a roadmap or create a plan for what you want to learn.",
+    description: "Choose a journey or create a plan for what you want to learn.",
     color: "bg-blue-500/10 text-blue-500",
   },
   {

@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 const testimonials = [
   {
     quote:
-      "The roadmaps made it obvious what to learn next. I finally stopped guessing and started progressing.",
+      "The journeys made it obvious what to learn next. I finally stopped guessing and started progressing.",
     author: "Sarah K.",
     role: "Senior Frontend Engineer",
     company: "Hired at FAANG",
@@ -83,7 +83,7 @@ export function Testimonials() {
           Loved by engineers
         </h2>
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-          Join thousands of developers leveling up with roadmaps, lessons, and practice.
+          Join thousands of developers leveling up with journeys, lessons, and practice.
         </p>
       </div>
 

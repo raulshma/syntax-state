@@ -10,7 +10,7 @@ export function Footer() {
           <div className="col-span-2 md:col-span-4">
             <Logo className="mb-6 scale-90 origin-left" />
             <p className="text-sm text-muted-foreground max-w-xs leading-relaxed mb-6">
-              Learn faster with roadmaps, lessons, and AI help — plus practice modes when you want interview-ready confidence.
+              Learn faster with journeys, lessons, and AI help — plus practice modes when you want interview-ready confidence.
             </p>
             <div className="flex gap-4">
               <a

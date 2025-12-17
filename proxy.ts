@@ -8,6 +8,7 @@ const isPublicRoute = createRouteMatcher([
   "/privacy(.*)",
   "/terms(.*)",
   "/plan/(.*)",
+  "/explore(.*)", // Public journey listing and detail pages
   "/api/webhooks/(.*)",
 ]);
 

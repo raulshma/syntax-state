@@ -37,7 +37,7 @@ const sampleProducts: DataItem[] = [
 // Operator configurations
 const operatorConfigs: Record<LinqOperator, {
   label: string;
-  icon: React.ElementType;
+  icon: React.ComponentType<{ className?: string }>;
   description: string;
   querySyntax: string;
   methodSyntax: string;

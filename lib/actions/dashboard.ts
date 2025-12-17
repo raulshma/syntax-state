@@ -10,8 +10,8 @@ import { getAuthUser, hasByokApiKey } from '@/lib/auth/get-user';
 import { userRepository } from '@/lib/db/repositories/user-repository';
 import { interviewRepository, type InterviewSummary } from '@/lib/db/repositories/interview-repository';
 import { learningPathRepository } from '@/lib/db/repositories/learning-path-repository';
-import { userRoadmapProgressRepository } from '@/lib/db/repositories/user-roadmap-progress-repository';
-import type { UserRoadmapProgressSummary } from '@/lib/db/schemas/user-roadmap-progress';
+import { userJourneyProgressRepository } from '@/lib/db/repositories/user-journey-progress-repository';
+import type { UserJourneyProgressSummary } from '@/lib/db/schemas/user-journey-progress';
 
 export interface DashboardInterviewData {
   _id: string;
@@ -32,7 +32,7 @@ export interface DashboardInterviewData {
 export interface DashboardData {
   interviews: DashboardInterviewData[];
   totalInterviews: number;
-  roadmapProgress: UserRoadmapProgressSummary[];
+  journeyProgress: UserJourneyProgressSummary[];
   learningPath: {
       _id: string;
       goal: string;
@@ -119,10 +119,10 @@ export const getDashboardData = cache(async (
   }
 
   // Parallel fetch for dashboard content
-  const [interviewResult, learningPath, roadmapProgress] = await Promise.all([
+  const [interviewResult, learningPath, journeyProgress] = await Promise.all([
     interviewRepository.findSummariesByUserId(dbUser._id, page, 9, search, status),
     learningPathRepository.findActiveSummaryByUserId(dbUser._id),
-    userRoadmapProgressRepository.findProgressSummariesByUser(dbUser._id),
+    userJourneyProgressRepository.findProgressSummariesByUser(dbUser._id),
   ]);
 
   const { interviews: summaries, total: totalInterviews } = interviewResult;
@@ -208,6 +208,6 @@ export const getDashboardData = cache(async (
     stats: stats, // Keeping local stats for now, will refine if needed
     sidebar,
     learningPath: learningPath as any, // Cast because it's partial
-    roadmapProgress
+    journeyProgress
   };
 });

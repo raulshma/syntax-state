@@ -15,7 +15,7 @@ export interface ObjectiveProgressData {
   lessonId: string;
 }
 
-// Storage key for objective progress (matches roadmap-topic-detail.tsx)
+// Storage key for objective progress (matches journey-topic-detail.tsx)
 export function getObjectiveProgressKey(nodeId: string, lessonId: string): string {
   return `objective_progress_${nodeId}_${lessonId}`;
 }
@@ -51,7 +51,7 @@ export function saveObjectiveProgress(
   try {
     window.dispatchEvent(
       new CustomEvent('objective-progress-updated', { 
-        detail: { roadmapSlug: nodeId, lessonId } 
+        detail: { journeySlug: nodeId, lessonId } 
       })
     );
   } catch {
@@ -81,7 +81,7 @@ export function getObjectiveProgress(
 }
 
 /**
- * Sync gamification data to localStorage for roadmap UI
+ * Sync gamification data to localStorage for journey UI
  * Call this when gamification data is loaded from server
  */
 export function syncGamificationToLocalStorage(
@@ -117,7 +117,7 @@ export function syncGamificationToLocalStorage(
       try {
         window.dispatchEvent(
           new CustomEvent('objective-progress-updated', {
-            detail: { roadmapSlug: extractedNodeId, lessonId: lesson.lessonId },
+            detail: { journeySlug: extractedNodeId, lessonId: lesson.lessonId },
           })
         );
       } catch {
@@ -139,7 +139,7 @@ export function clearObjectiveProgress(nodeId: string, lessonId: string): void {
   try {
     window.dispatchEvent(
       new CustomEvent('objective-progress-updated', { 
-        detail: { roadmapSlug: nodeId, lessonId } 
+        detail: { journeySlug: nodeId, lessonId } 
       })
     );
   } catch {

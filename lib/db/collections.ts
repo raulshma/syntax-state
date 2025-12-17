@@ -15,8 +15,8 @@ export const COLLECTIONS = {
   WEAKNESS_ANALYSES: 'weakness_analyses',
   IMPROVEMENT_PLANS: 'improvement_plans',
   PROGRESS_HISTORY: 'progress_history',
-  ROADMAPS: 'roadmaps',
-  USER_ROADMAP_PROGRESS: 'user_roadmap_progress',
+  JOURNEYS: 'journeys',
+  USER_JOURNEY_PROGRESS: 'user_journey_progress',
   VISIBILITY_SETTINGS: 'visibility_settings',
 } as const;
 
@@ -439,15 +439,15 @@ export async function getProgressHistoryCollection(): Promise<Collection<Progres
   return db.collection<ProgressHistoryDocument>(COLLECTIONS.PROGRESS_HISTORY);
 }
 
-// Roadmap feature documents
-export interface RoadmapDocument extends Document {
+// Journey feature documents
+export interface JourneyDocument extends Document {
   _id: string;
   slug: string;
   title: string;
   description: string;
-  category: 'frontend' | 'backend' | 'devops' | 'mobile' | 'data-science' | 'system-design' | 'full-stack';
+  category: 'frontend' | 'backend' | 'devops' | 'mobile' | 'data-science' | 'system-design' | 'full-stack' | 'dotnet' | 'sql';
   version: string;
-  parentRoadmapSlug?: string;
+  parentJourneySlug?: string;
   parentNodeId?: string;
   nodes: Array<{
     id: string;
@@ -458,12 +458,13 @@ export interface RoadmapDocument extends Document {
     learningObjectives: Array<string | { title: string; lessonId?: string }>;
     resources: Array<{
       title: string;
-      type: 'documentation' | 'article' | 'video' | 'practice' | 'book';
+      type: 'documentation' | 'article' | 'video' | 'practice' | 'book' | 'course' | 'tool';
+      url?: string;
       description: string;
     }>;
     estimatedMinutes: number;
     difficulty?: number;
-    subRoadmapSlug?: string;
+    subJourneySlug?: string;
     skillCluster?: string;
     tags: string[];
   }>;
@@ -482,11 +483,11 @@ export interface RoadmapDocument extends Document {
   updatedAt: Date;
 }
 
-export interface UserRoadmapProgressDocument extends Document {
+export interface UserJourneyProgressDocument extends Document {
   _id: string;
   userId: string;
-  roadmapId: string;
-  roadmapSlug: string;
+  journeyId: string;
+  journeySlug: string;
   nodeProgress: Array<{
     nodeId: string;
     status: 'locked' | 'available' | 'in-progress' | 'completed' | 'skipped';
@@ -508,24 +509,22 @@ export interface UserRoadmapProgressDocument extends Document {
   updatedAt: Date;
 }
 
-export async function getRoadmapsCollection(): Promise<Collection<RoadmapDocument>> {
+export async function getJourneysCollection(): Promise<Collection<JourneyDocument>> {
   const db = await getDb();
-  return db.collection<RoadmapDocument>(COLLECTIONS.ROADMAPS);
+  return db.collection<JourneyDocument>(COLLECTIONS.JOURNEYS);
 }
 
-export async function getUserRoadmapProgressCollection(): Promise<Collection<UserRoadmapProgressDocument>> {
+export async function getUserJourneyProgressCollection(): Promise<Collection<UserJourneyProgressDocument>> {
   const db = await getDb();
-  return db.collection<UserRoadmapProgressDocument>(COLLECTIONS.USER_ROADMAP_PROGRESS);
+  return db.collection<UserJourneyProgressDocument>(COLLECTIONS.USER_JOURNEY_PROGRESS);
 }
-
-
 
 // Visibility settings document for public visibility control
 export interface VisibilitySettingDocument extends Document {
   _id: string;
-  entityType: 'roadmap' | 'milestone' | 'objective';
+  entityType: 'journey' | 'milestone' | 'objective';
   entityId: string;
-  parentRoadmapSlug?: string;
+  parentJourneySlug?: string;
   parentMilestoneId?: string;
   isPublic: boolean;
   updatedBy: string; // Admin clerk ID

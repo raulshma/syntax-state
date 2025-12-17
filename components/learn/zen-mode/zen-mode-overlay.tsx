@@ -18,14 +18,14 @@ interface ZenModeOverlayProps {
   children: ReactNode;
   lessonTitle: string;
   milestoneTitle: string;
-  roadmapSlug: string;
+  journeySlug: string;
 }
 
 export function ZenModeOverlay({
   children,
   lessonTitle,
   milestoneTitle,
-  roadmapSlug,
+  journeySlug,
 }: ZenModeOverlayProps) {
   const router = useRouter();
   const { isZenMode, exitZenMode, previousLesson, nextLesson } = useZenMode();
@@ -66,8 +66,8 @@ export function ZenModeOverlay({
 
   const navigateToLesson = useCallback((lessonPath: string) => {
     const [milestone, lessonSlug] = lessonPath.split('/');
-    router.push(`/roadmaps/${roadmapSlug}/learn/${milestone}/${lessonSlug}?zen=true`);
-  }, [router, roadmapSlug]);
+    router.push(`/journeys/${journeySlug}/learn/${milestone}/${lessonSlug}?zen=true`);
+  }, [router, journeySlug]);
 
   // Scroll content
   const scrollContent = useCallback((direction: 'up' | 'down') => {

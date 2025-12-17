@@ -1,7 +1,7 @@
 // Service Worker for PWA support
 const CACHE_NAME = "mylearningprep-v1";
 const LESSONS_CACHE_NAME = "mylearningprep-lessons-v1";
-const ROADMAPS_CACHE_NAME = "mylearningprep-roadmaps-v1";
+const JOURNEYS_CACHE_NAME = "mylearningprep-journeys-v1";
 
 // Static assets to precache on install
 const PRECACHE_ASSETS = [
@@ -17,7 +17,7 @@ const PRECACHE_ASSETS = [
 // Cacheable API routes - static content only (no user data)
 const CACHEABLE_API_PATTERNS = [
   "/api/lessons/content", // MDX lesson content
-  "/api/roadmaps", // Roadmap structure (nodes, edges, milestones, topics, objectives)
+  "/api/journeys", // Journey structure (nodes, edges, milestones, topics, objectives)
 ];
 
 // Install event - precache static assets
@@ -32,7 +32,7 @@ self.addEventListener("install", (event) => {
 
 // Activate event - clean up old caches
 self.addEventListener("activate", (event) => {
-  const currentCaches = [CACHE_NAME, LESSONS_CACHE_NAME, ROADMAPS_CACHE_NAME];
+  const currentCaches = [CACHE_NAME, LESSONS_CACHE_NAME, JOURNEYS_CACHE_NAME];
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
@@ -62,11 +62,11 @@ self.addEventListener("fetch", (event) => {
   }
 
   // Cacheable API routes - stale-while-revalidate
-  // Includes: lessons content, roadmaps (static structure only, no user progress)
+  // Includes: lessons content, journeys (static structure only, no user progress)
   if (CACHEABLE_API_PATTERNS.some((pattern) => url.pathname.startsWith(pattern))) {
     // Use appropriate cache based on route
-    const cacheName = url.pathname.startsWith("/api/roadmaps")
-      ? ROADMAPS_CACHE_NAME
+    const cacheName = url.pathname.startsWith("/api/journeys")
+      ? JOURNEYS_CACHE_NAME
       : LESSONS_CACHE_NAME;
 
     event.respondWith(

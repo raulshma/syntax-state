@@ -4,17 +4,17 @@ A comprehensive, interactive learning platform for developers preparing for tech
 
 ## Overview
 
-MyLearningPrep is an all-in-one learning platform that combines structured learning roadmaps, AI-powered assistance, and gamification to help developers master frontend technologies and advance their technical skills.
+MyLearningPrep is an all-in-one learning platform that combines structured learning journeys, AI-powered assistance, and gamification to help developers master frontend technologies and advance their technical skills.
 
 ## Features
 
-### Interactive Learning Roadmaps
+### Interactive Learning Journeys
 
-- **Visual Roadmap Viewer**: Interactive node-based roadmaps powered by React Flow and ELK.js for automatic layout
-- **Multiple Learning Paths**: Pre-built roadmaps for Frontend Development and JavaScript fundamentals
+- **Visual Journey Viewer**: Interactive node-based journeys powered by React Flow and ELK.js for automatic layout
+- **Multiple Learning Paths**: Pre-built journeys for Frontend Development and JavaScript fundamentals
 - **Progress Tracking**: Real-time tracking of completed lessons, milestones, and topics
 - **Drill-Down Navigation**: Expandable sidebar with milestones, topics, and objectives
-- **Keyboard Navigation**: Navigate roadmaps using keyboard shortcuts (Escape, Arrow keys, J/K)
+- **Keyboard Navigation**: Navigate journeys using keyboard shortcuts (Escape, Arrow keys, J/K)
 
 ### MDX-Based Lesson System
 
@@ -69,7 +69,7 @@ Specialized interactive components for various topics:
 ### User Dashboard
 
 - **Stats Overview**: Bento grid display of learning statistics
-- **Learning Path Cards**: Quick access to active roadmaps and progress
+- **Learning Path Cards**: Quick access to active journeys and progress
 - **Interview Cards**: Recent mock interviews and performance metrics
 - **Usage Tracking**: Monitor AI chat usage and subscription status
 
@@ -203,7 +203,7 @@ mylearningprep/
 │   ├── learn/              # Learning components
 │   │   ├── interactive/    # Interactive demos
 │   │   └── mdx-components/ # Custom MDX components
-│   ├── roadmap/            # Roadmap viewer
+│   ├── journey/            # Journey viewer
 │   └── ui/                 # Base UI components
 ├── content/                # MDX lesson content
 │   └── lessons/            # Lesson files by topic
@@ -211,7 +211,7 @@ mylearningprep/
 │   ├── actions/            # Server actions
 │   ├── ai/                 # AI integration
 │   ├── data/               # Data definitions
-│   │   └── roadmaps/       # Roadmap definitions
+│   │   └── journeys/       # Journey definitions
 │   ├── db/                 # Database operations
 │   ├── gamification/       # XP and badge system
 │   └── services/           # Business logic services

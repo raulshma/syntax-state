@@ -6,7 +6,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import * as fc from 'fast-check';
 import type { ExperienceLevel } from '@/lib/db/schemas/lesson-progress';
-import type { RoadmapNode, RoadmapEdge, LearningObjective, Roadmap } from '@/lib/db/schemas/roadmap';
+import type { JourneyNode, JourneyEdge, LearningObjective, Journey } from '@/lib/db/schemas/journey';
 
 // Mock fs/promises before importing the module
 vi.mock('fs/promises', () => ({
@@ -26,9 +26,9 @@ vi.mock('next-mdx-remote/serialize', () => ({
   })),
 }));
 
-// Mock roadmap repository
-vi.mock('@/lib/db/repositories/roadmap-repository', () => ({
-  findRoadmapBySlug: vi.fn(),
+// Mock journey repository
+vi.mock('@/lib/db/repositories/journey-repository', () => ({
+  findJourneyBySlug: vi.fn(),
 }));
 
 // Mock safe-path to return predictable paths
@@ -42,7 +42,7 @@ vi.mock('@/lib/utils/safe-path', () => ({
 }));
 
 import fs from 'fs/promises';
-import * as roadmapRepo from '@/lib/db/repositories/roadmap-repository';
+import * as journeyRepo from '@/lib/db/repositories/journey-repository';
 import { resolvePathWithinRoot } from '@/lib/utils/safe-path';
 
 import {
@@ -53,7 +53,7 @@ import {
   getLessonsForMilestone,
   findLessonPath,
   getObjectivesWithLessons,
-  getRoadmapLessonAvailability,
+  getJourneyLessonAvailability,
   getAdjacentLessons,
   getNextLessonSuggestion,
   getNextLessonNavigation,
@@ -100,17 +100,17 @@ const createMockMetadata = (overrides: Partial<MockThreeLevelMetadata> = {}): Mo
   ...overrides,
 });
 
-const createMockRoadmap = (overrides: Partial<Roadmap> = {}): Roadmap => ({
-  _id: 'roadmap-1',
-  slug: 'test-roadmap',
-  title: 'Test Roadmap',
-  description: 'A test roadmap',
+const createMockJourney = (overrides: Partial<Journey> = {}): Journey => ({
+  _id: 'journey-1',
+  slug: 'test-journey',
+  title: 'Test Journey',
+  description: 'A test journey',
   category: 'frontend',
   version: '1.0.0',
   nodes: [],
   edges: [],
   estimatedHours: 10,
-  difficulty: 'beginner',
+  difficulty: 5,
   prerequisites: [],
   isActive: true,
   createdAt: new Date(),
@@ -118,7 +118,7 @@ const createMockRoadmap = (overrides: Partial<Roadmap> = {}): Roadmap => ({
   ...overrides,
 });
 
-const createMockNode = (overrides: Partial<RoadmapNode> = {}): RoadmapNode => ({
+const createMockNode = (overrides: Partial<JourneyNode> = {}): JourneyNode => ({
   id: 'node-1',
   title: 'Test Node',
   type: 'milestone',
@@ -130,7 +130,7 @@ const createMockNode = (overrides: Partial<RoadmapNode> = {}): RoadmapNode => ({
   ...overrides,
 });
 
-const createMockEdge = (overrides: Partial<RoadmapEdge> = {}): RoadmapEdge => ({
+const createMockEdge = (overrides: Partial<JourneyEdge> = {}): JourneyEdge => ({
   id: 'edge-1',
   source: 'node-1',
   target: 'node-2',
@@ -420,7 +420,7 @@ describe('resolveLessonPath', () => {
     expect(result).toBeNull();
   });
 
-  it('should try roadmapSlug as category folder', async () => {
+  it('should try journeySlug as category folder', async () => {
     // All paths fail
     vi.mocked(fs.access).mockRejectedValue(new Error('ENOENT'));
 
@@ -579,7 +579,7 @@ describe('findLessonPath', () => {
     expect(result).toBeNull();
   });
 
-  it('should handle SQL roadmap special case', async () => {
+  it('should handle SQL journey special case', async () => {
     // Test that sql/ prefix is tried
     vi.mocked(fs.access).mockRejectedValue(new Error('ENOENT'));
     vi.mocked(fs.readdir).mockResolvedValueOnce([]);
@@ -662,10 +662,10 @@ describe('getObjectivesWithLessons', () => {
 });
 
 // ============================================================================
-// getRoadmapLessonAvailability Tests
+// getJourneyLessonAvailability Tests
 // ============================================================================
 
-describe('getRoadmapLessonAvailability', () => {
+describe('getJourneyLessonAvailability', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -674,7 +674,7 @@ describe('getRoadmapLessonAvailability', () => {
     vi.mocked(fs.access).mockResolvedValue(undefined);
     vi.mocked(fs.readFile).mockResolvedValue(JSON.stringify(createMockMetadata()));
 
-    const roadmap = {
+    const journey = {
       nodes: [
         createMockNode({
           id: 'css-basics',
@@ -691,7 +691,7 @@ describe('getRoadmapLessonAvailability', () => {
       ],
     };
 
-    const result = await getRoadmapLessonAvailability(roadmap);
+    const result = await getJourneyLessonAvailability(journey);
 
     expect(Object.keys(result)).toHaveLength(2); // Only nodes with objectives
     expect(result['css-basics']).toBeDefined();
@@ -699,10 +699,10 @@ describe('getRoadmapLessonAvailability', () => {
     expect(result['no-objectives']).toBeUndefined();
   });
 
-  it('should handle empty roadmap', async () => {
-    const roadmap = { nodes: [] };
+  it('should handle empty journey', async () => {
+    const journey = { nodes: [] };
 
-    const result = await getRoadmapLessonAvailability(roadmap);
+    const result = await getJourneyLessonAvailability(journey);
 
     expect(result).toEqual({});
   });
@@ -711,7 +711,7 @@ describe('getRoadmapLessonAvailability', () => {
     vi.mocked(fs.access).mockResolvedValue(undefined);
     vi.mocked(fs.readFile).mockResolvedValue(JSON.stringify(createMockMetadata()));
 
-    const roadmap = {
+    const journey = {
       nodes: Array.from({ length: 5 }, (_, i) =>
         createMockNode({
           id: `node-${i}`,
@@ -720,7 +720,7 @@ describe('getRoadmapLessonAvailability', () => {
       ),
     };
 
-    const result = await getRoadmapLessonAvailability(roadmap);
+    const result = await getJourneyLessonAvailability(journey);
 
     expect(Object.keys(result)).toHaveLength(5);
   });
@@ -969,7 +969,7 @@ describe('getNextLessonNavigation', () => {
   });
 
   it('should return next sibling objective in same node', async () => {
-    const mockRoadmap = createMockRoadmap({
+    const mockJourney = createMockJourney({
       nodes: [
         createMockNode({
           id: 'css-basics',
@@ -984,7 +984,7 @@ describe('getNextLessonNavigation', () => {
       edges: [],
     });
 
-    vi.mocked(roadmapRepo.findRoadmapBySlug).mockResolvedValue(mockRoadmap);
+    vi.mocked(journeyRepo.findJourneyBySlug).mockResolvedValue(mockJourney);
     vi.mocked(fs.access).mockResolvedValue(undefined);
     vi.mocked(fs.readFile).mockImplementation(async (path: any) => {
       const pathStr = String(path);
@@ -1006,7 +1006,7 @@ describe('getNextLessonNavigation', () => {
   });
 
   it('should follow edges to next node when no more siblings', async () => {
-    const mockRoadmap = createMockRoadmap({
+    const mockJourney = createMockJourney({
       nodes: [
         createMockNode({
           id: 'node-1',
@@ -1024,7 +1024,7 @@ describe('getNextLessonNavigation', () => {
       ],
     });
 
-    vi.mocked(roadmapRepo.findRoadmapBySlug).mockResolvedValue(mockRoadmap);
+    vi.mocked(journeyRepo.findJourneyBySlug).mockResolvedValue(mockJourney);
     vi.mocked(fs.access).mockResolvedValue(undefined);
     vi.mocked(fs.readFile).mockResolvedValue(
       JSON.stringify(createMockMetadata({ title: 'Next Objective' }))
@@ -1033,7 +1033,7 @@ describe('getNextLessonNavigation', () => {
     const result = await getNextLessonNavigation(
       'node-1/only-lesson',
       'node-1',
-      'test-roadmap'
+      'test-journey'
     );
 
     expect(result).toBeDefined();
@@ -1042,7 +1042,7 @@ describe('getNextLessonNavigation', () => {
   });
 
   it('should prioritize sequential edges over recommended', async () => {
-    const mockRoadmap = createMockRoadmap({
+    const mockJourney = createMockJourney({
       nodes: [
         createMockNode({
           id: 'node-1',
@@ -1065,7 +1065,7 @@ describe('getNextLessonNavigation', () => {
       ],
     });
 
-    vi.mocked(roadmapRepo.findRoadmapBySlug).mockResolvedValue(mockRoadmap);
+    vi.mocked(journeyRepo.findJourneyBySlug).mockResolvedValue(mockJourney);
     vi.mocked(fs.access).mockResolvedValue(undefined);
     vi.mocked(fs.readFile).mockResolvedValue(
       JSON.stringify(createMockMetadata({ title: 'Seq Lesson' }))
@@ -1076,8 +1076,8 @@ describe('getNextLessonNavigation', () => {
     expect(result?.milestoneTitle).toBe('Sequential');
   });
 
-  it('should return null when roadmap not found', async () => {
-    vi.mocked(roadmapRepo.findRoadmapBySlug).mockResolvedValue(null);
+  it('should return null when journey not found', async () => {
+    vi.mocked(journeyRepo.findJourneyBySlug).mockResolvedValue(null);
 
     const result = await getNextLessonNavigation('css/lesson', 'css', 'nonexistent');
 
@@ -1085,11 +1085,11 @@ describe('getNextLessonNavigation', () => {
   });
 
   it('should return null when current node not found', async () => {
-    const mockRoadmap = createMockRoadmap({
+    const mockJourney = createMockJourney({
       nodes: [createMockNode({ id: 'other-node' })],
     });
 
-    vi.mocked(roadmapRepo.findRoadmapBySlug).mockResolvedValue(mockRoadmap);
+    vi.mocked(journeyRepo.findJourneyBySlug).mockResolvedValue(mockJourney);
 
     const result = await getNextLessonNavigation('css/lesson', 'nonexistent-node', 'test');
 
@@ -1097,7 +1097,7 @@ describe('getNextLessonNavigation', () => {
   });
 
   it('should return null when no next lesson available', async () => {
-    const mockRoadmap = createMockRoadmap({
+    const mockJourney = createMockJourney({
       nodes: [
         createMockNode({
           id: 'only-node',
@@ -1107,7 +1107,7 @@ describe('getNextLessonNavigation', () => {
       edges: [],
     });
 
-    vi.mocked(roadmapRepo.findRoadmapBySlug).mockResolvedValue(mockRoadmap);
+    vi.mocked(journeyRepo.findJourneyBySlug).mockResolvedValue(mockJourney);
     vi.mocked(fs.access).mockRejectedValue(new Error('ENOENT'));
     vi.mocked(fs.readdir).mockResolvedValue([]);
 
@@ -1117,7 +1117,7 @@ describe('getNextLessonNavigation', () => {
   });
 
   it('should handle errors gracefully', async () => {
-    vi.mocked(roadmapRepo.findRoadmapBySlug).mockRejectedValue(new Error('DB error'));
+    vi.mocked(journeyRepo.findJourneyBySlug).mockRejectedValue(new Error('DB error'));
 
     const result = await getNextLessonNavigation('css/lesson', 'css', 'test');
 
@@ -1232,24 +1232,24 @@ describe('Edge Cases and Error Handling', () => {
     });
 
     it('should handle undefined objectives array', async () => {
-      const roadmap = {
+      const journey = {
         nodes: [
           createMockNode({ id: 'node-1', learningObjectives: undefined }),
         ],
       };
 
-      const result = await getRoadmapLessonAvailability(roadmap);
+      const result = await getJourneyLessonAvailability(journey);
       expect(result).toEqual({});
     });
 
     it('should handle node without learningObjectives property', async () => {
-      const roadmap = {
+      const journey = {
         nodes: [
-          { id: 'node-1', title: 'Test', type: 'milestone', position: { x: 0, y: 0 } } as RoadmapNode,
+          { id: 'node-1', title: 'Test', type: 'milestone', position: { x: 0, y: 0 } } as JourneyNode,
         ],
       };
 
-      const result = await getRoadmapLessonAvailability(roadmap);
+      const result = await getJourneyLessonAvailability(journey);
       expect(result).toEqual({});
     });
   });
@@ -1281,8 +1281,8 @@ describe('Edge Cases and Error Handling', () => {
       expect(result).toBeNull();
     });
 
-    it('should handle roadmap with circular edge references', async () => {
-      const mockRoadmap = createMockRoadmap({
+    it('should handle journey with circular edge references', async () => {
+      const mockJourney = createMockJourney({
         nodes: [
           createMockNode({
             id: 'node-1',
@@ -1299,7 +1299,7 @@ describe('Edge Cases and Error Handling', () => {
         ],
       });
 
-      vi.mocked(roadmapRepo.findRoadmapBySlug).mockResolvedValueOnce(mockRoadmap);
+      vi.mocked(journeyRepo.findJourneyBySlug).mockResolvedValueOnce(mockJourney);
       vi.mocked(fs.access).mockResolvedValue(undefined);
       vi.mocked(fs.readFile).mockResolvedValue(JSON.stringify(createMockMetadata()));
 
@@ -1310,7 +1310,7 @@ describe('Edge Cases and Error Handling', () => {
   });
 
   describe('Concurrent Operations', () => {
-    it('should handle multiple parallel getRoadmapLessonAvailability calls', async () => {
+    it('should handle multiple parallel getJourneyLessonAvailability calls', async () => {
       vi.clearAllMocks();
       vi.mocked(resolvePathWithinRoot).mockImplementation(async (root: string, ...segments: string[]) => {
         const path = segments.join('/');
@@ -1320,7 +1320,7 @@ describe('Edge Cases and Error Handling', () => {
       vi.mocked(fs.access).mockResolvedValue(undefined);
       vi.mocked(fs.readFile).mockResolvedValue(JSON.stringify(createMockMetadata()));
 
-      const roadmap = {
+      const journey = {
         nodes: Array.from({ length: 10 }, (_, i) =>
           createMockNode({
             id: `node-${i}`,
@@ -1331,9 +1331,9 @@ describe('Edge Cases and Error Handling', () => {
 
       // Run multiple calls in parallel
       const results = await Promise.all([
-        getRoadmapLessonAvailability(roadmap),
-        getRoadmapLessonAvailability(roadmap),
-        getRoadmapLessonAvailability(roadmap),
+        getJourneyLessonAvailability(journey),
+        getJourneyLessonAvailability(journey),
+        getJourneyLessonAvailability(journey),
       ]);
 
       results.forEach(result => {
@@ -1427,7 +1427,7 @@ describe('Function Interactions', () => {
 
   describe('getNextLessonNavigation -> getAdjacentLessons comparison', () => {
     it('should provide consistent navigation suggestions', async () => {
-      const mockRoadmap = createMockRoadmap({
+      const mockJourney = createMockJourney({
         nodes: [
           createMockNode({
             id: 'css',
@@ -1441,7 +1441,7 @@ describe('Function Interactions', () => {
         edges: [],
       });
 
-      vi.mocked(roadmapRepo.findRoadmapBySlug).mockResolvedValue(mockRoadmap);
+      vi.mocked(journeyRepo.findJourneyBySlug).mockResolvedValue(mockJourney);
       vi.mocked(fs.access).mockResolvedValue(undefined);
       
       const mockDirEntries = [

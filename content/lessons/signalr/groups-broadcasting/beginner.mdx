@@ -1,17 +1,17 @@
-# Groups & Broadcasting: Organize Your Audience! 📣
+# Groups & Broadcasting: Organize Your Audience
 
 Imagine a **school** with different classrooms. Instead of shouting to the entire school, teachers can talk to just ONE classroom! That's what **Groups** do in SignalR.
 
-## What are Groups? 👥
+## What are Groups?
 
 **Groups** are like **club memberships** or **chat rooms**. You can organize clients into groups and send messages only to those groups.
 
 ### Real-World Examples:
 
-- 📱 **WhatsApp Groups** - Only members see messages
-- 🎮 **Game Lobbies** - Players in same match  
-- 🏢 **Slack Channels** - Team-specific conversations
-- 📺 **Live Sports Rooms** - Fans of specific teams
+- **WhatsApp Groups** - Only members see messages
+- **Game Lobbies** - Players in same match  
+- **Slack Channels** - Team-specific conversations
+- **Live Sports Rooms** - Fans of specific teams
 
 <InfoBox type="success" title="The Classroom Analogy">
 **Without Groups:**
@@ -21,7 +21,7 @@ Imagine a **school** with different classrooms. Instead of shouting to the entir
 **With Groups:**
 - Teacher talks to "Math Class" group only
 - Only math students hear the announcement
-- Much more efficient! 🎯
+- Much more efficient!
 </InfoBox>
 
 ```csharp
@@ -47,7 +47,7 @@ public class ChatHub : Hub
 
 <ProgressCheckpoint section="understanding-groups" xpReward={10} />
 
-## Managing Groups 🔧
+## Managing Groups
 
 ### Joining a Group
 
@@ -95,7 +95,7 @@ public async Task LeaveChatRoom(string roomName)
 public override async Task OnDisconnectedAsync(Exception? exception)
 {
     // SignalR AUTOMATICALLY removes the connection from ALL groups!
-    // You don't have to manually clean up 🎉
+    // You don't have to manually clean up
     await base.OnDisconnectedAsync(exception);
 }
 ```
@@ -109,7 +109,7 @@ public override async Task OnDisconnectedAsync(Exception? exception)
 
 <ProgressCheckpoint section="group-management" xpReward={10} />
 
-## Broadcasting to Groups 📡
+## Broadcasting to Groups
 
 Now the fun part - sending messages to specific groups!
 
@@ -156,7 +156,7 @@ public async Task SendToGroupExceptSpecific(
 }
 ```
 
-## Complete Chat Room Example 💬
+## Complete Chat Room Example
 
 **Server:**
 ```csharp
@@ -292,16 +292,16 @@ graph TB
 
 <ProgressCheckpoint section="broadcasting-patterns" xpReward={10} />
 
-## Key Takeaways 🎯
+## Key Takeaways
 
-✅ **Groups** = Organize clients like club memberships  
-✅ **AddToGroupAsync** = Join a group  
-✅ **RemoveFromGroupAsync** = Leave a group  
-✅ **Clients.Group(name)** = Send to all in group  
-✅ **Clients.OthersInGroup(name)** = Send to group except caller  
-✅ **Auto-cleanup** = Groups cleared on disconnect  
-✅ **Multiple groups** = One client can join many groups  
+**Groups** = Organize clients like club memberships  
+**AddToGroupAsync** = Join a group  
+**RemoveFromGroupAsync** = Leave a group  
+**Clients.Group(name)** = Send to all in group  
+**Clients.OthersInGroup(name)** = Send to group except caller  
+**Auto-cleanup** = Groups cleared on disconnect  
+**Multiple groups** = One client can join many groups  
 
-> **Remember**: Groups are like classrooms in a school. You can be in multiple classes, and teachers can talk to specific classes instead of the whole school! 🏫
+> **Remember**: Groups are like classrooms in a school. You can be in multiple classes, and teachers can talk to specific classes instead of the whole school!
 
-You now know how to build complete chat rooms and targeted broadcasting! 🎉
+You now know how to build complete chat rooms and targeted broadcasting!
