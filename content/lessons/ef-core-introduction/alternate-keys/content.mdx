@@ -10,7 +10,7 @@ An Alternate Key (AK) serves two main purposes in EF Core:
 1.  **Unique Constraint**: It guarantees that the value (or combination of values) is unique across the table.
 2.  **Relationship Target**: It can be used as the target for a Foreign Key, instead of the Primary Key.
 
-### 🔑 Primary Key vs Alternate Key
+###  Primary Key vs Alternate Key
 
 | Feature | Primary Key | Alternate Key |
 |:--------|:------------|:--------------|
@@ -71,7 +71,7 @@ protected override void OnModelCreating(ModelBuilder modelBuilder)
 
 This is where Alternate Keys shine! You can point a Foreign Key to an Alternate Key instead of the Primary Key.
 
-### Scenario: Linking by License Plate 🚗
+### Scenario: Linking by License Plate 
 
 Imagine a `Car` and a `ParkingPermit`. The `Car` has an ID, but the `ParkingPermit` links to the `Car` using its `LicensePlate`.
 

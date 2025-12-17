@@ -2,7 +2,7 @@
 
 Learn to see what your queries are really doing!
 
-## 🔍 What is Query Analysis?
+##  What is Query Analysis?
 
 Query analysis shows you HOW the database runs your query:
 
@@ -15,7 +15,7 @@ Analysis reveals:
 - Time: 0.001 seconds
 ```
 
-## 📊 Execution Plans
+##  Execution Plans
 
 See the database's plan for your query:
 
@@ -29,7 +29,7 @@ SET SHOWPLAN_TEXT OFF;
 EXPLAIN SELECT * FROM orders WHERE customer_id = 123;
 ```
 
-## 🎯 Key Metrics to Watch
+##  Key Metrics to Watch
 
 | Metric              | Good       | Bad            |
 | ------------------- | ---------- | -------------- |
@@ -38,7 +38,7 @@ EXPLAIN SELECT * FROM orders WHERE customer_id = 123;
 | Cost                | Low        | High           |
 | Actual vs Estimated | Close      | Very Different |
 
-## 📈 Understanding Output
+##  Understanding Output
 
 ```sql
 EXPLAIN SELECT * FROM customers WHERE email = 'john@example.com';
@@ -57,7 +57,7 @@ Key terms:
 - **Rows**: Number of rows examined
 - **Cost**: Relative cost estimate
 
-## ⚡ Quick Performance Check
+##  Quick Performance Check
 
 ```sql
 -- SQL Server: Show actual statistics

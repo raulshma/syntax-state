@@ -2,7 +2,7 @@
 
 Learn the four guarantees that keep your data safe!
 
-## 🔒 What is ACID?
+##  What is ACID?
 
 ACID stands for four guarantees every database transaction provides:
 
@@ -13,7 +13,7 @@ ACID stands for four guarantees every database transaction provides:
 | **I**  | Isolation   | Transactions don't interfere |
 | **D**  | Durability  | Committed = permanent        |
 
-## ⚛️ Atomicity: All or Nothing
+## ️ Atomicity: All or Nothing
 
 A transaction either completes entirely or not at all:
 
@@ -27,7 +27,7 @@ COMMIT;
 
 If the second UPDATE fails, the first is rolled back!
 
-## ✅ Consistency: Rules Always Apply
+##  Consistency: Rules Always Apply
 
 Database moves from one valid state to another:
 
@@ -41,7 +41,7 @@ BEGIN TRANSACTION;
 COMMIT;
 ```
 
-## 🔐 Isolation: No Interference
+##  Isolation: No Interference
 
 Concurrent transactions don't affect each other:
 
@@ -51,7 +51,7 @@ Concurrent transactions don't affect each other:
 -- Transaction A still sees 500 until B commits
 ```
 
-## 💾 Durability: Committed = Saved
+##  Durability: Committed = Saved
 
 Once committed, data survives crashes:
 
@@ -59,7 +59,7 @@ Once committed, data survives crashes:
 COMMIT;  -- After this, even a power failure won't lose the data
 ```
 
-## 🎯 Real World Example
+##  Real World Example
 
 Bank transfer - must be ACID!
 

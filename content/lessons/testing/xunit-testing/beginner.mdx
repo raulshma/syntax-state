@@ -361,21 +361,21 @@ public void Divide_ByZero_ThrowsException()
 
 ### Common Mistakes to Avoid
 
-❌ **Testing private methods**
+ **Testing private methods**
 ```csharp
 // Bad - Don't test private methods
 [Fact]
 public void PrivateHelper_ShouldWork() { }
 ```
 
-✅ **Test public behavior**
+ **Test public behavior**
 ```csharp
 // Good - Test public methods
 [Fact]
 public void Add_ReturnsSum() { }
 ```
 
-❌ **Multiple assertions for different scenarios**
+ **Multiple assertions for different scenarios**
 ```csharp
 // Bad - Testing too many things
 [Fact]
@@ -387,7 +387,7 @@ public void Calculator_AllOperations()
 }
 ```
 
-✅ **One test per scenario**
+ **One test per scenario**
 ```csharp
 // Good - Separate tests
 [Fact]
@@ -449,4 +449,4 @@ Structure every test in three parts: set up data (Arrange), execute the code (Ac
 
 ---
 
-**Excellent work!** 🎉 You now know the fundamentals of xUnit testing. In the intermediate level, we'll explore advanced assertions, test fixtures, and test output. Ready to level up? 🚀
+**Excellent work!**  You now know the fundamentals of xUnit testing. In the intermediate level, we'll explore advanced assertions, test fixtures, and test output. Ready to level up? 

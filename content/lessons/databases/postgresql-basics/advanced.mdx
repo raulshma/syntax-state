@@ -154,7 +154,7 @@ ON products USING GIN (name gin_trgm_ops);`}
 | `pgcrypto` | Cryptographic functions |
 | `pg_stat_statements` | Query performance stats |
 
-## 📊 Advanced JSONB Operations
+##  Advanced JSONB Operations
 
 <DotnetCodePreview
   title="JSONB Power Features"
@@ -215,7 +215,7 @@ WHERE attributes @? '$.specs.ram ? (@ > 16)';`}
   ]}
 />
 
-## 🔄 Table Partitioning
+##  Table Partitioning
 
 For large tables, partitioning dramatically improves performance:
 
@@ -276,7 +276,7 @@ WHERE created_at >= '2024-02-01' AND created_at < '2024-03-01';`}
 | LIST | Categories | `PARTITION BY LIST (region)` |
 | HASH | Even distribution | `PARTITION BY HASH (id)` |
 
-## 🔒 Row-Level Security in PostgreSQL
+##  Row-Level Security in PostgreSQL
 
 <DotnetCodePreview
   title="Row-Level Security (RLS)"
@@ -319,7 +319,7 @@ SELECT * FROM documents;  -- Only sees documents where owner_id = 42`}
   ]}
 />
 
-## ⚡ Performance & Monitoring
+##  Performance & Monitoring
 
 ### Query Statistics
 
@@ -364,7 +364,7 @@ max_client_conn = 1000
 default_pool_size = 50
 ```
 
-## 🔌 Advanced .NET Integration
+##  Advanced .NET Integration
 
 <DotnetCodePreview
   title="PostgreSQL with EF Core"

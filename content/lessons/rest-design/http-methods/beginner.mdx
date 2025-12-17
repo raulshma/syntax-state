@@ -2,11 +2,11 @@
 
 When computers talk to each other on the web, they use a specific language. Just like you need verbs to communicate ("get," "create," "delete"), web APIs use **HTTP Methods**. And just like you need feedback ("done!", "error!"), APIs use **Status Codes**.
 
-## Section 1: The HTTP Methods - Your Action Verbs 🎬
+## Section 1: The HTTP Methods - Your Action Verbs 
 
 Think of HTTP methods as commands you give to a librarian:
 
-### GET - "Please Show Me" 📖
+### GET - "Please Show Me" 
 
 **What it does:** Retrieves information without changing anything.
 
@@ -23,7 +23,7 @@ GET /api/users/123
 
 <ProgressCheckpoint section="get-method" xpReward={2} />
 
-### POST - "Please Add This" ➕
+### POST - "Please Add This" 
 
 **What it does:** Creates something new.
 
@@ -37,7 +37,7 @@ Body: { "name": "John", "email": "john@example.com" }
 
 <ProgressCheckpoint section="post-method" xpReward={2} />
 
-### PUT - "Replace Everything" 🔄
+### PUT - "Replace Everything" 
 
 **What it does:** Replaces an entire resource with new data.
 
@@ -51,7 +51,7 @@ Body: { "name": "John Doe", "email": "john@example.com", "age": 30 }
 
 <ProgressCheckpoint section="put-method" xpReward={2} />
 
-### DELETE - "Remove This" 🗑️
+### DELETE - "Remove This" ️
 
 **What it does:** Removes a resource.
 
@@ -63,14 +63,14 @@ DELETE /api/users/123
 <ProgressCheckpoint section="delete-method" xpReward={2} />
 
 
-### Quick Comparison Table 📊
+### Quick Comparison Table 
 
 | Method | Action | Example | Changes Data? |
 |:-------|:-------|:--------|:--------------|
-| **GET** | Read/View | "Show me user 123" | ❌ No |
-| **POST** | Create | "Add a new user" | ✅ Yes |
-| **PUT** | Replace | "Replace user 123's info" | ✅ Yes |
-| **DELETE** | Remove | "Delete user 123" | ✅ Yes |
+| **GET** | Read/View | "Show me user 123" |  No |
+| **POST** | Create | "Add a new user" |  Yes |
+| **PUT** | Replace | "Replace user 123's info" |  Yes |
+| **DELETE** | Remove | "Delete user 123" |  Yes |
 
 <InfoBox type="tip">
   **Memory trick:** Think of CRUD operations!
@@ -84,7 +84,7 @@ DELETE /api/users/123
 
 ---
 
-## Section 2: Status Codes - The Server's Response 🚦
+## Section 2: Status Codes - The Server's Response 
 
 When you make a request, the server responds with a 3-digit number. Think of them like traffic lights!
 
@@ -139,7 +139,7 @@ Body: { "name": "" }  ← Empty name!
 
 <ProgressCheckpoint section="4xx-codes" xpReward={2} />
 
-### 🔴 5xx Series: Server Error (Red Light)
+###  5xx Series: Server Error (Red Light)
 
 These mean the **SERVER** messed up. Not your fault!
 
@@ -151,9 +151,9 @@ These mean the **SERVER** messed up. Not your fault!
 
 ---
 
-## Section 3: Putting It All Together 🎯
+## Section 3: Putting It All Together 
 
-### Status Code Cheat Sheet 📝
+### Status Code Cheat Sheet 
 
 | Code | Name | Meaning |
 |:-----|:-----|:--------|
@@ -166,7 +166,7 @@ These mean the **SERVER** messed up. Not your fault!
 | **404** | Not Found | Resource doesn't exist |
 | **500** | Server Error | Server crashed |
 
-### Real-World Example: Creating a User 👤
+### Real-World Example: Creating a User 
 
 **Scenario 1: Success**
 ```

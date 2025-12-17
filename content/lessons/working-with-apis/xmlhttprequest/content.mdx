@@ -6,7 +6,7 @@ Before `fetch()` existed, XMLHttpRequest (XHR) was THE way to make HTTP requests
 
 ## Section 1: XHR Basics
 
-### The Messenger Analogy 📬
+### The Messenger Analogy 
 
 Think of XHR like sending a messenger to get information:
 
@@ -169,25 +169,25 @@ const xhr = new XMLHttpRequest();
 
 // Track all events
 xhr.addEventListener('loadstart', () => {
-  console.log('🚀 Request started');
+  console.log(' Request started');
 });
 
 xhr.addEventListener('progress', (event) => {
   if (event.lengthComputable) {
     const percent = (event.loaded / event.total) * 100;
-    console.log('📊 Progress:', percent.toFixed(1) + '%');
+    console.log(' Progress:', percent.toFixed(1) + '%');
   } else {
-    console.log('📊 Loaded:', event.loaded, 'bytes');
+    console.log(' Loaded:', event.loaded, 'bytes');
   }
 });
 
 xhr.addEventListener('load', () => {
-  console.log('✅ Request completed');
+  console.log(' Request completed');
   console.log('Status:', xhr.status, xhr.statusText);
 });
 
 xhr.addEventListener('error', () => {
-  console.log('❌ Network error');
+  console.log(' Network error');
 });
 
 xhr.addEventListener('timeout', () => {
@@ -195,7 +195,7 @@ xhr.addEventListener('timeout', () => {
 });
 
 xhr.addEventListener('loadend', () => {
-  console.log('🏁 Request finished (success or failure)');
+  console.log(' Request finished (success or failure)');
 });
 
 // Set timeout (in milliseconds)
@@ -303,7 +303,7 @@ demo();`}
 | Feature | XHR | Fetch |
 |:--------|:----|:------|
 | Syntax | Callback-based | Promise-based |
-| Progress events | ✅ Built-in | ❌ Requires streams |
+| Progress events |  Built-in |  Requires streams |
 | Abort | `xhr.abort()` | `AbortController` |
 | Timeout | `xhr.timeout` | Manual with `AbortController` |
 | JSON parsing | Manual | `response.json()` |

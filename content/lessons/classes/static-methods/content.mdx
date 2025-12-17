@@ -6,7 +6,7 @@ While instance methods belong to individual objects, **static** members belong t
 
 ## Section 1: Understanding Static Members
 
-### The Factory vs Product Analogy 🏭
+### The Factory vs Product Analogy 
 
 Imagine a car factory:
 - **Instance properties**: Each car's color, VIN number, mileage
@@ -311,7 +311,7 @@ class Database {
   
   // Static initialization block
   static {
-    console.log('🔧 Initializing Database class...');
+    console.log(' Initializing Database class...');
     
     // Complex initialization logic
     this.config = {
@@ -329,7 +329,7 @@ class Database {
     }
     
     this.isInitialized = true;
-    console.log('✅ Database class initialized!');
+    console.log(' Database class initialized!');
   }
   
   static getConnection() {

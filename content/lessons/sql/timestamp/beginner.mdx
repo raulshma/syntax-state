@@ -2,7 +2,7 @@
 
 Work with timestamps and understand time zones!
 
-## 📍 What is a TIMESTAMP?
+##  What is a TIMESTAMP?
 
 A timestamp captures an exact moment in time, often with timezone awareness:
 
@@ -16,7 +16,7 @@ SELECT NOW();           -- PostgreSQL/MySQL
 SELECT SYSTIMESTAMP;    -- Oracle
 ```
 
-## 🌍 TIMESTAMP vs DATETIME
+##  TIMESTAMP vs DATETIME
 
 | Feature     | DATETIME      | TIMESTAMP         |
 | ----------- | ------------- | ----------------- |
@@ -45,7 +45,7 @@ CREATE TABLE events (
 );
 ```
 
-## 🔄 Unix Timestamp
+##  Unix Timestamp
 
 Seconds since January 1, 1970 (epoch):
 
@@ -62,7 +62,7 @@ SELECT DATEADD(SECOND, @unix_ts, '1970-01-01');  -- SQL Server
 SELECT TO_TIMESTAMP(@unix_ts);                    -- PostgreSQL
 ```
 
-## 📊 Comparing Timestamps
+##  Comparing Timestamps
 
 ```sql
 -- Recent records

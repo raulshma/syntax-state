@@ -2,13 +2,13 @@
 
 Master the art of writing fast SQL!
 
-## 🎯 The Optimization Mindset
+##  The Optimization Mindset
 
 1. **Reduce data** - Work with fewer rows
 2. **Use indexes** - Let the database find data fast
 3. **Avoid repetition** - Don't calculate the same thing twice
 
-## 📉 Filter Early
+##  Filter Early
 
 ```sql
 -- BAD: Filter after processing all rows
@@ -20,7 +20,7 @@ CREATE INDEX IX_orders_customer ON orders(customer_id);
 -- Now filter uses index (fast!)
 ```
 
-## 📊 Use LIMIT/TOP
+##  Use LIMIT/TOP
 
 ```sql
 -- Don't retrieve more than needed
@@ -33,7 +33,7 @@ SELECT * FROM orders ORDER BY order_date DESC LIMIT 10;
 SELECT * FROM orders ORDER BY id OFFSET 20 ROWS FETCH NEXT 10 ROWS ONLY;
 ```
 
-## ⚡ Avoid SELECT \*
+##  Avoid SELECT \*
 
 ```sql
 -- BAD
@@ -43,7 +43,7 @@ SELECT * FROM customers;
 SELECT id, name, email FROM customers;
 ```
 
-## 🔄 Simplify WHERE Clauses
+##  Simplify WHERE Clauses
 
 ```sql
 -- BAD: Complex expression
@@ -53,7 +53,7 @@ SELECT * FROM orders WHERE total * 1.08 > 100;
 SELECT * FROM orders WHERE total > 92.59;
 ```
 
-## 📋 Quick Optimization Checklist
+##  Quick Optimization Checklist
 
 | Check                          | Fix                            |
 | ------------------------------ | ------------------------------ |

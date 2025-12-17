@@ -1,6 +1,6 @@
 # Multi-Mapping with Dapper
 
-Imagine you're organizing a party, and you have a guest list (customers) and a seating arrangement (orders). Each guest is assigned to a table. In database terms, that's a **relationship** between two tables! Dapper's multi-mapping feature helps you fetch related data in one query. 🎯
+Imagine you're organizing a party, and you have a guest list (customers) and a seating arrangement (orders). Each guest is assigned to a table. In database terms, that's a **relationship** between two tables! Dapper's multi-mapping feature helps you fetch related data in one query. 
 
 <InfoBox type="tip" title="What You'll Learn">
 You'll discover how to join tables in SQL and map the results to multiple related C# objects automatically—no manual assembly required!
@@ -29,7 +29,7 @@ You want to fetch an order **with** its customer information. Without multi-mapp
 2. Query the customer separately
 3. Manually assign the customer to the order
 
-That's tedious! Multi-mapping does all of this in **one step**. ✨
+That's tedious! Multi-mapping does all of this in **one step**. 
 
 <ProgressCheckpoint section="two-type-mapping" xpReward={7} />
 
@@ -343,7 +343,7 @@ var orders = connection.Query<Order, Customer, Order>(
 // Much faster! ⚡
 ```
 
-<InfoBox type="success" title="You're a Multi-Mapping Master! 🏆">
+<InfoBox type="success" title="You're a Multi-Mapping Master! ">
 You now understand:
 - How to use multi-mapping to join tables
 - The purpose and usage of the `splitOn` parameter

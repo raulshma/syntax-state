@@ -6,7 +6,7 @@ Learn the complete workflow for managing database schema changes with EF Core mi
 
 ## Section 1: The Migration Workflow
 
-### The Blueprint Analogy 📐
+### The Blueprint Analogy 
 
 Imagine you're an architect expanding a building:
 
@@ -237,17 +237,17 @@ In development, `dotnet ef database update` is convenient. But in production, yo
   title="Development vs Production"
   items={[
     {
-      label: "✅ Development: dotnet ef database update",
+      label: " Development: dotnet ef database update",
       description: "Direct execution is fine - you can easily recreate the database",
       isCorrect: true
     },
     {
-      label: "✅ Production: SQL Scripts",
+      label: " Production: SQL Scripts",
       description: "Generate scripts, review them, run through your deployment pipeline",
       isCorrect: true
     },
     {
-      label: "❌ Production: Direct CLI",
+      label: " Production: Direct CLI",
       description: "Never run 'dotnet ef database update' directly on production!",
       isCorrect: false
     }

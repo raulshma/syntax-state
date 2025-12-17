@@ -189,14 +189,14 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 <DotnetCodePreview
   title="Fix N+1 with Include"
-  code={`// ❌ BAD: N+1 problem (101 queries for 100 blogs)
+  code={`//  BAD: N+1 problem (101 queries for 100 blogs)
 var blogs = await context.Blogs.ToListAsync();
 foreach (var blog in blogs)
 {
     Console.WriteLine(blog.Posts.Count);  // Lazy load each time
 }
 
-// ✅ GOOD: Single query with Include
+//  GOOD: Single query with Include
 var blogs = await context.Blogs
     .Include(b => b.Posts)
     .ToListAsync();
@@ -206,7 +206,7 @@ foreach (var blog in blogs)
     Console.WriteLine(blog.Posts.Count);  // Already loaded!
 }
 
-// ✅ BEST: Use projection if you only need a count
+//  BEST: Use projection if you only need a count
 var blogCounts = await context.Blogs
     .Select(b => new { b.Name, PostCount = b.Posts.Count })
     .ToListAsync();  // Single query, minimal data`}
@@ -302,14 +302,14 @@ EF Core 5.0+ offers `AsSplitQuery()` to avoid cartesian explosion:
 
 <DotnetCodePreview
   title="Split Queries for Performance"
-  code={`// ❌ Single query (Cartesian explosion risk)
+  code={`//  Single query (Cartesian explosion risk)
 var blogs = await context.Blogs
     .Include(b => b.Posts)
     .Include(b => b.Tags)
     .ToListAsync();
 // Returns: Blogs × Posts × Tags (explosion!)
 
-// ✅ Split query (separate queries per collection)
+//  Split query (separate queries per collection)
 var blogs = await context.Blogs
     .Include(b => b.Posts)
     .Include(b => b.Tags)
@@ -385,12 +385,12 @@ Don't load full entities when you only need specific fields:
 
 <DotnetCodePreview
   title="Projection vs Full Entity"
-  code={`// ❌ Loads entire entities (all columns)
+  code={`//  Loads entire entities (all columns)
 var blogs = await context.Blogs
     .Include(b => b.Posts)
     .ToListAsync();
 
-// ✅ Project to exactly what you need
+//  Project to exactly what you need
 var blogDtos = await context.Blogs
     .Select(b => new BlogSummaryDto
     {
@@ -453,10 +453,10 @@ var blogs = await context.Blogs
 
 <DotnetCodePreview
   title="Paginate Instead of Loading All"
-  code={`// ❌ Loading ALL posts (could be millions!)
+  code={`//  Loading ALL posts (could be millions!)
 var allPosts = await context.Posts.ToListAsync();
 
-// ✅ Paginate with Skip and Take
+//  Paginate with Skip and Take
 int pageSize = 20;
 int pageNumber = 1;
 
@@ -466,7 +466,7 @@ var pagedPosts = await context.Posts
     .Take(pageSize)
     .ToListAsync();
 
-// ✅ Keyset pagination (even faster for large offsets)
+//  Keyset pagination (even faster for large offsets)
 var lastId = previousPageLastId;  // From previous page
 var keysetPosts = await context.Posts
     .Where(p => p.Id > lastId)
@@ -526,32 +526,32 @@ var blog = await GetBlogById(context, blogId);
   title="Loading Performance Checklist"
   items={[
     {
-      label: "✅ Check for N+1 with logging",
+      label: " Check for N+1 with logging",
       description: "Enable SQL logging and count queries per operation.",
       isCorrect: true
     },
     {
-      label: "✅ Use Include for known related data",
+      label: " Use Include for known related data",
       description: "Eager load what you always need.",
       isCorrect: true
     },
     {
-      label: "✅ Use AsSplitQuery for multiple collections",
+      label: " Use AsSplitQuery for multiple collections",
       description: "Avoid Cartesian explosion with large datasets.",
       isCorrect: true
     },
     {
-      label: "✅ Use projections when possible",
+      label: " Use projections when possible",
       description: "Select only the fields you need.",
       isCorrect: true
     },
     {
-      label: "✅ Use AsNoTracking for read-only",
+      label: " Use AsNoTracking for read-only",
       description: "Skip change tracking for display queries.",
       isCorrect: true
     },
     {
-      label: "✅ Paginate large result sets",
+      label: " Paginate large result sets",
       description: "Never load unbounded data.",
       isCorrect: true
     }

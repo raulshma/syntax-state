@@ -134,7 +134,7 @@ WHERE cp.AncestorId = 5;
 
 ## Section 3: Normalization
 
-### 📐 Beyond 3NF
+###  Beyond 3NF
 
 ### Boyce-Codd Normal Form (BCNF)
 
@@ -177,7 +177,7 @@ CREATE TABLE StudentSubjects (
   ]}
 />
 
-## 🔄 When to Denormalize
+##  When to Denormalize
 
 Sometimes breaking normalization rules improves performance:
 
@@ -235,7 +235,7 @@ CREATE TABLE Orders (
   ]}
 />
 
-## 📊 Index Design Strategy
+##  Index Design Strategy
 
 Design indexes based on query patterns:
 
@@ -264,11 +264,11 @@ CREATE INDEX IX_Orders_Customer_Date
 ON Orders(CustomerId, OrderDate);
 
 -- This index helps:
--- WHERE CustomerId = 5                    ✓
--- WHERE CustomerId = 5 AND OrderDate > X  ✓
+-- WHERE CustomerId = 5                    
+-- WHERE CustomerId = 5 AND OrderDate > X  
 
 -- But NOT:
--- WHERE OrderDate > X                     ✗ (can't use leading column)`}
+-- WHERE OrderDate > X                      (can't use leading column)`}
   steps={[
     {
       lineNumbers: [5, 6],
@@ -288,7 +288,7 @@ ON Orders(CustomerId, OrderDate);
   ]}
 />
 
-## 🏗️ Design Patterns
+## ️ Design Patterns
 
 ### Soft Delete Pattern
 
@@ -407,7 +407,7 @@ WHERE Id = 1;`}
   ]}
 />
 
-## 🎯 Schema Versioning
+##  Schema Versioning
 
 Track database changes with migration scripts:
 

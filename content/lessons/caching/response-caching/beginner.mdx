@@ -14,10 +14,10 @@ Response Caching stores the entire HTTP response (the data your API sends back) 
 
 | Without Response Cache | With Response Cache |
 |:----------------------|:-------------------|
-| 🐌 Process every request | ⚡ Return cached response |
-| 💻 CPU works hard | 😌 CPU relaxes |
-| 🗄️ Database hit every time | 💾 Database saved |
-| 📊 200ms response time | 🚀 5ms response time |
+|  Process every request |  Return cached response |
+|  CPU works hard |  CPU relaxes |
+| ️ Database hit every time |  Database saved |
+|  200ms response time |  5ms response time |
 
 <InfoBox type="info">
 **Response Caching** is perfect for API endpoints that return the same data for all users, like product catalogs, blog posts, or public data.
@@ -27,9 +27,9 @@ Response Caching stores the entire HTTP response (the data your API sends back) 
 
 When a request comes in:
 
-1. 🔍 **Check cache**: "Do I have this response saved?"
-2. ✅ **If YES**: Return it immediately!
-3. ❌ **If NO**: Process the request, save the response, then return it
+1.  **Check cache**: "Do I have this response saved?"
+2.  **If YES**: Return it immediately!
+3.  **If NO**: Process the request, save the response, then return it
 
 <DotnetCodePreview 
   language="csharp"
@@ -103,26 +103,26 @@ The `Duration` parameter specifies how long (in seconds) to cache the response:
 ```
 
 **Rule of Thumb**:
-- 📰 News/blog posts: 5-30 minutes
-- 📦 Product catalogs: 15-60 minutes
-- ⚙️ Configuration data: 1-24 hours
-- 🔄 Real-time data: Don't cache!
+-  News/blog posts: 5-30 minutes
+-  Product catalogs: 15-60 minutes
+- ️ Configuration data: 1-24 hours
+-  Real-time data: Don't cache!
 
 ## When to Use Response Caching
 
-✅ **Perfect For:**
-- 📄 Public data (same for all users)
-- 📚 Blog posts and articles
-- 🏪 Product catalogs
-- 📊 Public statistics/reports
-- 🗺️ Reference data (countries, categories)
+ **Perfect For:**
+-  Public data (same for all users)
+-  Blog posts and articles
+-  Product catalogs
+-  Public statistics/reports
+- ️ Reference data (countries, categories)
 
-❌ **Don't Use For:**
-- 👤 User-specific data
-- 🔐 Authenticated content
-- 💰 Shopping carts
-- 📝 Form submissions
-- 📈 Real-time data
+ **Don't Use For:**
+-  User-specific data
+-  Authenticated content
+-  Shopping carts
+-  Form submissions
+-  Real-time data
 
 ## Cache vs. No Cache Example
 
@@ -176,7 +176,7 @@ Cache-Control: public, max-age=60
 ```
 
 This tells the browser:
-- ✅ **public**: Anyone can cache this
+-  **public**: Anyone can cache this
 - ⏰ **max-age=60**: Cache for 60 seconds
 
 <InfoBox type="tip">
@@ -185,7 +185,7 @@ This tells the browser:
 
 ## Common Pitfalls
 
-### ❌ Wrong: Caching User-Specific Data
+###  Wrong: Caching User-Specific Data
 ```csharp
 [ResponseCache(Duration = 300)]
 public IActionResult GetMyOrders()
@@ -196,7 +196,7 @@ public IActionResult GetMyOrders()
 }
 ```
 
-### ✅ Right: Cache Public Data Only
+###  Right: Cache Public Data Only
 ```csharp
 [ResponseCache(Duration = 300)]
 public IActionResult GetAllProducts()

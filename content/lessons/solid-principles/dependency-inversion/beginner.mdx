@@ -2,16 +2,16 @@
 
 Imagine buying a new lamp. Would you prefer to:
 
-A) Wire it directly into your house's electrical system? 🔌⚡
-B) Just plug it into a wall outlet? 🔌✨
+A) Wire it directly into your house's electrical system? 
+B) Just plug it into a wall outlet? 
 
 Obviously B! That's the **Dependency Inversion Principle** in action.
 
 ---
 
-## Section 1: The Wall Outlet Analogy 🔌
+## Section 1: The Wall Outlet Analogy 
 
-| **Direct Wiring** ⚡ | **Using an Outlet** 🔌 |
+| **Direct Wiring**  | **Using an Outlet**  |
 |:---------------------|:----------------------|
 | Need an electrician | Anyone can do it |
 | Permanent connection | Easy to unplug |
@@ -43,9 +43,9 @@ flowchart TB
 ```
 
 **Problems:**
-- ❌ Can't test OrderService without a real database!
-- ❌ Want to use MongoDB? Rewrite OrderService!
-- ❌ OrderService "knows too much" about database details
+-  Can't test OrderService without a real database!
+-  Want to use MongoDB? Rewrite OrderService!
+-  OrderService "knows too much" about database details
 
 <ProgressCheckpoint section="dip-understanding" xpReward={9} />
 
@@ -71,9 +71,9 @@ Now you can swap databases without touching OrderService!
 ### Key Takeaways
 
 <InfoBox type="tip" title="Remember">
-- 🔌 **Use "outlets" (interfaces)** - Don't hardwire your code
-- 📦 **Depend on abstractions** - Not specific implementations
-- 🔄 **Swappable parts** - Like changing a tire without redesigning the car
+-  **Use "outlets" (interfaces)** - Don't hardwire your code
+-  **Depend on abstractions** - Not specific implementations
+-  **Swappable parts** - Like changing a tire without redesigning the car
 - 🧪 **Enables testing** - Use fake implementations in tests
 </InfoBox>
 

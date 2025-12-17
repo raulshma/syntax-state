@@ -6,7 +6,7 @@ Stop the query explosion! Learn to identify and fix the sneaky N+1 problem—the
 
 ## Section 1: Understanding the N+1 Problem
 
-### The Kitchen Trips Analogy 🍳
+### The Kitchen Trips Analogy 
 
 Imagine you're making breakfast for 10 people. You need eggs, but instead of getting all the eggs at once, you:
 
@@ -25,13 +25,13 @@ That's the **N+1 problem**! One trip to identify what you need, then N more trip
 
 <DotnetCodePreview
   title="The N+1 Problem Exposed"
-  code={`// 😱 THE N+1 PROBLEM
+  code={`//  THE N+1 PROBLEM
 // This looks innocent...
 var blogs = await context.Blogs.ToListAsync();  // Query 1
 
 foreach (var blog in blogs)
 {
-    // 💥 EACH access to Posts triggers a database query!
+    //  EACH access to Posts triggers a database query!
     Console.WriteLine($"{blog.Title}: {blog.Posts.Count} posts");
     
     // With 100 blogs:
@@ -42,7 +42,7 @@ foreach (var blog in blogs)
     // Query 101: SELECT * FROM Posts WHERE BlogId = 100
 }
 
-// Result: 101 database queries for a simple list! 😱
+// Result: 101 database queries for a simple list! 
 
 // Each query has:
 // - Network round-trip latency
@@ -113,15 +113,15 @@ SELECT * FROM [Posts] WHERE [BlogId] = 3
 
 ## Section 2: Eager Loading with Include
 
-### The Shopping Cart Solution 🛒
+### The Shopping Cart Solution 
 
 Instead of making 100 trips to the kitchen, bring a shopping cart and get everything in one trip!
 
 <DotnetCodePreview
   title="Include() to the Rescue"
-  code={`// ✅ THE FIX: Eager loading with Include()
+  code={`//  THE FIX: Eager loading with Include()
 var blogs = await context.Blogs
-    .Include(b => b.Posts)  // 👈 Load posts WITH blogs!
+    .Include(b => b.Posts)  //  Load posts WITH blogs!
     .ToListAsync();
 
 // Now this works WITHOUT extra queries:
@@ -236,7 +236,7 @@ EF Core builds the optimal query automatically!
 
 ## Section 3: Split Queries
 
-### The Cartesian Explosion Problem 💥
+### The Cartesian Explosion Problem 
 
 Include() creates JOINs, which can cause data duplication:
 
@@ -284,7 +284,7 @@ SELECT * FROM Subscribers WHERE BlogId IN (1, 2, 3...)
 
 <DotnetCodePreview
   title="When to Use Split Queries"
-  code={`// ❌ BAD: Multiple collections cause cartesian explosion
+  code={`//  BAD: Multiple collections cause cartesian explosion
 var orders = await context.Orders
     .Include(o => o.Items)           // 10 items per order
     .Include(o => o.Payments)        // 3 payments per order
@@ -292,7 +292,7 @@ var orders = await context.Orders
     .ToListAsync();
 // Each order: 10 × 3 × 8 = 240 rows of duplicated data!
 
-// ✅ GOOD: Split query avoids explosion
+//  GOOD: Split query avoids explosion
 var orders = await context.Orders
     .Include(o => o.Items)
     .Include(o => o.Payments)
@@ -301,7 +301,7 @@ var orders = await context.Orders
     .ToListAsync();
 // 4 separate queries, no data duplication!
 
-// ✅ Configure as default for DbContext
+//  Configure as default for DbContext
 protected override void OnConfiguring(DbContextOptionsBuilder options)
 {
     options.UseSqlServer(connString, o => o.UseQuerySplittingBehavior(
@@ -358,7 +358,7 @@ var data = await context.Orders
 
 ## Section 4: Detection Strategies
 
-### Finding N+1 in Your Code 🔍
+### Finding N+1 in Your Code 
 
 <DotnetCodePreview
   title="Detection Methods"
@@ -420,7 +420,7 @@ public class N1Tests
 
 <DotnetCodePreview
   title="N+1 Anti-Patterns"
-  code={`// ❌ ANTI-PATTERN 1: Loop with database access
+  code={`//  ANTI-PATTERN 1: Loop with database access
 var customers = await context.Customers.ToListAsync();
 foreach (var customer in customers)
 {
@@ -429,12 +429,12 @@ foreach (var customer in customers)
         .ToListAsync();  // N+1 ALERT!
 }
 
-// ✅ FIX: Include or join
+//  FIX: Include or join
 var customers = await context.Customers
     .Include(c => c.Orders)
     .ToListAsync();
 
-// ❌ ANTI-PATTERN 2: Virtual navigation property access
+//  ANTI-PATTERN 2: Virtual navigation property access
 public class Customer
 {
     public virtual ICollection<Order> Orders { get; set; }  // Lazy loading!
@@ -442,9 +442,9 @@ public class Customer
 
 // In code: customer.Orders triggers query!
 
-// ✅ FIX: Explicit loading or Include()
+//  FIX: Explicit loading or Include()
 
-// ❌ ANTI-PATTERN 3: Projection accessing navigation
+//  ANTI-PATTERN 3: Projection accessing navigation
 var data = await context.Orders
     .Select(o => new {
         o.Id,
@@ -452,16 +452,16 @@ var data = await context.Orders
     })
     .ToListAsync();
 
-// ✅ Actually OK! EF Core is smart about projections
+//  Actually OK! EF Core is smart about projections
 // It builds a single query with JOIN
 
-// ❌ ANTI-PATTERN 4: Async inside loop
+//  ANTI-PATTERN 4: Async inside loop
 foreach (var id in orderIds)
 {
     var order = await context.Orders.FindAsync(id);  // N queries!
 }
 
-// ✅ FIX: Single query with Where In
+//  FIX: Single query with Where In
 var orders = await context.Orders
     .Where(o => orderIds.Contains(o.Id))
     .ToListAsync();`}
@@ -527,11 +527,11 @@ var orders = await context.Orders
 
 <KeyConcept title="The N+1 Prevention Checklist">
 Before any code that loops over entities:
-1. ✅ Do I access navigation properties in the loop?
-2. ✅ Have I used Include() for those properties?
-3. ✅ Should I use AsSplitQuery() for multiple collections?
-4. ✅ Could I use a projection instead of loading entities?
-5. ✅ Am I calling the database inside the loop? (Always bad!)
+1.  Do I access navigation properties in the loop?
+2.  Have I used Include() for those properties?
+3.  Should I use AsSplitQuery() for multiple collections?
+4.  Could I use a projection instead of loading entities?
+5.  Am I calling the database inside the loop? (Always bad!)
 </KeyConcept>
 
 <ProgressCheckpoint section="detection-strategies" xpReward={25} />

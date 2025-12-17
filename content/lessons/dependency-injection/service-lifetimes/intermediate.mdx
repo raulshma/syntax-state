@@ -58,16 +58,16 @@ builder.Services.AddTransient<TransientService>();
 ### Request 1:
 | Service          | Instance Created?       | Which Instance?      |
 | :--------------- | :---------------------- | :------------------- |
-| SingletonService | ✅ Yes (first time)     | `#1`                 |
-| ScopedService    | ✅ Yes                  | `#1` (for Request 1) |
-| TransientService | ✅ Yes (each injection) | `#1, #2, #3...`      |
+| SingletonService |  Yes (first time)     | `#1`                 |
+| ScopedService    |  Yes                  | `#1` (for Request 1) |
+| TransientService |  Yes (each injection) | `#1, #2, #3...`      |
 
 ### Request 2:
 | Service          | Instance Created? | Which Instance?          |
 | :--------------- | :---------------- | :----------------------- |
-| SingletonService | ❌ No (reuses)    | `#1` (same as before)    |
-| ScopedService    | ✅ Yes            | `#2` (new for Request 2) |
-| TransientService | ✅ Yes            | `#4, #5, #6...` (new)    |
+| SingletonService |  No (reuses)    | `#1` (same as before)    |
+| ScopedService    |  Yes            | `#2` (new for Request 2) |
+| TransientService |  Yes            | `#4, #5, #6...` (new)    |
 
 <InfoBox type="important">
   **Key Insight:** Singleton instances are **reused**, Scoped instances are
@@ -80,7 +80,7 @@ builder.Services.AddTransient<TransientService>();
 
 ## Section 3: Common Mistakes and Best Practices
 
-### ❌ Injecting Scoped into Singleton
+###  Injecting Scoped into Singleton
 
 ```csharp
 // BAD: Scoped service captured in singleton!
@@ -93,7 +93,7 @@ public class MySingleton
 
 This creates a **captive dependency** - the scoped service is trapped and never refreshed.
 
-### ❌ DbContext as Singleton
+###  DbContext as Singleton
 
 ```csharp
 // NEVER do this!
@@ -112,10 +112,10 @@ DbContext is not thread-safe and tracks entities - it MUST be Scoped.
 ### Key Takeaways
 
 <InfoBox type="tip" title="Remember">
-- 💜 **Singleton** - One instance forever, must be thread-safe
-- 💙 **Scoped** - One instance per request, the most common choice
-- 💚 **Transient** - New instance every injection, for lightweight services
-- ⚠️ **Never** inject Scoped into Singleton
+-  **Singleton** - One instance forever, must be thread-safe
+-  **Scoped** - One instance per request, the most common choice
+-  **Transient** - New instance every injection, for lightweight services
+- ️ **Never** inject Scoped into Singleton
 </InfoBox>
 
 <ProgressCheckpoint section="lifetime-pitfalls" xpReward={13} />

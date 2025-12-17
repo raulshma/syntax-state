@@ -2,7 +2,7 @@
 
 Learn how to modify records that already exist in your database!
 
-## ✏️ Basic UPDATE Syntax
+## ️ Basic UPDATE Syntax
 
 ```sql
 UPDATE table_name
@@ -10,9 +10,9 @@ SET column = new_value
 WHERE condition;
 ```
 
-> ⚠️ **Always use WHERE!** Without it, you'll update EVERY row!
+> ️ **Always use WHERE!** Without it, you'll update EVERY row!
 
-## 📝 Your First UPDATE
+##  Your First UPDATE
 
 ```sql
 -- Change a customer's email
@@ -21,7 +21,7 @@ SET email = 'newemail@email.com'
 WHERE id = 1;
 ```
 
-## 🔄 Updating Multiple Columns
+##  Updating Multiple Columns
 
 ```sql
 UPDATE customers
@@ -32,7 +32,7 @@ SET
 WHERE id = 1;
 ```
 
-## ⚡ Updating with Calculations
+##  Updating with Calculations
 
 ```sql
 -- Give everyone a 10% raise
@@ -46,7 +46,7 @@ SET stock = stock - 5
 WHERE product_id = 100;
 ```
 
-## 🎯 The Importance of WHERE
+##  The Importance of WHERE
 
 ```sql
 -- GOOD: Updates only one customer
@@ -60,7 +60,7 @@ SET status = 'inactive';
 -- Now every customer is inactive! 😱
 ```
 
-## 💡 Safe Update Workflow
+##  Safe Update Workflow
 
 1. **Write SELECT first** to see what you'll change:
 
@@ -82,7 +82,7 @@ WHERE city = 'Boston';
 SELECT * FROM customers WHERE city = 'Boston';
 ```
 
-## 🔢 Common UPDATE Patterns
+##  Common UPDATE Patterns
 
 | Goal                | Example                        |
 | ------------------- | ------------------------------ |

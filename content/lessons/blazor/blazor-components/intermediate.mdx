@@ -426,7 +426,7 @@ public class ContactModel
 
 ## Best Practices
 
-| Pattern | Good ✅ | Bad ❌ |
+| Pattern | Good  | Bad  |
 |:--------|:--------|:-------|
 | **Parameters** | `[Parameter] public string Title { get; set; }` | `public string Title { get; set; }` (missing attribute) |
 | **Events** | `EventCallback<T>` | `Action<T>` |
@@ -434,4 +434,4 @@ public class ContactModel
 | **Lifecycle** | `OnInitializedAsync()` for data | Constructor for data |
 | **Disposal** | `IAsyncDisposable` | Memory leaks |
 
-Components are the foundation of Blazor apps - master these patterns for production-ready code! 🎯
+Components are the foundation of Blazor apps - master these patterns for production-ready code! 

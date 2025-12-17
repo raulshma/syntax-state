@@ -2,7 +2,7 @@
 
 Foreign keys link tables together, like connecting puzzle pieces!
 
-## 🔗 What is a Foreign Key?
+##  What is a Foreign Key?
 
 A foreign key is a column that **references** the primary key of another table.
 
@@ -27,7 +27,7 @@ erDiagram
 | 2 | Bob | | 2 | 1 |
 | | | | 3 | 2 |
 
-## 📝 Creating a Foreign Key
+##  Creating a Foreign Key
 
 ```sql
 -- Parent table (referenced)
@@ -45,7 +45,7 @@ CREATE TABLE orders (
 );
 ```
 
-## ✅ What Foreign Keys Do
+##  What Foreign Keys Do
 
 1. **Ensure valid references** - Can't order for non-existent customer
 2. **Prevent orphan records** - Can't delete customer with orders
@@ -62,7 +62,7 @@ VALUES (2, 999, '2024-03-15');
 -- Error: Foreign key constraint violation
 ```
 
-## 🛡️ Protection in Action
+## ️ Protection in Action
 
 ```sql
 -- Can't delete a customer who has orders
@@ -70,7 +70,7 @@ DELETE FROM customers WHERE id = 1;
 -- Error: The DELETE statement conflicted with the FOREIGN KEY constraint
 ```
 
-## 📊 Common Relationship Types
+##  Common Relationship Types
 
 | Type         | Example            | FK Location          |
 | ------------ | ------------------ | -------------------- |
@@ -78,7 +78,7 @@ DELETE FROM customers WHERE id = 1;
 | One-to-One   | User → Profile     | Either table         |
 | Many-to-Many | Students ↔ Courses | Junction table       |
 
-## 💡 Named Foreign Keys
+##  Named Foreign Keys
 
 Give your constraints meaningful names:
 

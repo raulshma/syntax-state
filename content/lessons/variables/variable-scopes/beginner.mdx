@@ -2,7 +2,7 @@
 
 Imagine you live in a house with different rooms. Some things are in every room (like air!), but your toothbrush is only in the bathroom. **Scope** is about where your variables can be "seen" or used!
 
-## What is Scope? 🏠
+## What is Scope? 
 
 **Scope** answers the question: "Where can I use this variable?"
 
@@ -21,7 +21,7 @@ function myRoom() {
 
 <ProgressCheckpoint section="what-is-scope" xpReward={10} />
 
-## Global Scope: The Whole House 🌍
+## Global Scope: The Whole House 
 
 Variables declared **outside all functions and blocks** are in the **global scope**. They can be used anywhere!
 
@@ -68,7 +68,7 @@ title="Global Scope Example"
 
 <ProgressCheckpoint section="global-scope" xpReward={10} />
 
-## Function Scope: Your Private Room 🚪
+## Function Scope: Your Private Room 
 
 Variables created inside a function are **private** to that function. Other functions can't see them!
 
@@ -92,7 +92,7 @@ myBedroom();
 
 <ProgressCheckpoint section="function-scope" xpReward={10} />
 
-## Block Scope: Even Smaller Spaces 📦
+## Block Scope: Even Smaller Spaces 
 
 With `let` and `const`, you can create even smaller private spaces inside **blocks** (anything in curly braces `{}`).
 
@@ -119,14 +119,14 @@ let functionLevel = "I'm in the function";
 
 if (true) {
 let blockLevel = "I'm only in this block";
-console.log(outside); // ✅
-console.log(functionLevel); // ✅
-console.log(blockLevel); // ✅
+console.log(outside); // 
+console.log(functionLevel); // 
+console.log(blockLevel); // 
 }
 
-console.log(outside); // ✅
-console.log(functionLevel); // ✅
-// console.log(blockLevel); // ❌ Block level is gone!
+console.log(outside); // 
+console.log(functionLevel); // 
+// console.log(blockLevel); //  Block level is gone!
 }
 
 myFunction();`}
@@ -135,7 +135,7 @@ title="Block Scope Example"
 
 <ProgressCheckpoint section="block-scope" xpReward={10} />
 
-## Looking Up: The Scope Chain 🔗
+## Looking Up: The Scope Chain 
 
 When JavaScript looks for a variable, it starts in the current scope and looks **upward** (never down!).
 

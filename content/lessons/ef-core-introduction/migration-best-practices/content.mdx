@@ -6,7 +6,7 @@ Managing migrations in real-world projects requires discipline and strategy. Thi
 
 ## Section 1: Small, Focused Migrations
 
-### The Commit Analogy 📝
+### The Commit Analogy 
 
 Just like good Git commits, good migrations should be:
 
@@ -27,22 +27,22 @@ Just like good Git commits, good migrations should be:
   title="Migration Scope"
   items={[
     {
-      label: "✅ AddCustomerEmailColumn",
+      label: " AddCustomerEmailColumn",
       description: "Single change: adds one column to one table",
       isCorrect: true
     },
     {
-      label: "✅ CreateOrdersTable",
+      label: " CreateOrdersTable",
       description: "Creates one table with its columns and constraints",
       isCorrect: true
     },
     {
-      label: "❌ UpdateDatabaseSchema",
+      label: " UpdateDatabaseSchema",
       description: "Vague name, probably doing too many things",
       isCorrect: false
     },
     {
-      label: "❌ FixEverything",
+      label: " FixEverything",
       description: "Multiple unrelated changes bundled together",
       isCorrect: false
     }
@@ -140,7 +140,7 @@ MergeFirstAndLastName`}
 
 ### Names to Avoid
 
-| ❌ Bad Name | Why It's Bad | ✅ Better Name |
+|  Bad Name | Why It's Bad |  Better Name |
 |:-----------|:-------------|:--------------|
 | `Migration1` | Says nothing about the change | `InitialCreate` |
 | `Update` | Which update? What changed? | `AddCustomerEmail` |
@@ -202,22 +202,22 @@ dotnet ef migrations add AddOrderStatus  // Recreate with updated snapshot`}
   title="Team Migration Rules"
   items={[
     {
-      label: "✅ Pull before creating migrations",
+      label: " Pull before creating migrations",
       description: "Always get the latest changes before running 'migrations add'",
       isCorrect: true
     },
     {
-      label: "✅ Communicate about migrations",
+      label: " Communicate about migrations",
       description: "Let your team know when you're adding a migration",
       isCorrect: true
     },
     {
-      label: "✅ Review migrations in PRs",
+      label: " Review migrations in PRs",
       description: "Treat migrations like code - review before merging!",
       isCorrect: true
     },
     {
-      label: "❌ Edit applied migrations",
+      label: " Edit applied migrations",
       description: "Never modify a migration after it's been applied anywhere",
       isCorrect: false
     }

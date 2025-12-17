@@ -485,23 +485,23 @@ public class CQRSGroupHub : Hub
 
 ## Production Best Practices
 
-✅ **Implement distributed backplane** for multi-server deployments  
-✅ **Use partitioned groups** for very large groups (10,000+ members)  
-✅ **Monitor group sizes** and implement limits  
-✅ **Cache group membership** queries  
-✅ **Implement priority queues** for critical messages  
-✅ **Use geo-distribution** for global applications  
-✅ **Track group events** for analytics and debugging  
-✅ **Implement graceful degradation** when backplane is unavailable  
-✅ **Use event sourcing** for audit trails  
-✅ **Apply CQRS** for complex group management  
+ **Implement distributed backplane** for multi-server deployments  
+ **Use partitioned groups** for very large groups (10,000+ members)  
+ **Monitor group sizes** and implement limits  
+ **Cache group membership** queries  
+ **Implement priority queues** for critical messages  
+ **Use geo-distribution** for global applications  
+ **Track group events** for analytics and debugging  
+ **Implement graceful degradation** when backplane is unavailable  
+ **Use event sourcing** for audit trails  
+ **Apply CQRS** for complex group management  
 
 ## Scaling Benchmarks
 
 | Scenario | Single Server | Redis Backplane (3 servers) |
 |:---------|:--------------|:----------------------------|
-| 10K connections | ✅ 50ms latency | ✅ 75ms latency |
-| 100K connections | ❌ Not feasible | ✅ 100ms latency |
-| 1M group broadcasts/sec | ❌ Not feasible | ✅ With partitioning |
+| 10K connections |  50ms latency |  75ms latency |
+| 100K connections |  Not feasible |  100ms latency |
+| 1M group broadcasts/sec |  Not feasible |  With partitioning |
 
 > **Enterprise Ready**: With these advanced patterns, your SignalR groups can scale to millions of concurrent users across global infrastructure.

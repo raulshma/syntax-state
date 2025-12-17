@@ -59,16 +59,16 @@ public enum CircuitState
 ### Benefits & Limitations
 
 **Benefits:**
-- ⚡ Fast initial load (< 500KB typically)
-- 🔒 Server-side code protection
-- 🖥️ Full .NET API access
-- 🎯 Thin client requirements
+-  Fast initial load (< 500KB typically)
+-  Server-side code protection
+- ️ Full .NET API access
+-  Thin client requirements
 
 **Limitations:**
-- 🌐 Requires constant connection
-- ⚠️ Higher latency (network round-trips)
-- 📊 Server resources scale with user count
-- ❌ No offline capability
+-  Requires constant connection
+- ️ Higher latency (network round-trips)
+-  Server resources scale with user count
+-  No offline capability
 
 <BlazorHostingVisualizer mode="server-detailed" />
 
@@ -165,16 +165,16 @@ Removes unused code from assemblies.
 ### Benefits & Limitations
 
 **Benefits:**
-- ⚡ Zero latency after load
-- 📴 Offline capable (with PWA)
-- 🚀 Scales infinitely (CDN hosting)
-- 💰 Minimal server costs
+-  Zero latency after load
+-  Offline capable (with PWA)
+-  Scales infinitely (CDN hosting)
+-  Minimal server costs
 
 **Limitations:**
-- 🐢 Slower initial load
-- 👁️ Code visible in browser
-- 🌐 Limited to browser APIs
-- 📦 Larger download size
+-  Slower initial load
+- ️ Code visible in browser
+-  Limited to browser APIs
+-  Larger download size
 
 ## Performance Comparison
 
@@ -251,7 +251,7 @@ Modern Blazor apps can mix both:
 1. Start with Server rendering (fast)
 2. Download WASM runtime in background
 3. Switch to WASM when ready
-4. Best user experience! 🎯
+4. Best user experience! 
 
 ## Architecture Patterns
 
@@ -298,6 +298,6 @@ public class DataService
 | **Scaling** | Vertical (more server power) | Horizontal (CDN + APIs) |
 | **Best for** | Enterprise apps, LOB apps | Public apps, SPAs, PWAs |
 
-The choice isn't always binary—.NET 8+ allows mixing both for optimal results! 🎉
+The choice isn't always binary—.NET 8+ allows mixing both for optimal results! 
 
 <ProgressCheckpoint section="choosing-hosting-model" xpReward={40} />

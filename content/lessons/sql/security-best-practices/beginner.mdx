@@ -2,7 +2,7 @@
 
 Protect your database from attacks and data breaches!
 
-## 🛡️ SQL Injection Prevention
+## ️ SQL Injection Prevention
 
 The #1 database security threat:
 
@@ -15,7 +15,7 @@ query = "SELECT * FROM users WHERE name = '" + user_input + "'";
 -- Returns ALL users!
 ```
 
-## ✅ Use Parameterized Queries
+##  Use Parameterized Queries
 
 ```sql
 -- SAFE: Parameters prevent injection
@@ -29,7 +29,7 @@ EXEC sp_executesql
 command.Parameters.AddWithValue("@name", userInput);
 ```
 
-## 🔑 Principle of Least Privilege
+##  Principle of Least Privilege
 
 Only grant what's needed:
 
@@ -42,7 +42,7 @@ GRANT SELECT, INSERT ON orders TO app_user;
 GRANT EXECUTE ON sp_create_order TO app_user;
 ```
 
-## 🔒 Password Security
+##  Password Security
 
 ```sql
 -- Never store plain text passwords!
@@ -56,7 +56,7 @@ WHERE username = @username
 AND password_hash = HASHBYTES('SHA2_256', @password + salt);
 ```
 
-## 📋 Key Security Rules
+##  Key Security Rules
 
 | Do                        | Don't                   |
 | ------------------------- | ----------------------- |

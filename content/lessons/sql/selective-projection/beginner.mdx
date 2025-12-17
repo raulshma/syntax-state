@@ -2,7 +2,7 @@
 
 Why SELECT \* can hurt performance!
 
-## 🚫 The Problem with SELECT \*
+##  The Problem with SELECT \*
 
 ```sql
 -- SELECT * retrieves ALL columns
@@ -14,7 +14,7 @@ SELECT * FROM customers;
 SELECT id, name, email FROM customers;
 ```
 
-## ⚡ Why Selecting Fewer Columns Helps
+##  Why Selecting Fewer Columns Helps
 
 | Benefit                | Explanation                  |
 | ---------------------- | ---------------------------- |
@@ -23,7 +23,7 @@ SELECT id, name, email FROM customers;
 | **Covering Index**     | May enable index-only scan   |
 | **Faster Execution**   | Less I/O from disk           |
 
-## 📊 Real Impact Example
+##  Real Impact Example
 
 ```sql
 -- Table: users with 20 columns, 1 million rows
@@ -37,7 +37,7 @@ SELECT id, name, email FROM users WHERE status = 'active';
 -- Reads: ~50 MB
 ```
 
-## 🎯 Best Practice
+##  Best Practice
 
 ```sql
 -- BAD: Select all columns
@@ -50,7 +50,7 @@ FROM orders o
 JOIN customers c ON o.customer_id = c.id;
 ```
 
-## 💡 When SELECT \* is OK
+##  When SELECT \* is OK
 
 - Quick exploration in development
 - Ad-hoc queries in management tools

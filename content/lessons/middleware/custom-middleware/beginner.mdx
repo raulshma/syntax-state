@@ -1,4 +1,4 @@
-# Creating Your Own Middleware 🔧
+# Creating Your Own Middleware 
 
 Sometimes the built-in tools aren't enough. What if you want to log every request? Or block certain IP addresses? **You create your own middleware!**
 
@@ -135,9 +135,9 @@ app.Use(async (context, next) =>
 
 | Concept | Description |
 | :------ | :---------- |
-| 🔧 **Custom middleware** | Handle things built-in can't |
+|  **Custom middleware** | Handle things built-in can't |
 | ⏯️ **Three phases** | Before → Next → After |
-| 🛑 **Short-circuit** | Don't call `next()` to block |
-| 📝 **Common uses** | Logging, blocking, timing, headers |
+|  **Short-circuit** | Don't call `next()` to block |
+|  **Common uses** | Logging, blocking, timing, headers |
 
 <ProgressCheckpoint section="factory-middleware" xpReward={11} />

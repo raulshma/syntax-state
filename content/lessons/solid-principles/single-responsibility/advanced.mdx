@@ -94,10 +94,10 @@ Consider an `OrderService` in a microservices architecture that violates SRP:
 
 **Problems with this design:**
 
-- ❌ **8 different teams** must coordinate for any change
-- ❌ **Single failure** (e.g., SMS fails) blocks entire order
-- ❌ **Testing nightmare** - requires mocking 7+ external services
-- ❌ **Deployment coupling** - one team's change requires full redeploy
+-  **8 different teams** must coordinate for any change
+-  **Single failure** (e.g., SMS fails) blocks entire order
+-  **Testing nightmare** - requires mocking 7+ external services
+-  **Deployment coupling** - one team's change requires full redeploy
 
 ### The Solution: Event-Driven Architecture
 
@@ -229,11 +229,11 @@ src/
 ### Key Takeaways
 
 <InfoBox type="tip" title="Remember">
-- 🏢 **SRP scales** from methods to microservices
-- 🎭 **Actor-focused** - Organize by who requests changes
-- 📡 **Event-driven** - Use events to decouple responsibilities
-- 🎯 **Bounded contexts** - DDD aligns naturally with SRP
-- ⚖️ **Context matters** - Balance purity with pragmatism
+-  **SRP scales** from methods to microservices
+-  **Actor-focused** - Organize by who requests changes
+-  **Event-driven** - Use events to decouple responsibilities
+-  **Bounded contexts** - DDD aligns naturally with SRP
+- ️ **Context matters** - Balance purity with pragmatism
 </InfoBox>
 
 <ProgressCheckpoint section="srp-application" xpReward={20} />

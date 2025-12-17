@@ -46,7 +46,7 @@ The `FOREIGN KEY` creates a relationship: each order belongs to one user.
 
 ## Section 2: SELECT Queries
 
-### 🔗 JOINs - Connecting Tables
+###  JOINs - Connecting Tables
 
 Real databases have multiple related tables. JOINs let you combine data from different tables based on relationships.
 
@@ -84,7 +84,7 @@ LEFT JOIN Orders ON Users.Id = Orders.UserId;`}
 | RIGHT JOIN | All right + matching left | Rarely used (use LEFT JOIN instead) |
 | FULL OUTER JOIN | All rows from both | You need complete picture of both |
 
-### 📊 Aggregate Functions
+###  Aggregate Functions
 
 Aggregate functions perform calculations across multiple rows:
 
@@ -125,7 +125,7 @@ SELECT SUM(Total) AS Revenue FROM Orders;`}
   ]}
 />
 
-### 📁 GROUP BY - Grouping Data
+###  GROUP BY - Grouping Data
 
 GROUP BY organizes your data into groups and lets you aggregate within each group:
 
@@ -153,7 +153,7 @@ GROUP BY Users.Id, Users.Name;`}
   ]}
 />
 
-### 🎯 HAVING - Filtering Groups
+###  HAVING - Filtering Groups
 
 HAVING is like WHERE, but for grouped data:
 
@@ -234,7 +234,7 @@ WHERE Users.IsDeleted = 1;
 
 ## Section 4: WHERE Clauses
 
-### 📦 Subqueries in WHERE
+###  Subqueries in WHERE
 
 Subqueries are queries inside queries - powerful for complex logic:
 
@@ -286,7 +286,7 @@ WHERE (Category = 'Electronics' AND Price < 500)
    OR (Category = 'Books' AND InStock = 1);
 ```
 
-### 🔄 Set Operations
+###  Set Operations
 
 Combine results from multiple queries:
 

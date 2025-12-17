@@ -6,7 +6,7 @@ Private fields are like a vault inside your class - only the class itself can ac
 
 ## Section 1: Understanding Privacy
 
-### The Bank Vault Analogy 🔐
+### The Bank Vault Analogy 
 
 Imagine a bank account:
 - **Public**: Account holder name, account number (visible to tellers)
@@ -64,7 +64,7 @@ const oldAccount = new OldBankAccount(1000);
 
 // The underscore is just a hint - anyone can still access it!
 console.log('Using getter:', oldAccount.getBalance());
-console.log('Direct access:', oldAccount._balance);  // Works! 😬
+console.log('Direct access:', oldAccount._balance);  // Works! 
 
 // Anyone can modify it too!
 oldAccount._balance = 999999;
@@ -151,7 +151,7 @@ console.log(account.getStatement());
 // console.log(account.#balance);  // SyntaxError!
 // account.#balance = 999999;      // SyntaxError!
 
-console.log('\\n✅ Private fields are truly protected!');`}
+console.log('\\n Private fields are truly protected!');`}
   height={500}
 />
 
@@ -231,7 +231,7 @@ class PasswordManager {
     this.#validateSite(site);
     const encrypted = this.#encrypt(password);
     this.#passwords.set(site, encrypted);
-    console.log(\`✅ Password saved for \${site}\`);
+    console.log(\` Password saved for \${site}\`);
   }
   
   getPassword(site) {
@@ -404,7 +404,7 @@ console.log('Via getChildSecret():', child.getChildSecret());
 // Inherited method calling parent's private method
 console.log('Via callPrivate():', child.callPrivate());
 
-console.log('\\n⚠️ Private fields are NOT inherited!');
+console.log('\\n️ Private fields are NOT inherited!');
 console.log('Each class has its own private namespace.');`}
   height={420}
 />

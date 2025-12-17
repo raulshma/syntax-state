@@ -25,12 +25,12 @@ The Dependency Inversion Principle has two parts:
   code={`// High-level module (business logic)
 public class OrderService
 {
-    // ❌ DIRECT dependency on concrete implementation
+    //  DIRECT dependency on concrete implementation
     private readonly SqlServerDatabase _database;
     
     public OrderService()
     {
-        // ❌ Creates its own dependency - tightly coupled!
+        //  Creates its own dependency - tightly coupled!
         _database = new SqlServerDatabase("Server=...");
     }
     
@@ -55,8 +55,8 @@ public class OrderService
 />
 
 **Problems:**
-- ❌ Can't test `OrderService` without SQL Server
-- ❌ Can't switch to PostgreSQL without modifying `OrderService`
+-  Can't test `OrderService` without SQL Server
+-  Can't switch to PostgreSQL without modifying `OrderService`
 
 <ProgressCheckpoint section="dip-introduction" xpReward={13} />
 
@@ -78,7 +78,7 @@ public class OrderService
 {
     private readonly IOrderRepository _repository;
     
-    // ✅ Dependency INJECTED through constructor
+    //  Dependency INJECTED through constructor
     public OrderService(IOrderRepository repository)
     {
         _repository = repository;
@@ -180,11 +180,11 @@ public void PlaceOrder_SavesOrder_ToRepository()
 ### Key Takeaways
 
 <InfoBox type="tip" title="Remember">
-- 🔌 **Depend on interfaces** not concrete classes
-- 💉 **Inject dependencies** through constructors
-- 🏁 **Configure at startup** not in business logic
+-  **Depend on interfaces** not concrete classes
+-  **Inject dependencies** through constructors
+-  **Configure at startup** not in business logic
 - 🧪 **Testing is easy** with mock implementations
-- 🔄 **Swapping is easy** change config, not code
+-  **Swapping is easy** change config, not code
 </InfoBox>
 
 <ProgressCheckpoint section="dip-application" xpReward={13} />

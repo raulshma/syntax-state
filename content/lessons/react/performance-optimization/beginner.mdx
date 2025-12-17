@@ -1,6 +1,6 @@
 # Performance Optimization
 
-Welcome to React Performance! Have you ever noticed an app feeling slow or laggy? Often, the culprit is unnecessary re-renders. Let's learn how to make your React apps lightning fast! ⚡
+Welcome to React Performance! Have you ever noticed an app feeling slow or laggy? Often, the culprit is unnecessary re-renders. Let's learn how to make your React apps lightning fast! 
 
 <InfoBox type="tip" title="The Traffic Light Analogy">
 Think of React components like cars at traffic lights. Every time a light changes (state updates), ALL cars in that lane start moving, even if they don't need to. **React.memo** is like giving some cars a "fast pass" - they only move when they actually need to!
@@ -83,14 +83,14 @@ const ExpensiveList = React.memo(function ExpensiveList({ items }) {
 ## When to Use React.memo
 
 Use `React.memo` when:
-- ✅ A component renders often with the same props
-- ✅ A component is expensive to render (complex calculations, large lists)
-- ✅ A component is deep in the tree but doesn't need parent's state
+-  A component renders often with the same props
+-  A component is expensive to render (complex calculations, large lists)
+-  A component is deep in the tree but doesn't need parent's state
 
 Don't use `React.memo` when:
-- ❌ Props change frequently anyway
-- ❌ The component is simple and fast to render
-- ❌ You're not sure if it helps (measure first!)
+-  Props change frequently anyway
+-  The component is simple and fast to render
+-  You're not sure if it helps (measure first!)
 
 <ReactPlayground
   initialCode={`// Try React.memo!
@@ -197,4 +197,4 @@ Don't add React.memo everywhere "just in case." It adds complexity and can somet
 
 ---
 
-**Great job!** 🎉 You now understand the basics of React performance. In the intermediate level, we'll explore `useMemo`, `useCallback`, and how to use the React DevTools Profiler to find performance issues.
+**Great job!**  You now understand the basics of React performance. In the intermediate level, we'll explore `useMemo`, `useCallback`, and how to use the React DevTools Profiler to find performance issues.

@@ -2,7 +2,7 @@
 
 Learn to count records in your database!
 
-## 🔢 What is COUNT?
+##  What is COUNT?
 
 COUNT tells you how many rows match your query:
 
@@ -11,7 +11,7 @@ SELECT COUNT(*) FROM customers;
 -- Returns: Number of customers (e.g., 150)
 ```
 
-## 📊 COUNT Variations
+##  COUNT Variations
 
 | Syntax                   | What It Counts  |
 | ------------------------ | --------------- |
@@ -19,7 +19,7 @@ SELECT COUNT(*) FROM customers;
 | `COUNT(column)`          | Non-NULL values |
 | `COUNT(DISTINCT column)` | Unique values   |
 
-## 📝 Basic Examples
+##  Basic Examples
 
 ```sql
 -- Total orders
@@ -32,7 +32,7 @@ SELECT COUNT(tracking_number) AS tracked_orders FROM orders;
 SELECT COUNT(DISTINCT customer_id) AS unique_customers FROM orders;
 ```
 
-## 🎯 COUNT with GROUP BY
+##  COUNT with GROUP BY
 
 ```sql
 -- Orders per customer
@@ -46,7 +46,7 @@ FROM products
 GROUP BY category;
 ```
 
-## ⚡ COUNT with WHERE
+##  COUNT with WHERE
 
 ```sql
 -- Active customers
@@ -56,7 +56,7 @@ SELECT COUNT(*) FROM customers WHERE is_active = 1;
 SELECT COUNT(*) FROM orders WHERE YEAR(order_date) = 2024;
 ```
 
-## 💡 COUNT(\*) vs COUNT(column)
+##  COUNT(\*) vs COUNT(column)
 
 ```sql
 -- Sample data: some emails are NULL
@@ -70,7 +70,7 @@ SELECT COUNT(*) FROM users;      -- Returns 3 (all rows)
 SELECT COUNT(email) FROM users;  -- Returns 2 (non-NULL only)
 ```
 
-## 🌟 Quick Examples
+##  Quick Examples
 
 ```sql
 -- How many products?

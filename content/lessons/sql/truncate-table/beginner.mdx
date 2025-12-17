@@ -2,7 +2,7 @@
 
 Learn the fastest way to empty a table completely!
 
-## 🚀 What is TRUNCATE?
+##  What is TRUNCATE?
 
 TRUNCATE removes **all rows** from a table instantly, while keeping the table structure intact.
 
@@ -10,7 +10,7 @@ TRUNCATE removes **all rows** from a table instantly, while keeping the table st
 TRUNCATE TABLE table_name;
 ```
 
-## 📝 Simple Example
+##  Simple Example
 
 ```sql
 -- Empty the logs table
@@ -19,7 +19,7 @@ TRUNCATE TABLE logs;
 
 The table is now empty, but still exists!
 
-## ⚡ TRUNCATE vs DELETE
+##  TRUNCATE vs DELETE
 
 | Feature         | TRUNCATE   | DELETE                |
 | --------------- | ---------- | --------------------- |
@@ -41,22 +41,22 @@ TRUNCATE TABLE logs;
 
 \*In SQL Server, TRUNCATE can be rolled back within a transaction
 
-## 🎯 When to Use TRUNCATE
+##  When to Use TRUNCATE
 
-✅ **Use TRUNCATE when:**
+ **Use TRUNCATE when:**
 
 - Emptying temporary tables
 - Clearing staging tables after ETL
 - Resetting test data
 - Fresh start for the table
 
-❌ **Don't use TRUNCATE when:**
+ **Don't use TRUNCATE when:**
 
 - You need to keep some rows (use DELETE)
 - Triggers must fire
 - Other tables have foreign keys to it
 
-## ⚠️ Foreign Key Limitation
+## ️ Foreign Key Limitation
 
 ```sql
 -- This fails if other tables reference it:
@@ -67,7 +67,7 @@ TRUNCATE TABLE customers;
 DELETE FROM customers;
 ```
 
-## 🔄 Resets Identity Values
+##  Resets Identity Values
 
 ```sql
 -- Identity starts from 1 again after TRUNCATE

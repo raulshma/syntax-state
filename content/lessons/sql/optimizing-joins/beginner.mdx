@@ -2,7 +2,7 @@
 
 Write JOINs that perform well!
 
-## 🎯 The Basics of Fast JOINs
+##  The Basics of Fast JOINs
 
 JOINs combine data from multiple tables. Key to performance:
 
@@ -14,7 +14,7 @@ JOIN customers c ON o.customer_id = c.id;
 -- customer_id should be indexed!
 ```
 
-## 📋 Ensure Indexes on JOIN Columns
+##  Ensure Indexes on JOIN Columns
 
 ```sql
 -- Foreign key columns need indexes
@@ -26,7 +26,7 @@ SELECT * FROM orders o
 JOIN order_items i ON o.id = i.order_id;
 ```
 
-## 📊 Data Type Matching
+##  Data Type Matching
 
 ```sql
 -- BAD: Mismatched types cause conversions
@@ -39,7 +39,7 @@ SELECT * FROM orders o
 JOIN customers c ON o.customer_id = c.id;
 ```
 
-## 🚫 Avoid Functions in JOIN
+##  Avoid Functions in JOIN
 
 ```sql
 -- BAD: Function prevents index use
@@ -50,7 +50,7 @@ JOIN customers c ON LOWER(o.customer_code) = LOWER(c.code);
 -- Store lowercased values, then join directly
 ```
 
-## ✅ JOIN Best Practices
+##  JOIN Best Practices
 
 | Do                  | Don't                     |
 | ------------------- | ------------------------- |
@@ -59,7 +59,7 @@ JOIN customers c ON LOWER(o.customer_code) = LOWER(c.code);
 | Use explicit JOINs  | Use old comma syntax      |
 | Join on few columns | Join on many columns      |
 
-## 💡 Select Only Needed Columns
+##  Select Only Needed Columns
 
 ```sql
 -- BAD: SELECT * retrieves everything

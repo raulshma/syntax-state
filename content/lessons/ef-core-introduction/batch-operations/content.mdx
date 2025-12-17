@@ -6,7 +6,7 @@ One email to 100 people, not 100 emails! Learn how to perform bulk updates and d
 
 ## Section 1: SaveChanges Batching
 
-### The Email Analogy 📧
+### The Email Analogy 
 
 Imagine you need to tell 100 employees about a meeting change. Would you:
 
@@ -101,7 +101,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 ## Section 2: ExecuteUpdate (EF Core 7+)
 
-### The Game Changer 🚀
+### The Game Changer 
 
 Before EF Core 7, to update 1000 rows, you had to:
 1. Load all 1000 entities into memory
@@ -114,7 +114,7 @@ Now with ExecuteUpdate, you can send a single SQL UPDATE directly!
   title="Traditional vs ExecuteUpdate"
   steps={[
     {
-      linq: `// 😰 OLD WAY: Load, modify, save
+      linq: `//  OLD WAY: Load, modify, save
 var products = await context.Products
     .Where(p => p.CategoryId == 5)
     .ToListAsync();  // Load 1000 products!
@@ -134,7 +134,7 @@ UPDATE Products SET Price = 32.99 WHERE Id = 3
       explanation: "Load 1000 rows into memory, track changes, send 1000 updates. Slow!"
     },
     {
-      linq: `// 🚀 NEW WAY: ExecuteUpdate (EF Core 7+)
+      linq: `//  NEW WAY: ExecuteUpdate (EF Core 7+)
 await context.Products
     .Where(p => p.CategoryId == 5)
     .ExecuteUpdateAsync(setters => setters
@@ -223,7 +223,7 @@ Same pattern as ExecuteUpdate, but for deletions:
   title="Traditional vs ExecuteDelete"
   steps={[
     {
-      linq: `// 😰 OLD WAY: Load, remove, save
+      linq: `//  OLD WAY: Load, remove, save
 var oldLogs = await context.Logs
     .Where(l => l.Date < cutoff)
     .ToListAsync();  // Load millions?!
@@ -240,7 +240,7 @@ DELETE FROM Logs WHERE Id = 2
       explanation: "Loading millions of rows just to delete them is insane!"
     },
     {
-      linq: `// 🚀 NEW WAY: ExecuteDelete
+      linq: `//  NEW WAY: ExecuteDelete
 await context.Logs
     .Where(l => l.Date < cutoff)
     .ExecuteDeleteAsync();`,
@@ -326,12 +326,12 @@ await context.Users
 
 <DotnetCodePreview
   title="Best Practices"
-  code={`// ✅ DO: Use ExecuteUpdate for bulk operations
+  code={`//  DO: Use ExecuteUpdate for bulk operations
 await context.Products
     .Where(p => p.LastUpdated < staleDate)
     .ExecuteUpdateAsync(s => s.SetProperty(p => p.NeedsRefresh, true));
 
-// ✅ DO: Use transactions for multiple operations
+//  DO: Use transactions for multiple operations
 await using var transaction = await context.Database.BeginTransactionAsync();
 try
 {
@@ -345,18 +345,18 @@ catch
     throw;
 }
 
-// ❌ DON'T: Mix tracked entities with ExecuteUpdate
+//  DON'T: Mix tracked entities with ExecuteUpdate
 var products = await context.Products.ToListAsync();  // Tracked
 await context.Products.ExecuteUpdateAsync(...);       // Updates bypass tracker!
 // products collection is now STALE!
 
-// ✅ DO: Clear change tracker if mixing
+//  DO: Clear change tracker if mixing
 context.ChangeTracker.Clear();  // Remove stale tracked entities
 
-// ❌ DON'T: Forget about relationships
+//  DON'T: Forget about relationships
 await context.Categories.ExecuteDeleteAsync();  // Fails if Products reference!
 
-// ✅ DO: Handle relationships properly
+//  DO: Handle relationships properly
 await context.Products
     .Where(p => p.CategoryId == categoryToDelete)
     .ExecuteUpdateAsync(s => s.SetProperty(p => p.CategoryId, (int?)null));

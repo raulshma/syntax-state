@@ -8,7 +8,7 @@ The Fetch API is JavaScript's way of making HTTP requests — asking servers for
 
 <ProgressCheckpoint section="introduction" xpReward={15} />
 
-## The Restaurant Analogy 🍽️
+## The Restaurant Analogy ️
 
 Imagine you're at a restaurant. Here's how ordering food is just like fetching data:
 
@@ -183,15 +183,15 @@ fetch('https://api.example.com/data')
   initialCode={`// Handling different scenarios
 function handleResponse(status) {
   if (status >= 200 && status < 300) {
-    console.log("✅ Success! Status:", status);
+    console.log(" Success! Status:", status);
   } else if (status === 404) {
-    console.log("❌ Not found! The resource doesn't exist.");
+    console.log(" Not found! The resource doesn't exist.");
   } else if (status === 401) {
-    console.log("🔒 Unauthorized! You need to log in.");
+    console.log(" Unauthorized! You need to log in.");
   } else if (status >= 500) {
-    console.log("💥 Server error! Try again later.");
+    console.log(" Server error! Try again later.");
   } else {
-    console.log("⚠️ Unexpected status:", status);
+    console.log("️ Unexpected status:", status);
   }
 }
 
@@ -254,4 +254,4 @@ Use `.catch()` and check `response.ok` to handle problems gracefully.
 
 ---
 
-**Great job!** 🎉 You now understand the basics of fetching data. In the intermediate level, we'll dive deeper into Fetch syntax, error handling patterns, and working with different HTTP methods.
+**Great job!**  You now understand the basics of fetching data. In the intermediate level, we'll dive deeper into Fetch syntax, error handling patterns, and working with different HTTP methods.

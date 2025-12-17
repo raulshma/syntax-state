@@ -2,11 +2,11 @@
 
 There are multiple ways to implement API versioning, each with trade-offs. Let's explore the three main strategies and learn how to implement them in ASP.NET Core.
 
-## Section 1: Versioning Introduction & Strategies 🎯
+## Section 1: Versioning Introduction & Strategies 
 
 ### The Three Main Versioning Strategies
 
-**1. URI Path Versioning (Most Popular) 🌟**
+**1. URI Path Versioning (Most Popular) **
 ```
 GET /api/v1/users
 GET /api/v2/users
@@ -15,7 +15,7 @@ GET /api/v2/users
 **Pros:** Extremely visible, easy to test, industry standard (Twitter, Stripe, GitHub)
 **Cons:** Version appears in every URL
 
-**2. Query String Versioning 🔗**
+**2. Query String Versioning **
 ```
 GET /api/users?api-version=1.0
 GET /api/users?api-version=2.0
@@ -24,7 +24,7 @@ GET /api/users?api-version=2.0
 **Pros:** Keeps base URI clean, easy to add to existing APIs
 **Cons:** Easy to forget, harder to cache
 
-**3. Header Versioning 📋**
+**3. Header Versioning **
 ```http
 GET /api/users
 X-API-Version: 1.0
@@ -35,7 +35,7 @@ X-API-Version: 1.0
 
 <ProgressCheckpoint section="versioning-intro" xpReward={10} />
 
-### Comparison Table 📊
+### Comparison Table 
 
 | Strategy | Visibility | Ease of Use | Best For |
 |:---------|:-----------|:------------|:---------|
@@ -47,7 +47,7 @@ X-API-Version: 1.0
 
 ---
 
-## Section 2: ASP.NET Core Implementation 🛠️
+## Section 2: ASP.NET Core Implementation ️
 
 ### Step 1: Install Package
 
@@ -147,7 +147,7 @@ public class ProductsController : ControllerBase
 
 ---
 
-## Section 3: Best Practices 📋
+## Section 3: Best Practices 
 
 ### Start with v1
 

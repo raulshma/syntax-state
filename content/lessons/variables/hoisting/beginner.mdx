@@ -12,7 +12,7 @@ But here's the twist: not all declarations ride the same elevator!
 
 <ProgressCheckpoint section="what-is-hoisting" xpReward={10} />
 
-## The `var` Elevator - First Class 🛗
+## The `var` Elevator - First Class 
 
 When you use `var`, your variable takes the **express elevator** all the way to the top. It arrives early, but with empty hands (the value is `undefined`).
 
@@ -40,7 +40,7 @@ title="var Hoisting Example"
 
 <ProgressCheckpoint section="var-hoisting" xpReward={10} />
 
-## The `let` and `const` Elevator - Strict Security 🚫
+## The `let` and `const` Elevator - Strict Security 
 
 `let` and `const` also get hoisted, but they wait in a **"No Entry Zone"** until their turn. This is called the **Temporal Dead Zone (TDZ)**.
 
@@ -60,7 +60,7 @@ Think of it like this:
 
 <ProgressCheckpoint section="let-const-hoisting" xpReward={10} />
 
-## Function Hoisting - The Super VIP 🌟
+## Function Hoisting - The Super VIP 
 
 Regular functions (using the `function` keyword) are **fully hoisted** - both their name AND their code!
 
@@ -107,17 +107,17 @@ title="Function Hoisting"
 
 <ProgressCheckpoint section="function-hoisting" xpReward={10} />
 
-## The Golden Rules 📜
+## The Golden Rules 
 
 Here's a simple way to remember hoisting:
 
 | Declaration Type | Hoisted?  | Value Available? | When to Use?       |
 | :--------------- | :-------- | :--------------- | :----------------- |
-| `var`            | Yes ✅    | `undefined`      | Old code only      |
-| `let`            | Yes ✅    | No (TDZ) ❌      | When value changes |
-| `const`          | Yes ✅    | No (TDZ) ❌      | Default choice     |
-| `function`       | Yes ✅    | Yes ✅           | Regular functions  |
-| Arrow `=>`       | Depends\* | No ❌            | Modern code        |
+| `var`            | Yes     | `undefined`      | Old code only      |
+| `let`            | Yes     | No (TDZ)       | When value changes |
+| `const`          | Yes     | No (TDZ)       | Default choice     |
+| `function`       | Yes     | Yes            | Regular functions  |
+| Arrow `=>`       | Depends\* | No             | Modern code        |
 
 > **Pro Tip:** Always declare your variables at the top of your code! This makes your code easier to read and avoids hoisting surprises.
 

@@ -44,14 +44,14 @@ EF Core automatically identifies primary keys using these naming patterns:
   code={`// Pattern 1: Property named "Id"
 public class Customer
 {
-    public int Id { get; set; }  // ✅ Auto-detected as PK
+    public int Id { get; set; }  //  Auto-detected as PK
     public string Name { get; set; }
 }
 
 // Pattern 2: Property named "[ClassName]Id"
 public class Product
 {
-    public int ProductId { get; set; }  // ✅ Auto-detected as PK
+    public int ProductId { get; set; }  //  Auto-detected as PK
     public string Name { get; set; }
     public decimal Price { get; set; }
 }
@@ -59,7 +59,7 @@ public class Product
 // Pattern 3: Both work with different types
 public class Order
 {
-    public Guid Id { get; set; }  // ✅ GUID primary key
+    public Guid Id { get; set; }  //  GUID primary key
     public DateTime OrderDate { get; set; }
 }`}
   steps={[

@@ -2,7 +2,7 @@
 
 Managing API versions in production requires sophisticated strategies for deprecation, migration, and long-term maintenance.
 
-## Section 1: Version Deprecation Strategy 📅
+## Section 1: Version Deprecation Strategy 
 
 ### Marking Versions as Deprecated
 
@@ -77,7 +77,7 @@ public class ApiVersionSunsetMiddleware
 
 ---
 
-## Section 2: Migration Patterns 🔄
+## Section 2: Migration Patterns 
 
 ### Adapter Pattern - Don't Duplicate Business Logic
 
@@ -191,7 +191,7 @@ public class FeatureFlagVersioningMiddleware
 
 ---
 
-## Section 3: Monitoring & Golden Rules 📊
+## Section 3: Monitoring & Golden Rules 
 
 ### Track Version Usage
 
@@ -236,7 +236,7 @@ GROUP BY DATE(timestamp), version;
 
 <ProgressCheckpoint section="real-world-example" xpReward={10} />
 
-### The Golden Rules of API Versioning 📜
+### The Golden Rules of API Versioning 
 
 <KeyConcept title="Never Break the Contract">
   Once an API version is public, **NEVER** change its behavior. If you need different behavior, create a new version.
@@ -252,8 +252,8 @@ GROUP BY DATE(timestamp), version;
 ```
 
 **Rule 2: Backward Compatibility**
-- ✅ Safe: Adding optional fields, new endpoints, bug fixes
-- ❌ Breaking: Removing/renaming fields, changing types, changing behavior
+-  Safe: Adding optional fields, new endpoints, bug fixes
+-  Breaking: Removing/renaming fields, changing types, changing behavior
 
 **Rule 3: Support Multiple Versions**
 ```csharp

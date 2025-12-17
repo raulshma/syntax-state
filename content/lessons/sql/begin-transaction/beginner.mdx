@@ -2,7 +2,7 @@
 
 Group multiple operations into a single atomic unit!
 
-## 🚀 What is BEGIN TRANSACTION?
+##  What is BEGIN TRANSACTION?
 
 BEGIN TRANSACTION starts a transaction - a group of operations that succeed or fail together:
 
@@ -14,7 +14,7 @@ BEGIN TRANSACTION;
 COMMIT;  -- Save all changes
 ```
 
-## 📝 Syntax Variations
+##  Syntax Variations
 
 ```sql
 -- SQL Server
@@ -31,7 +31,7 @@ START TRANSACTION;
 BEGIN;
 ```
 
-## 🎯 Simple Example
+##  Simple Example
 
 ```sql
 -- Transfer money between accounts
@@ -42,7 +42,7 @@ COMMIT;
 -- Both updates happen together!
 ```
 
-## 🔄 Transaction Flow
+##  Transaction Flow
 
 ```mermaid
 flowchart TB
@@ -56,7 +56,7 @@ flowchart TB
     O -->|"Error/Cancel"| R
 ```
 
-## ⚡ Auto-commit Mode
+##  Auto-commit Mode
 
 Without explicit transaction, each statement auto-commits:
 
@@ -72,7 +72,7 @@ BEGIN TRANSACTION;
 COMMIT;  -- Both committed together
 ```
 
-## 💡 When to Use Transactions
+##  When to Use Transactions
 
 1. **Multiple related updates** - All must succeed
 2. **Money transfers** - Debit and credit together

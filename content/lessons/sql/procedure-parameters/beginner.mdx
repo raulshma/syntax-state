@@ -2,7 +2,7 @@
 
 Pass data in and out of stored procedures!
 
-## 📥 Input Parameters
+##  Input Parameters
 
 Pass values into the procedure:
 
@@ -19,7 +19,7 @@ EXEC sp_get_customer 123;
 EXEC sp_get_customer @customer_id = 123;  -- Named parameter
 ```
 
-## 📤 Output Parameters
+##  Output Parameters
 
 Get values back from the procedure:
 
@@ -40,7 +40,7 @@ EXEC sp_count_orders 123, @count OUTPUT;
 SELECT @count;  -- See the result
 ```
 
-## 🔄 Multiple Parameters
+##  Multiple Parameters
 
 ```sql
 CREATE PROCEDURE sp_create_order
@@ -57,7 +57,7 @@ BEGIN
 END;
 ```
 
-## ⚡ Default Values
+##  Default Values
 
 Make parameters optional:
 
@@ -80,7 +80,7 @@ EXEC sp_search_products 'laptop';           -- Only name specified
 EXEC sp_search_products @min_price = 100;   -- Named parameter
 ```
 
-## 📊 Parameter Types
+##  Parameter Types
 
 | Parameter Type | Direction          | Example                               |
 | -------------- | ------------------ | ------------------------------------- |

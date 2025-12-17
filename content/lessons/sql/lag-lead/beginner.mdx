@@ -17,7 +17,7 @@ FROM orders;
 -- 2024-01-03, 200, 150
 ```
 
-## ➡️ LEAD: Next Row
+## ️ LEAD: Next Row
 
 Get value from the next row:
 
@@ -32,7 +32,7 @@ FROM orders;
 -- 2024-01-03, 200, NULL  (no next)
 ```
 
-## 📊 Calculate Changes
+##  Calculate Changes
 
 ```sql
 SELECT order_date, total,
@@ -43,7 +43,7 @@ FROM orders;
 -- Shows daily change in totals
 ```
 
-## 🎯 Offset and Default
+##  Offset and Default
 
 ```sql
 -- Look back 2 rows, default to 0
@@ -56,7 +56,7 @@ FROM metrics;
 -- default: value if no row exists (default NULL)
 ```
 
-## 💡 Compare with Previous/Next
+##  Compare with Previous/Next
 
 ```sql
 SELECT product, month, sales,
@@ -69,7 +69,7 @@ SELECT product, month, sales,
 FROM monthly_sales;
 ```
 
-## 📋 With PARTITION BY
+##  With PARTITION BY
 
 ```sql
 -- Compare within each customer

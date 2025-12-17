@@ -6,7 +6,7 @@ After the chaos of loose equality, strict equality is like a breath of fresh air
 
 ## Section 1: What is Strict Equality?
 
-### The Strict Librarian Analogy 📚
+### The Strict Librarian Analogy 
 
 Imagine a very particular librarian. When you ask "Is this the same book?", they check:
 1. Is it the same **edition**? (type)
@@ -18,10 +18,10 @@ If either differs, the answer is "No" — no exceptions, no "close enough."
 
 | Comparison | Types Match? | Values Match? | Result |
 |:-----------|:-------------|:--------------|:-------|
-| `5 === 5` | ✅ number | ✅ same | `true` |
-| `"5" === 5` | ❌ string vs number | — | `false` |
-| `"5" === "5"` | ✅ string | ✅ same | `true` |
-| `true === 1` | ❌ boolean vs number | — | `false` |
+| `5 === 5` |  number |  same | `true` |
+| `"5" === 5` |  string vs number | — | `false` |
+| `"5" === "5"` |  string |  same | `true` |
+| `true === 1` |  boolean vs number | — | `false` |
 
 <InfoBox type="info">
 **Strict Equality** (`===`) compares both **type AND value** without any type conversion. Different types = `false`, always.

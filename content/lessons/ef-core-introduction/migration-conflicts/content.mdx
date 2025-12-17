@@ -6,7 +6,7 @@ Migration conflicts are like **traffic jams at an intersection** - multiple deve
 
 ## Section 1: Why Conflicts Happen
 
-### The Intersection Problem 🚗
+### The Intersection Problem 
 
 Imagine two developers, Alice and Bob, both adding features:
 
@@ -31,7 +31,7 @@ public class Customer
 // Creates: 20241216_100500_AddCustomerVipStatus
 
 // Both updated the ModelSnapshot independently!
-// When they merge, CONFLICT happens! 💥`}
+// When they merge, CONFLICT happens! `}
   steps={[
     {
       lineNumbers: [2, 3, 4, 5, 6, 7],
@@ -75,22 +75,22 @@ The **ModelSnapshot** is EF Core's record of what the database should look like.
   title="Conflict Warning Signs"
   items={[
     {
-      label: "⚠️ Git merge conflict in ModelSnapshot.cs",
+      label: "️ Git merge conflict in ModelSnapshot.cs",
       description: "The most common sign - Git can't auto-merge the snapshot",
       isCorrect: false
     },
     {
-      label: "⚠️ 'The model has changed' error",
+      label: "️ 'The model has changed' error",
       description: "EF Core detects snapshot doesn't match your model",
       isCorrect: false
     },
     {
-      label: "⚠️ Duplicate migration timestamps",
+      label: "️ Duplicate migration timestamps",
       description: "Two migrations with very close timestamps after merge",
       isCorrect: false
     },
     {
-      label: "✅ All clear - no conflicts!",
+      label: " All clear - no conflicts!",
       description: "Pull worked cleanly and 'dotnet build' succeeds",
       isCorrect: true
     }
@@ -230,21 +230,21 @@ Recreate migration (fresh snapshot)
 
 <DotnetCodePreview
   title="Prevention Checklist"
-  code={`// ✅ Before creating ANY migration:
+  code={`//  Before creating ANY migration:
 git pull origin main
 dotnet build
 
-// ✅ Use a migration workflow:
+//  Use a migration workflow:
 // 1. Create migration
 // 2. Test locally
 // 3. Commit and push immediately
 // 4. Don't let migrations sit uncommitted!
 
-// ✅ Communicate with your team:
+//  Communicate with your team:
 // "Hey team, I'm about to add a migration for Orders table"
 // Slack/Teams message takes 10 seconds, saves hours of conflict!
 
-// ✅ Consider feature flags for large changes:
+//  Consider feature flags for large changes:
 // Instead of one big migration:
 // - Add nullable column (Migration 1)
 // - Deploy and migrate data

@@ -6,7 +6,7 @@ Memory leaks happen when your application holds onto memory it no longer needs. 
 
 ## Section 1: Understanding Memory Leaks
 
-### The Hoarder Analogy 📦
+### The Hoarder Analogy 
 
 Imagine someone who never throws anything away:
 
@@ -328,7 +328,7 @@ class MemoryMonitor {
         usedMB: Math.round(performance.memory.usedJSHeapSize / 1048576 * 100) / 100
       };
       this.snapshots.push(snapshot);
-      console.log(\`📸 \${label}: \${snapshot.usedMB} MB\`);
+      console.log(\` \${label}: \${snapshot.usedMB} MB\`);
       return snapshot;
     } else {
       console.log("Memory API not available in this environment");
@@ -346,13 +346,13 @@ class MemoryMonitor {
     const last = this.snapshots[this.snapshots.length - 1];
     const diff = last.usedMB - first.usedMB;
     
-    console.log(\`\\n📊 Memory Change:\`);
+    console.log(\`\\n Memory Change:\`);
     console.log(\`   Start: \${first.usedMB} MB (\${first.label})\`);
     console.log(\`   End: \${last.usedMB} MB (\${last.label})\`);
     console.log(\`   Diff: \${diff > 0 ? '+' : ''}\${diff.toFixed(2)} MB\`);
     
     if (diff > 10) {
-      console.log("⚠️ Significant memory increase detected!");
+      console.log("️ Significant memory increase detected!");
     }
   }
 }
@@ -557,12 +557,12 @@ button.addEventListener('click', () => {
 | **Growing Collections** | Unbounded arrays/maps | Use bounded caches, WeakMap |
 
 <KeyConcept title="Memory Leak Prevention Checklist">
-✅ Remove event listeners when components unmount  
-✅ Clear intervals and timeouts  
-✅ Use WeakMap/WeakSet for caches  
-✅ Implement cleanup functions  
-✅ Bound collection sizes  
-✅ Profile memory regularly during development  
+ Remove event listeners when components unmount  
+ Clear intervals and timeouts  
+ Use WeakMap/WeakSet for caches  
+ Implement cleanup functions  
+ Bound collection sizes  
+ Profile memory regularly during development  
 </KeyConcept>
 
 <ProgressCheckpoint section="prevention-patterns" xpReward={25} />

@@ -6,7 +6,7 @@ Every database connection starts with a **connection string** - the address and 
 
 ## Section 1: Connection String Basics
 
-### The Address Analogy 📬
+### The Address Analogy 
 
 Think of a connection string like a detailed mailing address:
 
@@ -136,11 +136,11 @@ In .NET applications, you have several options for storing connection strings:
 
 | Source | Best For | Security |
 |:-------|:---------|:---------|
-| appsettings.json | Development defaults | ⚠️ Low (in source control) |
-| appsettings.{Environment}.json | Environment-specific | ⚠️ Low |
-| User Secrets | Local development | ✅ Good (not in source) |
-| Environment Variables | Production | ✅ Good |
-| Azure Key Vault | Production secrets | ✅ Excellent |
+| appsettings.json | Development defaults | ️ Low (in source control) |
+| appsettings.{Environment}.json | Environment-specific | ️ Low |
+| User Secrets | Local development |  Good (not in source) |
+| Environment Variables | Production |  Good |
+| Azure Key Vault | Production secrets |  Excellent |
 
 ### Using appsettings.json
 
@@ -293,27 +293,27 @@ services:
   title="Connection String Security"
   items={[
     {
-      label: "❌ Hardcoded in code",
+      label: " Hardcoded in code",
       description: "options.UseSqlServer(\"Server=...;Password=secret\") - Exposed in source control!",
       isCorrect: false
     },
     {
-      label: "❌ In appsettings.json with password",
+      label: " In appsettings.json with password",
       description: "Committed to git, visible to anyone with repo access",
       isCorrect: false
     },
     {
-      label: "✅ User Secrets (dev)",
+      label: " User Secrets (dev)",
       description: "Stored outside project, not in source control",
       isCorrect: true
     },
     {
-      label: "✅ Environment Variables (prod)",
+      label: " Environment Variables (prod)",
       description: "Set at deployment time, not in code",
       isCorrect: true
     },
     {
-      label: "✅ Azure Key Vault (prod)",
+      label: " Azure Key Vault (prod)",
       description: "Centralized secret management with access control",
       isCorrect: true
     }

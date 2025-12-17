@@ -105,7 +105,7 @@ dotnet add package Microsoft.EntityFrameworkCore.Proxies
     {
         options
             .UseSqlServer(connectionString)
-            .UseLazyLoadingProxies();  // 👈 Enable lazy loading!
+            .UseLazyLoadingProxies();  //  Enable lazy loading!
     }
 }
 
@@ -168,24 +168,24 @@ For lazy loading proxies to work, your navigation properties **must be virtual**
 
 <DotnetCodePreview
   title="Making Properties Virtual"
-  code={`// ✅ CORRECT - Lazy loading will work
+  code={`//  CORRECT - Lazy loading will work
 public class Blog
 {
     public int Id { get; set; }
     public string Name { get; set; }
     
-    public virtual ICollection<Post> Posts { get; set; }  // ✅ virtual
-    public virtual User Owner { get; set; }               // ✅ virtual
+    public virtual ICollection<Post> Posts { get; set; }  //  virtual
+    public virtual User Owner { get; set; }               //  virtual
 }
 
-// ❌ WRONG - Lazy loading will NOT work
+//  WRONG - Lazy loading will NOT work
 public class Blog
 {
     public int Id { get; set; }
     public string Name { get; set; }
     
-    public ICollection<Post> Posts { get; set; }  // ❌ Not virtual
-    public User Owner { get; set; }               // ❌ Not virtual
+    public ICollection<Post> Posts { get; set; }  //  Not virtual
+    public User Owner { get; set; }               //  Not virtual
 }`}
   steps={[
     {
@@ -276,7 +276,7 @@ foreach (var blog in blogs)
 // If you have 100 blogs:
 // Query 1: SELECT * FROM Blogs (1 query)
 // Queries 2-101: SELECT * FROM Posts WHERE BlogId = @id (100 queries!)
-// Total: 101 queries! 😱`}
+// Total: 101 queries! `}
   steps={[
     {
       lineNumbers: [2],
@@ -327,22 +327,22 @@ With Eager Loading:
   title="Lazy Loading Pitfalls"
   items={[
     {
-      label: "❌ Serialization Issues",
+      label: " Serialization Issues",
       description: "Serializing entities (e.g., to JSON) can trigger unexpected queries or infinite loops when navigation properties are accessed.",
       isCorrect: false
     },
     {
-      label: "❌ Disposed Context",
+      label: " Disposed Context",
       description: "If you try to access navigation properties after the DbContext is disposed, you'll get an exception!",
       isCorrect: false
     },
     {
-      label: "❌ Hidden Performance Costs",
+      label: " Hidden Performance Costs",
       description: "Database queries happen invisibly. Hard to diagnose why your app is slow.",
       isCorrect: false
     },
     {
-      label: "❌ Unpredictable Query Counts",
+      label: " Unpredictable Query Counts",
       description: "The number of queries depends on runtime data, making performance unpredictable.",
       isCorrect: false
     }
@@ -359,7 +359,7 @@ With Eager Loading:
 
 // Later in your code...
 var blog = GetBlog(1);
-var posts = blog.Posts;  // 💥 ObjectDisposedException!
+var posts = blog.Posts;  //  ObjectDisposedException!
 // "Cannot access a disposed context instance"`}
   steps={[
     {

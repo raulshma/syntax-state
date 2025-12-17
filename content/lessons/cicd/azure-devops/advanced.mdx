@@ -2,13 +2,13 @@
 
 Master enterprise-grade Azure DevOps patterns including complex templates, runtime parameters, container jobs, Azure Resource Manager integration, and security best practices.
 
-## Enterprise Pipeline Architecture 🏢
+## Enterprise Pipeline Architecture 
 
 Let's build a comprehensive enterprise pipeline:
 
 <AzureDevOpsVisualizer mode="advanced" showYaml={true} interactive={true} />
 
-## Advanced Template Patterns 🔄
+## Advanced Template Patterns 
 
 ### Extends Templates (Pipeline Inheritance)
 
@@ -103,7 +103,7 @@ stages:
                       appName: 'myapp-${{ env.name }}'
 ```
 
-## Runtime Parameters 🎛️
+## Runtime Parameters ️
 
 Allow users to customize pipeline runs:
 
@@ -157,7 +157,7 @@ stages:
                   - script: echo "Deploying to ${{ region }}"
 ```
 
-## Container Jobs 🐳
+## Container Jobs 
 
 Run jobs in Docker containers for consistent environments:
 
@@ -200,7 +200,7 @@ jobs:
   **Service containers** spin up databases, caches, and other dependencies for integration testing. They're automatically cleaned up after the job!
 </KeyConcept>
 
-## Azure Resource Manager Integration 🏗️
+## Azure Resource Manager Integration ️
 
 ### Infrastructure as Code with Bicep
 
@@ -254,7 +254,7 @@ stages:
         --parameters environment=production
 ```
 
-## Advanced Deployment Strategies 🚀
+## Advanced Deployment Strategies 
 
 ### Canary Deployment
 
@@ -318,7 +318,7 @@ stages:
           - script: echo "Run health check"
 ```
 
-## Security Best Practices 🛡️
+## Security Best Practices ️
 
 ### Branch Policies
 
@@ -402,7 +402,7 @@ stages:
                 --description "Track deployments for compliance"
 ```
 
-## Parallel Jobs and Matrix Strategy 🔀
+## Parallel Jobs and Matrix Strategy 
 
 ```yaml
 jobs:
@@ -434,12 +434,12 @@ jobs:
 
 ## Key Takeaways
 
-- 🔄 **Extends templates** enforce governance while allowing customization
-- 🎛️ **Runtime parameters** make pipelines flexible and reusable
-- 🐳 **Container jobs** provide consistent, isolated build environments
-- 🏗️ **ARM/Bicep integration** enables infrastructure as code
-- 🚀 **Advanced deployment strategies** like canary reduce risk
-- 🛡️ **Security best practices** protect sensitive data
-- 🔀 **Matrix strategies** test across multiple configurations
+-  **Extends templates** enforce governance while allowing customization
+- ️ **Runtime parameters** make pipelines flexible and reusable
+-  **Container jobs** provide consistent, isolated build environments
+- ️ **ARM/Bicep integration** enables infrastructure as code
+-  **Advanced deployment strategies** like canary reduce risk
+- ️ **Security best practices** protect sensitive data
+-  **Matrix strategies** test across multiple configurations
 
 <ProgressCheckpoint section="ado-advanced-features" xpReward={75} />

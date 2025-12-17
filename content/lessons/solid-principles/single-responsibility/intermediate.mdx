@@ -163,8 +163,8 @@ public class WelcomeEmailHandler : IHandle<UserCreatedEvent>
 
 | Cohesion Level | Description | Example |
 |:--------------|:------------|:--------|
-| **High** ✅ | All methods relate to ONE concept | `EmailValidator.IsValid()`, `.GetDomain()` |
-| **Low** ❌ | Methods serve unrelated purposes | `UserHelper.hash()`, `.sendEmail()`, `.formatDate()` |
+| **High**  | All methods relate to ONE concept | `EmailValidator.IsValid()`, `.GetDomain()` |
+| **Low**  | Methods serve unrelated purposes | `UserHelper.hash()`, `.sendEmail()`, `.formatDate()` |
 
 <InfoBox type="tip">
 **Cohesion Test:** Can you describe what your class does in ONE sentence without using "AND" or "OR"?
@@ -199,14 +199,14 @@ When you find a class with multiple responsibilities:
 
 ### Common Mistakes
 
-**❌ Going Too Far**
+** Going Too Far**
 ```csharp
 // Too granular - this is overkill!
 public class UserEmailGetter { string Get(User u) => u.Email; }
 public class UserEmailSetter { void Set(User u, string e) => u.Email = e; }
 ```
 
-**✅ Finding the Balance**
+** Finding the Balance**
 ```csharp
 // Just right - cohesive and focused
 public class EmailService
@@ -220,10 +220,10 @@ public class EmailService
 ### Key Takeaways
 
 <InfoBox type="tip" title="Remember">
-- 🎯 **One actor, one class** - Organize by who requests changes
-- 📏 **High cohesion** - Methods and data should belong together
-- 🔌 **Use interfaces** - Decouple responsibilities with abstractions
-- ⚖️ **Balance is key** - Don't over-engineer with micro-classes
+-  **One actor, one class** - Organize by who requests changes
+-  **High cohesion** - Methods and data should belong together
+-  **Use interfaces** - Decouple responsibilities with abstractions
+- ️ **Balance is key** - Don't over-engineer with micro-classes
 </InfoBox>
 
 <ProgressCheckpoint section="srp-application" xpReward={13} />

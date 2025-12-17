@@ -285,7 +285,7 @@ For read-only queries, disable change tracking for better performance:
 
 <DotnetCodePreview
   title="AsNoTracking for Performance"
-  code={`// ✅ Read-only report - use AsNoTracking
+  code={`//  Read-only report - use AsNoTracking
 var salesReport = await context.Orders
     .AsNoTracking()
     .Where(o => o.Year == 2024)
@@ -293,13 +293,13 @@ var salesReport = await context.Orders
     .Select(g => new { Month = g.Key, Total = g.Sum(o => o.Amount) })
     .ToListAsync();
 
-// ✅ Display list - use AsNoTracking
+//  Display list - use AsNoTracking
 var productList = await context.Products
     .AsNoTracking()
     .OrderBy(p => p.Name)
     .ToListAsync();
 
-// ❌ Don't use AsNoTracking if you plan to modify
+//  Don't use AsNoTracking if you plan to modify
 var customer = await context.Customers.FindAsync(1);
 customer.LastLogin = DateTime.UtcNow;
 await context.SaveChangesAsync(); // This works because it's tracked`}
@@ -328,22 +328,22 @@ await context.SaveChangesAsync(); // This works because it's tracked`}
   title="Change Tracking Pitfalls"
   items={[
     {
-      label: "❌ Forgetting SaveChanges",
+      label: " Forgetting SaveChanges",
       description: "Changes are only persisted when you call SaveChangesAsync(). No save = no database update!",
       isCorrect: false
     },
     {
-      label: "❌ Long-lived DbContext",
+      label: " Long-lived DbContext",
       description: "Keeping a DbContext open too long accumulates tracked entities and uses memory.",
       isCorrect: false
     },
     {
-      label: "✅ Short-lived DbContext",
+      label: " Short-lived DbContext",
       description: "Create DbContext per request/operation. Let DI handle the lifecycle.",
       isCorrect: true
     },
     {
-      label: "✅ Clear tracker when needed",
+      label: " Clear tracker when needed",
       description: "Use context.ChangeTracker.Clear() to reset tracking in long operations.",
       isCorrect: true
     }

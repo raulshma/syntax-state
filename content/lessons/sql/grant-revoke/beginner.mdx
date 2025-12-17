@@ -2,7 +2,7 @@
 
 Control who can do what in your database!
 
-## 🔐 What is GRANT?
+##  What is GRANT?
 
 GRANT gives permissions to users:
 
@@ -11,7 +11,7 @@ GRANT SELECT ON products TO john;
 -- John can now read from products table
 ```
 
-## 🚫 What is REVOKE?
+##  What is REVOKE?
 
 REVOKE removes permissions:
 
@@ -20,7 +20,7 @@ REVOKE SELECT ON products FROM john;
 -- John can no longer read products
 ```
 
-## 📝 Common Permissions
+##  Common Permissions
 
 | Permission | Allows         |
 | ---------- | -------------- |
@@ -31,7 +31,7 @@ REVOKE SELECT ON products FROM john;
 | EXECUTE    | Run procedures |
 | ALL        | Everything     |
 
-## 🎯 Basic Examples
+##  Basic Examples
 
 ```sql
 -- Grant single permission
@@ -47,7 +47,7 @@ GRANT ALL ON products TO admin_user;
 GRANT SELECT ON ALL TABLES IN SCHEMA public TO readonly_user;
 ```
 
-## 👥 Granting to Roles
+##  Granting to Roles
 
 ```sql
 -- Create a role

@@ -38,9 +38,9 @@ public class OrderService
 ```
 
 How do we test `PlaceOrder()` without:
-- ❌ Sending real emails to customers?
-- ❌ Saving to a real database?
-- ❌ Depending on external services?
+-  Sending real emails to customers?
+-  Saving to a real database?
+-  Depending on external services?
 
 ### The Solution: Mocking!
 
@@ -474,14 +474,14 @@ Assert.Equal(1, capturedOrders[0].Id);
 
 ### What to Mock
 
-✅ **DO Mock:**
+ **DO Mock:**
 - External services (APIs, databases)
 - Email senders
 - File system operations
 - Time/date providers
 - Complex dependencies
 
-❌ **DON'T Mock:**
+ **DON'T Mock:**
 - Simple value objects
 - Your own domain models
 - Language features
@@ -566,4 +566,4 @@ Only mock external dependencies and infrastructure. Use real objects for simple 
 
 ---
 
-**Excellent work!** 🎉 You now understand the fundamentals of mocking with Moq. In the intermediate level, we'll explore advanced scenarios like mocking async methods, LINQ queries, and complex setups. Ready for more? 🚀
+**Excellent work!**  You now understand the fundamentals of mocking with Moq. In the intermediate level, we'll explore advanced scenarios like mocking async methods, LINQ queries, and complex setups. Ready for more? 

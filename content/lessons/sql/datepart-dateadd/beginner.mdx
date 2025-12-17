@@ -2,7 +2,7 @@
 
 Extract parts of dates and perform date math!
 
-## 📅 DATEPART: Extract Components
+##  DATEPART: Extract Components
 
 ```sql
 SELECT DATEPART(YEAR, '2024-03-15');   -- 2024
@@ -11,7 +11,7 @@ SELECT DATEPART(DAY, '2024-03-15');    -- 15
 SELECT DATEPART(HOUR, '2024-03-15 14:30:00');  -- 14
 ```
 
-## 📆 Common Date Parts
+##  Common Date Parts
 
 | Part    | Returns |
 | ------- | ------- |
@@ -25,7 +25,7 @@ SELECT DATEPART(HOUR, '2024-03-15 14:30:00');  -- 14
 | WEEK    | 1-53    |
 | QUARTER | 1-4     |
 
-## ➕ DATEADD: Add Time
+##  DATEADD: Add Time
 
 ```sql
 SELECT DATEADD(DAY, 7, '2024-03-15');    -- 2024-03-22
@@ -33,7 +33,7 @@ SELECT DATEADD(MONTH, 1, '2024-03-15');  -- 2024-04-15
 SELECT DATEADD(YEAR, -1, '2024-03-15');  -- 2023-03-15
 ```
 
-## ➖ DATEDIFF: Calculate Difference
+##  DATEDIFF: Calculate Difference
 
 ```sql
 SELECT DATEDIFF(DAY, '2024-03-01', '2024-03-15');   -- 14
@@ -41,7 +41,7 @@ SELECT DATEDIFF(MONTH, '2024-01-15', '2024-06-20'); -- 5
 SELECT DATEDIFF(YEAR, '2020-01-01', '2024-12-31'); -- 4
 ```
 
-## 🎯 Practical Examples
+##  Practical Examples
 
 ```sql
 -- Orders in last 7 days
@@ -60,7 +60,7 @@ GROUP BY DATEPART(YEAR, order_date), DATEPART(MONTH, order_date);
 SELECT DATEDIFF(YEAR, birth_date, GETDATE()) AS age FROM users;
 ```
 
-## 📊 Database Variations
+##  Database Variations
 
 ```sql
 -- PostgreSQL uses EXTRACT

@@ -1,20 +1,20 @@
 # Understanding the Request Pipeline
 
-Imagine an **airport security line** 🛫. When you arrive, you don't go straight to your gate—you pass through multiple checkpoints first. Each checkpoint has a specific job: checking your ID, scanning your bag, inspecting your shoes.
+Imagine an **airport security line** . When you arrive, you don't go straight to your gate—you pass through multiple checkpoints first. Each checkpoint has a specific job: checking your ID, scanning your bag, inspecting your shoes.
 
 **That's exactly how ASP.NET Core's Request Pipeline works!**
 
 ## Section 1: Pipeline Overview
 
-### The Airport Analogy ✈️
+### The Airport Analogy ️
 
 | **Airport Checkpoint** | **Middleware Equivalent** |
 | :--------------------- | :------------------------ |
-| 🎫 Check your ticket | Exception Handler |
+|  Check your ticket | Exception Handler |
 | 🆔 Verify your ID | Authentication |
-| 👜 Scan your bag | Authorization |
-| 👟 Check your shoes | Static Files |
-| 🚪 Board the plane | Your App's Endpoint |
+|  Scan your bag | Authorization |
+|  Check your shoes | Static Files |
+|  Board the plane | Your App's Endpoint |
 
 <InfoBox type="tip">
   **Key Insight:** Each piece of middleware is like a checkpoint. The request passes through each one in order, and then the response comes back through them in **reverse order**!
@@ -28,11 +28,11 @@ Imagine an **airport security line** 🛫. When you arrive, you don't go straigh
 
 Here's what happens when someone visits your website:
 
-1. 📥 **Request comes in** (like arriving at the airport)
-2. ➡️ **Passes through middleware** (each checkpoint in order)
-3. 🎯 **Reaches your code** (the endpoint/controller)
+1.  **Request comes in** (like arriving at the airport)
+2. ️ **Passes through middleware** (each checkpoint in order)
+3.  **Reaches your code** (the endpoint/controller)
 4. ⬅️ **Response travels back** (same checkpoints, reverse order)
-5. 📤 **Response sent to user** (you reach your destination!)
+5.  **Response sent to user** (you reach your destination!)
 
 <ProgressCheckpoint section="pipeline-overview" xpReward={8} />
 
@@ -134,9 +134,9 @@ app.MapControllers();               // 7. Run your code
 
 | Concept | Description |
 | :------ | :---------- |
-| 🛤️ **Pipeline** | Requests pass through middleware in order |
+| ️ **Pipeline** | Requests pass through middleware in order |
 | ↩️ **Two-Way** | Responses travel back through same middleware |
-| 📋 **Order Matters** | Put middleware in the right sequence |
-| 🎯 **Each Has a Job** | One middleware = one responsibility |
+|  **Order Matters** | Put middleware in the right sequence |
+|  **Each Has a Job** | One middleware = one responsibility |
 
 <ProgressCheckpoint section="pipeline-order" xpReward={9} />

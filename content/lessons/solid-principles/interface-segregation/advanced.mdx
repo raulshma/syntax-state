@@ -10,7 +10,7 @@ In microservices, ISP applies to **service contracts** (APIs). Fat APIs lead to 
 
 <DotnetCodePreview
   title="API-Level ISP: Service Contracts"
-  code={`// ❌ Fat API Contract - all clients get everything
+  code={`//  Fat API Contract - all clients get everything
 public interface IOrderService
 {
     // Customer operations
@@ -25,7 +25,7 @@ public interface IOrderService
     Task<ShippingLabel> GenerateShippingLabel(Guid orderId);
 }
 
-// ✅ Segregated Contracts (Backend-for-Frontend pattern)
+//  Segregated Contracts (Backend-for-Frontend pattern)
 public interface ICustomerOrderApi
 {
     Task<Order> CreateOrder(CreateOrderRequest req);
@@ -173,11 +173,11 @@ interface IProduct
 ### Key Takeaways
 
 <InfoBox type="tip" title="Remember">
-- 🌐 **API-level ISP** applies to microservice contracts
-- 📖 **CQRS** is ISP for data access (read/write separation)
+-  **API-level ISP** applies to microservice contracts
+-  **CQRS** is ISP for data access (read/write separation)
 - 🧩 **Composition** via multiple small interfaces
-- 💉 **DI benefits** from precise, focused dependencies
-- ⚖️ **Balance** granularity vs. cognitive load
+-  **DI benefits** from precise, focused dependencies
+- ️ **Balance** granularity vs. cognitive load
 </InfoBox>
 
 <ProgressCheckpoint section="isp-application" xpReward={20} />

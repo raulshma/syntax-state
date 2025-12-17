@@ -2,7 +2,7 @@
 
 Create every combination of rows from two tables!
 
-## ✖️ What is CROSS JOIN?
+## ️ What is CROSS JOIN?
 
 CROSS JOIN produces the Cartesian product - every row from table A paired with every row from table B:
 
@@ -10,7 +10,7 @@ CROSS JOIN produces the Cartesian product - every row from table A paired with e
 SELECT * FROM colors CROSS JOIN sizes;
 ```
 
-## 📊 Visual Example
+##  Visual Example
 
 ```mermaid
 flowchart LR
@@ -44,7 +44,7 @@ flowchart LR
 | Blue | Medium |
 | Blue | Large |
 
-## 📝 Syntax
+##  Syntax
 
 ```sql
 -- Explicit CROSS JOIN
@@ -54,7 +54,7 @@ SELECT * FROM table_a CROSS JOIN table_b;
 SELECT * FROM table_a, table_b;
 ```
 
-## ⚠️ Warning: Row Explosion!
+## ️ Warning: Row Explosion!
 
 CROSS JOIN multiplies rows:
 
@@ -63,7 +63,7 @@ CROSS JOIN multiplies rows:
 
 Only use when you need all combinations!
 
-## 🎯 Good Use Cases
+##  Good Use Cases
 
 ### 1. Product Variants
 
@@ -93,7 +93,7 @@ FROM first_names f
 CROSS JOIN last_names l;
 ```
 
-## 💡 Key Points
+##  Key Points
 
 - No ON clause needed
 - Result size = rows in A × rows in B

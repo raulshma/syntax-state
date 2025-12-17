@@ -2,7 +2,7 @@
 
 Learn to connect data from multiple tables!
 
-## 🔗 What is a JOIN?
+##  What is a JOIN?
 
 A JOIN combines rows from two or more tables based on a related column:
 
@@ -12,7 +12,7 @@ FROM orders
 INNER JOIN customers ON orders.customer_id = customers.id;
 ```
 
-## 📊 Visual: How INNER JOIN Works
+##  Visual: How INNER JOIN Works
 
 ```mermaid
 flowchart LR
@@ -44,7 +44,7 @@ flowchart LR
 
 > Carol has no orders, so she's **not** in the result
 
-## 📝 Basic Syntax
+##  Basic Syntax
 
 ```sql
 SELECT columns
@@ -56,7 +56,7 @@ INNER JOIN customers ON ...
 JOIN customers ON ...
 ```
 
-## 🎯 Real Examples
+##  Real Examples
 
 ```sql
 -- Orders with customer names
@@ -70,7 +70,7 @@ FROM products p
 INNER JOIN categories c ON p.category_id = c.id;
 ```
 
-## ✏️ Table Aliases
+## ️ Table Aliases
 
 Use short aliases for cleaner queries:
 
@@ -86,7 +86,7 @@ FROM orders o
 INNER JOIN customers c ON o.customer_id = c.id;
 ```
 
-## 💡 Key Points
+##  Key Points
 
 - INNER JOIN returns only matching rows
 - No match = row excluded from result

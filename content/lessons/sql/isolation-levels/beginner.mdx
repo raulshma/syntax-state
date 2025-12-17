@@ -2,7 +2,7 @@
 
 Control what transactions can see of each other's work!
 
-## 🔒 What are Isolation Levels?
+##  What are Isolation Levels?
 
 Isolation levels control how much of other transactions' work you can see:
 
@@ -13,7 +13,7 @@ Isolation levels control how much of other transactions' work you can see:
 | Repeatable Read  | No               | No                       | Yes           |
 | Serializable     | No               | No                       | No            |
 
-## 📝 Setting Isolation Level
+##  Setting Isolation Level
 
 ```sql
 -- SQL Server
@@ -28,7 +28,7 @@ BEGIN TRANSACTION ISOLATION LEVEL SERIALIZABLE;
 COMMIT;
 ```
 
-## 🔍 The Four Levels
+##  The Four Levels
 
 ### 1. Read Uncommitted (Fastest, Least Safe)
 
@@ -61,7 +61,7 @@ SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
 -- No anomalies, but slowest
 ```
 
-## 🎯 Simple Example
+##  Simple Example
 
 ```sql
 -- Transaction A (Read Committed)
@@ -74,7 +74,7 @@ BEGIN TRANSACTION;
 COMMIT;
 ```
 
-## 💡 Which to Use?
+##  Which to Use?
 
 | Use Case                      | Recommended Level |
 | ----------------------------- | ----------------- |

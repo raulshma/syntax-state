@@ -13,7 +13,7 @@ Imagine you've deployed your app with a `Customer` table. Now you need to add an
 - Update your teammate's database?
 - Update the production database?
 
-Without migrations, you'd write SQL scripts manually and hope everyone runs them in the right order. 😰
+Without migrations, you'd write SQL scripts manually and hope everyone runs them in the right order. 
 
 <InfoBox type="info">
 **Migrations** are like version control for your database schema. Each migration is a snapshot of changes that can be applied (or rolled back) in order.
@@ -261,17 +261,17 @@ dotnet ef migrations remove`}
   title="Production Migration Strategies"
   items={[
     {
-      label: "✅ Generate SQL Script",
+      label: " Generate SQL Script",
       description: "Use 'dotnet ef migrations script' to generate SQL, review it, then run manually or via CI/CD",
       isCorrect: true
     },
     {
-      label: "✅ Migrate on Startup",
+      label: " Migrate on Startup",
       description: "Call context.Database.Migrate() in Program.cs - good for simple apps",
       isCorrect: true
     },
     {
-      label: "❌ Run CLI in Production",
+      label: " Run CLI in Production",
       description: "Don't run 'dotnet ef database update' directly on production servers",
       isCorrect: false
     }
@@ -324,27 +324,27 @@ app.Run();`}
   title="Migration Best Practices"
   items={[
     {
-      label: "✅ Small, focused migrations",
+      label: " Small, focused migrations",
       description: "One logical change per migration. Easier to review, test, and rollback.",
       isCorrect: true
     },
     {
-      label: "✅ Test migrations locally",
+      label: " Test migrations locally",
       description: "Always test on a copy of production data before deploying.",
       isCorrect: true
     },
     {
-      label: "✅ Commit migrations to source control",
+      label: " Commit migrations to source control",
       description: "Migrations are code - they belong in your Git repository!",
       isCorrect: true
     },
     {
-      label: "❌ Edit applied migrations",
+      label: " Edit applied migrations",
       description: "Never modify a migration that's been applied to any database.",
       isCorrect: false
     },
     {
-      label: "❌ Delete migrations randomly",
+      label: " Delete migrations randomly",
       description: "Only remove the LAST migration, and only if it hasn't been applied.",
       isCorrect: false
     }
@@ -450,7 +450,7 @@ You've completed the EF Core fundamentals! You now understand:
 - **LINQ Queries** - Retrieving data efficiently
 - **Migrations** - Evolving your database schema
 
-You're ready to build real applications with Entity Framework Core! 🎉
+You're ready to build real applications with Entity Framework Core! 
 </KeyConcept>
 
 <ProgressCheckpoint section="migration-best-practices" xpReward={20} />

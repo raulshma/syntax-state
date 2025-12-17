@@ -2,11 +2,11 @@
 
 Learn to modify tables after they're created - add columns, change types, and more!
 
-## 🔧 What is ALTER TABLE?
+##  What is ALTER TABLE?
 
 ALTER TABLE lets you change an existing table without recreating it.
 
-## ➕ Adding Columns
+##  Adding Columns
 
 ```sql
 -- Add one column
@@ -24,7 +24,7 @@ ADD
     dimensions VARCHAR(50);
 ```
 
-## 🗑️ Removing Columns
+## ️ Removing Columns
 
 ```sql
 -- Drop a column
@@ -36,7 +36,7 @@ ALTER TABLE products
 DROP COLUMN weight, DROP COLUMN dimensions;
 ```
 
-## ✏️ Changing Column Types
+## ️ Changing Column Types
 
 ```sql
 -- SQL Server
@@ -52,7 +52,7 @@ ALTER TABLE customers
 MODIFY COLUMN phone VARCHAR(30);
 ```
 
-## 📝 Renaming Things
+##  Renaming Things
 
 ```sql
 -- Rename column (varies by database)
@@ -69,7 +69,7 @@ ALTER TABLE customers RENAME TO clients;
 EXEC sp_rename 'customers', 'clients';  -- SQL Server
 ```
 
-## 🎯 Common Examples
+##  Common Examples
 
 | Task          | SQL                                        |
 | ------------- | ------------------------------------------ |
@@ -78,7 +78,7 @@ EXEC sp_rename 'customers', 'clients';  -- SQL Server
 | Make NOT NULL | `ALTER COLUMN name SET NOT NULL`           |
 | Add default   | `ALTER COLUMN status SET DEFAULT 'active'` |
 
-## 💡 Quick Tips
+##  Quick Tips
 
 1. **Backup first** - ALTER can't always be undone
 2. **Test on development** - Make sure changes work

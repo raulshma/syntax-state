@@ -2,7 +2,7 @@
 
 The SELECT statement is your window into the database. Let's learn how to ask for data!
 
-## 🔍 Your First Query
+##  Your First Query
 
 ```sql
 SELECT * FROM customers;
@@ -17,7 +17,7 @@ This says: "Show me **everything** from the **customers** table"
 | `FROM`      | ...from this table |
 | `customers` | the table name     |
 
-## 📊 Choosing Specific Columns
+##  Choosing Specific Columns
 
 Instead of `*` (everything), list the columns you want:
 
@@ -32,7 +32,7 @@ FROM customers;
 | Alice | Smith | alice@email.com |
 | Bob | Jones | bob@email.com |
 
-## ✨ Renaming Columns with AS
+##  Renaming Columns with AS
 
 Make your results clearer with aliases:
 
@@ -44,7 +44,7 @@ SELECT
 FROM customers;
 ```
 
-## ➕ Calculated Columns
+##  Calculated Columns
 
 Do math in your query!
 
@@ -62,7 +62,7 @@ FROM products;
 | Widget | 100.00 | 90.00 |
 | Gadget | 50.00 | 45.00 |
 
-## 🎯 Quick Tips
+##  Quick Tips
 
 1. **Always name your columns** - easier to read than \*
 2. **Use AS for clarity** - rename confusing columns
@@ -76,7 +76,7 @@ SELECT product_name, price FROM products;
 SELECT price, product_name FROM products;
 ```
 
-## 🔄 DISTINCT - Removing Duplicates
+##  DISTINCT - Removing Duplicates
 
 See only unique values:
 

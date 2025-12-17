@@ -1,8 +1,8 @@
 # Azure DevOps Pipelines
 
-Imagine you're putting on a theater show 🎭. You need a backstage crew to handle lighting, sound, costumes, and set changes. **Azure DevOps Pipelines is like that backstage crew for your software** — it handles all the behind-the-scenes work of building, testing, and deploying your code!
+Imagine you're putting on a theater show . You need a backstage crew to handle lighting, sound, costumes, and set changes. **Azure DevOps Pipelines is like that backstage crew for your software** — it handles all the behind-the-scenes work of building, testing, and deploying your code!
 
-## The Theater Production Analogy 🎭
+## The Theater Production Analogy 
 
 | **Theater Concept** | **Azure DevOps Equivalent** |
 | :------------------ | :-------------------------- |
@@ -16,7 +16,7 @@ Imagine you're putting on a theater show 🎭. You need a backstage crew to hand
   **Azure DevOps** is Microsoft's complete DevOps platform. **Pipelines** is just one service — it handles CI/CD while other services handle code repos, work items, testing, and artifacts.
 </InfoBox>
 
-## What is Azure DevOps Pipelines? 🔄
+## What is Azure DevOps Pipelines? 
 
 Azure DevOps Pipelines is a cloud service that automatically:
 - **Builds** your code (compiles it into an application)
@@ -25,7 +25,7 @@ Azure DevOps Pipelines is a cloud service that automatically:
 
 <AzureDevOpsVisualizer mode="beginner" showYaml={true} interactive={true} />
 
-## Your First Pipeline: The Basics 📋
+## Your First Pipeline: The Basics 
 
 A pipeline is defined in a YAML file called `azure-pipelines.yml`:
 
@@ -62,7 +62,7 @@ steps:
 
 ## Key Concepts for Beginners
 
-### Triggers (When to Run) 🎬
+### Triggers (When to Run) 
 
 ```yaml
 trigger:
@@ -70,7 +70,7 @@ trigger:
   - develop     # Also run on develop
 ```
 
-### Pool (Where to Run) 💻
+### Pool (Where to Run) 
 
 The pool is the machine that runs your code:
 
@@ -81,7 +81,7 @@ pool:
   # vmImage: 'macos-latest'   # macOS
 ```
 
-### Tasks (What to Do) ✅
+### Tasks (What to Do) 
 
 Tasks are pre-built actions provided by Microsoft:
 
@@ -133,28 +133,28 @@ pool:
   name: 'MyPrivatePool'     # Self-hosted pool
 ```
 
-## Viewing Pipeline Results 📊
+## Viewing Pipeline Results 
 
 When your pipeline runs, you can see:
-- ✅ Which steps passed
-- ❌ Which steps failed
-- 📝 Logs from each step
+-  Which steps passed
+-  Which steps failed
+-  Logs from each step
 - ⏱️ How long each step took
 
 ## Why Choose Azure DevOps?
 
-- 🏢 **Enterprise-ready** - Built for large organizations
-- 🔗 **Azure integration** - Seamless deployment to Azure services
-- 🎨 **Visual interface** - Easy to monitor and manage
-- 📦 **Built-in artifact storage** - Keep your build outputs
-- 📋 **Work item integration** - Link builds to tickets
+-  **Enterprise-ready** - Built for large organizations
+-  **Azure integration** - Seamless deployment to Azure services
+-  **Visual interface** - Easy to monitor and manage
+-  **Built-in artifact storage** - Keep your build outputs
+-  **Work item integration** - Link builds to tickets
 
 ## Key Takeaways
 
-- 🎭 **Azure Pipelines** automates your software delivery process
-- 📝 **YAML files** define what your pipeline does
-- 🏃 **Agents** are the machines that run your pipelines
-- ✅ **Tasks** are pre-built actions for common operations
-- 🔗 **Microsoft-hosted or self-hosted** agents are available
+-  **Azure Pipelines** automates your software delivery process
+-  **YAML files** define what your pipeline does
+-  **Agents** are the machines that run your pipelines
+-  **Tasks** are pre-built actions for common operations
+-  **Microsoft-hosted or self-hosted** agents are available
 
 <ProgressCheckpoint section="ado-introduction" xpReward={30} />

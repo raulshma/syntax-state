@@ -1,4 +1,4 @@
-# Built-in Logging: Your Application's Black Box 📝
+# Built-in Logging: Your Application's Black Box 
 
 Imagine you're driving a car, and something goes wrong. How do you know what happened? The car has a **black box** that records everything - speed, engine temperature, braking events. 
 
@@ -7,10 +7,10 @@ That's exactly what **logging** does for your .NET application!
 ## What is Logging?
 
 Logging is like keeping a diary for your application. It records:
-- ✅ What happened (user logged in)
-- ⚠️ What went wrong (database connection failed)
-- 📊 Performance metrics (request took 250ms)
-- 🔍 Debugging clues (variable values at runtime)
+-  What happened (user logged in)
+- ️ What went wrong (database connection failed)
+-  Performance metrics (request took 250ms)
+-  Debugging clues (variable values at runtime)
 
 <KeyConcept title="Why Logging Matters">
 Without logs, debugging production issues is like finding a needle in a haystack while blindfolded. Logs give you visibility into what your application is doing when you're not watching!
@@ -22,10 +22,10 @@ Without logs, debugging production issues is like finding a needle in a haystack
 
 ASP.NET Core comes with a powerful logging system built right in - **ILogger**. Think of it as a universal diary that can write to multiple places at once:
 
-- 📺 **Console** - See logs while developing
-- 📄 **Files** - Save logs permanently
-- 🔔 **Event Viewer** - Windows system logs
-- ☁️ **Cloud Services** - Azure Application Insights
+-  **Console** - See logs while developing
+-  **Files** - Save logs permanently
+-  **Event Viewer** - Windows system logs
+- ️ **Cloud Services** - Azure Application Insights
 
 ### Real-Life Analogy
 
@@ -84,12 +84,12 @@ Not all events are equally important. ASP.NET Core uses **log levels** to catego
 
 | Level | Icon | When to Use | Example |
 |-------|------|-------------|---------|
-| **Trace** | 🔬 | Super detailed debugging | "Entering method ProcessOrder with parameter orderId=123" |
-| **Debug** | 🐛 | Development debugging | "Cache hit for key 'user_456'" |
+| **Trace** |  | Super detailed debugging | "Entering method ProcessOrder with parameter orderId=123" |
+| **Debug** |  | Development debugging | "Cache hit for key 'user_456'" |
 | **Information** | ℹ️ | Normal events | "User logged in successfully" |
-| **Warning** | ⚠️ | Something unusual | "Retry attempt 2 of 3 for API call" |
-| **Error** | ❌ | Something failed | "Database connection timeout" |
-| **Critical** | 🔥 | System is broken | "Out of memory, application shutting down" |
+| **Warning** | ️ | Something unusual | "Retry attempt 2 of 3 for API call" |
+| **Error** |  | Something failed | "Database connection timeout" |
+| **Critical** |  | System is broken | "Out of memory, application shutting down" |
 
 ### When to Use Each Level
 
@@ -153,16 +153,16 @@ app.Run();
 ```
 
 This says:
-- 📝 **Default**: Log Information and above for everything
-- 🔇 **Microsoft.AspNetCore**: Only Warning and above (less noise from framework)
+-  **Default**: Log Information and above for everything
+-  **Microsoft.AspNetCore**: Only Warning and above (less noise from framework)
 
 ## Key Takeaways
 
-✅ Logging is your application's flight recorder
-✅ ILogger is injected via dependency injection
-✅ Use appropriate log levels for different situations
-✅ Configure log providers based on your needs
-✅ Different settings for development vs production
+ Logging is your application's flight recorder
+ ILogger is injected via dependency injection
+ Use appropriate log levels for different situations
+ Configure log providers based on your needs
+ Different settings for development vs production
 
 <InfoBox type="success">
 You've learned the fundamentals of .NET logging! You can now track what your application is doing and diagnose issues effectively.

@@ -77,22 +77,22 @@ const scenarios = [
   {
     from: 'https://myapp.com',
     to: 'https://myapp.com/api',
-    result: '✅ Same origin - always allowed'
+    result: ' Same origin - always allowed'
   },
   {
     from: 'https://myapp.com',
     to: 'https://api.myapp.com',
-    result: '❌ Different subdomain - needs CORS'
+    result: ' Different subdomain - needs CORS'
   },
   {
     from: 'https://myapp.com',
     to: 'http://myapp.com/api',
-    result: '❌ Different protocol - needs CORS'
+    result: ' Different protocol - needs CORS'
   },
   {
     from: 'https://myapp.com',
     to: 'https://myapp.com:8080/api',
-    result: '❌ Different port - needs CORS'
+    result: ' Different port - needs CORS'
   },
 ];
 
@@ -406,13 +406,13 @@ xhr.send();
 
 | Feature | Fetch | XMLHttpRequest |
 |---------|-------|----------------|
-| Promise-based | ✅ Yes | ❌ No (callbacks) |
-| Streaming | ✅ Yes | ❌ Limited |
-| Request/Response objects | ✅ Yes | ❌ No |
-| Service Worker support | ✅ Yes | ❌ No |
-| Upload progress | ❌ No | ✅ Yes |
-| Timeout option | ❌ No (use AbortController) | ✅ Yes |
-| Synchronous requests | ❌ No | ✅ Yes (deprecated) |
+| Promise-based |  Yes |  No (callbacks) |
+| Streaming |  Yes |  Limited |
+| Request/Response objects |  Yes |  No |
+| Service Worker support |  Yes |  No |
+| Upload progress |  No |  Yes |
+| Timeout option |  No (use AbortController) |  Yes |
+| Synchronous requests |  No |  Yes (deprecated) |
 
 <InfoBox type="info" title="When to Use XHR">
 XMLHttpRequest still has one advantage: native upload progress events. For file uploads with progress bars, XHR might be simpler.
@@ -532,11 +532,11 @@ async function simulateFetchWithRetry(shouldFail = true) {
     const success = !shouldFail || attempt === maxRetries;
     
     if (success) {
-      console.log('✅ Request succeeded!');
+      console.log(' Request succeeded!');
       return { data: 'Success!' };
     }
     
-    console.log('❌ Request failed');
+    console.log(' Request failed');
     
     if (attempt < maxRetries) {
       const delay = Math.pow(2, attempt - 1) * 1000;
@@ -608,4 +608,4 @@ Use response.body streams for progress tracking and processing large responses i
 
 ---
 
-**Congratulations!** 🎉 You've mastered the Fetch API from basics to advanced patterns. You now have the knowledge to build robust, production-ready data fetching in your applications!
+**Congratulations!**  You've mastered the Fetch API from basics to advanced patterns. You now have the knowledge to build robust, production-ready data fetching in your applications!

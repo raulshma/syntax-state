@@ -65,7 +65,7 @@ class Robot {
   
   recharge() {
     this.battery = 100;
-    return \`\${this.name} fully charged! 🔋\`;
+    return \`\${this.name} fully charged! \`;
   }
 }
 
@@ -215,7 +215,7 @@ class Player {
     const newLevel = Math.floor(this.score / 100) + 1;
     if (newLevel > this.level) {
       this.level = newLevel;
-      console.log(\`🎉 \${this.name} reached level \${this.level}!\`);
+      console.log(\` \${this.name} reached level \${this.level}!\`);
     }
   }
   

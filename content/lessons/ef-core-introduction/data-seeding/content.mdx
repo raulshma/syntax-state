@@ -6,7 +6,7 @@ New database, empty tables - now what? Data seeding is like **furnishing a new h
 
 ## Section 1: Why Seed Data?
 
-### The Empty House Problem 🏠
+### The Empty House Problem 
 
 When you create a database, it's completely empty. But your application often needs:
 
@@ -27,22 +27,22 @@ When you create a database, it's completely empty. But your application often ne
   title="Seeding Use Cases"
   items={[
     {
-      label: "✅ Lookup tables (Countries, Statuses)",
+      label: " Lookup tables (Countries, Statuses)",
       description: "Reference data that rarely changes and is required for the app to work",
       isCorrect: true
     },
     {
-      label: "✅ Default configuration",
+      label: " Default configuration",
       description: "Initial settings that the app needs on first run",
       isCorrect: true
     },
     {
-      label: "✅ Required relationships",
+      label: " Required relationships",
       description: "Default categories, roles, or types that other entities depend on",
       isCorrect: true
     },
     {
-      label: "❌ User-generated content",
+      label: " User-generated content",
       description: "Never seed actual user data or content that changes frequently",
       isCorrect: false
     }
@@ -113,17 +113,17 @@ EF Core provides `HasData()` in your model configuration to seed data:
 
 <DotnetCodePreview
   title="Seeding with Relationships"
-  code={`// ❌ WRONG - Can't use navigation properties
+  code={`//  WRONG - Can't use navigation properties
 modelBuilder.Entity<Post>().HasData(
     new Post 
     { 
         Id = 1, 
         Title = "First Post",
-        Blog = new Blog { Id = 1, Name = "My Blog" }  // ❌ Not allowed!
+        Blog = new Blog { Id = 1, Name = "My Blog" }  //  Not allowed!
     }
 );
 
-// ✅ CORRECT - Use foreign key values
+//  CORRECT - Use foreign key values
 modelBuilder.Entity<Blog>().HasData(
     new Blog { Id = 1, Name = "My Blog" }
 );
@@ -133,7 +133,7 @@ modelBuilder.Entity<Post>().HasData(
     { 
         Id = 1, 
         Title = "First Post",
-        BlogId = 1  // ✅ Reference by FK!
+        BlogId = 1  //  Reference by FK!
     }
 );`}
   steps={[
@@ -330,27 +330,27 @@ public class SeedingService
   title="Seeding Do's and Don'ts"
   items={[
     {
-      label: "✅ Make seeding idempotent",
+      label: " Make seeding idempotent",
       description: "Check if data exists before adding - prevent duplicates!",
       isCorrect: true
     },
     {
-      label: "✅ Use consistent IDs",
+      label: " Use consistent IDs",
       description: "Hardcode IDs for lookup data so they're predictable",
       isCorrect: true
     },
     {
-      label: "✅ Separate by purpose",
+      label: " Separate by purpose",
       description: "Lookups, demo data, and test data should be separate",
       isCorrect: true
     },
     {
-      label: "❌ Seed sensitive data",
+      label: " Seed sensitive data",
       description: "Never hardcode real passwords or API keys in seed data",
       isCorrect: false
     },
     {
-      label: "❌ Seed large datasets",
+      label: " Seed large datasets",
       description: "Don't seed thousands of rows - that's not what seeding is for",
       isCorrect: false
     }
@@ -392,13 +392,13 @@ public class SeedingService
 | **Custom Service** | Environment-specific seeding |
 | **Always check first** | Prevent duplicate data |
 
-<KeyConcept title="Migrations Master! 🎉">
+<KeyConcept title="Migrations Master! ">
 Congratulations! You've completed the EF Core Migrations milestone! You now know how to:
-- ✅ Create and apply migrations
-- ✅ Follow best practices
-- ✅ Handle conflicts
-- ✅ Revert when needed
-- ✅ Seed initial data
+-  Create and apply migrations
+-  Follow best practices
+-  Handle conflicts
+-  Revert when needed
+-  Seed initial data
 
 You're ready to manage database evolution like a pro!
 </KeyConcept>

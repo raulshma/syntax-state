@@ -76,10 +76,10 @@ public class OrderResponseV2 : OrderResponseV1
 
 | Change Type | Safe? | Reason |
 |:------------|:------|:-------|
-| Add optional field | ✅ | Old clients ignore it |
-| Add new enum value | ⚠️ | Old clients may break on unknown value |
-| Change field type | ❌ | Breaks deserialization |
-| Remove field | ❌ | Breaks dependent clients |
+| Add optional field |  | Old clients ignore it |
+| Add new enum value | ️ | Old clients may break on unknown value |
+| Change field type |  | Breaks deserialization |
+| Remove field |  | Breaks dependent clients |
 
 <SolidPrincipleDemo principle="L" mode="advanced" />
 
@@ -145,11 +145,11 @@ public class Contractor : IEmployee { /* No bonus interface */ }
 ### Key Takeaways
 
 <InfoBox type="tip" title="Remember">
-- 📜 **Design by Contract** formalizes LSP expectations
+-  **Design by Contract** formalizes LSP expectations
 - ↕️ **Variance** enforces LSP at the type system level in C#
-- 🌐 **API versioning** is architecture-level LSP
+-  **API versioning** is architecture-level LSP
 - 🧪 **Contract tests** catch violations across implementations
-- 🔧 **Role interfaces** are the solution to false inheritance
+-  **Role interfaces** are the solution to false inheritance
 </InfoBox>
 
 <ProgressCheckpoint section="lsp-application" xpReward={20} />

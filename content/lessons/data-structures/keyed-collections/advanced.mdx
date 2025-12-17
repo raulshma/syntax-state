@@ -216,18 +216,18 @@ Why? Registered symbols are globally accessible forever - they can't be garbage 
 
 ## When to Use Weak Collections
 
-✅ **Use WeakMap when:**
+ **Use WeakMap when:**
 - Storing metadata for objects you don't own
 - Implementing caches that should auto-clean
 - Storing private data for classes
 - Tracking object state without preventing GC
 
-✅ **Use WeakSet when:**
+ **Use WeakSet when:**
 - Tagging/branding objects
 - Tracking object membership
 - Marking objects as "seen" or "processed"
 
-❌ **Don't use when:**
+ **Don't use when:**
 - You need to iterate over keys/values
 - You need to know the size
 - Keys are primitives (strings, numbers)

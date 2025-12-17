@@ -1,6 +1,6 @@
 # Liskov Substitution Principle (LSP)
 
-If it looks like a duck 🦆 and quacks like a duck 🔊, but needs batteries 🔋... you probably have the wrong abstraction!
+If it looks like a duck 🦆 and quacks like a duck , but needs batteries ... you probably have the wrong abstraction!
 
 **The Liskov Substitution Principle is about keeping promises.**
 
@@ -23,7 +23,7 @@ The mechanical duck **looks** like a duck, but it **doesn't behave** like one. I
 **The LSP Says:** If class B extends class A, then you should be able to use B anywhere you use A **without surprises**.
 </InfoBox>
 
-### The Classic Example: Birds 🐦
+### The Classic Example: Birds 
 
 Here's the most famous LSP violation:
 
@@ -53,9 +53,9 @@ Your code expected all birds to fly. The penguin broke that promise!
 
 | Expectation | Reality | Problem |
 |:------------|:--------|:--------|
-| 🚗 "All vehicles have wheels" | Boat is a vehicle | Boat breaks the promise |
-| 📦 "All boxes can be stacked" | Fragile box | Crushing = broken promise |
-| 🔌 "All chargers fit my phone" | Wrong connector | Can't charge = broken promise |
+|  "All vehicles have wheels" | Boat is a vehicle | Boat breaks the promise |
+|  "All boxes can be stacked" | Fragile box | Crushing = broken promise |
+|  "All chargers fit my phone" | Wrong connector | Can't charge = broken promise |
 
 <ProgressCheckpoint section="lsp-understanding" xpReward={9} />
 
@@ -72,7 +72,7 @@ Ask yourself:
 
 ### Good vs Bad Inheritance
 
-| **❌ Bad** (Breaks LSP) | **✅ Good** (Follows LSP) |
+| ** Bad** (Breaks LSP) | ** Good** (Follows LSP) |
 |:------------------------|:-------------------------|
 | Penguin extends Bird (with Fly method) | FlyingBird vs SwimmingBird |
 | Square extends Rectangle | Shape interface |
@@ -83,8 +83,8 @@ Ask yourself:
 <InfoBox type="tip" title="Remember">
 - 🦆 **Duck test** - If it looks like a duck, it should ACT like a duck
 - 🤝 **Keep promises** - Child classes must honor parent class behavior
-- 🔄 **Substitutability** - You can swap parent for child without problems
-- 🚫 **No surprises** - Don't throw exceptions where parent doesn't
+-  **Substitutability** - You can swap parent for child without problems
+-  **No surprises** - Don't throw exceptions where parent doesn't
 </InfoBox>
 
 <ProgressCheckpoint section="lsp-application" xpReward={8} />

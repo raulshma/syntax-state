@@ -118,7 +118,7 @@ export function getBalance() {
 
 ## Section 2: The Singleton Pattern
 
-### The President Analogy 🏛️
+### The President Analogy ️
 
 A country has only ONE president at a time. No matter how many times you ask "who's the president?", you get the same person!
 
@@ -226,7 +226,7 @@ console.log(getConnection()); // { url: 'mongodb://localhost' }
 
 ## Section 3: The Factory Pattern
 
-### The Pizza Shop Analogy 🍕
+### The Pizza Shop Analogy 
 
 A pizza shop doesn't give you raw ingredients — it creates pizzas based on your order. You say "pepperoni pizza" and get a complete pizza back!
 
@@ -395,7 +395,7 @@ console.log(tri.describe(), '- Area:', tri.area());`}
 
 ## Section 4: Barrel Exports
 
-### The Department Store Analogy 🏬
+### The Department Store Analogy 
 
 Instead of visiting 10 different specialty shops, you go to one department store that has everything organized by section!
 
@@ -483,7 +483,7 @@ import {
 **Watch out for circular dependencies!** If module A imports from the barrel, and the barrel imports from module A, you'll have problems. Keep barrel files simple — just re-exports!
 </InfoBox>
 
-| Do ✅ | Don't ❌ |
+| Do  | Don't  |
 |:------|:---------|
 | Keep barrels simple (just exports) | Add logic in barrel files |
 | Group related modules | Create one giant barrel |
@@ -538,7 +538,7 @@ import { Button } from './components/ui';
 | **Factory** | Create objects dynamically | Flexible object creation |
 | **Barrel Exports** | Organize public API | Cleaner imports |
 
-<KeyConcept title="Congratulations! 🎉">
+<KeyConcept title="Congratulations! ">
 You've completed the JavaScript Modules milestone! You now understand:
 - **ES Modules** - Modern import/export syntax
 - **CommonJS** - Node.js require/exports

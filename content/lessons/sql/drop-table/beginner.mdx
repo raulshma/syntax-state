@@ -2,7 +2,7 @@
 
 Learn to permanently delete tables from your database.
 
-## ⚠️ Warning First!
+## ️ Warning First!
 
 DROP TABLE **permanently deletes**:
 
@@ -12,20 +12,20 @@ DROP TABLE **permanently deletes**:
 
 **There is no undo!**
 
-## 🗑️ Basic Syntax
+## ️ Basic Syntax
 
 ```sql
 DROP TABLE table_name;
 ```
 
-## 📝 Simple Example
+##  Simple Example
 
 ```sql
 -- Delete the temp_data table
 DROP TABLE temp_data;
 ```
 
-## ✅ Using IF EXISTS
+##  Using IF EXISTS
 
 Avoid errors if the table doesn't exist:
 
@@ -38,7 +38,7 @@ IF OBJECT_ID('temp_data', 'U') IS NOT NULL
     DROP TABLE temp_data;
 ```
 
-## 🔗 Handling Foreign Keys
+##  Handling Foreign Keys
 
 If other tables reference yours:
 
@@ -56,13 +56,13 @@ ALTER TABLE orders DROP CONSTRAINT FK_orders_customers;
 DROP TABLE customers;
 ```
 
-## 📊 Drop Multiple Tables
+##  Drop Multiple Tables
 
 ```sql
 DROP TABLE IF EXISTS table1, table2, table3;
 ```
 
-## 💡 Before You Drop
+##  Before You Drop
 
 1. **Backup first** if data matters
 2. **Check dependencies** (foreign keys, views, procedures)
@@ -76,7 +76,7 @@ SELECT * INTO customers_backup FROM customers;
 DROP TABLE customers;
 ```
 
-## 🎯 Quick Reference
+##  Quick Reference
 
 | Command                  | What It Does                       |
 | ------------------------ | ---------------------------------- |

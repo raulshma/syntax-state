@@ -84,7 +84,7 @@ try {
 
 try {
   validateAge(25);  // Valid
-  console.log("✅ Age is valid!");
+  console.log(" Age is valid!");
 } catch (error) {
   console.log("Error:", error.message);
 }`}
@@ -178,17 +178,17 @@ Use `finally` for:
 <CodePlayground
   initialCode={`// Finally block example
 function processWithCleanup(data) {
-  console.log("🚀 Starting process...");
+  console.log(" Starting process...");
   let resource = "allocated";
   
   try {
     if (!data) {
       throw new Error("No data provided");
     }
-    console.log("✅ Processing:", data);
+    console.log(" Processing:", data);
     return data.toUpperCase();
   } catch (error) {
-    console.log("❌ Error:", error.message);
+    console.log(" Error:", error.message);
     return null;
   } finally {
     // Cleanup always runs
@@ -282,7 +282,7 @@ a();
   initialCode={`// Advanced console techniques
 
 // Grouping logs
-console.group("📦 Order Processing");
+console.group(" Order Processing");
 console.log("Order ID: 12345");
 console.log("Items: 3");
 console.log("Total: $99.99");
@@ -300,7 +300,7 @@ fruits.forEach(fruit => {
 
 // Styled console output
 console.log(
-  "%c🎉 Success! %cOperation completed",
+  "%c Success! %cOperation completed",
   "color: green; font-size: 16px; font-weight: bold",
   "color: gray"
 );
@@ -368,4 +368,4 @@ Master browser DevTools for efficient debugging. Use breakpoints, step through c
 
 ---
 
-**Excellent work!** 🎉 You now have professional-level debugging skills. In the advanced level, we'll cover async error handling, source maps, and production error tracking strategies.
+**Excellent work!**  You now have professional-level debugging skills. In the advanced level, we'll cover async error handling, source maps, and production error tracking strategies.

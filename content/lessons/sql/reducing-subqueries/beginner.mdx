@@ -2,7 +2,7 @@
 
 Make your queries faster by optimizing subqueries!
 
-## 🔍 What's the Problem?
+##  What's the Problem?
 
 Subqueries can be slow when run for every row:
 
@@ -13,7 +13,7 @@ SELECT name,
 FROM customers c;
 ```
 
-## 🎯 Convert to JOIN
+##  Convert to JOIN
 
 ```sql
 -- FAST: JOIN runs once
@@ -23,7 +23,7 @@ LEFT JOIN orders o ON c.id = o.customer_id
 GROUP BY c.id, c.name;
 ```
 
-## 📊 Correlated vs Non-Correlated
+##  Correlated vs Non-Correlated
 
 ```sql
 -- Correlated: References outer query (potentially slow)
@@ -35,7 +35,7 @@ SELECT * FROM products
 WHERE price > (SELECT AVG(price) FROM products);
 ```
 
-## ✅ Quick Fixes
+##  Quick Fixes
 
 | Slow Pattern              | Fast Alternative     |
 | ------------------------- | -------------------- |
@@ -43,7 +43,7 @@ WHERE price > (SELECT AVG(price) FROM products);
 | IN (SELECT ...)           | EXISTS or JOIN       |
 | Correlated subquery       | CTE or derived table |
 
-## 🔧 IN to EXISTS
+##  IN to EXISTS
 
 ```sql
 -- IN: May scan entire subquery result
@@ -58,7 +58,7 @@ WHERE EXISTS (
 );
 ```
 
-## 💡 Use CTEs
+##  Use CTEs
 
 ```sql
 -- CTE: Calculate once, use many times

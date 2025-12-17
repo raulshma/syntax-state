@@ -100,7 +100,7 @@ function GreetingForm() {
         background: '#f0f9ff',
         borderRadius: '8px'
       }}>
-        Hello, {name || 'stranger'}! 👋
+        Hello, {name || 'stranger'}! 
       </p>
     </div>
   );
@@ -307,7 +307,7 @@ Without `event.preventDefault()`, the browser will reload the page when the form
   if (submitted) {
     return (
       <div style={{ padding: '20px', textAlign: 'center' }}>
-        <h3 style={{ color: '#22c55e' }}>✅ Message Sent!</h3>
+        <h3 style={{ color: '#22c55e' }}> Message Sent!</h3>
         <p>Thanks, {formData.name}!</p>
         <button 
           onClick={() => {
@@ -447,4 +447,4 @@ Always call `event.preventDefault()` in your form's onSubmit handler to prevent 
 
 ---
 
-**Great job!** 🎉 You now understand the basics of forms in React. In the intermediate level, we'll explore validation, handling multiple inputs efficiently, and form libraries.
+**Great job!**  You now understand the basics of forms in React. In the intermediate level, we'll explore validation, handling multiple inputs efficiently, and form libraries.

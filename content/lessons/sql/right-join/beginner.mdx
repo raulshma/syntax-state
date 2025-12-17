@@ -2,7 +2,7 @@
 
 Keep all rows from the right table, match from left.
 
-## 🔗 What is RIGHT JOIN?
+##  What is RIGHT JOIN?
 
 RIGHT JOIN is the mirror of LEFT JOIN - it keeps all rows from the RIGHT table:
 
@@ -13,7 +13,7 @@ RIGHT JOIN orders o ON c.id = o.customer_id;
 -- Keeps all orders, shows NULL for customer if no match
 ```
 
-## 📊 Visual Example
+##  Visual Example
 
 ```mermaid
 flowchart RL
@@ -40,7 +40,7 @@ flowchart RL
 
 > Order 2 exists but has no matching customer, shown with NULL
 
-## 🔄 RIGHT JOIN = Reversed LEFT JOIN
+##  RIGHT JOIN = Reversed LEFT JOIN
 
 These are equivalent:
 
@@ -52,7 +52,7 @@ SELECT * FROM a RIGHT JOIN b ON a.id = b.a_id;
 SELECT * FROM b LEFT JOIN a ON a.id = b.a_id;
 ```
 
-## 💡 Why LEFT JOIN is Preferred
+##  Why LEFT JOIN is Preferred
 
 Most developers use LEFT JOIN instead:
 
@@ -70,7 +70,7 @@ LEFT JOIN customers c ON o.customer_id = c.id;
 -- Same result, easier to read!
 ```
 
-## 🎯 When RIGHT JOIN is Useful
+##  When RIGHT JOIN is Useful
 
 1. When you can't reorder tables (complex queries)
 2. When right table is the focus of your query

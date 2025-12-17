@@ -6,7 +6,7 @@ Getters and setters are like smart doorways to your object's data. Instead of di
 
 ## Section 1: Understanding Accessors
 
-### The Smart Thermostat Analogy 🌡️
+### The Smart Thermostat Analogy ️
 
 Imagine a smart thermostat:
 - When you **read** the temperature, it converts from internal Celsius to your preferred Fahrenheit
@@ -43,13 +43,13 @@ class Thermostat {
   
   // Getter - called when reading 'temperature'
   get temperature() {
-    console.log('📖 Getting temperature...');
+    console.log(' Getting temperature...');
     return this.#celsius * 9/5 + 32;  // Return Fahrenheit
   }
   
   // Setter - called when assigning to 'temperature'
   set temperature(fahrenheit) {
-    console.log(\`✏️ Setting temperature to \${fahrenheit}°F...\`);
+    console.log(\`️ Setting temperature to \${fahrenheit}°F...\`);
     if (fahrenheit < 32 || fahrenheit > 100) {
       throw new Error('Temperature must be between 32°F and 100°F');
     }
@@ -78,7 +78,7 @@ console.log('In Celsius:', thermo.celsius.toFixed(1) + '°C');
 try {
   thermo.temperature = 150;  // Too hot!
 } catch (e) {
-  console.log('\\n❌ Error:', e.message);
+  console.log('\\n Error:', e.message);
 }`}
   height={450}
 />
@@ -281,13 +281,13 @@ console.log('\\nUpdated age:', user.age);
 try {
   user.username = 'ab';  // Too short!
 } catch (e) {
-  console.log('\\n❌', e.message);
+  console.log('\\n', e.message);
 }
 
 try {
   user.email = 'not-an-email';  // No @!
 } catch (e) {
-  console.log('❌', e.message);
+  console.log('', e.message);
 }`}
   height={500}
 />
@@ -351,7 +351,7 @@ const cart = new ShoppingCart();
 
 // Set up update listener
 cart.onUpdate = (state) => {
-  console.log(\`🛒 Cart updated: \${state.count} items, $\${state.total.toFixed(2)}\`);
+  console.log(\` Cart updated: \${state.count} items, $\${state.total.toFixed(2)}\`);
 };
 
 cart.addItem('Apple', 1.50, 3);
@@ -418,9 +418,9 @@ class DataLoader {
         loadNumber: this.#loadCount
       };
       
-      console.log('✅ Data loaded!');
+      console.log(' Data loaded!');
     } else {
-      console.log('📦 Returning cached data');
+      console.log(' Returning cached data');
     }
     return this.#cache;
   }
@@ -428,7 +428,7 @@ class DataLoader {
   // Force reload
   invalidateCache() {
     this.#cache = null;
-    console.log('🗑️ Cache invalidated');
+    console.log('️ Cache invalidated');
   }
 }
 

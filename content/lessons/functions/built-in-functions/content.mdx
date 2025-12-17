@@ -6,7 +6,7 @@ JavaScript comes with many built-in functions that are available globally - no i
 
 ## Section 1: Global Functions Overview
 
-### Your Swiss Army Knife 🔧
+### Your Swiss Army Knife 
 
 Global functions are available everywhere in your JavaScript code. They're like tools that come pre-installed with the language.
 
@@ -265,17 +265,17 @@ setTimeout(() => {
 // Passing arguments to the callback
 setTimeout((name, emoji) => {
   console.log(emoji + " Hello, " + name + "!");
-}, 750, "World", "👋");
+}, 750, "World", "");
 
 // setInterval with clearInterval
 let count = 0;
 const intervalId = setInterval(() => {
   count++;
-  console.log("🔄 Interval tick:", count);
+  console.log(" Interval tick:", count);
   
   if (count >= 3) {
     clearInterval(intervalId);
-    console.log("✅ Interval stopped after 3 ticks");
+    console.log(" Interval stopped after 3 ticks");
   }
 }, 400);
 

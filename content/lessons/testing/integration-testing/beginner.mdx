@@ -86,11 +86,11 @@ ASP.NET Core gives us `WebApplicationFactory<T>` - a magical tool that creates a
 ### Why WebApplicationFactory is Amazing
 
 <InfoBox type="success" title="WebApplicationFactory Benefits">
-- ✅ Creates a real ASP.NET Core app in memory
-- ✅ Runs super fast (no actual network calls)
-- ✅ Uses your actual middleware, routing, and controllers
-- ✅ Can swap out services (like database) for testing
-- ✅ Handles all the setup and teardown automatically
+-  Creates a real ASP.NET Core app in memory
+-  Runs super fast (no actual network calls)
+-  Uses your actual middleware, routing, and controllers
+-  Can swap out services (like database) for testing
+-  Handles all the setup and teardown automatically
 </InfoBox>
 
 ### Your First Integration Test
@@ -418,13 +418,13 @@ public class TestAuthWebApplicationFactory : WebApplicationFactory<Program>
 
 ### Do's and Don'ts
 
-✅ **DO:**
+ **DO:**
 - Test critical user workflows end-to-end
 - Use realistic test data
 - Test authentication and authorization
 - Clean up test data after each test
 
-❌ **DON'T:**
+ **DON'T:**
 - Test every single permutation (that's what unit tests are for)
 - Make tests depend on each other
 - Use production databases
@@ -486,4 +486,4 @@ Use in-memory databases or test containers to ensure tests are fast, reliable, a
 
 ---
 
-**Awesome work!** 🎉 You now understand integration testing in ASP.NET Core. In the intermediate level, we'll cover advanced scenarios like testing background services, SignalR hubs, and custom middleware. Ready to continue? 🚀
+**Awesome work!**  You now understand integration testing in ASP.NET Core. In the intermediate level, we'll cover advanced scenarios like testing background services, SignalR hubs, and custom middleware. Ready to continue? 

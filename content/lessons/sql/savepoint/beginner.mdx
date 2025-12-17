@@ -2,7 +2,7 @@
 
 Create restore points within a transaction for partial rollback!
 
-## 📍 What is a SAVEPOINT?
+##  What is a SAVEPOINT?
 
 A savepoint marks a point in a transaction you can rollback to:
 
@@ -19,7 +19,7 @@ BEGIN TRANSACTION;
 COMMIT;  -- The INSERT is committed!
 ```
 
-## 📝 Syntax
+##  Syntax
 
 ```sql
 -- SQL Server
@@ -31,7 +31,7 @@ SAVEPOINT savepoint_name;
 ROLLBACK TO savepoint_name;
 ```
 
-## 🎯 Why Use Savepoints?
+##  Why Use Savepoints?
 
 Without savepoints:
 
@@ -56,7 +56,7 @@ BEGIN TRANSACTION;
 COMMIT;  -- Steps 1 and 2 saved!
 ```
 
-## 📊 Visual Example
+##  Visual Example
 
 ```
 BEGIN TRANSACTION
@@ -76,7 +76,7 @@ ROLLBACK TO sp2 --- Back to sp2
 COMMIT --- INSERT and UPDATE saved!
 ```
 
-## 💡 Simple Example
+##  Simple Example
 
 ```sql
 BEGIN TRANSACTION;

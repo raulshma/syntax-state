@@ -6,7 +6,7 @@ Welcome to the world of **Global Query Filters** – EF Core's automatic filteri
 
 ## Section 1: What are Global Query Filters?
 
-### The Hotel Card Key Analogy 🏨
+### The Hotel Card Key Analogy 
 
 Imagine staying at a luxury hotel where your key card **automatically** restricts you to your floor. You don't have to think about it – when you press elevator buttons or access amenities, the hotel's system filters what you can reach.
 
@@ -127,7 +127,7 @@ public DateTime? DeletedAt { get; set; }
 
 ## Section 3: Multi-Tenancy Filters
 
-### The Apartment Building Analogy 🏢
+### The Apartment Building Analogy 
 
 In a multi-tenant application, each customer (tenant) should only see their own data – like apartment buildings where each tenant has their own key that only opens their specific apartment.
 
@@ -200,7 +200,7 @@ protected override void OnModelCreating(ModelBuilder modelBuilder)
 
 ## Section 4: Disabling Filters When Needed
 
-### The Master Key 🔑
+### The Master Key 
 
 Sometimes administrators need to see ALL data, including deleted items or data from all tenants. EF Core provides `IgnoreQueryFilters()` – like a master key that bypasses the normal restrictions.
 
@@ -261,7 +261,7 @@ var deletedBlogs = context.Blogs
 
 ## Section 5: Best Practices & Gotchas
 
-### Navigation Properties Warning ⚠️
+### Navigation Properties Warning ️
 
 Global filters interact with navigation properties in potentially surprising ways. If you filter a related entity, it affects how relationships load.
 

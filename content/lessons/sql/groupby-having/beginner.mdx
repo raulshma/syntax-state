@@ -2,7 +2,7 @@
 
 Learn to count, sum, and calculate totals across groups of rows!
 
-## 🎯 What is GROUP BY?
+##  What is GROUP BY?
 
 GROUP BY collects rows into groups so you can calculate totals:
 
@@ -20,7 +20,7 @@ GROUP BY city;
 | Boston | 23 |
 | Miami | 31 |
 
-## 📊 Common Aggregate Functions
+##  Common Aggregate Functions
 
 | Function      | What It Does    | Example             |
 | ------------- | --------------- | ------------------- |
@@ -41,7 +41,7 @@ FROM products
 GROUP BY category;
 ```
 
-## 🔍 HAVING: Filter the Groups
+##  HAVING: Filter the Groups
 
 WHERE filters rows **before** grouping. HAVING filters **after**:
 
@@ -53,7 +53,7 @@ GROUP BY city
 HAVING COUNT(*) > 10;
 ```
 
-## ⚡ WHERE vs HAVING
+##  WHERE vs HAVING
 
 | Clause | When It Runs    | Filters What      |
 | ------ | --------------- | ----------------- |
@@ -69,7 +69,7 @@ GROUP BY city
 HAVING COUNT(*) > 10;      -- Filter: only cities with 10+ results
 ```
 
-## 💡 Quick Example
+##  Quick Example
 
 Question: "What's the total sales per product, but only show products that sold more than $1000?"
 

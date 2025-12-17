@@ -14,10 +14,10 @@ In-memory caching stores frequently accessed data in your server's RAM (memory) 
 
 | Without Cache | With Cache |
 |:-------------|:-----------|
-| 🐢 Fetch from database every time | ⚡ Get from memory instantly |
-| 💰 High database costs | 💸 Lower costs |
-| 😰 Slow response times | 😎 Lightning-fast responses |
-| 📊 Heavy server load | 🎈 Light and efficient |
+|  Fetch from database every time |  Get from memory instantly |
+|  High database costs |  Lower costs |
+|  Slow response times |  Lightning-fast responses |
+|  Heavy server load |  Light and efficient |
 
 <InfoBox type="tip">
 **Rule of Thumb**: Cache data that is **expensive to generate** and **doesn't change often**. Examples: user profiles, product catalogs, configuration settings.
@@ -27,9 +27,9 @@ In-memory caching stores frequently accessed data in your server's RAM (memory) 
 
 Here's a simple flow:
 
-1. 🔍 Check if data exists in cache
-2. ✅ If found → Return it instantly!
-3. ❌ If not found → Fetch from database, then store in cache for next time
+1.  Check if data exists in cache
+2.  If found → Return it instantly!
+3.  If not found → Fetch from database, then store in cache for next time
 
 <DotnetCodePreview 
   language="csharp"
@@ -61,7 +61,7 @@ Here's a simple flow:
 
 ## Key Concepts for Beginners
 
-### 🔑 Cache Keys
+###  Cache Keys
 Think of these as labels on boxes. Each cached item needs a unique name (key) so you can find it later.
 
 ```csharp
@@ -81,13 +81,13 @@ Cached data shouldn't live forever! Set an expiration time:
 
 ## Common Use Cases
 
-✅ **Perfect for Caching:**
+ **Perfect for Caching:**
 - User profile information
 - Product details
 - Configuration settings
 - Dropdown list values
 
-❌ **Don't Cache:**
+ **Don't Cache:**
 - Sensitive data (passwords, credit cards)
 - Data that changes frequently
 - User-specific dynamic content

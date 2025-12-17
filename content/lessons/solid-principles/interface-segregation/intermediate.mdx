@@ -34,11 +34,11 @@ public class SimpleTextDocument : IDocument
     public void SetContent(string content) => _content = content;
     public void Save(string path) => File.WriteAllText(path, _content);
     
-    // ❌ Forced to implement printing!
+    //  Forced to implement printing!
     public void Print() => throw new NotSupportedException();
     public void PrintPreview() => throw new NotSupportedException();
     
-    // ❌ Forced to implement versioning!
+    //  Forced to implement versioning!
     public void Commit(string msg) => throw new NotSupportedException();
     public void Revert() => throw new NotSupportedException();
 }`}
@@ -182,11 +182,11 @@ public class OrderReportService
 ### Key Takeaways
 
 <InfoBox type="tip" title="Remember">
-- 🎯 **Role interfaces** - Group methods by capability
-- 👤 **Client-focused** - Design from consumer's perspective
-- 🔌 **Adapter pattern** - Facade over fat legacy interfaces
-- 🚫 **No empty methods** - Sign of forced implementation
-- 📦 **Composition** - Classes compose multiple small interfaces
+-  **Role interfaces** - Group methods by capability
+-  **Client-focused** - Design from consumer's perspective
+-  **Adapter pattern** - Facade over fat legacy interfaces
+-  **No empty methods** - Sign of forced implementation
+-  **Composition** - Classes compose multiple small interfaces
 </InfoBox>
 
 <ProgressCheckpoint section="isp-application" xpReward={13} />

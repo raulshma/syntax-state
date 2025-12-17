@@ -6,7 +6,7 @@ Navigation properties are like a GPS for your data - they let you travel from on
 
 ## Section 1: Understanding Navigation Properties
 
-### The GPS Analogy 🗺️
+### The GPS Analogy ️
 
 Imagine you're navigating a city:
 - From your **current location** (an entity)
@@ -332,27 +332,27 @@ var blog = await context.Blogs
   title="Navigation Property Best Practices"
   items={[
     {
-      label: "✅ Initialize collections",
+      label: " Initialize collections",
       description: "Always initialize collection navigations: = new List<T>() to avoid null references",
       isCorrect: true
     },
     {
-      label: "✅ Use Include() for known needs",
+      label: " Use Include() for known needs",
       description: "Prefer eager loading when you know what data you'll need",
       isCorrect: true
     },
     {
-      label: "✅ Consider bidirectional carefully",
+      label: " Consider bidirectional carefully",
       description: "Not all relationships need navigation on both sides",
       isCorrect: true
     },
     {
-      label: "❌ Avoid lazy loading in loops",
+      label: " Avoid lazy loading in loops",
       description: "This causes N+1 queries - each iteration fires a query",
       isCorrect: false
     },
     {
-      label: "❌ Don't Include() everything",
+      label: " Don't Include() everything",
       description: "Only include what you need - loading the entire database is slow!",
       isCorrect: false
     }

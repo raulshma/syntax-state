@@ -264,13 +264,13 @@ app.UseResponseCaching();
 
 Response caching middleware caches responses when:
 
-✅ **Request must be**:
+ **Request must be**:
 - HTTP GET or HEAD method
 - Successful 200 OK status code
 - No Authorization header present
 - No Cache-Control: no-cache header
 
-✅ **Response must be**:
+ **Response must be**:
 - Successful 200 OK status code
 - No Cache-Control: private, no-cache, no-store
 - No Set-Cookie header

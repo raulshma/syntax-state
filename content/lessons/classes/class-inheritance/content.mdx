@@ -6,7 +6,7 @@ Inheritance is like a family tree for classes. Just as children inherit traits f
 
 ## Section 1: Understanding Inheritance
 
-### The Family Tree Analogy 🌳
+### The Family Tree Analogy 
 
 Imagine a family of vehicles:
 - **Parent (Vehicle)**: Has wheels, can move, has a speed
@@ -383,7 +383,7 @@ class EmailNotification extends Notification {
   
   // Override send() completely
   send() {
-    console.log(\`📧 Email to \${this.recipient}: \${this.message}\`);
+    console.log(\` Email to \${this.recipient}: \${this.message}\`);
   }
 }
 
@@ -395,7 +395,7 @@ class SMSNotification extends Notification {
   
   // Override send() completely
   send() {
-    console.log(\`📱 SMS to \${this.phoneNumber}: \${this.message}\`);
+    console.log(\` SMS to \${this.phoneNumber}: \${this.message}\`);
   }
 }
 
@@ -408,7 +408,7 @@ class SlackNotification extends Notification {
   // Override and extend using super
   send() {
     super.send();  // Call parent's send first
-    console.log(\`💬 Also posted to #\${this.channel}\`);
+    console.log(\` Also posted to #\${this.channel}\`);
   }
 }
 

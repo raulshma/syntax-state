@@ -1,6 +1,6 @@
 # Error Boundaries
 
-Welcome to Error Boundaries! Have you ever seen an app suddenly crash and show a blank white screen? That's what happens when React encounters an error it can't handle. Let's learn how to prevent that! 🛡️
+Welcome to Error Boundaries! Have you ever seen an app suddenly crash and show a blank white screen? That's what happens when React encounters an error it can't handle. Let's learn how to prevent that! ️
 
 <InfoBox type="tip" title="The Safety Net Analogy">
 Think of error boundaries like a **safety net under a trapeze artist**. If the artist (your component) falls (crashes), the safety net (error boundary) catches them and prevents the whole circus (your app) from shutting down. The show can go on!
@@ -127,7 +127,7 @@ Now if `UserProfile` or `UserPosts` crashes, only that section shows the fallbac
 
 Error boundaries are powerful, but they have limits. They do NOT catch errors in:
 
-| ❌ Not Caught | ✅ Caught |
+|  Not Caught |  Caught |
 |--------------|-----------|
 | Event handlers (onClick, etc.) | Rendering errors |
 | Async code (setTimeout, promises) | Lifecycle methods |
@@ -192,4 +192,4 @@ For errors in event handlers and async code, use regular JavaScript `try/catch` 
 
 ---
 
-**Great job!** 🎉 You now understand the basics of error boundaries. In the intermediate level, we'll dive deeper into `getDerivedStateFromError`, `componentDidCatch`, and how to create better fallback UIs.
+**Great job!**  You now understand the basics of error boundaries. In the intermediate level, we'll dive deeper into `getDerivedStateFromError`, `componentDidCatch`, and how to create better fallback UIs.

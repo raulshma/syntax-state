@@ -2,7 +2,7 @@
 
 Store dates and times correctly in your database!
 
-## 📅 Common Date/Time Types
+##  Common Date/Time Types
 
 | Type      | Stores        | Example                |
 | --------- | ------------- | ---------------------- |
@@ -11,7 +11,7 @@ Store dates and times correctly in your database!
 | DATETIME  | Both          | 2024-03-15 14:30:00    |
 | TIMESTAMP | With timezone | 2024-03-15 14:30:00+00 |
 
-## 🗓️ DATE Type
+## ️ DATE Type
 
 Just the date, no time:
 
@@ -37,7 +37,7 @@ INSERT INTO schedules VALUES ('14:30:00');
 SELECT start_time FROM schedules;  -- 14:30:00
 ```
 
-## 📆 DATETIME / TIMESTAMP
+##  DATETIME / TIMESTAMP
 
 Both date and time:
 
@@ -50,7 +50,7 @@ INSERT INTO orders VALUES ('2024-03-15 14:30:00');
 INSERT INTO orders VALUES (GETDATE());  -- Current date/time
 ```
 
-## 🌍 Timezone Considerations
+##  Timezone Considerations
 
 ```sql
 -- SQL Server: DATETIMEOFFSET
@@ -65,7 +65,7 @@ CREATE TABLE events (
 );
 ```
 
-## 🎯 Getting Current Date/Time
+##  Getting Current Date/Time
 
 ```sql
 -- SQL Server

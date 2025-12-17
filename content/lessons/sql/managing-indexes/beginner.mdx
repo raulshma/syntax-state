@@ -2,7 +2,7 @@
 
 Learn to create indexes that make queries lightning fast!
 
-## 📚 What is an Index?
+##  What is an Index?
 
 An index is like a book's index - it helps find data quickly without scanning every row:
 
@@ -11,7 +11,7 @@ Without index: Scan all 1,000,000 rows to find one
 With index: Jump directly to the row!
 ```
 
-## 🚀 Creating an Index
+##  Creating an Index
 
 ```sql
 -- Basic index on one column
@@ -21,7 +21,7 @@ CREATE INDEX IX_customers_email ON customers(email);
 SELECT * FROM customers WHERE email = 'john@example.com';
 ```
 
-## 📝 Index Syntax
+##  Index Syntax
 
 ```sql
 CREATE INDEX index_name ON table_name(column1, column2);
@@ -34,7 +34,7 @@ DROP INDEX IX_customers_email ON customers;  -- SQL Server
 DROP INDEX IX_customers_email;                -- PostgreSQL
 ```
 
-## 🎯 When to Create Indexes
+##  When to Create Indexes
 
 | Good for Index     | Bad for Index              |
 | ------------------ | -------------------------- |
@@ -43,7 +43,7 @@ DROP INDEX IX_customers_email;                -- PostgreSQL
 | ORDER BY columns   | Frequently updated columns |
 | Unique constraints | Very few distinct values   |
 
-## 📊 Types of Indexes
+##  Types of Indexes
 
 ```sql
 -- Clustered: Physical order of data (one per table)
@@ -53,7 +53,7 @@ CREATE CLUSTERED INDEX IX_orders_date ON orders(order_date);
 CREATE NONCLUSTERED INDEX IX_customers_name ON customers(last_name);
 ```
 
-## ⚡ Example Impact
+##  Example Impact
 
 ```sql
 -- Before index: Full table scan (slow)

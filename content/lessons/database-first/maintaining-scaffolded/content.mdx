@@ -2,7 +2,7 @@
 
 So you've scaffolded your database. Great! But databases change. You might add a new column, rename a table, or want to add a helper method to your entity.
 
-⚠️ **Here is the Danger:** If you modify `Product.cs` directly, and then run the scaffold command again to get updates from the database... **POOF!** 💨 Your changes are overwritten and lost forever.
+️ **Here is the Danger:** If you modify `Product.cs` directly, and then run the scaffold command again to get updates from the database... **POOF!**  Your changes are overwritten and lost forever.
 
 ---
 
@@ -133,13 +133,13 @@ When the database schema changes (e.g., a DBA adds a `CreatedDate` column), you 
 
 ### Option A: Re-Scaffold (Recommended)
 Run the scaffold command again with the `--force` flag.
-- ✅ **Pros:** Guarantees your code matches the DB exactly.
-- ❌ **Cons:** Overwrites local changes (if you didn't use partial classes).
+-  **Pros:** Guarantees your code matches the DB exactly.
+-  **Cons:** Overwrites local changes (if you didn't use partial classes).
 
 ### Option B: Manual Fixes (Risky)
 Manually add `public DateTime CreatedDate { get; set; }` to the class.
-- ✅ **Pros:** No risk of overwriting files.
-- ❌ **Cons:** Easy to make typos or miss constraints (e.g., max length).
+-  **Pros:** No risk of overwriting files.
+-  **Cons:** Easy to make typos or miss constraints (e.g., max length).
 
 <Quiz id="maintaining-quiz">
   <Question>How can you safely add a method to a scaffolded class?</Question>

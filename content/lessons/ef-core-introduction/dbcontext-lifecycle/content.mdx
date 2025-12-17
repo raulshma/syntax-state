@@ -6,7 +6,7 @@ The **DbContext** is the heart of Entity Framework Core. Think of it as your per
 
 ## Section 1: What is DbContext?
 
-### The Hotel Concierge Analogy 🏨
+### The Hotel Concierge Analogy 
 
 Imagine you're staying at a luxury hotel. The **concierge** is your single point of contact for everything:
 
@@ -116,7 +116,7 @@ For console apps or simple scenarios:
 
 <DotnetCodePreview
   title="Manual DbContext Management"
-  code={`// ✅ Good: Short-lived context with using statement
+  code={`//  Good: Short-lived context with using statement
 public async Task<Customer?> GetCustomerAsync(int id)
 {
     using var context = new AppDbContext(options);
@@ -124,7 +124,7 @@ public async Task<Customer?> GetCustomerAsync(int id)
 }
 // Context is automatically disposed here
 
-// ✅ Good: Multiple operations in one unit of work
+//  Good: Multiple operations in one unit of work
 public async Task CreateOrderAsync(Order order)
 {
     using var context = new AppDbContext(options);
@@ -222,22 +222,22 @@ public class CustomerService
   title="DbContext Lifecycle Anti-Patterns"
   items={[
     {
-      label: "❌ Singleton DbContext",
+      label: " Singleton DbContext",
       description: "Never register DbContext as Singleton - causes memory leaks and concurrency issues",
       isCorrect: false
     },
     {
-      label: "❌ Static DbContext",
+      label: " Static DbContext",
       description: "Static contexts are shared across requests - leads to data corruption",
       isCorrect: false
     },
     {
-      label: "❌ Long-lived DbContext",
+      label: " Long-lived DbContext",
       description: "Keeping a context open for minutes/hours accumulates tracked entities",
       isCorrect: false
     },
     {
-      label: "✅ Scoped DbContext",
+      label: " Scoped DbContext",
       description: "One context per request/operation - the recommended pattern",
       isCorrect: true
     }
@@ -256,9 +256,9 @@ When you register DbContext with DI, you're choosing its **lifetime**:
 
 | Lifetime | Description | Use For DbContext? |
 |:---------|:------------|:-------------------|
-| **Transient** | New instance every time | ❌ Too many connections |
-| **Scoped** | One instance per request | ✅ Recommended |
-| **Singleton** | One instance for app lifetime | ❌ Never! |
+| **Transient** | New instance every time |  Too many connections |
+| **Scoped** | One instance per request |  Recommended |
+| **Singleton** | One instance for app lifetime |  Never! |
 
 <DotnetCodePreview
   title="DbContext Registration Options"
@@ -394,7 +394,7 @@ builder.Services.AddDbContextPool<AppDbContext>(options =>
 // 4. Request ends, context is reset and returned to pool
 // 5. Next request reuses the same instance
 
-// ⚠️ Important: Pooled contexts are RESET between uses
+// ️ Important: Pooled contexts are RESET between uses
 // - Change tracker is cleared
 // - State is reset to default
 // - Your data is safe!`}
@@ -439,29 +439,29 @@ builder.Services.AddDbContextPool<AppDbContext>(options =>
 
 <DotnetCodePreview
   title="DbContext Best Practices"
-  code={`// ✅ DO: Use dependency injection
+  code={`//  DO: Use dependency injection
 public class MyService
 {
     private readonly AppDbContext _context;
     public MyService(AppDbContext context) => _context = context;
 }
 
-// ✅ DO: Use pooling for high-throughput scenarios
+//  DO: Use pooling for high-throughput scenarios
 builder.Services.AddDbContextPool<AppDbContext>(options => ...);
 
-// ✅ DO: Use factory for background services
+//  DO: Use factory for background services
 builder.Services.AddDbContextFactory<AppDbContext>(options => ...);
 
-// ✅ DO: Keep operations short
+//  DO: Keep operations short
 public async Task QuickOperation()
 {
     var result = await _context.Products.FirstAsync();
     // Don't hold the context open for user input!
 }
 
-// ❌ DON'T: Share context across threads
-// ❌ DON'T: Use singleton lifetime
-// ❌ DON'T: Keep context open for long periods`}
+//  DON'T: Share context across threads
+//  DON'T: Use singleton lifetime
+//  DON'T: Keep context open for long periods`}
   steps={[
     {
       lineNumbers: [2, 3, 4, 5, 6],

@@ -55,10 +55,10 @@ COMMIT;  -- Fails - FK was violated
 
 | Level            | Dirty Read | Non-Repeatable Read | Phantom Read |
 | ---------------- | ---------- | ------------------- | ------------ |
-| Read Uncommitted | ✓          | ✓                   | ✓            |
-| Read Committed   | ✗          | ✓                   | ✓            |
-| Repeatable Read  | ✗          | ✗                   | ✓            |
-| Serializable     | ✗          | ✗                   | ✗            |
+| Read Uncommitted |           |                    |             |
+| Read Committed   |           |                    |             |
+| Repeatable Read  |           |                    |             |
+| Serializable     |           |                    |             |
 
 ```sql
 SET TRANSACTION ISOLATION LEVEL READ COMMITTED;

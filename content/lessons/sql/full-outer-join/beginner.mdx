@@ -2,7 +2,7 @@
 
 Return all rows from both tables, matched or not!
 
-## 🔗 What is FULL OUTER JOIN?
+##  What is FULL OUTER JOIN?
 
 Combines LEFT JOIN and RIGHT JOIN - keeps ALL rows from BOTH tables:
 
@@ -12,7 +12,7 @@ FROM customers c
 FULL OUTER JOIN orders o ON c.id = o.customer_id;
 ```
 
-## 📊 Visual Example
+##  Visual Example
 
 ```mermaid
 flowchart LR
@@ -41,7 +41,7 @@ flowchart LR
 
 > Keeps ALL rows from BOTH tables - unmatched rows show NULL
 
-## 📝 Syntax
+##  Syntax
 
 ```sql
 SELECT columns
@@ -51,7 +51,7 @@ FULL OUTER JOIN table_b ON table_a.id = table_b.a_id;
 -- FULL OUTER JOIN = FULL JOIN (same thing)
 ```
 
-## 🎯 Common Use Cases
+##  Common Use Cases
 
 ### 1. Data Reconciliation
 
@@ -80,7 +80,7 @@ FULL OUTER JOIN table_b b ON a.key = b.key
 WHERE a.key IS NULL OR b.key IS NULL;
 ```
 
-## 💡 Key Points
+##  Key Points
 
 - Returns matched rows PLUS unmatched from BOTH sides
 - NULL appears where no match exists

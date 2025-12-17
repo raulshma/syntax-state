@@ -2,7 +2,7 @@
 
 Ensure your data is always valid and consistent!
 
-## 🎯 What Are Constraints?
+##  What Are Constraints?
 
 Constraints are rules that enforce data quality:
 
@@ -14,7 +14,7 @@ CREATE TABLE users (
 );
 ```
 
-## 📝 Types of Constraints
+##  Types of Constraints
 
 | Constraint  | Purpose                | Example                               |
 | ----------- | ---------------------- | ------------------------------------- |
@@ -25,7 +25,7 @@ CREATE TABLE users (
 | CHECK       | Custom validation      | `CHECK (price > 0)`                   |
 | DEFAULT     | Fallback value         | `status VARCHAR(20) DEFAULT 'active'` |
 
-## 🔑 Primary Key
+##  Primary Key
 
 ```sql
 -- Uniquely identifies each row
@@ -42,7 +42,7 @@ CREATE TABLE order_items (
 );
 ```
 
-## 🔗 Foreign Key
+##  Foreign Key
 
 ```sql
 -- Links to another table
@@ -57,7 +57,7 @@ INSERT INTO orders (id, customer_id) VALUES (1, 999);
 -- Error: Foreign key violation
 ```
 
-## ✅ CHECK Constraint
+##  CHECK Constraint
 
 ```sql
 -- Custom validation rules

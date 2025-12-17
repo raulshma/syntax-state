@@ -2,14 +2,14 @@
 
 Combine strings and measure their length!
 
-## 🔗 CONCAT: Joining Strings
+##  CONCAT: Joining Strings
 
 ```sql
 SELECT CONCAT('Hello', ' ', 'World');  -- 'Hello World'
 SELECT CONCAT(first_name, ' ', last_name) AS full_name FROM users;
 ```
 
-## 📝 CONCAT Syntax by Database
+##  CONCAT Syntax by Database
 
 ```sql
 -- Standard CONCAT
@@ -25,14 +25,14 @@ SELECT first_name || ' ' || last_name;
 SELECT CONCAT_WS(', ', city, state, country);  -- 'NYC, NY, USA'
 ```
 
-## 📏 LENGTH: Measuring Strings
+##  LENGTH: Measuring Strings
 
 ```sql
 SELECT LENGTH('Hello');  -- 5
 SELECT LEN('Hello');     -- 5 (SQL Server)
 ```
 
-## 🎯 Practical Examples
+##  Practical Examples
 
 ```sql
 -- Full name with title
@@ -52,7 +52,7 @@ SELECT username,
 FROM users;
 ```
 
-## ⚡ NULL Handling
+##  NULL Handling
 
 ```sql
 -- CONCAT with NULL
@@ -65,7 +65,7 @@ SELECT 'Hello' + NULL + 'World';  -- NULL! (entire result is NULL)
 SELECT CONCAT(COALESCE(first, ''), ' ', COALESCE(last, ''));
 ```
 
-## 📊 Quick Reference
+##  Quick Reference
 
 | Function   | Purpose             | Example                            |
 | ---------- | ------------------- | ---------------------------------- |

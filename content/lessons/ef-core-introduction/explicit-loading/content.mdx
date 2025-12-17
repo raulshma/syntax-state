@@ -286,22 +286,22 @@ Do you need related data?
   title="When to Choose Explicit Loading"
   items={[
     {
-      label: "✅ Conditional Loading",
+      label: " Conditional Loading",
       description: "Load related data only if certain conditions are met (e.g., user has permission, feature flag enabled).",
       isCorrect: true
     },
     {
-      label: "✅ Filtered Loading",
+      label: " Filtered Loading",
       description: "When you need only a subset of related items (e.g., recent posts, active users).",
       isCorrect: true
     },
     {
-      label: "✅ Post-Query Loading",
+      label: " Post-Query Loading",
       description: "When you decide to load related data after working with the main entity.",
       isCorrect: true
     },
     {
-      label: "✅ Aggregations Without Loading",
+      label: " Aggregations Without Loading",
       description: "Use Query() to count or compute without loading entities into memory.",
       isCorrect: true
     }
@@ -367,17 +367,17 @@ Do you need related data?
   title="Explicit Loading Mistakes"
   items={[
     {
-      label: "❌ Forgetting LoadAsync()",
+      label: " Forgetting LoadAsync()",
       description: "Setting up the query but forgetting to call LoadAsync() means data isn't actually loaded!",
       isCorrect: false
     },
     {
-      label: "❌ Double Loading",
+      label: " Double Loading",
       description: "Calling Load() when data was already eagerly loaded just wastes a database round-trip.",
       isCorrect: false
     },
     {
-      label: "✅ Check IsLoaded First",
+      label: " Check IsLoaded First",
       description: "Use Entry().Reference().IsLoaded or Entry().Collection().IsLoaded to check before loading.",
       isCorrect: true
     }

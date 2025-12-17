@@ -27,17 +27,17 @@ Just like Ctrl+Z in your editor, database rollbacks let you go back in time:
   title="Remove vs Revert"
   items={[
     {
-      label: "✅ migrations remove",
+      label: " migrations remove",
       description: "Deletes migration FILE (only if not applied). Safe for unapplied migrations.",
       isCorrect: true
     },
     {
-      label: "✅ database update <Previous>",
+      label: " database update <Previous>",
       description: "Runs Down() to UNDO applied migration. Actually changes database.",
       isCorrect: true
     },
     {
-      label: "❌ Delete files manually",
+      label: " Delete files manually",
       description: "Never delete migration files by hand - breaks snapshot sync!",
       isCorrect: false
     }
@@ -49,21 +49,21 @@ Just like Ctrl+Z in your editor, database rollbacks let you go back in time:
   code={`// Scenario: You created a migration but haven't applied it yet
 
 // Your migrations:
-// ✅ 20241201_InitialCreate    (applied)
-// ✅ 20241210_AddProducts       (applied)
+//  20241201_InitialCreate    (applied)
+//  20241210_AddProducts       (applied)
 // ⏳ 20241216_AddBadColumn      (NOT applied - pending)
 
 // Option 1: REMOVE the pending migration
 dotnet ef migrations remove
-// ✓ Deletes the migration file
-// ✓ Updates snapshot back to previous state
-// ✓ Database unchanged (migration was never applied)
+//  Deletes the migration file
+//  Updates snapshot back to previous state
+//  Database unchanged (migration was never applied)
 
 // Option 2: If you already applied it, REVERT
 dotnet ef database update AddProducts
-// ✓ Runs Down() method of AddBadColumn
-// ✓ Actually modifies the database
-// ✓ Then you can 'remove' the migration file`}
+//  Runs Down() method of AddBadColumn
+//  Actually modifies the database
+//  Then you can 'remove' the migration file`}
   steps={[
     {
       lineNumbers: [8, 9, 10, 11],
@@ -103,7 +103,7 @@ dotnet ef migrations script AddProducts 0
 
 # 5. List all migrations with status
 dotnet ef migrations list
-# Shows: ✓ applied, ○ pending
+# Shows:  applied, ○ pending
 
 # 6. Remove multiple pending migrations
 dotnet ef migrations remove  # Removes last one
@@ -228,7 +228,7 @@ protected override void Up(MigrationBuilder migrationBuilder)
 
 protected override void Down(MigrationBuilder migrationBuilder)
 {
-    // ⚠️ The auto-generated Down can't merge data back!
+    // ️ The auto-generated Down can't merge data back!
     // You MUST customize it:
     migrationBuilder.AddColumn<string>("Name", "Users");
     
@@ -268,7 +268,7 @@ protected override void Down(MigrationBuilder migrationBuilder)
 
 ## Section 4: Emergency Rollback
 
-### When Things Go Wrong in Production 🚨
+### When Things Go Wrong in Production 
 
 <DotnetCodePreview
   title="Emergency Rollback Procedure"
@@ -321,27 +321,27 @@ sqlcmd -S server -d database -i rollback.sql
   title="Production Rollback Checklist"
   items={[
     {
-      label: "✅ Generate script first",
+      label: " Generate script first",
       description: "Never run 'database update' directly on production",
       isCorrect: true
     },
     {
-      label: "✅ Review the SQL",
+      label: " Review the SQL",
       description: "Verify it does what you expect",
       isCorrect: true
     },
     {
-      label: "✅ Backup before executing",
+      label: " Backup before executing",
       description: "Have a safety net in case rollback fails",
       isCorrect: true
     },
     {
-      label: "✅ Test on staging first",
+      label: " Test on staging first",
       description: "If possible, test rollback on a copy",
       isCorrect: true
     },
     {
-      label: "❌ Panic and delete files",
+      label: " Panic and delete files",
       description: "Never delete migration files as a 'fix'",
       isCorrect: false
     }

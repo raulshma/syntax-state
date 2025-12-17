@@ -46,7 +46,7 @@ public class OrderProcessor
 
 ## Section 2: Types of Dependency Injection
 
-### Constructor Injection (Recommended ✅)
+### Constructor Injection (Recommended )
 
 <DIPatternShowcase pattern="constructor-injection" mode="intermediate" />
 
@@ -70,7 +70,7 @@ public class ReportGenerator
 
 **Use when:** The dependency varies between calls or is optional.
 
-### Property Injection (Avoid ⚠️)
+### Property Injection (Avoid ️)
 
 ```csharp
 public class Service
@@ -116,10 +116,10 @@ The DI container sees what's needed, looks up the registration, and injects it.
 ### Key Takeaways
 
 <InfoBox type="tip" title="Remember">
-- 🔄 **IoC** inverts control - dependencies flow IN instead of being created
-- 💉 **Constructor injection** is the preferred DI method
-- 📐 **Program to interfaces** - depend on abstractions
-- 🏗️ **ASP.NET Core** has DI built-in via `IServiceCollection`
+-  **IoC** inverts control - dependencies flow IN instead of being created
+-  **Constructor injection** is the preferred DI method
+-  **Program to interfaces** - depend on abstractions
+- ️ **ASP.NET Core** has DI built-in via `IServiceCollection`
 </InfoBox>
 
 <ProgressCheckpoint section="di-how-works" xpReward={13} />

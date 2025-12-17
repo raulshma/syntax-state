@@ -2,7 +2,7 @@
 
 Write cleaner, more readable queries!
 
-## 📝 What is a CTE?
+##  What is a CTE?
 
 A CTE is a named temporary result set:
 
@@ -13,7 +13,7 @@ WITH active_customers AS (
 SELECT * FROM active_customers;
 ```
 
-## 🎯 Why Use CTEs?
+##  Why Use CTEs?
 
 ```sql
 -- Without CTE: Hard to read
@@ -33,7 +33,7 @@ JOIN active_customers c ON o.customer_id = c.id
 WHERE o.total > (SELECT avg_total FROM avg_order);
 ```
 
-## 📋 Basic Syntax
+##  Basic Syntax
 
 ```sql
 WITH cte_name AS (
@@ -42,7 +42,7 @@ WITH cte_name AS (
 SELECT * FROM cte_name;
 ```
 
-## 🔄 Multiple CTEs
+##  Multiple CTEs
 
 ```sql
 WITH
@@ -59,7 +59,7 @@ FROM customers c
 JOIN vip_customers v ON c.id = v.customer_id;
 ```
 
-## ⚡ CTE vs Subquery
+##  CTE vs Subquery
 
 | CTE                    | Subquery              |
 | ---------------------- | --------------------- |
@@ -67,7 +67,7 @@ JOIN vip_customers v ON c.id = v.customer_id;
 | Easier to read         | Can be nested         |
 | Good for complex logic | Good for simple cases |
 
-## 💡 Practical Example
+##  Practical Example
 
 ```sql
 WITH monthly_sales AS (

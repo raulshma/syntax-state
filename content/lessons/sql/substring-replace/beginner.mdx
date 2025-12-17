@@ -2,7 +2,7 @@
 
 Get parts of strings and replace text!
 
-## ✂️ SUBSTRING: Extract Part of String
+## ️ SUBSTRING: Extract Part of String
 
 ```sql
 -- SUBSTRING(string, start, length)
@@ -10,7 +10,7 @@ SELECT SUBSTRING('Hello World', 1, 5);   -- 'Hello'
 SELECT SUBSTRING('Hello World', 7, 5);   -- 'World'
 ```
 
-## 📝 SUBSTRING Syntax
+##  SUBSTRING Syntax
 
 ```sql
 -- ANSI Standard
@@ -23,14 +23,14 @@ SELECT SUBSTRING(column, start, length);
 SELECT SUBSTR(column, start, length);
 ```
 
-## 🔄 REPLACE: Change Text
+##  REPLACE: Change Text
 
 ```sql
 SELECT REPLACE('Hello World', 'World', 'SQL');  -- 'Hello SQL'
 SELECT REPLACE('aaa', 'a', 'b');                -- 'bbb' (all occurrences)
 ```
 
-## 🎯 Practical Examples
+##  Practical Examples
 
 ```sql
 -- Extract area code from phone
@@ -46,7 +46,7 @@ SELECT SUBSTRING(filename, LEN(filename) - 2, 3) AS ext FROM files;
 -- 'document.pdf' → 'pdf'
 ```
 
-## 📊 LEFT and RIGHT
+##  LEFT and RIGHT
 
 Easier for getting starts/ends:
 
@@ -61,7 +61,7 @@ SELECT LEFT(name, 3) FROM products;
 SELECT RIGHT(card_number, 4) AS last_four FROM payments;
 ```
 
-## ⚡ Quick Reference
+##  Quick Reference
 
 | Function  | Purpose         | Example                          |
 | --------- | --------------- | -------------------------------- |

@@ -25,7 +25,7 @@ JSON is a **text format** for representing structured data. It looks a lot like 
 
 JSON has strict rules that make it readable by any system:
 
-| Rule | ✅ Correct | ❌ Wrong |
+| Rule |  Correct |  Wrong |
 |:-----|:----------|:---------|
 | Keys must be strings | `"name": "Alice"` | `name: "Alice"` |
 | Strings use double quotes | `"hello"` | `'hello'` |
@@ -43,7 +43,7 @@ JSON supports only these types:
 - **Arrays**: `[1, 2, 3]`
 - **Objects**: `{"key": "value"}`
 
-> ⚠️ **Not allowed in JSON**: `undefined`, functions, dates, symbols, or comments!
+> ️ **Not allowed in JSON**: `undefined`, functions, dates, symbols, or comments!
 
 ## JavaScript Object vs JSON
 
@@ -63,17 +63,17 @@ const jsonString = `{
 
 ## Where is JSON Used?
 
-📡 **APIs** - When your app talks to a server:
+ **APIs** - When your app talks to a server:
 ```
 Your App → "Give me user data" → Server
 Server → '{"name": "Alice", "age": 28}' → Your App
 ```
 
-💾 **Configuration Files** - `package.json`, `tsconfig.json`
+ **Configuration Files** - `package.json`, `tsconfig.json`
 
-🗄️ **Data Storage** - Databases like MongoDB store JSON-like documents
+️ **Data Storage** - Databases like MongoDB store JSON-like documents
 
-📋 **localStorage** - Saving data in the browser
+ **localStorage** - Saving data in the browser
 
 <JsonPlayground mode="parse" showComparison={false} />
 

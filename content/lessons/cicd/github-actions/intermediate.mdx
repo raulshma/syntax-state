@@ -2,7 +2,7 @@
 
 Now that you understand the basics, let's dive deeper into creating professional-grade CI pipelines for .NET applications. We'll cover multi-job workflows, caching, secrets, and artifacts.
 
-## Beyond the Basics: Real-World Workflows 🔧
+## Beyond the Basics: Real-World Workflows 
 
 Production workflows need more than just build and test. They need to handle:
 
@@ -13,7 +13,7 @@ Production workflows need more than just build and test. They need to handle:
 
 <GitHubActionsVisualizer mode="intermediate" showYaml={true} interactive={true} />
 
-## Workflow Triggers Deep Dive 🎯
+## Workflow Triggers Deep Dive 
 
 GitHub Actions supports many trigger types:
 
@@ -48,7 +48,7 @@ on:
   The **paths** filter is powerful for monorepos - only trigger builds when relevant code changes!
 </InfoBox>
 
-## Multi-Job Workflows with Dependencies 🔗
+## Multi-Job Workflows with Dependencies 
 
 Jobs can run in parallel or depend on other jobs:
 
@@ -88,7 +88,7 @@ jobs:
           name: app-package
 ```
 
-## Caching Dependencies for Speed ⚡
+## Caching Dependencies for Speed 
 
 NuGet package restoration can be slow. Cache them:
 
@@ -133,7 +133,7 @@ jobs:
 
 This creates **9 parallel jobs** (3 .NET versions × 3 operating systems)!
 
-## Secrets Management 🔐
+## Secrets Management 
 
 Never hardcode sensitive values. Use GitHub Secrets:
 
@@ -152,7 +152,7 @@ steps:
   **Secrets are masked** in logs automatically. Never echo them or write them to files that get uploaded as artifacts!
 </InfoBox>
 
-## Working with Artifacts 📦
+## Working with Artifacts 
 
 Artifacts persist data between jobs and workflow runs:
 
@@ -173,7 +173,7 @@ Artifacts persist data between jobs and workflow runs:
     path: ./results
 ```
 
-## Environment Protection Rules 🛡️
+## Environment Protection Rules ️
 
 For production deployments, configure environment protection:
 
@@ -193,11 +193,11 @@ Configure required reviewers and wait timers in GitHub repository settings!
 
 ## Key Takeaways
 
-- 🎯 **Triggers** control when workflows run (push, PR, schedule, manual)
-- 🔗 **Job dependencies** with `needs:` create sequential pipelines
-- ⚡ **Caching** speeds up builds significantly
+-  **Triggers** control when workflows run (push, PR, schedule, manual)
+-  **Job dependencies** with `needs:` create sequential pipelines
+-  **Caching** speeds up builds significantly
 - 🧪 **Matrix builds** test multiple configurations in parallel
-- 🔐 **Secrets** keep credentials secure
-- 📦 **Artifacts** pass data between jobs
+-  **Secrets** keep credentials secure
+-  **Artifacts** pass data between jobs
 
 <ProgressCheckpoint section="ga-workflow-basics" xpReward={50} />

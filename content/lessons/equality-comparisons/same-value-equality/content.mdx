@@ -6,7 +6,7 @@ You've learned that `===` is great, but it has two quirks: `NaN !== NaN` and `+0
 
 ## Section 1: What is Object.is()?
 
-### The Perfectionist Scientist Analogy 🔬
+### The Perfectionist Scientist Analogy 
 
 Imagine a scientist who's extremely precise. When comparing two samples:
 - If both are "unknown substances" (NaN), they're considered the same category
@@ -251,12 +251,12 @@ function sameValue(a, b) {
 
 | Scenario | `==` | `===` | `Object.is()` |
 |:---------|:-----|:------|:--------------|
-| `5, 5` | ✅ true | ✅ true | ✅ true |
-| `"5", 5` | ✅ true | ❌ false | ❌ false |
-| `null, undefined` | ✅ true | ❌ false | ❌ false |
-| `NaN, NaN` | ❌ false | ❌ false | ✅ true |
-| `+0, -0` | ✅ true | ✅ true | ❌ false |
-| `{}, {}` | ❌ false | ❌ false | ❌ false |
+| `5, 5` |  true |  true |  true |
+| `"5", 5` |  true |  false |  false |
+| `null, undefined` |  true |  false |  false |
+| `NaN, NaN` |  false |  false |  true |
+| `+0, -0` |  true |  true |  false |
+| `{}, {}` |  false |  false |  false |
 
 ### Polyfill for Older Browsers
 

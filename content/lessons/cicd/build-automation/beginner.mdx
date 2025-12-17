@@ -1,8 +1,8 @@
 # Build & Release Automation
 
-Imagine a package delivery service 📦. When you order something online, machines sort packages, trucks follow optimized routes, and tracking systems keep everything organized. **Build and release automation is the same concept for software** — machines handle the repetitive work so your code gets delivered reliably!
+Imagine a package delivery service . When you order something online, machines sort packages, trucks follow optimized routes, and tracking systems keep everything organized. **Build and release automation is the same concept for software** — machines handle the repetitive work so your code gets delivered reliably!
 
-## The Package Delivery Analogy 📦
+## The Package Delivery Analogy 
 
 | **Delivery Service** | **Software Delivery** |
 | :------------------- | :-------------------- |
@@ -17,7 +17,7 @@ Imagine a package delivery service 📦. When you order something online, machin
   **Automation** means computers do repetitive tasks instead of humans. This is faster, more reliable, and lets developers focus on writing code!
 </InfoBox>
 
-## What is CI/CD? 🔄
+## What is CI/CD? 
 
 Let's break down the acronyms:
 
@@ -32,7 +32,7 @@ Let's break down the acronyms:
 
 <CICDPipelineBuilder mode="beginner" interactive={true} />
 
-## The Build Process Explained 🔨
+## The Build Process Explained 
 
 When you "build" a .NET project, several things happen:
 
@@ -54,7 +54,7 @@ When you "build" a .NET project, several things happen:
 
 ## Why Automate Builds? 🤖
 
-| **Manual Process** 😰 | **Automated Build** 🤖 |
+| **Manual Process**  | **Automated Build** 🤖 |
 | :-------------------- | :--------------------- |
 | "It works on my machine!" | Same environment every time |
 | Forgot to run tests | Tests always run |
@@ -64,7 +64,7 @@ When you "build" a .NET project, several things happen:
 
 ## Key Concepts for Beginners
 
-### Build Artifacts 📦
+### Build Artifacts 
 
 An **artifact** is the output of your build — the thing you deploy:
 
@@ -76,7 +76,7 @@ MyApp/
 └── wwwroot/           # Static files
 ```
 
-### Build Triggers 🎯
+### Build Triggers 
 
 When should builds run?
 
@@ -85,14 +85,14 @@ When should builds run?
 - **On schedule** — Nightly builds
 - **Manually** — When you decide
 
-### Build Agents 💻
+### Build Agents 
 
 A **build agent** is the computer that runs your build:
 
 - **Cloud-hosted**: Microsoft, GitHub provide machines
 - **Self-hosted**: Your own servers
 
-## The Release Process 🚀
+## The Release Process 
 
 After building, you need to **release** (deploy) your application:
 
@@ -113,11 +113,11 @@ After building, you need to **release** (deploy) your application:
 
 ## Benefits of Automation
 
-- ⚡ **Speed** — Deploy in minutes, not hours
-- 🔄 **Consistency** — Same process every time
+-  **Speed** — Deploy in minutes, not hours
+-  **Consistency** — Same process every time
 - 🧪 **Quality** — Tests catch bugs automatically
-- 📝 **Traceability** — Know exactly what was deployed
-- 😊 **Confidence** — Deploy without fear on Fridays!
+-  **Traceability** — Know exactly what was deployed
+-  **Confidence** — Deploy without fear on Fridays!
 
 ## Simple Automation Example
 
@@ -148,10 +148,10 @@ jobs:
 
 ## Key Takeaways
 
-- 📦 **Automation** is like a package delivery system for software
-- 🔄 **CI** means frequently merging and automatically testing code
-- 🚀 **CD** means keeping code ready to deploy (or auto-deploying)
-- 🔨 **Build process**: Restore → Compile → Test → Package
-- 🎯 **Artifacts** are the deployable outputs of your build
+-  **Automation** is like a package delivery system for software
+-  **CI** means frequently merging and automatically testing code
+-  **CD** means keeping code ready to deploy (or auto-deploying)
+-  **Build process**: Restore → Compile → Test → Package
+-  **Artifacts** are the deployable outputs of your build
 
 <ProgressCheckpoint section="ba-fundamentals" xpReward={25} />

@@ -2,7 +2,7 @@
 
 Master these essential functions for dealing with NULL values!
 
-## 🎯 COALESCE: First Non-NULL
+##  COALESCE: First Non-NULL
 
 COALESCE returns the first non-NULL value:
 
@@ -12,7 +12,7 @@ SELECT COALESCE(NULL, 'First', 'Second');  -- 'First'
 SELECT COALESCE('Found', NULL, 'Other');  -- 'Found'
 ```
 
-## 📝 COALESCE Examples
+##  COALESCE Examples
 
 ```sql
 -- Default for NULL
@@ -26,7 +26,7 @@ FROM contacts;
 SELECT price * COALESCE(quantity, 0) AS total FROM orders;
 ```
 
-## 🔄 NULLIF: Make NULL
+##  NULLIF: Make NULL
 
 NULLIF returns NULL if two values are equal:
 
@@ -36,7 +36,7 @@ SELECT NULLIF(5, 3);    -- 5 (not equal)
 SELECT NULLIF('A', 'B'); -- 'A' (not equal)
 ```
 
-## 🎨 NULLIF Examples
+##  NULLIF Examples
 
 ```sql
 -- Treat empty string as NULL
@@ -50,7 +50,7 @@ SELECT amount / NULLIF(count, 0) AS average FROM stats;
 SELECT NULLIF(phone, 'N/A') FROM contacts;
 ```
 
-## ⚡ ISNULL (SQL Server)
+##  ISNULL (SQL Server)
 
 Similar to COALESCE but only two arguments:
 
@@ -59,7 +59,7 @@ SELECT ISNULL(NULL, 'Default');  -- 'Default'
 SELECT ISNULL(name, 'Unknown') FROM users;
 ```
 
-## 📊 Comparison
+##  Comparison
 
 | Function | Purpose        | Arguments  |
 | -------- | -------------- | ---------- |

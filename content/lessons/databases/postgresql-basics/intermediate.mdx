@@ -81,7 +81,7 @@ SELECT * FROM users WHERE email = 'test@example.com';
 
 ## Section 3: Unique Features
 
-### 📦 JSONB - The Document Store Inside Postgres
+###  JSONB - The Document Store Inside Postgres
 
 PostgreSQL's JSONB type stores JSON documents with full query capability:
 
@@ -149,7 +149,7 @@ FROM products;`}
 | `@>` | Contains? | `data @> '{"active":true}'` |
 | `||` | Merge | `data || '{"new":"val"}'` |
 
-## 📋 Arrays - Store Lists Natively
+##  Arrays - Store Lists Natively
 
 PostgreSQL supports array columns - no junction table needed for simple lists:
 
@@ -205,7 +205,7 @@ FROM articles;`}
   ]}
 />
 
-## 🔧 Functions and Stored Procedures
+##  Functions and Stored Procedures
 
 PostgreSQL supports multiple languages for functions:
 
@@ -260,7 +260,7 @@ SELECT * FROM get_active_users();`}
   ]}
 />
 
-## 🔍 Full-Text Search
+##  Full-Text Search
 
 Built-in search engine capabilities:
 
@@ -310,7 +310,7 @@ WHERE search_vector @@ to_tsquery('postgres');`}
   ]}
 />
 
-## 🎨 Materialized Views
+##  Materialized Views
 
 Cached query results for expensive queries:
 

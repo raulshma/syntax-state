@@ -2,7 +2,7 @@
 
 Choose the right indexes for your queries!
 
-## 🔍 Analyzing Query Performance
+##  Analyzing Query Performance
 
 Check if your query uses indexes:
 
@@ -16,7 +16,7 @@ SELECT * FROM orders WHERE customer_id = 123;
 -- "Table Scan" = Bad (checking every row)
 ```
 
-## 📊 Common Patterns
+##  Common Patterns
 
 ### Good: Index Seek
 
@@ -38,7 +38,7 @@ SELECT * FROM orders
 WHERE order_date >= '2024-01-01' AND order_date < '2025-01-01';
 ```
 
-## ⚠️ Things That Prevent Index Use
+## ️ Things That Prevent Index Use
 
 | Don't Do This                | Do This Instead                         |
 | ---------------------------- | --------------------------------------- |
@@ -47,7 +47,7 @@ WHERE order_date >= '2024-01-01' AND order_date < '2025-01-01';
 | `WHERE date IS NOT NULL`     | May not use index                       |
 | `WHERE status <> 'deleted'`  | `WHERE status IN ('active', 'pending')` |
 
-## 🎯 Index Selection Tips
+##  Index Selection Tips
 
 ```sql
 -- Index columns that appear in:
@@ -61,7 +61,7 @@ SELECT * FROM orders o JOIN customers c ON o.customer_id = c.id;
 SELECT * FROM orders ORDER BY order_date DESC;
 ```
 
-## 💡 Too Many Indexes?
+##  Too Many Indexes?
 
 Indexes have costs:
 

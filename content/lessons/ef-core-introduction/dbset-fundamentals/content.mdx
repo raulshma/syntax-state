@@ -6,7 +6,7 @@ Now that you understand what EF Core is, let's dive into one of its most importa
 
 ## Section 1: What is DbSet?
 
-### The Library Analogy 📚
+### The Library Analogy 
 
 Imagine you're managing a library. You have different sections:
 - **Fiction books** on one shelf
@@ -356,22 +356,22 @@ var orderCount = await context.Orders.CountAsync();`}
   title="DbSet Best Practices"
   items={[
     {
-      label: "✅ Use async methods",
+      label: " Use async methods",
       description: "Always prefer ToListAsync(), SaveChangesAsync() etc. for better scalability",
       isCorrect: true
     },
     {
-      label: "❌ Load entire tables",
+      label: " Load entire tables",
       description: "Avoid context.Customers.ToList() without filters - can crash your app with large tables!",
       isCorrect: false
     },
     {
-      label: "✅ Use FindAsync for ID lookups",
+      label: " Use FindAsync for ID lookups",
       description: "FindAsync() checks the local cache first, avoiding unnecessary database calls",
       isCorrect: true
     },
     {
-      label: "❌ Forget to call SaveChanges",
+      label: " Forget to call SaveChanges",
       description: "Changes are only persisted when you call SaveChangesAsync() - don't forget it!",
       isCorrect: false
     }
@@ -382,19 +382,19 @@ var orderCount = await context.Orders.CountAsync();`}
 
 <DotnetCodePreview
   title="Efficient DbSet Usage"
-  code={`// ✅ Good: Only select what you need
+  code={`//  Good: Only select what you need
 var names = await context.Customers
     .Select(c => c.Name)
     .ToListAsync();
 
-// ✅ Good: Use pagination for large datasets
+//  Good: Use pagination for large datasets
 var page = await context.Products
     .OrderBy(p => p.Name)
     .Skip(20)
     .Take(10)
     .ToListAsync();
 
-// ✅ Good: Use AsNoTracking for read-only queries
+//  Good: Use AsNoTracking for read-only queries
 var report = await context.Orders
     .AsNoTracking()
     .Where(o => o.Year == 2024)

@@ -111,7 +111,7 @@ const countdown = function count(n) {
   if (n > 0) {
     count(n - 1); // Calls itself using the internal name
   } else {
-    console.log("Blast off! 🚀");
+    console.log("Blast off! ");
   }
 };
 
@@ -271,8 +271,8 @@ clickHandlers.forEach(function(handler) {
 | Feature | Declaration | Expression |
 |:--------|:------------|:-----------|
 | Syntax | `function name() {}` | `const name = function() {}` |
-| Hoisting | ✅ Yes | ❌ No |
-| Can be anonymous | ❌ No | ✅ Yes |
+| Hoisting |  Yes |  No |
+| Can be anonymous |  No |  Yes |
 | Use as callback | Possible | Common |
 | Conditional definition | Awkward | Natural |
 

@@ -12,7 +12,7 @@ BEGIN TRANSACTION;
 ROLLBACK;  -- Undo! Balance restored to original value
 ```
 
-## 📝 Syntax
+##  Syntax
 
 ```sql
 ROLLBACK;
@@ -21,14 +21,14 @@ ROLLBACK WORK;
 ROLLBACK TRAN;  -- SQL Server
 ```
 
-## 🎯 When to Use ROLLBACK
+##  When to Use ROLLBACK
 
 1. **Error occurs** - Something went wrong
 2. **Validation fails** - Business rule violated
 3. **Testing** - Preview changes without saving
 4. **User cancels** - Operation aborted
 
-## 📊 COMMIT vs ROLLBACK
+##  COMMIT vs ROLLBACK
 
 ```sql
 BEGIN TRANSACTION;
@@ -47,7 +47,7 @@ BEGIN TRANSACTION;
     END;
 ```
 
-## ⚡ Quick Example
+##  Quick Example
 
 ```sql
 BEGIN TRANSACTION;
@@ -58,14 +58,14 @@ ROLLBACK;
 -- The order is still there!
 ```
 
-## 💡 Key Points
+##  Key Points
 
 - Undoes ALL changes since BEGIN TRANSACTION
 - Releases locks
 - Ends the transaction
 - Data returns to pre-transaction state
 
-## ⚠️ Can't Rollback After Commit!
+## ️ Can't Rollback After Commit!
 
 ```sql
 BEGIN TRANSACTION;

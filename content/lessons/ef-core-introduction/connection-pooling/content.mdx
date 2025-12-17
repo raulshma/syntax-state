@@ -6,7 +6,7 @@ Don't buy a new car for each trip! Learn how connection pooling and DbContext po
 
 ## Section 1: Connection Pooling Basics
 
-### The Car Rental Analogy 🚗
+### The Car Rental Analogy 
 
 Imagine you need to make 100 trips across town. Would you:
 
@@ -33,7 +33,7 @@ This takes 20-100ms or more! Way too slow to do for every query.
 for (int i = 0; i < 1000; i++)
 {
     using var connection = new SqlConnection(connString);
-    connection.Open();      // 🐌 Create new connection: ~50ms
+    connection.Open();      //  Create new connection: ~50ms
     // Execute query: ~5ms
     connection.Close();     // Connection destroyed
 }
@@ -43,7 +43,7 @@ for (int i = 0; i < 1000; i++)
 for (int i = 0; i < 1000; i++)
 {
     using var connection = new SqlConnection(connString);
-    connection.Open();      // ⚡ Get from pool: ~0.1ms
+    connection.Open();      //  Get from pool: ~0.1ms
     // Execute query: ~5ms
     connection.Close();     // Return to pool (not destroyed)
 }
@@ -143,7 +143,7 @@ public class ProductController
 
 <DotnetCodePreview
   title="Enable DbContext Pooling"
-  code={`// 🚀 Enable DbContext pooling - one line change!
+  code={`//  Enable DbContext pooling - one line change!
 services.AddDbContextPool<AppDbContext>(options =>
     options.UseSqlServer(connectionString));
 
@@ -388,7 +388,7 @@ services.AddDbContextPool<AppDbContext>(options =>
 
 <DotnetCodePreview
   title="Pool Exhaustion and Fixes"
-  code={`// ❌ PROBLEM: Connection pool exhausted
+  code={`//  PROBLEM: Connection pool exhausted
 // Error: "Timeout expired. The timeout period elapsed prior to 
 //        obtaining a connection from the pool."
 
@@ -396,12 +396,12 @@ services.AddDbContextPool<AppDbContext>(options =>
 // BAD: Forgetting to dispose
 public async Task BadMethod()
 {
-    var context = new AppDbContext();  // ❌ Never disposed!
+    var context = new AppDbContext();  //  Never disposed!
     await context.Products.ToListAsync();
     // Connection leaked!
 }
 
-// ✅ FIX: Always use 'using' or 'await using'
+//  FIX: Always use 'using' or 'await using'
 public async Task GoodMethod()
 {
     await using var context = new AppDbContext();
@@ -415,14 +415,14 @@ using var transaction = await context.Database.BeginTransactionAsync();
 // ... lots of slow processing ...
 // Other requests can't get connections!
 
-// ✅ FIX: Keep transactions short
+//  FIX: Keep transactions short
 using var transaction = await context.Database.BeginTransactionAsync();
 // Do quick DB work only
 await transaction.CommitAsync();
 // Heavy processing AFTER transaction closes
 
 // CAUSE 3: Pool too small for traffic
-// ✅ FIX: Increase Max Pool Size (but don't go crazy)
+//  FIX: Increase Max Pool Size (but don't go crazy)
 // Each connection uses server resources!`}
   steps={[
     {
@@ -500,7 +500,7 @@ You've completed the **Performance Optimization** milestone! You now know how to
 - Perform bulk operations with ExecuteUpdate/Delete
 - Manage connections and DbContext pooling
 
-Your EF Core applications are now performance-ready! 🚀
+Your EF Core applications are now performance-ready! 
 </KeyConcept>
 
 <ProgressCheckpoint section="pool-management" xpReward={20} />

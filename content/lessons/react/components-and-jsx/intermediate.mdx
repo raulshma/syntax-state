@@ -207,7 +207,7 @@ function StatusMessage({ status }) {
       
       {/* Ternary for either/or */}
       <p style={{ color: '#64748b', margin: '8px 0 0' }}>
-        {isOnline ? '🟢 Online now' : '⚫ Last seen 2h ago'}
+        {isOnline ? '🟢 Online now' : ' Last seen 2h ago'}
       </p>
     </div>
   );
@@ -287,7 +287,7 @@ Keys only need to be unique among siblings, not globally. Two different lists ca
           }}
         >
           <span style={{ fontSize: '20px' }}>
-            {task.completed ? '✅' : '⬜'}
+            {task.completed ? '' : '⬜'}
           </span>
           <span style={{
             textDecoration: task.completed ? 'line-through' : 'none',
@@ -664,4 +664,4 @@ Always provide a unique, stable key when rendering lists. Avoid using array indi
 
 ---
 
-**Excellent progress!** 🎉 You now understand component composition, conditional rendering, and list handling. In the advanced level, we'll explore JSX compilation internals, Higher-Order Components, and render props patterns.
+**Excellent progress!**  You now understand component composition, conditional rendering, and list handling. In the advanced level, we'll explore JSX compilation internals, Higher-Order Components, and render props patterns.

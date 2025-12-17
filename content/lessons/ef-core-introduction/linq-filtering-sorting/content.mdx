@@ -6,7 +6,7 @@ Master the art of finding exactly what you need! Learn how to filter, sort, and 
 
 ## Section 1: Where() Fundamentals
 
-### The Librarian Analogy 📚
+### The Librarian Analogy 
 
 Imagine you're a librarian with millions of books. When someone asks for "all mystery novels published after 2020," you don't bring them every book and let them search. Instead, you go straight to the right section, check the dates, and bring back exactly what they need.
 
@@ -381,12 +381,12 @@ OFFSET 20 ROWS FETCH NEXT 10 ROWS ONLY`,
   title="Pagination Approaches"
   items={[
     {
-      label: "❌ Load All, Then Page in Memory",
+      label: " Load All, Then Page in Memory",
       description: "var all = context.Products.ToList(); return all.Skip(20).Take(10);",
       isCorrect: false
     },
     {
-      label: "✅ Page in Database",
+      label: " Page in Database",
       description: "return context.Products.OrderBy(p => p.Name).Skip(20).Take(10).ToList();",
       isCorrect: true
     }

@@ -10,7 +10,7 @@ While many APIs claim to be "RESTful," true REST involves more than just using G
 
 Leonard Richardson analyzed web service designs and created a maturity model with 4 levels. Each level builds on the previous one.
 
-### Level 0: The Swamp of POX (Plain Old XML) 🌫️
+### Level 0: The Swamp of POX (Plain Old XML) ️
 
 **Characteristics:**
 - Single endpoint for everything
@@ -45,7 +45,7 @@ public IActionResult HandleRequest([FromBody] XmlCommand command)
 
 <ProgressCheckpoint section="level-0" xpReward={10} />
 
-### Level 1: Resources 📦
+### Level 1: Resources 
 
 **Characteristics:**
 - Multiple endpoints (one per resource type)
@@ -84,7 +84,7 @@ public IActionResult HandleUserRequest([FromBody] UserCommand command)
 
 ## Section 2: Level 2 - HTTP Verbs (Industry Standard)
 
-### Level 2: HTTP Verbs 🎯
+### Level 2: HTTP Verbs 
 
 **This is where most modern "REST" APIs operate!**
 
@@ -168,7 +168,7 @@ GET    /api/users/999      → 404 Not Found
 
 ## Section 3: Level 3 - HATEOAS (Hypermedia)
 
-### HATEOAS = Hypermedia As The Engine Of Application State 🔗
+### HATEOAS = Hypermedia As The Engine Of Application State 
 
 **The Principle:** The server tells the client what actions are available through hypermedia links.
 
@@ -219,7 +219,7 @@ Client must hardcode URLs and business logic - changes require updating all clie
 
 <ProgressCheckpoint section="hateoas-concept" xpReward={10} />
 
-### Implementing HATEOAS in ASP.NET Core 🛠️
+### Implementing HATEOAS in ASP.NET Core ️
 
 ```csharp
 public class Link

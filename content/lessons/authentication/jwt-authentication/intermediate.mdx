@@ -245,17 +245,17 @@ Best practices for storing tokens:
 
 | Storage Option | Security | Use Case |
 |----------------|----------|----------|
-| **Memory** | ✅ Best | SPA with refresh tokens |
-| **HttpOnly Cookie** | ✅ Great | Web apps (prevents XSS) |
-| **localStorage** | ⚠️ XSS risk | Only if no alternatives |
-| **sessionStorage** | ⚠️ XSS risk | Short-lived sessions |
+| **Memory** |  Best | SPA with refresh tokens |
+| **HttpOnly Cookie** |  Great | Web apps (prevents XSS) |
+| **localStorage** | ️ XSS risk | Only if no alternatives |
+| **sessionStorage** | ️ XSS risk | Short-lived sessions |
 
 ## Key Takeaways
 
-- 📦 **JwtBearer middleware** validates tokens automatically
-- 🔑 **TokenValidationParameters** control what gets checked
-- 🎟️ **Claims** carry user identity and roles in the token
-- 🔄 **Refresh tokens** extend sessions without re-login
-- 🔒 **HttpOnly cookies** are safest for web apps
+-  **JwtBearer middleware** validates tokens automatically
+-  **TokenValidationParameters** control what gets checked
+- ️ **Claims** carry user identity and roles in the token
+-  **Refresh tokens** extend sessions without re-login
+-  **HttpOnly cookies** are safest for web apps
 
 <ProgressCheckpoint section="jwt-implementation" xpReward={50} />

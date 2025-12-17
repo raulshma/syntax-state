@@ -2,7 +2,7 @@
 
 Include all rows from the left table, even without matches!
 
-## 🔗 What is LEFT JOIN?
+##  What is LEFT JOIN?
 
 LEFT JOIN returns ALL rows from the left table, plus matching rows from the right:
 
@@ -12,7 +12,7 @@ FROM customers c
 LEFT JOIN orders o ON c.id = o.customer_id;
 ```
 
-## 📊 Visual: How LEFT JOIN Works
+##  Visual: How LEFT JOIN Works
 
 ```mermaid
 flowchart LR
@@ -45,13 +45,13 @@ flowchart LR
 
 > Carol has NO orders, but is **still included** with NULL!
 
-## 🎯 When to Use LEFT JOIN
+##  When to Use LEFT JOIN
 
 - Show all items even without matches
 - Find "orphan" records
 - Reports that need complete lists
 
-## 📝 Syntax
+##  Syntax
 
 ```sql
 SELECT columns
@@ -61,7 +61,7 @@ LEFT JOIN right_table ON left_table.id = right_table.foreign_id;
 -- LEFT JOIN = LEFT OUTER JOIN (same thing)
 ```
 
-## 🔍 Finding "No Match" Rows
+##  Finding "No Match" Rows
 
 ```sql
 -- Customers with NO orders
@@ -77,7 +77,7 @@ LEFT JOIN order_items oi ON p.id = oi.product_id
 WHERE oi.id IS NULL;
 ```
 
-## ⚠️ NULL Columns
+## ️ NULL Columns
 
 When no match: right table columns are NULL
 

@@ -2,13 +2,13 @@
 
 Master enterprise-grade CI/CD patterns including reusable workflows, composite actions, self-hosted runners, container deployments, and security hardening.
 
-## Enterprise CI/CD Pipeline 🏢
+## Enterprise CI/CD Pipeline 
 
 Let's build a production-ready pipeline with all the bells and whistles:
 
 <GitHubActionsVisualizer mode="advanced" showYaml={true} interactive={true} />
 
-## Reusable Workflows 🔄
+## Reusable Workflows 
 
 Don't repeat yourself across repositories. Create reusable workflows:
 
@@ -107,7 +107,7 @@ runs:
         directory: ./coverage
 ```
 
-## Self-Hosted Runners 🖥️
+## Self-Hosted Runners ️
 
 For enterprise scenarios requiring specific hardware or software:
 
@@ -127,7 +127,7 @@ jobs:
 - Cost savings for high-volume builds
 - Custom software pre-installed
 
-## Docker Container Deployment 🐳
+## Docker Container Deployment 
 
 Build and push Docker images:
 
@@ -173,7 +173,7 @@ jobs:
           cache-to: type=gha,mode=max
 ```
 
-## Azure Deployment with OIDC 🔐
+## Azure Deployment with OIDC 
 
 Use OpenID Connect for keyless authentication to Azure:
 
@@ -218,7 +218,7 @@ jobs:
   - Fine-grained permissions per workflow
 </KeyConcept>
 
-## Security Hardening 🛡️
+## Security Hardening ️
 
 ### Minimal Permissions
 
@@ -257,7 +257,7 @@ jobs:
     deny-licenses: GPL-3.0, AGPL-3.0
 ```
 
-## Advanced Caching Strategies 🚀
+## Advanced Caching Strategies 
 
 ```yaml
 - name: Cache .NET
@@ -280,7 +280,7 @@ jobs:
       ${{ runner.os }}-buildx-
 ```
 
-## Observability and Notifications 📊
+## Observability and Notifications 
 
 ```yaml
 - name: Notify Slack on Failure
@@ -306,12 +306,12 @@ jobs:
 
 ## Key Takeaways
 
-- 🔄 **Reusable workflows** share CI/CD logic across repositories
+-  **Reusable workflows** share CI/CD logic across repositories
 - 🧩 **Composite actions** create modular, reusable steps
-- 🖥️ **Self-hosted runners** for enterprise requirements
-- 🐳 **Docker deployment** with layer caching for speed
-- 🔐 **OIDC authentication** eliminates stored credentials
-- 🛡️ **Security hardening** with minimal permissions and pinned versions
-- 📊 **Observability** through notifications and monitoring
+- ️ **Self-hosted runners** for enterprise requirements
+-  **Docker deployment** with layer caching for speed
+-  **OIDC authentication** eliminates stored credentials
+- ️ **Security hardening** with minimal permissions and pinned versions
+-  **Observability** through notifications and monitoring
 
 <ProgressCheckpoint section="ga-dotnet-integration" xpReward={75} />

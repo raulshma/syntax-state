@@ -6,7 +6,7 @@ One of EF Core's greatest strengths is its **provider model** - you can switch b
 
 ## Section 1: What Are Database Providers?
 
-### The Universal Adapter Analogy 🔌
+### The Universal Adapter Analogy 
 
 Imagine you're traveling internationally with your laptop. Different countries have different electrical outlets:
 - USA uses Type A/B plugs
@@ -126,10 +126,10 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 | Pros | Cons |
 |:-----|:-----|
-| ✅ Best .NET integration | ❌ Licensing costs (except Express) |
-| ✅ Excellent tooling (SSMS) | ❌ Windows-centric (though Linux supported) |
-| ✅ Azure SQL integration | ❌ Resource-heavy for small projects |
-| ✅ Advanced features (temporal tables, JSON) | |
+|  Best .NET integration |  Licensing costs (except Express) |
+|  Excellent tooling (SSMS) |  Windows-centric (though Linux supported) |
+|  Azure SQL integration |  Resource-heavy for small projects |
+|  Advanced features (temporal tables, JSON) | |
 
 ### PostgreSQL
 
@@ -175,10 +175,10 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 | Pros | Cons |
 |:-----|:-----|
-| ✅ Free and open-source | ❌ Less .NET-specific tooling |
-| ✅ Excellent performance | ❌ Different SQL dialect to learn |
-| ✅ Advanced features (JSONB, arrays) | ❌ Smaller .NET community |
-| ✅ Great for cloud deployments | |
+|  Free and open-source |  Less .NET-specific tooling |
+|  Excellent performance |  Different SQL dialect to learn |
+|  Advanced features (JSONB, arrays) |  Smaller .NET community |
+|  Great for cloud deployments | |
 
 ### SQLite
 
@@ -231,10 +231,10 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 | Pros | Cons |
 |:-----|:-----|
-| ✅ Zero configuration | ❌ Limited concurrency |
-| ✅ Perfect for testing | ❌ No stored procedures |
-| ✅ Embedded/mobile apps | ❌ Limited data types |
-| ✅ Single file deployment | ❌ Not for high-traffic web apps |
+|  Zero configuration |  Limited concurrency |
+|  Perfect for testing |  No stored procedures |
+|  Embedded/mobile apps |  Limited data types |
+|  Single file deployment |  Not for high-traffic web apps |
 
 ### MySQL / MariaDB
 
@@ -289,7 +289,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 services.AddDbContext<AppDbContext>(options =>
     options.UseInMemoryDatabase("TestDatabase"));
 
-// ⚠️ WARNING: In-Memory provider has limitations!
+// ️ WARNING: In-Memory provider has limitations!
 // - No referential integrity
 // - No transactions
 // - Different behavior than real databases
@@ -357,10 +357,10 @@ services.AddDbContext<AppDbContext>(options =>
 |:--------|:-----------|:-----------|:-------|:------|
 | **Cost** | Licensed* | Free | Free | Free |
 | **Hosting** | Windows/Linux/Azure | Any | Embedded | Any |
-| **JSON Support** | ✅ Good | ✅ Excellent | ⚠️ Limited | ✅ Good |
-| **Full-Text Search** | ✅ Built-in | ✅ Built-in | ❌ No | ✅ Built-in |
-| **Spatial Data** | ✅ Yes | ✅ PostGIS | ✅ SpatiaLite | ✅ Yes |
-| **Temporal Tables** | ✅ Yes | ❌ No | ❌ No | ❌ No |
+| **JSON Support** |  Good |  Excellent | ️ Limited |  Good |
+| **Full-Text Search** |  Built-in |  Built-in |  No |  Built-in |
+| **Spatial Data** |  Yes |  PostGIS |  SpatiaLite |  Yes |
+| **Temporal Tables** |  Yes |  No |  No |  No |
 
 *SQL Server Express is free with limitations
 
@@ -441,22 +441,22 @@ builder.Services.AddDbContext<AppDbContext>(options =>
   code={`// Most LINQ queries work across all providers
 var customers = await context.Customers
     .Where(c => c.IsActive)
-    .ToListAsync(); // ✅ Works everywhere
+    .ToListAsync(); //  Works everywhere
 
 // Some features are provider-specific
 var results = await context.Products
     .Where(p => EF.Functions.Like(p.Name, "%phone%"))
-    .ToListAsync(); // ✅ Works everywhere (translated differently)
+    .ToListAsync(); //  Works everywhere (translated differently)
 
 // SQL Server specific
 var temporal = await context.Orders
     .TemporalAll()
-    .ToListAsync(); // ❌ Only SQL Server!
+    .ToListAsync(); //  Only SQL Server!
 
 // PostgreSQL specific
 var jsonQuery = await context.Documents
     .Where(d => d.Data.RootElement.GetProperty("status").GetString() == "active")
-    .ToListAsync(); // ⚠️ JSONB works best in PostgreSQL
+    .ToListAsync(); // ️ JSONB works best in PostgreSQL
 
 // Migrations are provider-specific!
 // You'll need separate migrations for each provider`}

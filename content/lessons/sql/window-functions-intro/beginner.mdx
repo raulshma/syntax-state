@@ -2,7 +2,7 @@
 
 Calculate across rows without losing data!
 
-## 🎯 What Are Window Functions?
+##  What Are Window Functions?
 
 Window functions perform calculations across a set of rows related to the current row:
 
@@ -16,7 +16,7 @@ FROM employees;
 -- Jane, 60000, 55000
 ```
 
-## 🔍 Window vs GROUP BY
+##  Window vs GROUP BY
 
 ```sql
 -- GROUP BY: Collapses rows
@@ -29,7 +29,7 @@ FROM employees;
 -- Result: All employees with their department average
 ```
 
-## 📝 Basic Syntax
+##  Basic Syntax
 
 ```sql
 function_name() OVER (
@@ -38,7 +38,7 @@ function_name() OVER (
 )
 ```
 
-## 📊 Common Window Functions
+##  Common Window Functions
 
 | Function       | Purpose            |
 | -------------- | ------------------ |
@@ -49,7 +49,7 @@ function_name() OVER (
 | `LAG()`        | Previous row value |
 | `LEAD()`       | Next row value     |
 
-## 🚀 Simple Examples
+##  Simple Examples
 
 ```sql
 -- Running total
@@ -63,7 +63,7 @@ SELECT name,
 FROM employees;
 ```
 
-## 💡 PARTITION BY
+##  PARTITION BY
 
 Divide rows into groups:
 

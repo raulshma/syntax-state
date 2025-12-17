@@ -1,6 +1,6 @@
 # Service Lifetimes: Singleton, Scoped, Transient
 
-Remember our restaurant analogy? Let's use it to understand the three "lifetimes" a service can have! 🍽️
+Remember our restaurant analogy? Let's use it to understand the three "lifetimes" a service can have! ️
 
 ---
 
@@ -12,9 +12,9 @@ Think about different types of workers in a restaurant:
 
 | Lifetime         | Restaurant Analogy | Behavior                                    |
 | :--------------- | :----------------- | :------------------------------------------ |
-| **Singleton** 💜 | Head Chef 👨‍🍳       | ONE person, works all day for everyone      |
-| **Scoped** 💙    | Personal Waiter 🧑‍💼 | ONE per table/group, serves that group only |
-| **Transient** 💚 | Napkins 🧻         | Fresh one EVERY time you ask                |
+| **Singleton**  | Head Chef ‍       | ONE person, works all day for everyone      |
+| **Scoped**     | Personal Waiter 🧑‍ | ONE per table/group, serves that group only |
+| **Transient**  | Napkins 🧻         | Fresh one EVERY time you ask                |
 
 ### Singleton: One for Everyone
 
@@ -23,8 +23,8 @@ Think about different types of workers in a restaurant:
 </InfoBox>
 
 Think of it like:
-- 👨‍🍳 The **head chef** - one person cooking for all customers
-- 📋 The **menu board** - one board everyone reads
+- ‍ The **head chef** - one person cooking for all customers
+-  The **menu board** - one board everyone reads
 
 ```csharp
 // This logger is shared by everyone in the app!
@@ -32,9 +32,9 @@ builder.Services.AddSingleton<ILogger, ConsoleLogger>();
 ```
 
 **Good for:**
-- ✅ Configuration settings (they don't change)
-- ✅ Logging (write to one place)
-- ✅ Expensive resources (database connection pools)
+-  Configuration settings (they don't change)
+-  Logging (write to one place)
+-  Expensive resources (database connection pools)
 
 <ProgressCheckpoint section="lifetime-overview" xpReward={8} />
 
@@ -49,8 +49,8 @@ builder.Services.AddSingleton<ILogger, ConsoleLogger>();
 </InfoBox>
 
 Think of it like:
-- 🧑‍💼 Your **personal waiter** - serves your table throughout your meal
-- 📝 Your **order slip** - used for your table's entire visit
+- 🧑‍ Your **personal waiter** - serves your table throughout your meal
+-  Your **order slip** - used for your table's entire visit
 
 ```csharp
 // New DbContext for each HTTP request!
@@ -58,8 +58,8 @@ builder.Services.AddScoped<AppDbContext>();
 ```
 
 **Good for:**
-- ✅ Database contexts (one transaction per request)
-- ✅ Shopping carts (tracks one user's session)
+-  Database contexts (one transaction per request)
+-  Shopping carts (tracks one user's session)
 
 ### Transient: Fresh Every Time
 
@@ -77,8 +77,8 @@ builder.Services.AddTransient<IEmailService, SmtpEmailService>();
 ```
 
 **Good for:**
-- ✅ Lightweight services (quick to create)
-- ✅ Stateless operations (no data between calls)
+-  Lightweight services (quick to create)
+-  Stateless operations (no data between calls)
 
 <ProgressCheckpoint section="lifetime-comparison" xpReward={9} />
 
@@ -112,10 +112,10 @@ builder.Services.AddTransient<IEmailService, SmtpEmailService>();
 ### Key Takeaways
 
 <InfoBox type="tip" title="Remember">
-- 💜 **Singleton** = Head Chef - one for the whole restaurant (app)
-- 💙 **Scoped** = Personal Waiter - one per table (request)
-- 💚 **Transient** = Napkins - fresh every time you ask
-- 🗃️ Use **Scoped for database** contexts (most common!)
+-  **Singleton** = Head Chef - one for the whole restaurant (app)
+-  **Scoped** = Personal Waiter - one per table (request)
+-  **Transient** = Napkins - fresh every time you ask
+- ️ Use **Scoped for database** contexts (most common!)
 </InfoBox>
 
 <ProgressCheckpoint section="lifetime-pitfalls" xpReward={8} />

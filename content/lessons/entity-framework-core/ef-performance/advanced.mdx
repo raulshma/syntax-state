@@ -51,13 +51,13 @@ Console.WriteLine(sql);
 
 <DotnetCodePreview
   title="Avoiding Client Evaluation"
-  code={`// ❌ Bad: Forces client evaluation
+  code={`//  Bad: Forces client evaluation
 var blogs = context.Blogs
     .Where(b => MyCustomMethod(b.Title))  // Can't translate!
     .ToList();
 // Loads ALL blogs, filters in memory
 
-// ✅ Good: Server-side evaluation
+//  Good: Server-side evaluation
 var blogs = context.Blogs
     .Where(b => b.Title.Contains(searchTerm))
     .ToList();

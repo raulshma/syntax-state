@@ -2,7 +2,7 @@
 
 Learn to calculate totals in your database!
 
-## ➕ What is SUM?
+##  What is SUM?
 
 SUM adds up all values in a column:
 
@@ -11,7 +11,7 @@ SELECT SUM(price) FROM products;
 -- Returns: Total of all product prices
 ```
 
-## 📝 Basic Examples
+##  Basic Examples
 
 ```sql
 -- Total revenue from all orders
@@ -24,7 +24,7 @@ SELECT SUM(quantity) AS total_items FROM inventory;
 SELECT SUM(salary) AS payroll FROM employees;
 ```
 
-## 📊 SUM with GROUP BY
+##  SUM with GROUP BY
 
 Calculate totals for each group:
 
@@ -40,7 +40,7 @@ FROM products
 GROUP BY category;
 ```
 
-## 🎯 SUM with Conditions
+##  SUM with Conditions
 
 ```sql
 -- Total of only high-value orders
@@ -54,7 +54,7 @@ FROM orders
 GROUP BY status;
 ```
 
-## 💡 NULL Handling
+##  NULL Handling
 
 SUM ignores NULL values:
 
@@ -64,7 +64,7 @@ SELECT SUM(amount) FROM payments;
 -- Returns: 60 (NULL is ignored)
 ```
 
-## 🔢 SUM with Expressions
+##  SUM with Expressions
 
 ```sql
 -- Calculate extended totals
@@ -76,7 +76,7 @@ SELECT SUM(price * (1 - discount)) AS discounted_total
 FROM products;
 ```
 
-## ⚡ Quick Reference
+##  Quick Reference
 
 | Query                    | Result                     |
 | ------------------------ | -------------------------- |

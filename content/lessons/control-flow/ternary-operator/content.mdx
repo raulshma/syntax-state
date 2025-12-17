@@ -6,7 +6,7 @@ The ternary operator is JavaScript's only operator that takes three operands. It
 
 ## Section 1: The Shortcut Analogy
 
-### The Quick Decision Maker ⚡
+### The Quick Decision Maker 
 
 Imagine you're at a coffee shop. The barista asks: "Hot or iced?"
 
@@ -132,7 +132,7 @@ const displayName = userInput ?? "Anonymous";
 <CodePlayground
   initialCode={`// Try different values!
 const temperature = 25;
-const weather = temperature > 30 ? "🔥 Hot" : temperature > 20 ? "😎 Nice" : "🥶 Cold";
+const weather = temperature > 30 ? " Hot" : temperature > 20 ? " Nice" : "🥶 Cold";
 console.log(weather);
 
 const hour = 14;
@@ -239,7 +239,7 @@ const x = a ? b : (c ? d : e);
 
 ## Section 4: When to Use (and Avoid) Ternary
 
-### ✅ Good Use Cases
+###  Good Use Cases
 
 ```javascript
 // 1. Simple value selection
@@ -261,7 +261,7 @@ const config = {
 };
 ```
 
-### ❌ When to Avoid Ternary
+###  When to Avoid Ternary
 
 ```javascript
 // 1. Side effects (use if...else instead)

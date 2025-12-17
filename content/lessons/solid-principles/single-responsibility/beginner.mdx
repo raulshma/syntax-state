@@ -1,16 +1,16 @@
 # Single Responsibility Principle (SRP)
 
-Imagine you hire an employee to be a chef. But then you also ask them to do the dishes, manage payroll, answer phones, AND fix the plumbing. How well do you think they'd cook? 🍳
+Imagine you hire an employee to be a chef. But then you also ask them to do the dishes, manage payroll, answer phones, AND fix the plumbing. How well do you think they'd cook? 
 
 **That's exactly the problem SRP solves!**
 
 ---
 
-## Section 1: The Swiss Army Knife Problem 🔪
+## Section 1: The Swiss Army Knife Problem 
 
 Think about two types of knives:
 
-| **Swiss Army Knife** 🔧 | **Chef's Knife** 🔪 |
+| **Swiss Army Knife**  | **Chef's Knife**  |
 |:-------------------------|:--------------------|
 | Can do many things | Does ONE thing |
 | Okay at everything | Excellent at cutting |
@@ -23,7 +23,7 @@ A professional chef uses a dedicated chef's knife, not a Swiss Army knife. Why? 
 **The SRP Says:** Each class should have only **ONE job** and only **ONE reason to change**.
 </InfoBox>
 
-### Real-World Analogy: The Restaurant 🍽️
+### Real-World Analogy: The Restaurant ️
 
 Think of a well-run restaurant:
 
@@ -53,9 +53,9 @@ Ask yourself:
 1. What does this class do?
 2. Can I describe it in ONE sentence without using "AND"?
 
-❌ **Bad:** "This class manages users AND sends emails AND generates reports."
+ **Bad:** "This class manages users AND sends emails AND generates reports."
 
-✅ **Good:** "This class manages user data."
+ **Good:** "This class manages user data."
 
 <ProgressCheckpoint section="srp-understanding" xpReward={9} />
 
@@ -63,7 +63,7 @@ Ask yourself:
 
 ## Section 3: Why Does This Matter?
 
-| **Without SRP** 😰 | **With SRP** 😊 |
+| **Without SRP**  | **With SRP**  |
 |:-------------------|:----------------|
 | Change one thing, break another | Changes are isolated |
 | Hard to understand | Easy to understand |
@@ -73,10 +73,10 @@ Ask yourself:
 ### Key Takeaways
 
 <InfoBox type="tip" title="Remember">
-- 📦 **One class = One job** (like one employee = one role)
-- 🔧 Use **specialized classes** (not Swiss Army classes)
+-  **One class = One job** (like one employee = one role)
+-  Use **specialized classes** (not Swiss Army classes)
 - 🧪 Smaller classes are **easier to test**
-- 🔄 Changes stay **isolated** and safe
+-  Changes stay **isolated** and safe
 </InfoBox>
 
 <ProgressCheckpoint section="srp-application" xpReward={8} />

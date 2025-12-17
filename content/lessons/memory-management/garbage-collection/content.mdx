@@ -93,7 +93,7 @@ function removeReference(id) {
   refCount[id]--;
   console.log(\`Removed ref from '\${id}' - refs: \${refCount[id]}\`);
   if (refCount[id] === 0) {
-    console.log(\`🗑️ '\${id}' collected! (0 references)\`);
+    console.log(\`️ '\${id}' collected! (0 references)\`);
     delete refCount[id];
   }
 }
@@ -244,10 +244,10 @@ The key insight: **reachability from roots**, not reference count!
 
 | Scenario | Reference Count | Mark-and-Sweep |
 |:---------|:----------------|:---------------|
-| Normal object | ✅ Works | ✅ Works |
-| Circular reference | ❌ Leaks | ✅ Collects |
-| Deep nesting | ✅ Works | ✅ Works |
-| Closures | ✅ Works | ✅ Works |
+| Normal object |  Works |  Works |
+| Circular reference |  Leaks |  Collects |
+| Deep nesting |  Works |  Works |
+| Closures |  Works |  Works |
 
 <KeyConcept title="Roots in JavaScript">
 The garbage collector starts from these "roots":

@@ -2,7 +2,7 @@
 
 Create reusable logic that returns values!
 
-## 🔧 What is a UDF?
+##  What is a UDF?
 
 A User-Defined Function (UDF) is like a procedure but returns a value:
 
@@ -18,7 +18,7 @@ END;
 SELECT price, dbo.fn_calculate_tax(price) AS tax FROM products;
 ```
 
-## 📝 Types of Functions
+##  Types of Functions
 
 | Type         | Returns       | Use In        |
 | ------------ | ------------- | ------------- |
@@ -26,7 +26,7 @@ SELECT price, dbo.fn_calculate_tax(price) AS tax FROM products;
 | Table-Valued | Table         | FROM clause   |
 | Inline Table | Single SELECT | FROM clause   |
 
-## 🎯 Scalar Function
+##  Scalar Function
 
 Returns one value:
 
@@ -45,7 +45,7 @@ END;
 SELECT dbo.fn_full_name(first_name, last_name) AS name FROM employees;
 ```
 
-## 📊 Table-Valued Function
+##  Table-Valued Function
 
 Returns a table:
 
@@ -63,7 +63,7 @@ RETURN (
 SELECT * FROM fn_get_orders_by_customer(123);
 ```
 
-## ⚡ Function vs Procedure
+##  Function vs Procedure
 
 | Function        | Procedure       |
 | --------------- | --------------- |

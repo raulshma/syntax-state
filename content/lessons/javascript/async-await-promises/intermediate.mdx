@@ -267,10 +267,10 @@ async function fetchWithRetry(shouldFail, maxRetries = 3) {
         throw new Error("Network error");
       }
       
-      console.log("✅ Success!");
+      console.log(" Success!");
       return "Data loaded";
     } catch (error) {
-      console.log(\`❌ Failed: \${error.message}\`);
+      console.log(\` Failed: \${error.message}\`);
       
       if (attempt === maxRetries) {
         throw new Error(\`Failed after \${maxRetries} attempts\`);
@@ -386,4 +386,4 @@ Implement retry with exponential backoff for unreliable operations like network 
 
 ---
 
-**Excellent progress!** 🎉 You now understand practical async patterns used in production code. In the advanced level, we'll explore the event loop internals, microtasks vs macrotasks, and async iterators.
+**Excellent progress!**  You now understand practical async patterns used in production code. In the advanced level, we'll explore the event loop internals, microtasks vs macrotasks, and async iterators.

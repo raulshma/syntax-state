@@ -129,7 +129,7 @@ FOREIGN KEY (CustomerId) REFERENCES Customers(Id) ON DELETE RESTRICT
 
 ## Section 3: Normalization
 
-### 📐 What is Normalization?
+###  What is Normalization?
 
 Normalization is the process of organizing your data to:
 - **Eliminate redundancy** (don't store the same data twice)
@@ -138,7 +138,7 @@ Normalization is the process of organizing your data to:
 
 <DatabaseDesignVisualizer mode="intermediate" initialTab="normalization" />
 
-## 📊 The Normal Forms Journey
+##  The Normal Forms Journey
 
 ### Unnormalized Data (0NF)
 
@@ -150,9 +150,9 @@ Start with a messy spreadsheet:
 | 2 | Jane Doe | Keyboard | 1 |
 
 **Problems:**
-- ❌ Multiple values in one cell (violates atomicity)
-- ❌ Can't easily query individual products
-- ❌ Can't add quantities to products
+-  Multiple values in one cell (violates atomicity)
+-  Can't easily query individual products
+-  Can't add quantities to products
 
 ## 1️⃣ First Normal Form (1NF)
 
@@ -183,7 +183,7 @@ Start with a messy spreadsheet:
   ]}
 />
 
-**New Problem:** Customer name is repeated! 🔄
+**New Problem:** Customer name is repeated! 
 
 ## 2️⃣ Second Normal Form (2NF)
 
@@ -265,7 +265,7 @@ CREATE TABLE ZipCodes (
   ]}
 />
 
-## 🎯 The Golden Rule
+##  The Golden Rule
 
 > **A column should depend on the key, the whole key, and nothing but the key!**
 
@@ -275,7 +275,7 @@ CREATE TABLE ZipCodes (
 | 2NF | No partial dependencies |
 | 3NF | No transitive dependencies |
 
-## 🔗 Implementing Many-to-Many
+##  Implementing Many-to-Many
 
 Many-to-many relationships need a **junction table** (also called bridge table, link table):
 
@@ -322,7 +322,7 @@ CREATE TABLE Enrollments (
   ]}
 />
 
-## 🛡️ More Constraints
+## ️ More Constraints
 
 ### CHECK Constraint
 

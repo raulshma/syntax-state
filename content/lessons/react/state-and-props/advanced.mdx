@@ -279,14 +279,14 @@ setItems([...items, 4]);
   });
   
   const mutateWrong = () => {
-    // ❌ This won't trigger a re-render!
+    //  This won't trigger a re-render!
     user.count += 1;
     setUser(user);
     console.log('Mutated (wrong):', user.count);
   };
   
   const updateCorrect = () => {
-    // ✅ This creates a new object
+    //  This creates a new object
     setUser(prev => ({ ...prev, count: prev.count + 1 }));
   };
   
@@ -301,13 +301,13 @@ setItems([...items, 4]);
           onClick={mutateWrong}
           style={{ background: '#ffcdd2' }}
         >
-          Mutate (Wrong) ❌
+          Mutate (Wrong) 
         </button>
         <button 
           onClick={updateCorrect}
           style={{ background: '#c8e6c9' }}
         >
-          Update (Correct) ✅
+          Update (Correct) 
         </button>
       </div>
       
@@ -404,4 +404,4 @@ Store the minimal state needed. Derive everything else. This eliminates sync bug
 
 ---
 
-**Outstanding!** 🏆 You've mastered advanced state and props concepts in React. You now understand how React optimizes updates, why immutability matters, and how to structure state for optimal performance. Next, explore Hooks to learn about useEffect, custom hooks, and more!
+**Outstanding!**  You've mastered advanced state and props concepts in React. You now understand how React optimizes updates, why immutability matters, and how to structure state for optimal performance. Next, explore Hooks to learn about useEffect, custom hooks, and more!

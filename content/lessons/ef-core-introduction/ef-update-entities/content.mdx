@@ -6,7 +6,7 @@ The "U" in CRUD stands for **Update**. In this lesson, you'll learn how to modif
 
 ## Section 1: Introduction to Updates
 
-### The Sticky Note Analogy 📝
+### The Sticky Note Analogy 
 
 Imagine you're editing a document with a friend watching over your shoulder. Every change you make, they write on a sticky note. When you say "save," they know exactly what changed and updates only those parts.
 
@@ -53,7 +53,7 @@ await context.SaveChangesAsync();
 // UPDATE Blogs SET Title = 'Updated Title', Url = 'https://new-url.com'
 // WHERE Id = 1
 
-// Only changed columns are updated! 🎯`}
+// Only changed columns are updated! `}
   steps={[
     {
       lineNumbers: [2],
@@ -266,7 +266,7 @@ Sometimes you want to update just one or two properties without loading the enti
     await context.SaveChangesAsync();
     
     // SQL: UPDATE Blogs SET Title = @p0 WHERE Id = @p1
-    // Only one column updated! 🎯
+    // Only one column updated! 
 }`}
   steps={[
     {

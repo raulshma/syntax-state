@@ -6,7 +6,7 @@ Cook once, serve many! Learn how to pre-compile your LINQ queries for lightning-
 
 ## Section 1: The Compilation Cost
 
-### The Recipe Card Analogy 🧑‍🍳
+### The Recipe Card Analogy 🧑‍
 
 Imagine you're a chef who makes the same dish 100 times a day. Would you:
 
@@ -52,7 +52,7 @@ var product3 = await context.Products
 
 // New condition = new shape = cache miss = recompile!
 
-// ⚠️ The cache has a limit! (~1000 entries by default)
+// ️ The cache has a limit! (~1000 entries by default)
 // High-cardinality queries can pollute the cache`}
   steps={[
     {
@@ -225,24 +225,24 @@ private static readonly Func<AppDbContext, int, IEnumerable<OrderDto>> GetRecent
 
 ## Section 3: When to Compile
 
-### Identifying Hot Paths 🔥
+### Identifying Hot Paths 
 
 Not every query needs compilation! Focus on:
 
 <DotnetCodePreview
   title="Hot Path Identification"
-  code={`// 🔥 HOT PATH: Authentication/Authorization
+  code={`//  HOT PATH: Authentication/Authorization
 // Runs on EVERY request
 private static readonly Func<AppDbContext, string, Task<User?>> GetUserByClaim =
     EF.CompileAsyncQuery((AppDbContext ctx, string claimValue) =>
         ctx.Users.FirstOrDefault(u => u.SecurityStamp == claimValue));
 
-// 🔥 HOT PATH: Tenant resolution (multi-tenant apps)
+//  HOT PATH: Tenant resolution (multi-tenant apps)
 private static readonly Func<AppDbContext, string, Task<Tenant?>> GetTenantByDomain =
     EF.CompileAsyncQuery((AppDbContext ctx, string domain) =>
         ctx.Tenants.FirstOrDefault(t => t.Domain == domain));
 
-// 🔥 HOT PATH: API endpoint hit 1000+ times/minute
+//  HOT PATH: API endpoint hit 1000+ times/minute
 private static readonly Func<AppDbContext, int, Product?> GetProductDetails =
     EF.CompileQuery((AppDbContext ctx, int id) =>
         ctx.Products
@@ -250,7 +250,7 @@ private static readonly Func<AppDbContext, int, Product?> GetProductDetails =
             .Include(p => p.Reviews.OrderByDescending(r => r.Date).Take(5))
             .FirstOrDefault(p => p.Id == id));
 
-// ❄️ COLD PATH: Admin reports (run once/day)
+// ️ COLD PATH: Admin reports (run once/day)
 // Don't bother compiling - overhead not worth it
 var report = await context.Orders
     .Where(o => o.Date >= startDate)
@@ -258,7 +258,7 @@ var report = await context.Orders
     .Select(...)
     .ToListAsync();
 
-// ❄️ COLD PATH: One-time migrations/imports
+// ️ COLD PATH: One-time migrations/imports
 // Don't compile - runs once ever`}
   steps={[
     {

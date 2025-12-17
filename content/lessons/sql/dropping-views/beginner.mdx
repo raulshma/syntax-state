@@ -2,7 +2,7 @@
 
 Safely remove views from your database!
 
-## 🗑️ Basic DROP VIEW
+## ️ Basic DROP VIEW
 
 ```sql
 DROP VIEW view_name;
@@ -11,7 +11,7 @@ DROP VIEW view_name;
 DROP VIEW active_customers;
 ```
 
-## ✅ DROP IF EXISTS
+##  DROP IF EXISTS
 
 Avoid errors if view doesn't exist:
 
@@ -27,14 +27,14 @@ IF OBJECT_ID('my_view', 'V') IS NOT NULL
     DROP VIEW my_view;
 ```
 
-## 🎯 When to Drop Views
+##  When to Drop Views
 
 1. **No longer needed** - Feature removed
 2. **Replaced** - New version created
 3. **Obsolete** - Underlying tables changed
 4. **Cleanup** - Development/test views
 
-## ⚠️ What Happens When You Drop
+## ️ What Happens When You Drop
 
 ```sql
 -- Only the view is dropped
@@ -44,7 +44,7 @@ DROP VIEW customer_summary;
 -- The customers table still exists!
 ```
 
-## 📊 Check Before Dropping
+##  Check Before Dropping
 
 ```sql
 -- See what depends on this view
@@ -57,13 +57,13 @@ WHERE d.referenced_entity_name = 'my_view';
 -- If anything depends on it, dropping will cause errors!
 ```
 
-## 🔄 Drop Multiple Views
+##  Drop Multiple Views
 
 ```sql
 DROP VIEW view1, view2, view3;
 ```
 
-## 💡 Best Practice
+##  Best Practice
 
 ```sql
 -- Always use IF EXISTS to prevent errors

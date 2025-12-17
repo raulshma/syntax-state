@@ -8,9 +8,9 @@ Imagine you're at a grocery store. Would you rather make **one trip** to buy eve
 
 Every time your app talks to the database, it takes time:
 
-- 🏃 Network travel time
-- 🔍 Database searching
-- 📦 Data packaging and sending back
+-  Network travel time
+-  Database searching
+-  Data packaging and sending back
 
 The fewer trips to the database, and the less data we fetch, the faster our app!
 
@@ -24,7 +24,7 @@ The fewer trips to the database, and the less data we fetch, the faster our app!
 
 The **N+1 problem** is the most common performance mistake. It happens when you accidentally send too many requests to the database.
 
-#### ❌ The Bad Way (N+1 Problem)
+####  The Bad Way (N+1 Problem)
 
 <DotnetCodePreview
   title="N+1 Problem Example"
@@ -51,7 +51,7 @@ foreach (var blog in blogs)
   ]}
 />
 
-#### ✅ The Good Way (Eager Loading)
+####  The Good Way (Eager Loading)
 
 <DotnetCodePreview
   title="Fixed with Include"
@@ -85,12 +85,12 @@ Don't fetch entire objects when you only need a few fields:
 
 <DotnetCodePreview
   title="Select Only What You Need"
-  code={`// ❌ Bad: Loading everything
+  code={`//  Bad: Loading everything
 var blogs = context.Blogs.ToList();
 var titles = blogs.Select(b => b.Title);
 // Loads ALL columns for ALL blogs!
 
-// ✅ Good: Only load titles
+//  Good: Only load titles
 var titles = context.Blogs
     .Select(b => b.Title)
     .ToList();
@@ -129,11 +129,11 @@ When you're just **reading** data (not updating it), tell EF Core to stop watchi
 
 <DotnetCodePreview
   title="Using AsNoTracking"
-  code={`// ❌ Default: EF tracks everything (slower)
+  code={`//  Default: EF tracks everything (slower)
 var blogs = context.Blogs.ToList();
 // EF is watching all these blogs for changes
 
-// ✅ Better: No tracking for read-only (faster!)
+//  Better: No tracking for read-only (faster!)
 var blogs = context.Blogs
     .AsNoTracking()
     .ToList();
@@ -156,10 +156,10 @@ var blogs = context.Blogs
 
 | Scenario | Use AsNoTracking? |
 | :------- | :---------------- |
-| Displaying a list of items | ✅ Yes |
-| Showing a report | ✅ Yes |
-| Editing a single item | ❌ No |
-| Updating multiple records | ❌ No |
+| Displaying a list of items |  Yes |
+| Showing a report |  Yes |
+| Editing a single item |  No |
+| Updating multiple records |  No |
 
 ### Simple Rule
 
@@ -198,10 +198,10 @@ var blogs = context.Blogs
 
 Before your app goes live, check these:
 
-- ✅ Are you using `Include()` to avoid N+1?
-- ✅ Are you using `AsNoTracking()` for read-only queries?
-- ✅ Are you using `Select()` to fetch only needed columns?
-- ✅ Are you avoiding queries inside loops?
+-  Are you using `Include()` to avoid N+1?
+-  Are you using `AsNoTracking()` for read-only queries?
+-  Are you using `Select()` to fetch only needed columns?
+-  Are you avoiding queries inside loops?
 
 ### Quick Summary
 
@@ -212,6 +212,6 @@ Before your app goes live, check these:
 | Use `.AsNoTracking()` | Faster for read-only data |
 | Avoid loops that query | Batch your database calls |
 
-Remember: **Fewer trips + Less data = Faster app!** 🚀
+Remember: **Fewer trips + Less data = Faster app!** 
 
 <ProgressCheckpoint section="advanced-tuning" xpReward={7} />

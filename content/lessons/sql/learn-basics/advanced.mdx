@@ -39,9 +39,9 @@ SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;  -- Fastest, risky
 
 | Level            | Dirty Reads | Non-Repeatable Reads | Phantom Reads |
 | :--------------- | :---------- | :------------------- | :------------ |
-| Serializable     | ✗           | ✗                    | ✗             |
-| Repeatable Read  | ✗           | ✗                    | Possible      |
-| Read Committed   | ✗           | Possible             | Possible      |
+| Serializable     |            |                     |              |
+| Repeatable Read  |            |                     | Possible      |
+| Read Committed   |            | Possible             | Possible      |
 | Read Uncommitted | Possible    | Possible             | Possible      |
 
 <RdbmsConceptVisualizer mode="advanced" />

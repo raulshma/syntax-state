@@ -2,7 +2,7 @@
 
 Make your transaction changes permanent!
 
-## ✅ What is COMMIT?
+##  What is COMMIT?
 
 COMMIT saves all changes made during the transaction:
 
@@ -12,7 +12,7 @@ BEGIN TRANSACTION;
 COMMIT;  -- Changes are now permanent!
 ```
 
-## 📝 Syntax
+##  Syntax
 
 ```sql
 -- All equivalent
@@ -22,14 +22,14 @@ COMMIT WORK;
 COMMIT TRAN;  -- SQL Server shorthand
 ```
 
-## 🔒 What COMMIT Does
+##  What COMMIT Does
 
 1. **Makes changes permanent** - Survives crashes
 2. **Releases locks** - Other transactions can access data
 3. **Ends transaction** - Returns to auto-commit mode
 4. **Cannot be undone** - No going back after COMMIT!
 
-## 🎯 Complete Example
+##  Complete Example
 
 ```sql
 BEGIN TRANSACTION;
@@ -44,7 +44,7 @@ BEGIN TRANSACTION;
 COMMIT;  -- All three changes saved together
 ```
 
-## ⚠️ After COMMIT
+## ️ After COMMIT
 
 ```sql
 BEGIN TRANSACTION;
@@ -55,7 +55,7 @@ COMMIT;
 -- Only way to recover: restore from backup
 ```
 
-## 💡 Best Practice
+##  Best Practice
 
 Always explicitly end your transactions:
 

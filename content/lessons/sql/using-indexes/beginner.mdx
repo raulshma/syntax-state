@@ -2,7 +2,7 @@
 
 Make your queries use indexes correctly!
 
-## ✅ When Indexes Are Used
+##  When Indexes Are Used
 
 ```sql
 -- Direct equality: Uses index
@@ -15,7 +15,7 @@ SELECT * FROM orders WHERE order_date > '2024-01-01';
 SELECT * FROM products WHERE price BETWEEN 10 AND 50;
 ```
 
-## ❌ When Indexes Are NOT Used
+##  When Indexes Are NOT Used
 
 ```sql
 -- Function on column: NO index
@@ -28,7 +28,7 @@ SELECT * FROM products WHERE price * 1.1 > 100;
 SELECT * FROM users WHERE phone = 1234567890;  -- phone is VARCHAR
 ```
 
-## 🔧 Fix Common Problems
+##  Fix Common Problems
 
 ```sql
 -- BAD: Function prevents index use
@@ -45,7 +45,7 @@ SELECT * FROM products WHERE price * 1.1 > 100;
 SELECT * FROM products WHERE price > 100 / 1.1;
 ```
 
-## 📋 Index-Friendly Patterns
+##  Index-Friendly Patterns
 
 | Do This                 | Not This                     |
 | ----------------------- | ---------------------------- |
@@ -54,7 +54,7 @@ SELECT * FROM products WHERE price > 100 / 1.1;
 | `WHERE col LIKE 'abc%'` | `WHERE col LIKE '%abc'`      |
 | `WHERE col IS NULL`     | Works, but consider design   |
 
-## 🎯 LIKE and Indexes
+##  LIKE and Indexes
 
 ```sql
 -- Uses index (prefix search)

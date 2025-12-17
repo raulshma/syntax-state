@@ -2,7 +2,7 @@
 
 Imagine you're an actor who can instantly put on different costumes to play different roles. With `call`, `apply`, and `bind`, you can make any function "wear" whatever identity you want!
 
-## The Three Magic Words 🎩
+## The Three Magic Words 
 
 JavaScript gives us three ways to control what `this` a function uses:
 
@@ -45,7 +45,7 @@ greet.call(person, "Hello", "!");    // "Hello, Alice!"
 greet.call(person, "Goodbye", "..."); // "Goodbye, Alice..."
 ```
 
-## `apply()` - Costume Box Delivery 📦
+## `apply()` - Costume Box Delivery 
 
 `apply()` is just like `call()`, but you pass arguments as an **array**:
 
@@ -70,7 +70,7 @@ orderFood.apply(customer, ["Cola", "Burger", "Ice Cream"]);
 > **A**pply = **A**rray  
 > **C**all = **C**ommas (individual arguments)
 
-## `bind()` - The Permanent Costume 🎭
+## `bind()` - The Permanent Costume 
 
 `bind()` creates a **new function** with a fixed `this`:
 

@@ -1,16 +1,16 @@
 # OAuth 2.0 & OpenID Connect
 
-Let&apos;s learn how "Login with Google/Microsoft/Facebook" actually works! 🔑
+Let&apos;s learn how "Login with Google/Microsoft/Facebook" actually works! 
 
 ## The Problem OAuth Solves
 
-Imagine you&apos;re at a hotel 🏨 and want to use the valet parking service:
+Imagine you&apos;re at a hotel  and want to use the valet parking service:
 
 **Without OAuth (Bad!):**
-> "Here are my car keys AND my home address!" 🙅‍♀️
+> "Here are my car keys AND my home address!" ‍️
 
 **With OAuth (Good!):**
-> "Here&apos;s a valet ticket that ONLY lets you park my car." ✅
+> "Here&apos;s a valet ticket that ONLY lets you park my car." 
 
 OAuth works the same way — you give apps **limited access** without sharing your password!
 
@@ -46,24 +46,24 @@ The flow makes more sense with an example:
 
 ### "Login with Google" Step by Step
 
-1. 👆 **You click "Login with Google"**
+1.  **You click "Login with Google"**
    - Your app redirects you to Google
 
-2. 🔐 **You log in to Google**
+2.  **You log in to Google**
    - You enter YOUR credentials on Google&apos;s site
    - Your app never sees your password!
 
-3. ✅ **You approve permissions**
+3.  **You approve permissions**
    - "Allow App to access your email and profile?"
 
-4. 🎫 **Google sends a code back**
+4.  **Google sends a code back**
    - This code is temporary and one-time use
 
-5. 🔄 **Your app exchanges the code**
+5.  **Your app exchanges the code**
    - App sends code + secret to Google
    - Gets back Access Token + ID Token
 
-6. 🎉 **You&apos;re logged in!**
+6.  **You&apos;re logged in!**
    - App knows who you are from the ID Token
    - App can access your data with Access Token
 
@@ -94,17 +94,17 @@ Authorization: Bearer eyJhbGciOiJSUzI1NiIs...
 
 | Flow | Use Case | Security |
 |------|----------|----------|
-| **Authorization Code** | Web apps with backend | ✅ Most secure |
-| **Authorization Code + PKCE** | SPAs, mobile apps | ✅ Secure for public clients |
-| **Implicit** | Legacy SPAs | ❌ Deprecated |
+| **Authorization Code** | Web apps with backend |  Most secure |
+| **Authorization Code + PKCE** | SPAs, mobile apps |  Secure for public clients |
+| **Implicit** | Legacy SPAs |  Deprecated |
 | **Client Credentials** | Server-to-server | For machines only |
 
 ## Key Takeaways
 
-- 🚗 **OAuth is valet parking** — give limited access, not your keys
+-  **OAuth is valet parking** — give limited access, not your keys
 - 🆔 **OIDC adds identity** — OAuth + "who is this user?"
-- 🔐 **Your password stays with the provider** — apps never see it
-- 🎫 **You get tokens** — ID Token (who) + Access Token (permissions)
-- 🔄 **Authorization Code flow** is the most secure for web apps
+-  **Your password stays with the provider** — apps never see it
+-  **You get tokens** — ID Token (who) + Access Token (permissions)
+-  **Authorization Code flow** is the most secure for web apps
 
 <ProgressCheckpoint section="oauth-intro" xpReward={30} />

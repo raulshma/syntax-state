@@ -100,11 +100,11 @@ When you don't need to modify data, skip change tracking:
 
 <DotnetCodePreview
   title="AsNoTracking Usage"
-  code={`// ❌ Default: tracked (overhead)
+  code={`//  Default: tracked (overhead)
 var blogs = context.Blogs.ToList();
 // EF tracks all property changes
 
-// ✅ Read-only: no tracking (faster)
+//  Read-only: no tracking (faster)
 var blogs = context.Blogs
     .AsNoTracking()
     .ToList();
@@ -248,7 +248,7 @@ await context.Entry(blog)
 
 <DotnetCodePreview
   title="Bulk Updates and Deletes (EF Core 7+)"
-  code={`// ❌ Old way: load and update each
+  code={`//  Old way: load and update each
 var oldPosts = await context.Posts
     .Where(p => p.Date < cutoff)
     .ToListAsync();
@@ -259,7 +259,7 @@ foreach (var post in oldPosts)
 await context.SaveChangesAsync();
 // Many queries!
 
-// ✅ New way: ExecuteUpdate
+//  New way: ExecuteUpdate
 await context.Posts
     .Where(p => p.Date < cutoff)
     .ExecuteUpdateAsync(s => s

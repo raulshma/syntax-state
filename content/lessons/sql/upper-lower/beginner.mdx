@@ -2,21 +2,21 @@
 
 Change case and clean up whitespace!
 
-## 🔤 UPPER: Make Uppercase
+##  UPPER: Make Uppercase
 
 ```sql
 SELECT UPPER('hello');     -- 'HELLO'
 SELECT UPPER('Hello World'); -- 'HELLO WORLD'
 ```
 
-## 🔡 LOWER: Make Lowercase
+##  LOWER: Make Lowercase
 
 ```sql
 SELECT LOWER('HELLO');     -- 'hello'
 SELECT LOWER('Hello World'); -- 'hello world'
 ```
 
-## ✂️ TRIM: Remove Whitespace
+## ️ TRIM: Remove Whitespace
 
 ```sql
 SELECT TRIM('  hello  ');   -- 'hello'
@@ -24,7 +24,7 @@ SELECT LTRIM('  hello');    -- 'hello' (left only)
 SELECT RTRIM('hello  ');    -- 'hello' (right only)
 ```
 
-## 🎯 Practical Examples
+##  Practical Examples
 
 ```sql
 -- Normalize email for comparison
@@ -37,7 +37,7 @@ SELECT UPPER(last_name), first_name FROM employees;
 INSERT INTO users (email) VALUES (LOWER(TRIM(@input_email)));
 ```
 
-## 📊 Case-Insensitive Search
+##  Case-Insensitive Search
 
 ```sql
 -- Bad: Depends on collation
@@ -50,7 +50,7 @@ WHERE UPPER(name) = UPPER('john')
 WHERE LOWER(name) = LOWER('JOHN')
 ```
 
-## 🌟 Title Case (INITCAP)
+##  Title Case (INITCAP)
 
 ```sql
 -- PostgreSQL/Oracle has INITCAP
@@ -60,7 +60,7 @@ SELECT INITCAP('hello world');  -- 'Hello World'
 SELECT UPPER(LEFT(name, 1)) + LOWER(SUBSTRING(name, 2, LEN(name)));
 ```
 
-## ⚡ Quick Reference
+##  Quick Reference
 
 | Function | Purpose       | Example               |
 | -------- | ------------- | --------------------- |

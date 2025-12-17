@@ -275,8 +275,8 @@ console.log("---");
 function log(message, level = "info", timestamp = new Date().toISOString()) {
   const prefix = {
     info: "ℹ️",
-    warn: "⚠️",
-    error: "❌"
+    warn: "️",
+    error: ""
   };
   console.log(prefix[level] + " [" + timestamp + "] " + message);
 }

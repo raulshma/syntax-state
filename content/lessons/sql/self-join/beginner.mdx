@@ -2,7 +2,7 @@
 
 Compare rows in the same table using self-join!
 
-## 🔗 What is a Self Join?
+##  What is a Self Join?
 
 A self join joins a table to itself - like comparing siblings in the same family:
 
@@ -14,7 +14,7 @@ FROM employees e
 INNER JOIN employees m ON e.manager_id = m.id;
 ```
 
-## 📊 Visual Example
+##  Visual Example
 
 ```mermaid
 flowchart TB
@@ -41,7 +41,7 @@ flowchart TB
 | Alice | CEO |
 | Bob | Alice |
 
-## 📝 Key: Use Different Aliases!
+##  Key: Use Different Aliases!
 
 ```sql
 -- MUST use different aliases for the same table
@@ -50,7 +50,7 @@ INNER JOIN employees m  -- m = manager
 ON e.manager_id = m.id
 ```
 
-## 🎯 Common Use Cases
+##  Common Use Cases
 
 ### 1. Employee-Manager Hierarchy
 
@@ -86,7 +86,7 @@ LEFT JOIN orders o2
     AND o2.order_date < o1.order_date;
 ```
 
-## 💡 Key Points
+##  Key Points
 
 - Same table, different aliases
 - Used for hierarchies and comparisons

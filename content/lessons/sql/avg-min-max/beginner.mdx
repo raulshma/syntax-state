@@ -2,7 +2,7 @@
 
 Calculate averages and find the highest and lowest values!
 
-## 📊 The Three Functions
+##  The Three Functions
 
 | Function | What It Does      | Example             |
 | -------- | ----------------- | ------------------- |
@@ -10,7 +10,7 @@ Calculate averages and find the highest and lowest values!
 | `MIN()`  | Find smallest     | Cheapest product    |
 | `MAX()`  | Find largest      | Highest salary      |
 
-## 📝 Basic Examples
+##  Basic Examples
 
 ```sql
 -- Average order value
@@ -23,7 +23,7 @@ SELECT
 FROM products;
 ```
 
-## 🎯 All Together
+##  All Together
 
 ```sql
 SELECT
@@ -35,7 +35,7 @@ SELECT
 FROM products;
 ```
 
-## 📊 With GROUP BY
+##  With GROUP BY
 
 ```sql
 -- Stats by category
@@ -49,7 +49,7 @@ FROM products
 GROUP BY category;
 ```
 
-## 💡 MIN/MAX with Text
+##  MIN/MAX with Text
 
 MIN and MAX work on strings too (alphabetical):
 
@@ -61,7 +61,7 @@ FROM customers;
 -- First: "Aaron", Last: "Zoe"
 ```
 
-## 📅 MIN/MAX with Dates
+##  MIN/MAX with Dates
 
 ```sql
 SELECT
@@ -70,7 +70,7 @@ SELECT
 FROM orders;
 ```
 
-## ⚠️ NULL Handling
+## ️ NULL Handling
 
 AVG, MIN, and MAX ignore NULL values:
 
@@ -80,7 +80,7 @@ SELECT AVG(score) FROM tests;  -- Returns 23.33 (not 17.5!)
 -- (10 + 20 + 40) / 3 = 23.33
 ```
 
-## 🌟 Quick Reference
+##  Quick Reference
 
 ```sql
 -- Employee salary stats

@@ -109,7 +109,7 @@ CSS imports are side effects! Always include them in the sideEffects array, or t
 
 ### Writing Tree-Shakeable Code
 
-**❌ Not tree-shakeable (CommonJS):**
+** Not tree-shakeable (CommonJS):**
 ```javascript
 // utils.js
 module.exports = {
@@ -122,7 +122,7 @@ const utils = require('./utils');
 console.log(utils.add(2, 3));
 ```
 
-**✅ Tree-shakeable (ES modules):**
+** Tree-shakeable (ES modules):**
 ```javascript
 // utils.js
 export const add = (a, b) => a + b;
@@ -133,7 +133,7 @@ import { add } from './utils';
 console.log(add(2, 3));
 ```
 
-**❌ Not tree-shakeable (default export object):**
+** Not tree-shakeable (default export object):**
 ```javascript
 export default {
   add: (a, b) => a + b,
@@ -141,7 +141,7 @@ export default {
 };
 ```
 
-**✅ Tree-shakeable (named exports):**
+** Tree-shakeable (named exports):**
 ```javascript
 export const add = (a, b) => a + b;
 export const subtract = (a, b) => a - b;
@@ -708,10 +708,10 @@ module.exports = {
 ```
 
 This approach:
-- ✅ Generates source maps for error tracking
-- ✅ Doesn't expose source maps to users
-- ✅ Allows debugging production errors
-- ✅ Keeps bundle size small
+-  Generates source maps for error tracking
+-  Doesn't expose source maps to users
+-  Allows debugging production errors
+-  Keeps bundle size small
 
 
 ### Debugging with Source Maps
@@ -1137,37 +1137,37 @@ export default defineConfig({
 
 ### Advanced Optimization Checklist
 
-✅ **Code Splitting**
+ **Code Splitting**
 - Route-based splitting implemented
 - Heavy components lazy loaded
 - Vendor chunks separated
 
-✅ **Tree Shaking**
+ **Tree Shaking**
 - ES modules used throughout
 - `sideEffects: false` in package.json
 - Named exports preferred
 
-✅ **Minification**
+ **Minification**
 - Terser/esbuild configured
 - Dead code eliminated
 - Console logs removed in production
 
-✅ **Compression**
+ **Compression**
 - Gzip/Brotli enabled
 - Assets compressed
 - Text files optimized
 
-✅ **Caching**
+ **Caching**
 - Content hashing enabled
 - Long cache headers set
 - Service worker implemented
 
-✅ **Images**
+ **Images**
 - Modern formats (WebP, AVIF)
 - Lazy loading
 - Responsive images
 
-✅ **Fonts**
+ **Fonts**
 - Subset fonts
 - Preload critical fonts
 - Font-display: swap
@@ -1295,5 +1295,5 @@ Congratulations! You've mastered advanced build tools concepts:
 
 ---
 
-**Exceptional work!** 🎉 You now have expert-level knowledge of build tools. You understand optimization techniques, can create custom Babel plugins, debug production issues with source maps, and implement advanced code splitting strategies. You're ready to build and optimize production applications!
+**Exceptional work!**  You now have expert-level knowledge of build tools. You understand optimization techniques, can create custom Babel plugins, debug production issues with source maps, and implement advanced code splitting strategies. You're ready to build and optimize production applications!
 

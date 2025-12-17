@@ -126,7 +126,7 @@ WHERE blocking_session_id <> 0;
 
 ## Section 3: T-SQL Features
 
-### 📊 Query Execution Plans
+###  Query Execution Plans
 
 Execution plans show exactly how SQL Server runs your queries:
 
@@ -165,13 +165,13 @@ GROUP BY u.Id, u.Name;
 
 | Operator | Good/Bad | Meaning |
 |:---------|:---------|:--------|
-| Index Seek | ✅ Good | Directly jumps to matching rows |
-| Index Scan | ⚠️ Depends | Reads entire index |
-| Table Scan | ❌ Usually Bad | Reads entire table |
-| Key Lookup | ⚠️ Expensive | Extra lookup for non-covered columns |
-| Sort | ⚠️ Expensive | Must sort in memory/tempdb |
+| Index Seek |  Good | Directly jumps to matching rows |
+| Index Scan | ️ Depends | Reads entire index |
+| Table Scan |  Usually Bad | Reads entire table |
+| Key Lookup | ️ Expensive | Extra lookup for non-covered columns |
+| Sort | ️ Expensive | Must sort in memory/tempdb |
 
-## 🔧 Performance Tuning
+##  Performance Tuning
 
 ### Identifying Slow Queries
 
@@ -214,7 +214,7 @@ WHERE d.database_id = DB_ID()
 ORDER BY s.avg_user_impact DESC;
 ```
 
-## 📊 Table Partitioning
+##  Table Partitioning
 
 For very large tables, partitioning splits data across filegroups:
 
@@ -262,7 +262,7 @@ CREATE TABLE Orders_Partitioned (
 - Parallel query processing
 - Partition-level maintenance
 
-## 🔒 Row-Level Security
+##  Row-Level Security
 
 Control data access at the row level:
 
@@ -306,7 +306,7 @@ SELECT * FROM Orders; -- Only sees UserId = 42`}
   ]}
 />
 
-## 💾 In-Memory OLTP
+##  In-Memory OLTP
 
 Extreme performance for high-throughput scenarios:
 
@@ -337,7 +337,7 @@ BEGIN ATOMIC WITH (
 END;
 ```
 
-## 🔌 Advanced .NET Integration
+##  Advanced .NET Integration
 
 ### Connection Resiliency
 

@@ -105,9 +105,9 @@ async function pattern3() {
   
   results.forEach((result, i) => {
     if (result.status === "fulfilled") {
-      console.log(\`Promise \${i}: ✅\`, result.value);
+      console.log(\`Promise \${i}: \`, result.value);
     } else {
-      console.log(\`Promise \${i}: ❌\`, result.reason.message);
+      console.log(\`Promise \${i}: \`, result.reason.message);
     }
   });
 }
@@ -321,7 +321,7 @@ measureTime(() => {
   return data.reduce((sum, n) => sum + n, 0);
 }, "reduce");
 
-console.log("\\n✅ Performance comparison complete!");`}
+console.log("\\n Performance comparison complete!");`}
 />
 
 <ProgressCheckpoint section="stack-traces" xpReward={15} />
@@ -453,4 +453,4 @@ Use error tracking services in production. Include context, filter sensitive dat
 
 ---
 
-**Congratulations!** 🎉 You've mastered advanced error handling and debugging techniques. These skills will help you build robust, production-ready applications and debug issues efficiently.
+**Congratulations!**  You've mastered advanced error handling and debugging techniques. These skills will help you build robust, production-ready applications and debug issues efficiently.

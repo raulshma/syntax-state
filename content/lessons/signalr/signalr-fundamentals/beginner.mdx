@@ -1,4 +1,4 @@
-# SignalR Fundamentals: Real-Time Magic! 🚀
+# SignalR Fundamentals: Real-Time Magic! 
 
 Imagine you're watching a live sports game on TV. The score updates **instantly** when a goal is scored - you don't have to refresh your TV! That's exactly what **SignalR** does for web applications.
 
@@ -8,7 +8,7 @@ Imagine you're watching a live sports game on TV. The score updates **instantly*
 
 ### The Traditional Way vs SignalR
 
-| Traditional HTTP (Letters 📬) | SignalR (Phone Call 📞) |
+| Traditional HTTP (Letters ) | SignalR (Phone Call ) |
 | :--- | :--- |
 | Client asks: "Any updates?" every few seconds | Server calls client: "Hey! Here's an update!" |
 | Slow and wasteful | Instant and efficient |
@@ -16,14 +16,14 @@ Imagine you're watching a live sports game on TV. The score updates **instantly*
 
 <InfoBox type="success" title="Real-World Examples">
 **Where you've seen SignalR in action:**
-- 💬 **Chat apps** (WhatsApp Web, Discord)
-- 📊 **Live dashboards** (stock prices, analytics)
-- 🎮 **Multiplayer games** (real-time player movements)
-- 🔔 **Notifications** (Facebook, Twitter)
-- 📍 **Live tracking** (Uber, food delivery apps)
+-  **Chat apps** (WhatsApp Web, Discord)
+-  **Live dashboards** (stock prices, analytics)
+-  **Multiplayer games** (real-time player movements)
+-  **Notifications** (Facebook, Twitter)
+-  **Live tracking** (Uber, food delivery apps)
 </InfoBox>
 
-## The Restaurant Analogy 🍕
+## The Restaurant Analogy 
 
 Think of SignalR like ordering pizza:
 
@@ -50,16 +50,16 @@ public class PizzaHub : Hub
 
 <ProgressCheckpoint section="what-is-signalr" xpReward={10} />
 
-## How Does SignalR Work? 🔧
+## How Does SignalR Work? 
 
 SignalR uses different **transports** (ways to communicate) based on what your browser supports:
 
-### 1. WebSockets 🌐 (The Best!)
+### 1. WebSockets  (The Best!)
 - **Like a dedicated phone line** - always connected
 - Super fast, two-way communication
 - Works in modern browsers
 
-### 2. Server-Sent Events 📡 (The Backup)
+### 2. Server-Sent Events  (The Backup)
 - **Like a radio broadcast** - server sends, client listens
 - One-way (server → client only)
 - Older browser support
@@ -85,7 +85,7 @@ You get real-time communication without worrying about browser compatibility!
 
 <ProgressCheckpoint section="transports-protocols" xpReward={10} />
 
-## Setting Up SignalR 🛠️
+## Setting Up SignalR ️
 
 Let's create your first SignalR app! It's easier than ordering that pizza.
 
@@ -146,7 +146,7 @@ connection.start();
 ```
 
 <InfoBox type="tip" title="That's It!">
-You now have a **real-time chat app** in just a few lines of code! 🎊
+You now have a **real-time chat app** in just a few lines of code! 
 
 When the server calls `Clients.All.SendAsync()`, **all connected browsers** receive the message instantly!
 </InfoBox>
@@ -165,13 +165,13 @@ graph LR
 
 <ProgressCheckpoint section="setup-configuration" xpReward={10} />
 
-## Key Takeaways 🎯
+## Key Takeaways 
 
-✅ **SignalR enables real-time communication** - server pushes updates to clients instantly  
-✅ **Automatic transport selection** - works on all browsers without extra code  
-✅ **Easy to set up** - just a few lines to get started  
-✅ **Perfect for chat, dashboards, notifications** and any live updates  
+ **SignalR enables real-time communication** - server pushes updates to clients instantly  
+ **Automatic transport selection** - works on all browsers without extra code  
+ **Easy to set up** - just a few lines to get started  
+ **Perfect for chat, dashboards, notifications** and any live updates  
 
-> **Remember**: SignalR is like having a phone call instead of sending letters. Your server can notify clients the moment something happens! 📞
+> **Remember**: SignalR is like having a phone call instead of sending letters. Your server can notify clients the moment something happens! 
 
-Ready to dive deeper? Let's learn about Hubs and Clients next! 🚀
+Ready to dive deeper? Let's learn about Hubs and Clients next! 

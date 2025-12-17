@@ -2,9 +2,9 @@
 
 Imagine you release a popular video game. Millions of people are playing it. One day, you decide to "improve" the controls: the "X" button no longer makes you jump - now it quits the game!
 
-**Result:** 😡 Everyone gets angry, apps break, and users leave.
+**Result:**  Everyone gets angry, apps break, and users leave.
 
-## Section 1: The API Contract 📜
+## Section 1: The API Contract 
 
 An API is a **contract** (promise) between you and everyone using it.
 
@@ -38,7 +38,7 @@ and I added a required 'phoneNumber' field."
 
 ---
 
-## Section 2: The Solution - Versioning 🎮
+## Section 2: The Solution - Versioning 
 
 Instead of changing the existing "game," you release a **sequel**!
 
@@ -68,7 +68,7 @@ GET /api/v2/users/123
 <ProgressCheckpoint section="versioning-solution" xpReward={6} />
 
 
-### URL Versioning 🌐
+### URL Versioning 
 
 The most common way to version APIs is to put the version number in the URL:
 
@@ -88,7 +88,7 @@ https://api.stripe.com/v1/customers
 
 ---
 
-## Section 3: When to Version & Real-World Examples 🚀
+## Section 3: When to Version & Real-World Examples 
 
 ### Real-World Example: Adding Features
 
@@ -120,13 +120,13 @@ GET /api/v2/recipes/42
 
 ### When Do You Need a New Version? 🤔
 
-**✅ Create a New Version When:**
+** Create a New Version When:**
 - Removing fields
 - Renaming fields (`name` → `fullName`)
 - Changing data types (`"19.99"` → `19.99`)
 - Changing behavior
 
-**✅ DON'T Need New Version When:**
+** DON'T Need New Version When:**
 - Adding optional fields
 - Adding new endpoints
 - Bug fixes

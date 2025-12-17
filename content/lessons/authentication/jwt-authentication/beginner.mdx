@@ -1,12 +1,12 @@
 # JWT Authentication
 
-Let's learn about one of the most popular ways to secure APIs! 🎫
+Let's learn about one of the most popular ways to secure APIs! 
 
 ## What is a JWT?
 
 Think of a **JWT (JSON Web Token)** like a **concert ticket**:
 
-🎫 Your ticket has:
+ Your ticket has:
 - **Your name** (who you are)
 - **Seat number** (what you can access)
 - **Event details** (who issued it)
@@ -42,7 +42,7 @@ eyJhbGciOi...   .   eyJzdWIiOi...   .   SflKxwRJ...
 
 ### Stateless Authentication
 
-| Cookie-Based 🍪 | JWT-Based 🎫 |
+| Cookie-Based  | JWT-Based  |
 |----------------|--------------|
 | Server stores sessions | Token contains everything |
 | Requires session database | No server storage needed |
@@ -55,13 +55,13 @@ eyJhbGciOi...   .   eyJzdWIiOi...   .   SflKxwRJ...
 
 ## How It Works (The Simple Version)
 
-1. **Login** 🔑
+1. **Login** 
    - You send username + password
    - Server verifies them
    - Server creates a JWT with your info
    - Server sends JWT back to you
 
-2. **Use the Token** 📨
+2. **Use the Token** 
    - You include JWT in every request
    - Server reads and verifies the JWT
    - No database lookup needed!
@@ -89,10 +89,10 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIs...
 
 ## Key Takeaways
 
-- 🎫 **JWT = Digital concert ticket** with your identity baked in
-- 📦 **Three parts**: Header (algorithm), Payload (your data), Signature (proof)
-- 🚫 **NOT encrypted** — anyone can read the payload, so no secrets!
-- ⚡ **Stateless** — server doesn&apos;t need to store sessions
+-  **JWT = Digital concert ticket** with your identity baked in
+-  **Three parts**: Header (algorithm), Payload (your data), Signature (proof)
+-  **NOT encrypted** — anyone can read the payload, so no secrets!
+-  **Stateless** — server doesn&apos;t need to store sessions
 - ⏰ **Self-expiring** — tokens become invalid after set time
 
 <ProgressCheckpoint section="jwt-intro" xpReward={30} />

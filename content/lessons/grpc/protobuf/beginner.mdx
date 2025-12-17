@@ -12,7 +12,7 @@ Think of sending information like shipping a package:
 
 | JSON (Big Box) | Protobuf (Tight Wrap) |
 |:---------------|:----------------------|
-| 📦 Lots of text: `{"name":"Alice","age":25}` | 📦 Tiny binary: `0x0A054261727279101A` |
+|  Lots of text: `{"name":"Alice","age":25}` |  Tiny binary: `0x0A054261727279101A` |
 | Takes 31 bytes to send | Takes only ~8 bytes to send |
 | Easy to read | Needs to be "unwrapped" first |
 | Slower to pack/unpack | Super fast to pack/unpack |
@@ -115,11 +115,11 @@ byte[] data = user.ToByteArray();  // Pack it!
 
 ## Why Use Protocol Buffers?
 
-✅ **Super Small** - Data is 50-80% smaller than JSON  
-✅ **Lightning Fast** - 10-100x faster to read and write  
-✅ **Type Safe** - Catches errors at compile-time, not runtime  
-✅ **Works Everywhere** - Same `.proto` file for all programming languages  
-✅ **Future Proof** - Can add new fields without breaking old code  
+ **Super Small** - Data is 50-80% smaller than JSON  
+ **Lightning Fast** - 10-100x faster to read and write  
+ **Type Safe** - Catches errors at compile-time, not runtime  
+ **Works Everywhere** - Same `.proto` file for all programming languages  
+ **Future Proof** - Can add new fields without breaking old code  
 
 ## Real-World Example
 

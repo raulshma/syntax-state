@@ -2,16 +2,16 @@
 
 Learn how to remove records from your database - with caution!
 
-## 🗑️ Basic DELETE Syntax
+## ️ Basic DELETE Syntax
 
 ```sql
 DELETE FROM table_name
 WHERE condition;
 ```
 
-> ⚠️ **Always use WHERE!** Without it, you'll delete ALL rows!
+> ️ **Always use WHERE!** Without it, you'll delete ALL rows!
 
-## 📝 Your First DELETE
+##  Your First DELETE
 
 ```sql
 -- Delete one customer by ID
@@ -19,7 +19,7 @@ DELETE FROM customers
 WHERE id = 1;
 ```
 
-## 🎯 Deleting Multiple Rows
+##  Deleting Multiple Rows
 
 ```sql
 -- Delete all inactive customers
@@ -31,7 +31,7 @@ DELETE FROM orders
 WHERE order_date < '2020-01-01';
 ```
 
-## ⚠️ The Danger Zone
+## ️ The Danger Zone
 
 ```sql
 -- DANGEROUS: Deletes ALL data!
@@ -42,7 +42,7 @@ DELETE FROM customers;
 DELETE FROM customers WHERE 1=1;
 ```
 
-## 💡 Safe DELETE Workflow
+##  Safe DELETE Workflow
 
 1. **SELECT first** to see what you're about to delete:
 
@@ -70,7 +70,7 @@ SELECT COUNT(*) FROM orders WHERE status = 'cancelled';
 -- Should be 0
 ```
 
-## 🔢 DELETE vs TRUNCATE
+##  DELETE vs TRUNCATE
 
 |           | DELETE               | TRUNCATE      |
 | --------- | -------------------- | ------------- |
@@ -85,7 +85,7 @@ SELECT COUNT(*) FROM orders WHERE status = 'cancelled';
 TRUNCATE TABLE temp_logs;
 ```
 
-## 🎯 Common Patterns
+##  Common Patterns
 
 ```sql
 -- Delete by ID

@@ -101,9 +101,9 @@ public class BackgroundWorker : BackgroundService
 
 | Lifetime  | Thread Safety Required? | Why?                                   |
 | :-------- | :---------------------- | :------------------------------------- |
-| Singleton | ✅ **Yes, always**      | Multiple threads access simultaneously |
-| Scoped    | ⚠️ Usually no           | Typically one thread per HTTP request  |
-| Transient | ⚠️ Usually no           | New instance per injection             |
+| Singleton |  **Yes, always**      | Multiple threads access simultaneously |
+| Scoped    | ️ Usually no           | Typically one thread per HTTP request  |
+| Transient | ️ Usually no           | New instance per injection             |
 
 ### Keyed Services (.NET 8+)
 
@@ -127,11 +127,11 @@ public class CacheController
 ### Key Takeaways
 
 <InfoBox type="tip" title="Remember">
-- 🔒 **Captive dependencies** - Never inject shorter lifetime into longer
-- 🏭 **IServiceScopeFactory** - Create scopes in singletons/background services
+-  **Captive dependencies** - Never inject shorter lifetime into longer
+-  **IServiceScopeFactory** - Create scopes in singletons/background services
 - 🧵 **Thread safety** - Required for singletons, usually not for scoped
-- 🔑 **Keyed services** - .NET 8+ feature for multiple implementations
-- 🗑️ **Disposal** - Container handles `IDisposable`/`IAsyncDisposable`
+-  **Keyed services** - .NET 8+ feature for multiple implementations
+- ️ **Disposal** - Container handles `IDisposable`/`IAsyncDisposable`
 </InfoBox>
 
 <ProgressCheckpoint section="lifetime-pitfalls" xpReward={20} />

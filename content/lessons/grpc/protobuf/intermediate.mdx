@@ -223,10 +223,10 @@ Protobuf is designed for **backward and forward compatibility**:
 
 ### Safe Changes
 
-✅ **Adding new fields** (with new field numbers)  
-✅ **Removing optional fields** (use `reserved`)  
-✅ **Changing field names** (field numbers stay the same)  
-✅ **Changing message/enum names** (if fully qualified)  
+ **Adding new fields** (with new field numbers)  
+ **Removing optional fields** (use `reserved`)  
+ **Changing field names** (field numbers stay the same)  
+ **Changing message/enum names** (if fully qualified)  
 
 ```protobuf
 // Version 1
@@ -249,10 +249,10 @@ message User {
 
 ### Unsafe Changes
 
-❌ **Changing field numbers** (breaks binary compatibility)  
-❌ **Changing field types** (int → string, etc.)  
-❌ **Removing required fields** (proto2 only)  
-❌ **Reusing field numbers**  
+ **Changing field numbers** (breaks binary compatibility)  
+ **Changing field types** (int → string, etc.)  
+ **Removing required fields** (proto2 only)  
+ **Reusing field numbers**  
 
 <InfoBox type="warning">
 **Critical Rule:** Never change or reuse field numbers. They are the identity of your fields in the binary format.

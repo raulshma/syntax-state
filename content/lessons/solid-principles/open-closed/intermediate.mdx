@@ -63,9 +63,9 @@ Consider a discount calculator that keeps growing:
 
 **Problems with this approach:**
 
-- ❌ Must modify working code for every new type
-- ❌ Risk of breaking existing discount logic
-- ❌ Must retest ALL customer types
+-  Must modify working code for every new type
+-  Risk of breaking existing discount logic
+-  Must retest ALL customer types
 
 <ProgressCheckpoint section="ocp-introduction" xpReward={13} />
 
@@ -211,11 +211,11 @@ ILogger logger = new TimestampLogger(new BasicLogger());
 ### Key Takeaways
 
 <InfoBox type="tip" title="Remember">
-- 🔐 **Closed** = Don't modify existing, working code
-- 🔓 **Open** = Easy to add new implementations
-- 🎯 **Strategy Pattern** = Most common OCP technique
+-  **Closed** = Don't modify existing, working code
+-  **Open** = Easy to add new implementations
+-  **Strategy Pattern** = Most common OCP technique
 - 🧩 **Interfaces** = The key to achieving OCP
-- 💉 **DI** = How to wire up strategies in .NET
+-  **DI** = How to wire up strategies in .NET
 </InfoBox>
 
 <ProgressCheckpoint section="ocp-application" xpReward={13} />

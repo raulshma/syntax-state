@@ -2,7 +2,7 @@
 
 Navigate trees and hierarchies!
 
-## 🌳 What is a Recursive Query?
+##  What is a Recursive Query?
 
 Recursive CTEs call themselves to traverse hierarchical data:
 
@@ -23,7 +23,7 @@ WITH RECURSIVE org_chart AS (
 SELECT * FROM org_chart;
 ```
 
-## 📝 Basic Structure
+##  Basic Structure
 
 ```sql
 WITH RECURSIVE cte_name AS (
@@ -38,7 +38,7 @@ WITH RECURSIVE cte_name AS (
 SELECT * FROM cte_name;
 ```
 
-## 🔢 Simple Example: Numbers
+##  Simple Example: Numbers
 
 ```sql
 -- Generate numbers 1-10
@@ -54,7 +54,7 @@ SELECT * FROM numbers;
 -- Result: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10
 ```
 
-## 👨‍👩‍👧‍👦 Family Tree Example
+## ‍‍‍ Family Tree Example
 
 ```sql
 -- Data: id, name, parent_id
@@ -73,7 +73,7 @@ WITH RECURSIVE family AS (
 SELECT name, generation FROM family;
 ```
 
-## ⚠️ Important: Stop Condition
+## ️ Important: Stop Condition
 
 Always include a condition to stop recursion!
 

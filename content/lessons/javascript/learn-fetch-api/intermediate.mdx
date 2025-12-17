@@ -135,11 +135,11 @@ async function safeFetch(url) {
       throw new Error(\`HTTP \${scenario.status}: Request failed\`);
     }
     
-    console.log("✅ Success:", scenario.data);
+    console.log(" Success:", scenario.data);
     return scenario.data;
     
   } catch (error) {
-    console.log("❌ Error:", error.message);
+    console.log(" Error:", error.message);
     throw error;
   }
 }
@@ -460,4 +460,4 @@ Set `Content-Type` when sending data, `Accept` for what you want back, and `Auth
 
 ---
 
-**Excellent work!** 🎉 You now have solid intermediate knowledge of the Fetch API. In the advanced level, we'll explore CORS, AbortController, streaming responses, and more advanced patterns.
+**Excellent work!**  You now have solid intermediate knowledge of the Fetch API. In the advanced level, we'll explore CORS, AbortController, streaming responses, and more advanced patterns.

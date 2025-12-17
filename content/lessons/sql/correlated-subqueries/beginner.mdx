@@ -2,7 +2,7 @@
 
 Learn subqueries that reference the outer query for row-by-row comparisons!
 
-## 🔗 What is a Correlated Subquery?
+##  What is a Correlated Subquery?
 
 A correlated subquery references a column from the outer query:
 
@@ -16,7 +16,7 @@ WHERE price > (
 
 The inner query uses `p.category` from the outer query!
 
-## 📊 Regular vs Correlated
+##  Regular vs Correlated
 
 | Type       | Inner Query References Outer? | Runs How Many Times? |
 | ---------- | ----------------------------- | -------------------- |
@@ -32,7 +32,7 @@ SELECT * FROM products p
 WHERE price > (SELECT AVG(price) FROM products WHERE category = p.category);
 ```
 
-## 📝 Common Pattern: Compare to Group
+##  Common Pattern: Compare to Group
 
 ```sql
 -- Products priced above their category average
@@ -52,7 +52,7 @@ WHERE salary > (
 );
 ```
 
-## ✅ EXISTS Operator
+##  EXISTS Operator
 
 Check if related rows exist:
 
@@ -70,7 +70,7 @@ WHERE NOT EXISTS (
 );
 ```
 
-## 💡 Why EXISTS is Special
+##  Why EXISTS is Special
 
 EXISTS just checks "does any row exist?" - very efficient!
 
@@ -82,7 +82,7 @@ WHERE EXISTS (SELECT 1 FROM orders WHERE customer_id = c.id)
 WHERE c.id IN (SELECT customer_id FROM orders)
 ```
 
-## 🎯 Quick Examples
+##  Quick Examples
 
 ```sql
 -- Latest order per customer

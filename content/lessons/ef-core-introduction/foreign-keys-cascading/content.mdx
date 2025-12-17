@@ -6,7 +6,7 @@ When you delete a parent entity, what happens to its children? Should they be de
 
 ## Section 1: Foreign Key Fundamentals
 
-### The Chain of Custody 🔗
+### The Chain of Custody 
 
 Think of foreign keys like a chain connecting related records:
 
@@ -400,22 +400,22 @@ protected override void OnModelCreating(ModelBuilder modelBuilder)
   title="Cascade Delete Pitfalls"
   items={[
     {
-      label: "❌ Unintended mass deletion",
+      label: " Unintended mass deletion",
       description: "Cascade can delete more than expected if relationships are complex. Always test!",
       isCorrect: false
     },
     {
-      label: "❌ Orphaned records with ClientSetNull",
+      label: " Orphaned records with ClientSetNull",
       description: "If children aren't tracked, ClientSetNull does nothing - DB might error",
       isCorrect: false
     },
     {
-      label: "❌ Cascade cycles with SQL Server",
+      label: " Cascade cycles with SQL Server",
       description: "Multiple cascade paths to same table cause errors. Break one with Restrict.",
       isCorrect: false
     },
     {
-      label: "✅ Test delete behaviors",
+      label: " Test delete behaviors",
       description: "Write integration tests that verify children are handled correctly",
       isCorrect: true
     }
@@ -466,7 +466,7 @@ You've completed the **Entity Relationships** milestone! You now understand:
 - **Navigation properties** for traversing relationships
 - **Foreign keys** and cascade delete behaviors
 
-You're ready to tackle more advanced EF Core topics like loading strategies and performance optimization! 🎉
+You're ready to tackle more advanced EF Core topics like loading strategies and performance optimization! 
 </KeyConcept>
 
 <ProgressCheckpoint section="common-scenarios" xpReward={20} />

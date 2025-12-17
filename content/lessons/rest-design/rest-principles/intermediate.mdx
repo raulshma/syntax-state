@@ -8,11 +8,11 @@ REST (Representational State Transfer) is an architectural style defined by Roy 
 
 ## Section 1: REST Introduction & Client-Server Separation
 
-### What Makes an API "RESTful"? 🎯
+### What Makes an API "RESTful"? 
 
 If your API follows all six constraints, it's truly "RESTful". Most APIs only follow some constraints - that's okay! Understanding all of them helps you make informed design decisions.
 
-### Constraint 1: Client-Server Separation 🔄
+### Constraint 1: Client-Server Separation 
 
 **The Principle:** The client and server are separate entities that communicate only through requests and responses.
 
@@ -37,7 +37,7 @@ Think of a restaurant. The kitchen (server) can renovate, hire new chefs, or cha
 
 ## Section 2: Cacheability & Uniform Interface
 
-### Constraint 2: Cacheable Responses 💾
+### Constraint 2: Cacheable Responses 
 
 **The Principle:** Responses must explicitly indicate whether they can be cached.
 
@@ -78,7 +78,7 @@ public IActionResult GetBalance()
 
 <ProgressCheckpoint section="cacheable" xpReward={4} />
 
-### Constraint 3: Uniform Interface 🎯
+### Constraint 3: Uniform Interface 
 
 **The Principle:** All APIs should follow consistent, standardized patterns.
 
@@ -131,7 +131,7 @@ Cache-Control: max-age=3600
 
 ## Section 3: Layered System, Code on Demand & REST vs RPC
 
-### Constraint 4: Layered System 🏗️
+### Constraint 4: Layered System ️
 
 **The Principle:** The client cannot tell whether it's connected directly to the end server or to an intermediary.
 
@@ -155,7 +155,7 @@ It doesn't know (and doesn't care) about:
 
 <ProgressCheckpoint section="layered-system" xpReward={5} />
 
-### Constraint 5: Code on Demand (Optional) 📦
+### Constraint 5: Code on Demand (Optional) 
 
 **The Principle:** Servers can extend client functionality by sending executable code.
 

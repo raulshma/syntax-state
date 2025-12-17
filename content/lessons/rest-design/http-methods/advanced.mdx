@@ -2,7 +2,7 @@
 
 Building production-grade APIs requires deep understanding of HTTP semantics, especially **safety** and **idempotency**.
 
-## Section 1: Safety & Idempotency Fundamentals 🛡️
+## Section 1: Safety & Idempotency Fundamentals ️
 
 ### Understanding Safety
 
@@ -33,21 +33,21 @@ public IActionResult ActivateUser(int id)
 
 <ProgressCheckpoint section="safety" xpReward={7} />
 
-### Understanding Idempotency 🔁
+### Understanding Idempotency 
 
 **Definition:** A method is **idempotent** if making the request N times has the same effect as making it once.
 
 | Method | Idempotent? | Explanation |
 |:-------|:------------|:------------|
-| **GET** | ✅ YES | Reading data 5 times doesn't change anything |
-| **PUT** | ✅ YES | Setting name to "John" 5 times = name is "John" |
-| **DELETE** | ✅ YES | Deleting ID 123 five times: first succeeds, rest return 404 |
-| **POST** | ❌ NO | Creating an order 5 times creates 5 orders |
-| **PATCH** | ⚠️ DEPENDS | `{"age": 30}` is idempotent. `{"age": "+1"}` is NOT |
+| **GET** |  YES | Reading data 5 times doesn't change anything |
+| **PUT** |  YES | Setting name to "John" 5 times = name is "John" |
+| **DELETE** |  YES | Deleting ID 123 five times: first succeeds, rest return 404 |
+| **POST** |  NO | Creating an order 5 times creates 5 orders |
+| **PATCH** | ️ DEPENDS | `{"age": 30}` is idempotent. `{"age": "+1"}` is NOT |
 
 <ProgressCheckpoint section="idempotency-basics" xpReward={7} />
 
-### The Payment Problem 💳
+### The Payment Problem 
 
 **Scenario:** A user clicks "Pay Now" on a mobile app.
 
@@ -68,7 +68,7 @@ public IActionResult ActivateUser(int id)
 
 ---
 
-## Section 2: Idempotency Solutions 🔑
+## Section 2: Idempotency Solutions 
 
 ### Solution 1: Idempotency Keys
 
@@ -115,7 +115,7 @@ await fetch('/api/payments', {
 <ProgressCheckpoint section="idempotency-keys" xpReward={10} />
 
 
-### Solution 2: Natural Idempotency with PUT 🎯
+### Solution 2: Natural Idempotency with PUT 
 
 **Pattern:** Use PUT with a client-generated ID instead of POST.
 
@@ -143,7 +143,7 @@ await fetch(`/api/orders/${orderId}`, { method: 'PUT', body: orderData });
 
 <ProgressCheckpoint section="natural-idempotency" xpReward={5} />
 
-### Advanced Status Codes 🎯
+### Advanced Status Codes 
 
 **409 Conflict - Resource State Conflicts:**
 ```csharp
@@ -186,7 +186,7 @@ await context.Response.WriteAsJsonAsync(new { error = "Rate limit exceeded" });
 
 ---
 
-## Section 3: ETags & Content Negotiation 🏷️
+## Section 3: ETags & Content Negotiation ️
 
 ### ETags for Optimistic Locking
 
@@ -232,7 +232,7 @@ public IActionResult UpdateUser(int id, [FromBody] UpdateUserDto dto,
 
 <ProgressCheckpoint section="etags" xpReward={5} />
 
-### Content Negotiation 🌐
+### Content Negotiation 
 
 Support multiple response formats based on client preferences:
 

@@ -2,7 +2,7 @@
 
 Every table needs a way to identify each row uniquely - that's what primary keys do!
 
-## 🔑 What is a Primary Key?
+##  What is a Primary Key?
 
 A primary key is a column (or columns) that **uniquely identifies** each row in a table.
 
@@ -12,7 +12,7 @@ A primary key is a column (or columns) that **uniquely identifies** each row in 
 - Cannot be NULL
 - One primary key per table
 
-## 📝 Creating a Primary Key
+##  Creating a Primary Key
 
 ```sql
 -- Method 1: Inline
@@ -29,7 +29,7 @@ CREATE TABLE products (
 );
 ```
 
-## ⚡ Auto-Increment IDs
+##  Auto-Increment IDs
 
 Let the database assign IDs automatically:
 
@@ -60,7 +60,7 @@ INSERT INTO orders (order_date) VALUES ('2024-03-15');
 -- ID is automatically assigned (1, 2, 3, ...)
 ```
 
-## 🎯 Why Primary Keys Matter
+##  Why Primary Keys Matter
 
 | Purpose               | Example                          |
 | --------------------- | -------------------------------- |
@@ -69,7 +69,7 @@ INSERT INTO orders (order_date) VALUES ('2024-03-15');
 | Indexing              | Fast lookups by ID               |
 | Updates/Deletes       | Know exactly which row to change |
 
-## 💡 Choosing a Primary Key
+##  Choosing a Primary Key
 
 | Option             | Good For            | Example            |
 | ------------------ | ------------------- | ------------------ |
@@ -77,7 +77,7 @@ INSERT INTO orders (order_date) VALUES ('2024-03-15');
 | Natural key        | If already unique   | email, ISBN        |
 | UUID/GUID          | Distributed systems | '550e8400-e29b...' |
 
-## 📊 See It In Action
+##  See It In Action
 
 ```sql
 CREATE TABLE employees (

@@ -6,7 +6,7 @@ Hierarchical data is everywhere in software development. From file systems to or
 
 ## Section 1: Understanding Hierarchies
 
-### The Organization Chart Analogy 🏢
+### The Organization Chart Analogy 
 
 Imagine a company structure. Every employee has a manager, but that manager is *also* an employee. And that manager might have their own manager, all the way up to the CEO.
 
@@ -189,7 +189,7 @@ A common issue with self-referencing entities is **JSON Serialization Cycles**.
 1. Serializer writes Employee A.
 2. Writes A's Manager (Employee B).
 3. Writes B's Direct Reports (Includes Employee A).
-4. Writes A's Manager (Employee B)... **Infinite Loop!** 💥
+4. Writes A's Manager (Employee B)... **Infinite Loop!** 
 
 ### Solutions
 
@@ -198,7 +198,7 @@ A common issue with self-referencing entities is **JSON Serialization Cycles**.
 
 <DotnetCodePreview
   title="Handling Cycles"
-  code={`// ❌ BAD: Returning Entity directly (Risk of cycles)
+  code={`//  BAD: Returning Entity directly (Risk of cycles)
 public Employee GetManager(int id)
 {
     return _context.Employees
@@ -206,7 +206,7 @@ public Employee GetManager(int id)
         .First(e => e.Id == id);
 }
 
-// ✅ GOOD: Projecting to DTO
+//  GOOD: Projecting to DTO
 public EmployeeDto GetManagerDto(int id)
 {
     return _context.Employees
@@ -219,7 +219,7 @@ public EmployeeDto GetManagerDto(int id)
         .First();
 }
 
-// 🔧 API Configuration option
+//  API Configuration option
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {

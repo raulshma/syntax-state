@@ -2,17 +2,17 @@
 
 Using the correct HTTP methods and status codes is crucial for building predictable, maintainable APIs.
 
-## Section 1: HTTP Methods Deep Dive 🛠️
+## Section 1: HTTP Methods Deep Dive ️
 
 ### The Big 5 Methods
 
 | Method | Use Case | Idempotent? | Safe? |
 |:-------|:---------|:------------|:------|
-| **GET** | Retrieve data | ✅ Yes | ✅ Yes |
-| **POST** | Create new resource | ❌ No | ❌ No |
-| **PUT** | Replace entire resource | ✅ Yes | ❌ No |
-| **PATCH** | Partially update resource | ⚠️ Depends | ❌ No |
-| **DELETE** | Remove resource | ✅ Yes | ❌ No |
+| **GET** | Retrieve data |  Yes |  Yes |
+| **POST** | Create new resource |  No |  No |
+| **PUT** | Replace entire resource |  Yes |  No |
+| **PATCH** | Partially update resource | ️ Depends |  No |
+| **DELETE** | Remove resource |  Yes |  No |
 
 <InfoBox type="info">
   **Key Terms:**
@@ -20,7 +20,7 @@ Using the correct HTTP methods and status codes is crucial for building predicta
   - **Idempotent:** Calling it multiple times has the same effect as calling it once
 </InfoBox>
 
-### GET - Retrieve Resources 📖
+### GET - Retrieve Resources 
 
 ```csharp
 [HttpGet("{id}")]
@@ -45,7 +45,7 @@ public IActionResult GetUser(int id)
 
 <ProgressCheckpoint section="get-method" xpReward={3} />
 
-### POST - Create New Resources ➕
+### POST - Create New Resources 
 
 ```csharp
 [HttpPost]
@@ -73,7 +73,7 @@ public IActionResult CreateUser([FromBody] CreateUserDto dto)
 <ProgressCheckpoint section="post-method" xpReward={3} />
 
 
-### PUT vs PATCH - The Critical Difference 🔄
+### PUT vs PATCH - The Critical Difference 
 
 <InfoBox type="warning">
   **PUT vs PATCH:**
@@ -116,7 +116,7 @@ public IActionResult PatchUser(int id, [FromBody] PatchUserDto dto)
 
 <ProgressCheckpoint section="patch-method" xpReward={3} />
 
-### DELETE - Remove Resource 🗑️
+### DELETE - Remove Resource ️
 
 ```csharp
 [HttpDelete("{id}")]
@@ -153,7 +153,7 @@ public IActionResult DeleteUser(int id)
 
 ---
 
-## Section 2: Status Codes in ASP.NET Core 🎯
+## Section 2: Status Codes in ASP.NET Core 
 
 ### Success Responses (2xx)
 
@@ -207,7 +207,7 @@ return StatusCode(503, new { error = "Service temporarily unavailable" });
 
 ---
 
-## Section 3: Complete CRUD Example 📝
+## Section 3: Complete CRUD Example 
 
 Here's a complete controller implementing all methods correctly:
 

@@ -436,7 +436,7 @@ function ProtectedRoute({ children }) {
 function Home() {
   return (
     <div style={{ padding: '20px' }}>
-      <h2>🏠 Home (Public)</h2>
+      <h2> Home (Public)</h2>
       <p>Anyone can see this page.</p>
     </div>
   );
@@ -455,7 +455,7 @@ function Login() {
   
   return (
     <div style={{ padding: '20px' }}>
-      <h2>🔐 Login</h2>
+      <h2> Login</h2>
       <p>You need to log in to access the dashboard.</p>
       <button onClick={handleLogin} style={{ padding: '10px 20px', cursor: 'pointer' }}>
         Log In as Demo User
@@ -475,7 +475,7 @@ function Dashboard() {
   
   return (
     <div style={{ padding: '20px' }}>
-      <h2>📊 Dashboard (Protected)</h2>
+      <h2> Dashboard (Protected)</h2>
       <p>Welcome, {user?.name}!</p>
       <p>This page is only visible to logged-in users.</p>
       <button onClick={handleLogout} style={{ padding: '10px 20px', cursor: 'pointer' }}>
@@ -500,7 +500,7 @@ function Navigation() {
       <Link to="/dashboard" style={{ color: '#fff' }}>Dashboard</Link>
       {user && (
         <span style={{ marginLeft: 'auto', color: '#4ade80' }}>
-          ✓ Logged in as {user.name}
+           Logged in as {user.name}
         </span>
       )}
     </nav>
@@ -576,4 +576,4 @@ render(<App />);`}
 
 ---
 
-**Outstanding work!** 🏆 You've mastered advanced React Router patterns including route guards, lazy loading, data loaders, and error handling. You're now equipped to build complex, production-ready navigation systems!
+**Outstanding work!**  You've mastered advanced React Router patterns including route guards, lazy loading, data loaders, and error handling. You're now equipped to build complex, production-ready navigation systems!

@@ -1,6 +1,6 @@
 # The Built-in DI Container
 
-ASP.NET Core comes with a **built-in DI container** - like a smart assistant that creates and delivers all your services! No extra packages needed. 🎁
+ASP.NET Core comes with a **built-in DI container** - like a smart assistant that creates and delivers all your services! No extra packages needed. 
 
 ---
 
@@ -8,7 +8,7 @@ ASP.NET Core comes with a **built-in DI container** - like a smart assistant tha
 
 Think of the DI container as a **smart vending machine**:
 
-| **Without Container** 😰       | **With Container** 😊             |
+| **Without Container**        | **With Container**              |
 | :----------------------------- | :-------------------------------- |
 | You create everything yourself | You ask, it delivers              |
 | You track who needs what       | It tracks all dependencies        |
@@ -50,7 +50,7 @@ var app = builder.Build();
 builder.Services.AddSingleton<ILogger, ConsoleLogger>();
 ```
 
-💜 Like hiring ONE head chef for your restaurant.
+ Like hiring ONE head chef for your restaurant.
 
 ### AddScoped - One Per Request
 
@@ -59,7 +59,7 @@ builder.Services.AddSingleton<ILogger, ConsoleLogger>();
 builder.Services.AddScoped<IShoppingCart, ShoppingCart>();
 ```
 
-💙 Like assigning ONE waiter per table.
+ Like assigning ONE waiter per table.
 
 ### AddTransient - New Every Time
 
@@ -68,7 +68,7 @@ builder.Services.AddScoped<IShoppingCart, ShoppingCart>();
 builder.Services.AddTransient<IEmailService, SmtpEmailService>();
 ```
 
-💚 Like getting fresh napkins - new one each time!
+ Like getting fresh napkins - new one each time!
 
 ### Simple Registration Pattern
 
@@ -122,9 +122,9 @@ public class UsersController : ControllerBase
 
 <InfoBox type="tip" title="Remember">
 - 🤖 The **DI Container** creates and delivers services automatically
-- 📦 Register services with `AddSingleton`, `AddScoped`, or `AddTransient`
-- 💉 Controllers receive services **automatically** via constructors
-- 📍 All registration happens in **Program.cs**
+-  Register services with `AddSingleton`, `AddScoped`, or `AddTransient`
+-  Controllers receive services **automatically** via constructors
+-  All registration happens in **Program.cs**
 </InfoBox>
 
 <ProgressCheckpoint section="advanced-registration" xpReward={8} />

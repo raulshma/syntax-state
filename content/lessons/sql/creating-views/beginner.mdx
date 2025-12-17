@@ -2,7 +2,7 @@
 
 Create reusable queries as virtual tables!
 
-## 👁️ What is a View?
+## ️ What is a View?
 
 A view is a saved query that acts like a table:
 
@@ -16,7 +16,7 @@ WHERE status = 'active';
 SELECT * FROM active_customers;
 ```
 
-## 📝 Basic Syntax
+##  Basic Syntax
 
 ```sql
 CREATE VIEW view_name AS
@@ -25,14 +25,14 @@ FROM table_name
 WHERE condition;
 ```
 
-## 🎯 Why Use Views?
+##  Why Use Views?
 
 1. **Simplify complex queries** - Write once, use many times
 2. **Security** - Hide columns users shouldn't see
 3. **Abstraction** - Change underlying structure without affecting users
 4. **Consistency** - Same query logic everywhere
 
-## 📊 Examples
+##  Examples
 
 ```sql
 -- Simplify JOINs
@@ -56,7 +56,7 @@ SELECT id, name, department, title
 FROM employees;  -- Hides salary, SSN, etc.
 ```
 
-## ⚡ Views Are Dynamic!
+##  Views Are Dynamic!
 
 Views show current data, not a snapshot:
 

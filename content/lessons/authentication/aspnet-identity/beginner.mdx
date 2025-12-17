@@ -1,10 +1,10 @@
 # ASP.NET Core Identity
 
-Welcome to the world of user authentication! 🎉 Let's learn how to manage users in your web applications.
+Welcome to the world of user authentication!  Let's learn how to manage users in your web applications.
 
 ## What is ASP.NET Core Identity?
 
-Imagine you're running a **hotel** 🏨. You need to:
+Imagine you're running a **hotel** . You need to:
 
 - **Register guests** (create accounts)
 - **Verify their identity** (check ID at check-in)
@@ -34,10 +34,10 @@ Let's see what happens when a new user signs up:
 <IdentityArchitectureVisualizer mode="beginner" scenario="registration" />
 
 The flow is simple:
-1. 📝 User fills out the registration form
-2. 🔒 Password is **hashed** (scrambled) — never stored as plain text!
-3. 💾 User record is saved to the database
-4. ✅ Success! User can now log in
+1.  User fills out the registration form
+2.  Password is **hashed** (scrambled) — never stored as plain text!
+3.  User record is saved to the database
+4.  Success! User can now log in
 
 ## How Login Works
 
@@ -48,7 +48,7 @@ When you log in:
 2. Identity finds your account
 3. Compares your password hash
 4. Gives you a **cookie** (a digital wristband!)
-5. You're authenticated! 🎉
+5. You're authenticated! 
 
 <InfoBox type="note">
   The cookie is encrypted — nobody can read what's inside except your server.
@@ -88,10 +88,10 @@ Identity creates these tables automatically:
 
 ## Key Takeaways
 
-- 🏨 **Identity = Hotel front desk** for your web app
-- 🔐 **Passwords are always hashed** — never stored as plain text
-- 🍪 **Login creates an encrypted cookie** for session management
-- 📊 **Identity creates database tables** automatically
-- ✨ **Two lines of code** to add to your app!
+-  **Identity = Hotel front desk** for your web app
+-  **Passwords are always hashed** — never stored as plain text
+-  **Login creates an encrypted cookie** for session management
+-  **Identity creates database tables** automatically
+-  **Two lines of code** to add to your app!
 
 <ProgressCheckpoint section="identity-intro" xpReward={30} />

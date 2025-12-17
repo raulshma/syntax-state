@@ -71,17 +71,17 @@ typeof NaN; // "number" 😅
 
 | Expression            | Result      | Notes                     |
 | :-------------------- | :---------- | :------------------------ |
-| `typeof undefined`    | "undefined" | ✅ Works correctly        |
-| `typeof null`         | "object"    | ⚠️ Bug - should be "null" |
-| `typeof true`         | "boolean"   | ✅                        |
-| `typeof 42`           | "number"    | ✅                        |
-| `typeof "text"`       | "string"    | ✅                        |
-| `typeof Symbol()`     | "symbol"    | ✅                        |
-| `typeof 1n`           | "bigint"    | ✅                        |
-| `typeof {}`           | "object"    | ✅                        |
-| `typeof []`           | "object"    | ⚠️ Use Array.isArray()    |
-| `typeof function(){}` | "function"  | ✅ Special case           |
-| `typeof NaN`          | "number"    | ⚠️ Confusing but correct  |
+| `typeof undefined`    | "undefined" |  Works correctly        |
+| `typeof null`         | "object"    | ️ Bug - should be "null" |
+| `typeof true`         | "boolean"   |                         |
+| `typeof 42`           | "number"    |                         |
+| `typeof "text"`       | "string"    |                         |
+| `typeof Symbol()`     | "symbol"    |                         |
+| `typeof 1n`           | "bigint"    |                         |
+| `typeof {}`           | "object"    |                         |
+| `typeof []`           | "object"    | ️ Use Array.isArray()    |
+| `typeof function(){}` | "function"  |  Special case           |
+| `typeof NaN`          | "number"    | ️ Confusing but correct  |
 
 ## Combining Type Checks
 

@@ -6,7 +6,7 @@ Why load 20 columns when you only need 3? Learn how to shape your data efficient
 
 ## Section 1: Select() Basics
 
-### The Sculptor Analogy 🎨
+### The Sculptor Analogy 
 
 Think of your database as a block of marble containing all your data. Without projections, you're carrying the entire heavy block back to your application. With `Select()`, you're a sculptor - you carve out exactly the shape you need and carry only that!
 
@@ -324,13 +324,13 @@ var productCards = context.Products
   title="SelectMany Explained"
   code={`// Scenario: Get all order line items across all orders
 
-// With Select() - gives List<List<LineItem>>  ❌
+// With Select() - gives List<List<LineItem>>  
 var nestedItems = context.Orders
     .Select(o => o.LineItems)
     .ToList();
 // Result: [[Item1, Item2], [Item3], [Item4, Item5, Item6]]
 
-// With SelectMany() - gives List<LineItem>  ✅
+// With SelectMany() - gives List<LineItem>  
 var flatItems = context.Orders
     .SelectMany(o => o.LineItems)
     .ToList();

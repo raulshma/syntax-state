@@ -2,13 +2,13 @@
 
 Now let's build production-ready pipelines with multiple stages, environments, deployment approvals, and artifact management.
 
-## Multi-Stage Pipelines 🎭
+## Multi-Stage Pipelines 
 
 Real-world deployments need multiple environments. Let's build a complete pipeline:
 
 <AzureDevOpsVisualizer mode="intermediate" showYaml={true} interactive={true} />
 
-## Understanding Stages, Jobs, and Steps 📋
+## Understanding Stages, Jobs, and Steps 
 
 ```yaml
 stages:
@@ -36,7 +36,7 @@ stages:
   - **Steps** within a job always run sequentially
 </KeyConcept>
 
-## Variables and Variable Groups 🔧
+## Variables and Variable Groups 
 
 ### Inline Variables
 
@@ -73,7 +73,7 @@ variables:
   **Secret variables** are encrypted and masked in logs. Never echo them or write them to files that get published!
 </InfoBox>
 
-## Environments and Deployment Approvals 🛡️
+## Environments and Deployment Approvals ️
 
 Environments provide deployment history, approvals, and checks:
 
@@ -111,7 +111,7 @@ Configure approvals in Azure DevOps:
 3. Click **Approvals and checks**
 4. Add required approvers
 
-## Service Connections 🔗
+## Service Connections 
 
 Connect to external services like Azure, Docker Hub, or Kubernetes:
 
@@ -123,7 +123,7 @@ Connect to external services like Azure, Docker Hub, or Kubernetes:
     package: '$(Pipeline.Workspace)/drop/*.zip'
 ```
 
-## Artifact Management 📦
+## Artifact Management 
 
 ### Publishing Artifacts
 
@@ -160,7 +160,7 @@ Connect to external services like Azure, Docker Hub, or Kubernetes:
                   package: '$(Pipeline.Workspace)/webapp/*.zip'
 ```
 
-## The .NET Core CLI Task Deep Dive 🔨
+## The .NET Core CLI Task Deep Dive 
 
 The `DotNetCoreCLI@2` task is your Swiss Army knife for .NET:
 
@@ -200,7 +200,7 @@ The `DotNetCoreCLI@2` task is your Swiss Army knife for .NET:
     publishVstsFeed: 'my-feed'
 ```
 
-## Conditions and Expressions 🎯
+## Conditions and Expressions 
 
 Control when stages, jobs, or steps run:
 
@@ -222,7 +222,7 @@ stages:
 # contains(), startsWith(), endsWith() - string functions
 ```
 
-## Pipeline Templates (DRY) 🔄
+## Pipeline Templates (DRY) 
 
 ### Step Templates
 
@@ -258,12 +258,12 @@ stages:
 
 ## Key Takeaways
 
-- 🎭 **Multi-stage pipelines** separate build, test, and deploy
-- 🔧 **Variable groups** share configuration across pipelines
-- 🛡️ **Environments** provide approvals and deployment tracking
-- 🔗 **Service connections** securely connect to external services
-- 📦 **Artifacts** pass build outputs between stages
-- 🎯 **Conditions** control when things run
-- 🔄 **Templates** keep your pipelines DRY
+-  **Multi-stage pipelines** separate build, test, and deploy
+-  **Variable groups** share configuration across pipelines
+- ️ **Environments** provide approvals and deployment tracking
+-  **Service connections** securely connect to external services
+-  **Artifacts** pass build outputs between stages
+-  **Conditions** control when things run
+-  **Templates** keep your pipelines DRY
 
 <ProgressCheckpoint section="ado-yaml-pipelines" xpReward={50} />

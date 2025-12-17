@@ -2,11 +2,11 @@
 
 Imagine you have a robot assistant that can automatically check your homework every time you turn it in 🤖. **That's what GitHub Actions does for your code!** It's like having a tireless helper that builds, tests, and deploys your .NET projects whenever you make changes.
 
-## The Factory Assembly Line Analogy 🏭
+## The Factory Assembly Line Analogy 
 
 Think of GitHub Actions like a modern car factory:
 
-| **Manual Process** 😰 | **GitHub Actions** 🤖 |
+| **Manual Process**  | **GitHub Actions** 🤖 |
 | :-------------------- | :-------------------- |
 | Developer runs tests manually | Tests run automatically |
 | Remember to build before deploy | Build happens every time |
@@ -17,7 +17,7 @@ Think of GitHub Actions like a modern car factory:
   **GitHub Actions** = Automated workflows that run when specific events happen in your repository (like pushing code or creating a pull request).
 </InfoBox>
 
-## What is a Workflow? 📋
+## What is a Workflow? 
 
 A workflow is like a recipe that tells GitHub exactly what to do. It's written in a file called YAML (rhymes with "camel").
 
@@ -36,7 +36,7 @@ jobs:
       - run: dotnet build              # Build the project
 ```
 
-## Your First .NET Workflow 🚀
+## Your First .NET Workflow 
 
 Let's see how a simple workflow works for a .NET project:
 
@@ -44,15 +44,15 @@ Let's see how a simple workflow works for a .NET project:
 
 **What's happening here?**
 
-1. **📥 Checkout** - Downloads your code from GitHub
-2. **⚙️ Setup .NET** - Installs the .NET SDK on the runner
-3. **📦 Restore** - Downloads NuGet packages your project needs
-4. **🔨 Build** - Compiles your C# code
+1. ** Checkout** - Downloads your code from GitHub
+2. **️ Setup .NET** - Installs the .NET SDK on the runner
+3. ** Restore** - Downloads NuGet packages your project needs
+4. ** Build** - Compiles your C# code
 5. **🧪 Test** - Runs all your unit tests
 
 ## Key Concepts for Beginners
 
-### Events (When to Run) 🎯
+### Events (When to Run) 
 
 ```yaml
 on:
@@ -60,7 +60,7 @@ on:
   pull_request: # Someone opened a PR
 ```
 
-### Jobs (What to Do) 💼
+### Jobs (What to Do) 
 
 Jobs are groups of steps that run on the same machine:
 
@@ -70,7 +70,7 @@ jobs:
     runs-on: ubuntu-latest  # Use a Linux machine
 ```
 
-### Steps (Individual Tasks) 👣
+### Steps (Individual Tasks) 
 
 Steps are the actual commands:
 
@@ -90,16 +90,16 @@ steps:
 
 ## Why Use GitHub Actions?
 
-- ✅ **Free for public repos** - No cost to get started
-- ✅ **Built into GitHub** - No extra service to set up
-- ✅ **Catch bugs early** - Tests run on every push
-- ✅ **Professional workflow** - Industry standard practice
+-  **Free for public repos** - No cost to get started
+-  **Built into GitHub** - No extra service to set up
+-  **Catch bugs early** - Tests run on every push
+-  **Professional workflow** - Industry standard practice
 
 ## Key Takeaways
 
 - 🤖 **GitHub Actions automates** repetitive tasks like building and testing
-- 📝 **Workflows are YAML files** stored in `.github/workflows/`
-- 🎯 **Events trigger workflows** (push, pull request, schedule)
-- 🔨 **Jobs contain steps** that run in sequence on a machine
+-  **Workflows are YAML files** stored in `.github/workflows/`
+-  **Events trigger workflows** (push, pull request, schedule)
+-  **Jobs contain steps** that run in sequence on a machine
 
 <ProgressCheckpoint section="ga-introduction" xpReward={30} />

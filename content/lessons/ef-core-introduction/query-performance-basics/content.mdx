@@ -6,7 +6,7 @@ Write queries that don't just work - make them fly! Learn essential performance 
 
 ## Section 1: AsNoTracking for Read-Only Queries
 
-### The Surveillance Camera Analogy 📹
+### The Surveillance Camera Analogy 
 
 Imagine every entity you load from the database is being watched by a surveillance camera. EF Core is constantly monitoring it for changes so it can sync them back to the database. This watching takes memory and CPU time!
 
@@ -47,32 +47,32 @@ WHERE [p].[IsActive] = 1
 
 <DotnetCodePreview
   title="When to Use AsNoTracking"
-  code={`// ✅ Perfect for: Display pages, reports, APIs returning data
+  code={`//  Perfect for: Display pages, reports, APIs returning data
 var productList = await context.Products
     .AsNoTracking()
     .Where(p => p.CategoryId == categoryId)
     .OrderBy(p => p.Name)
     .ToListAsync();
 
-// ✅ Great for: Dashboard statistics
+//  Great for: Dashboard statistics
 var stats = await context.Orders
     .AsNoTracking()
     .GroupBy(o => o.Status)
     .Select(g => new { Status = g.Key, Count = g.Count() })
     .ToListAsync();
 
-// ✅ Export/download operations
+//  Export/download operations
 var exportData = await context.Customers
     .AsNoTracking()
     .Select(c => new { c.Name, c.Email, c.CreatedAt })
     .ToListAsync();
 
-// ❌ DON'T use when you need to update
+//  DON'T use when you need to update
 var customer = await context.Customers.FindAsync(id);
 customer.LastLogin = DateTime.UtcNow;
 await context.SaveChangesAsync();  // Works because it's tracked!
 
-// ❌ This WON'T save changes!
+//  This WON'T save changes!
 var customer = await context.Customers
     .AsNoTracking()
     .FirstOrDefaultAsync(c => c.Id == id);
@@ -91,12 +91,12 @@ await context.SaveChangesAsync();  // Nothing saved - not tracked!`}
     },
     {
       lineNumbers: [22, 23, 24],
-      highlight: "✅ Tracked Updates",
+      highlight: " Tracked Updates",
       explanation: "Without AsNoTracking, SaveChanges detects and saves changes"
     },
     {
       lineNumbers: [27, 28, 29, 30, 31],
-      highlight: "❌ Lost Changes",
+      highlight: " Lost Changes",
       explanation: "With AsNoTracking, EF doesn't know the entity changed!"
     }
   ]}
@@ -139,7 +139,7 @@ The **N+1 problem** is when loading N main entities results in N additional data
 
 <DotnetCodePreview
   title="N+1 Problem Explained"
-  code={`// ❌ THE N+1 PROBLEM - Looks innocent, performs terribly
+  code={`//  THE N+1 PROBLEM - Looks innocent, performs terribly
 var blogs = context.Blogs.ToList();  // Query 1: Load all blogs
 
 foreach (var blog in blogs)
@@ -149,9 +149,9 @@ foreach (var blog in blogs)
     // Query 2, 3, 4, ... N+1 for each blog!
 }
 
-// Result with 100 blogs: 101 database queries! 😱
+// Result with 100 blogs: 101 database queries! 
 
-// ✅ THE FIX - Include() for eager loading
+//  THE FIX - Include() for eager loading
 var blogsWithPosts = context.Blogs
     .Include(b => b.Posts)  // Load posts WITH blogs
     .ToList();  // Just 1 query!
@@ -290,7 +290,7 @@ The most impactful optimization? **Don't load what you don't need!**
 
 <DotnetCodePreview
   title="Projection Performance"
-  code={`// ❌ Bad: Loading entire entities for a simple list
+  code={`//  Bad: Loading entire entities for a simple list
 var products = context.Products
     .Where(p => p.IsActive)
     .ToList();  // Loads ALL 20+ columns!
@@ -299,13 +299,13 @@ var products = context.Products
 // foreach(var p in products) 
 //     <li>@p.Name - @p.Price</li>
 
-// ✅ Good: Project to exactly what you need
+//  Good: Project to exactly what you need
 var productList = context.Products
     .Where(p => p.IsActive)
     .Select(p => new { p.Id, p.Name, p.Price })
     .ToList();  // Only 3 columns transferred!
 
-// ✅ Better: Project to a strongly-typed DTO
+//  Better: Project to a strongly-typed DTO
 public record ProductListItem(int Id, string Name, decimal Price);
 
 var productList = context.Products
@@ -313,7 +313,7 @@ var productList = context.Products
     .Select(p => new ProductListItem(p.Id, p.Name, p.Price))
     .ToList();
 
-// ✅ Best: Projections eliminate N+1 automatically!
+//  Best: Projections eliminate N+1 automatically!
 var blogSummaries = context.Blogs
     .Select(b => new 
     {
@@ -432,19 +432,19 @@ Console.WriteLine(query.ToQueryString());
 
 <DotnetCodePreview
   title="Client-Side Evaluation Traps"
-  code={`// ❌ Custom method - EF can't translate to SQL
+  code={`//  Custom method - EF can't translate to SQL
 public static bool IsPopular(Product p) => p.Rating > 4.5;
 
 var popular = context.Products
     .Where(p => IsPopular(p))  // Loads ALL products, filters in memory!
     .ToList();
 
-// ✅ Inline the expression
+//  Inline the expression
 var popular = context.Products
     .Where(p => p.Rating > 4.5)  // Translated to SQL WHERE clause
     .ToList();
 
-// ⚠️ Some methods cause client evaluation
+// ️ Some methods cause client evaluation
 var weirdFilter = context.Products
     .Where(p => p.Name.ToUpper() == GetSearchTerm())  // What can't be translated?
     .ToList();
@@ -453,7 +453,7 @@ var weirdFilter = context.Products
 // 1. Call GetSearchTerm() before the query (best case)
 // 2. Evaluate it per-row in memory (worst case - loads everything!)
 
-// ✅ Safe pattern: Capture variables first
+//  Safe pattern: Capture variables first
 var searchTerm = GetSearchTerm();
 var results = context.Products
     .Where(p => p.Name.ToUpper() == searchTerm)  // Now it's a parameter!
@@ -516,11 +516,11 @@ var results = context.Products
 
 <KeyConcept title="Performance Checklist">
 Before shipping, ask yourself:
-1. ✅ Using AsNoTracking() for read-only queries?
-2. ✅ Using Include() for navigation properties I access?
-3. ✅ Projecting only needed columns with Select()?
-4. ✅ No custom methods in Where() clauses?
-5. ✅ Checked logs for "could not be translated" warnings?
+1.  Using AsNoTracking() for read-only queries?
+2.  Using Include() for navigation properties I access?
+3.  Projecting only needed columns with Select()?
+4.  No custom methods in Where() clauses?
+5.  Checked logs for "could not be translated" warnings?
 </KeyConcept>
 
 <KeyConcept title="Congratulations!">

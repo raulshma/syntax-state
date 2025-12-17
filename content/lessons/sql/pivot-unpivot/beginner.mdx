@@ -2,7 +2,7 @@
 
 Transform your data layout!
 
-## 🔄 What is PIVOT?
+##  What is PIVOT?
 
 PIVOT turns row values into columns:
 
@@ -16,7 +16,7 @@ B       | Jan   | 80
 ...
 ```
 
-## 📝 Basic PIVOT (SQL Server)
+##  Basic PIVOT (SQL Server)
 
 ```sql
 SELECT * FROM (
@@ -29,7 +29,7 @@ PIVOT (
 ) pvt;
 ```
 
-## 🔀 Alternative: CASE Expression
+##  Alternative: CASE Expression
 
 Works on any database:
 
@@ -64,7 +64,7 @@ UNPIVOT (
 ) unpvt;
 ```
 
-## 💡 PostgreSQL: crosstab
+##  PostgreSQL: crosstab
 
 ```sql
 SELECT * FROM crosstab(

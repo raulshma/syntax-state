@@ -2,13 +2,13 @@
 
 Master advanced deployment strategies, Infrastructure as Code, GitOps, feature flags, observability integration, and disaster recovery patterns.
 
-## Enterprise Deployment Pipeline 🏢
+## Enterprise Deployment Pipeline 
 
 Let's explore advanced patterns used by enterprise organizations:
 
 <CICDPipelineBuilder mode="advanced" interactive={true} />
 
-## Advanced Deployment Strategies 🚀
+## Advanced Deployment Strategies 
 
 ### Blue-Green Deployment
 
@@ -58,10 +58,10 @@ Run two identical production environments, switching traffic instantly:
 ```
 
 <KeyConcept title="Blue-Green Benefits">
-  ✅ **Instant rollback** — Just swap back
-  ✅ **Full testing** — Test in production environment
-  ✅ **Zero downtime** — Traffic switches atomically
-  ⚠️ **Double cost** — Need 2x infrastructure
+   **Instant rollback** — Just swap back
+   **Full testing** — Test in production environment
+   **Zero downtime** — Traffic switches atomically
+  ️ **Double cost** — Need 2x infrastructure
 </KeyConcept>
 
 ### Canary Deployment
@@ -140,7 +140,7 @@ Update instances one at a time:
               curl --fail http://localhost:5000/health
 ```
 
-## Infrastructure as Code (IaC) 🏗️
+## Infrastructure as Code (IaC) ️
 
 ### Bicep for Azure
 
@@ -212,7 +212,7 @@ stages:
         environment: 'production'
 ```
 
-## GitOps with Flux or ArgoCD 🔄
+## GitOps with Flux or ArgoCD 
 
 ### Repository Structure
 
@@ -262,7 +262,7 @@ stages:
   **GitOps** means the desired state is stored in Git. Tools like **Flux** or **ArgoCD** continuously sync the cluster to match Git.
 </InfoBox>
 
-## Feature Flags Integration 🚩
+## Feature Flags Integration 
 
 ### LaunchDarkly / Azure App Configuration
 
@@ -315,7 +315,7 @@ public class CheckoutController : Controller
 }
 ```
 
-## Observability Integration 📊
+## Observability Integration 
 
 ### Deploy-Time Annotations
 
@@ -359,7 +359,7 @@ public class CheckoutController : Controller
   displayName: 'Verify Deployment Health'
 ```
 
-## Disaster Recovery Patterns 🔥
+## Disaster Recovery Patterns 
 
 ### Multi-Region Deployment
 
@@ -442,13 +442,13 @@ public class CheckoutController : Controller
 
 ## Key Takeaways
 
-- 🔵🟢 **Blue-Green** — Instant switch between environments
-- 🐤 **Canary** — Gradual rollout with monitoring
-- 🔄 **Rolling** — Update instances incrementally
-- 🏗️ **IaC** — Version control your infrastructure
-- 🔄 **GitOps** — Git as the source of truth
-- 🚩 **Feature flags** — Decouple deployment from release
-- 📊 **Observability** — Metrics-driven deployment decisions
-- 🔥 **DR patterns** — Multi-region and backup strategies
+- 🟢 **Blue-Green** — Instant switch between environments
+-  **Canary** — Gradual rollout with monitoring
+-  **Rolling** — Update instances incrementally
+- ️ **IaC** — Version control your infrastructure
+-  **GitOps** — Git as the source of truth
+-  **Feature flags** — Decouple deployment from release
+-  **Observability** — Metrics-driven deployment decisions
+-  **DR patterns** — Multi-region and backup strategies
 
 <ProgressCheckpoint section="ba-deployment-patterns" xpReward={70} />

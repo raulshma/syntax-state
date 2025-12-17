@@ -73,22 +73,22 @@ The main difference is **when** and **how** you decide what data to load. Eager 
   title="Eager Loading"
   items={[
     {
-      label: "✅ Single database round-trip",
+      label: " Single database round-trip",
       description: "All data fetched in one query",
       isCorrect: true
     },
     {
-      label: "✅ Predictable and explicit",
+      label: " Predictable and explicit",
       description: "You know exactly what's loaded",
       isCorrect: true
     },
     {
-      label: "❌ May load unused data",
+      label: " May load unused data",
       description: "Wastes resources if you don't use everything",
       isCorrect: false
     },
     {
-      label: "❌ Can create large queries",
+      label: " Can create large queries",
       description: "Many includes = complex SQL with JOINs",
       isCorrect: false
     }
@@ -99,22 +99,22 @@ The main difference is **when** and **how** you decide what data to load. Eager 
   title="Lazy Loading"
   items={[
     {
-      label: "✅ Automatic and convenient",
+      label: " Automatic and convenient",
       description: "Just access properties—data appears",
       isCorrect: true
     },
     {
-      label: "✅ Loads only what's accessed",
+      label: " Loads only what's accessed",
       description: "Unused relationships stay unloaded",
       isCorrect: true
     },
     {
-      label: "❌ N+1 query problem",
+      label: " N+1 query problem",
       description: "Can explode into hundreds of queries",
       isCorrect: false
     },
     {
-      label: "❌ Hidden behavior",
+      label: " Hidden behavior",
       description: "Hard to know when queries happen",
       isCorrect: false
     }
@@ -125,22 +125,22 @@ The main difference is **when** and **how** you decide what data to load. Eager 
   title="Explicit Loading"
   items={[
     {
-      label: "✅ Full control with visibility",
+      label: " Full control with visibility",
       description: "You see every Load() call in code",
       isCorrect: true
     },
     {
-      label: "✅ Supports filtering",
+      label: " Supports filtering",
       description: "Use Query() to filter/limit data",
       isCorrect: true
     },
     {
-      label: "❌ More code to write",
+      label: " More code to write",
       description: "Must manually call Load() for each navigation",
       isCorrect: false
     },
     {
-      label: "❌ Multiple round-trips",
+      label: " Multiple round-trips",
       description: "Each Load() is a separate query",
       isCorrect: false
     }
@@ -210,7 +210,7 @@ The main difference is **when** and **how** you decide what data to load. Eager 
   code={`[HttpGet("{id}")]
 public async Task<ActionResult<BlogDto>> GetBlog(int id)
 {
-    // ✅ EAGER: Known data requirements, single response
+    //  EAGER: Known data requirements, single response
     var blog = await context.Blogs
         .Include(b => b.Posts
             .OrderByDescending(p => p.CreatedDate)
@@ -253,7 +253,7 @@ public async Task<ActionResult<BlogDto>> GetBlog(int id)
     
     foreach (var blog in blogs)
     {
-        // ✅ EXPLICIT: Get count without loading entities
+        //  EXPLICIT: Get count without loading entities
         var postCount = await context.Entry(blog)
             .Collection(b => b.Posts)
             .Query()
@@ -313,7 +313,7 @@ public async Task<ActionResult<BlogDetailDto>> GetBlogDetail(
     
     if (blog == null) return NotFound();
     
-    // ✅ EXPLICIT: Conditionally load comments if requested
+    //  EXPLICIT: Conditionally load comments if requested
     if (includeComments)
     {
         await context.Entry(blog)
@@ -365,7 +365,7 @@ public class BlogBrowser
     {
         Console.WriteLine($"Blog: {blog.Name}");
         
-        // ✅ LAZY: User clicked expand - posts load automatically
+        //  LAZY: User clicked expand - posts load automatically
         Console.WriteLine($"Posts ({blog.Posts.Count}):");
         foreach (var post in blog.Posts)  // Triggers query
         {
@@ -471,22 +471,22 @@ Use this matrix to pick your strategy:
   title="Loading Strategy Anti-Patterns"
   items={[
     {
-      label: "❌ Lazy Loading in APIs",
+      label: " Lazy Loading in APIs",
       description: "Short-lived contexts + serialization = disposed context exceptions and N+1 nightmares.",
       isCorrect: false
     },
     {
-      label: "❌ Over-Including",
+      label: " Over-Including",
       description: "Don't Include everything 'just in case'. Load only what you actually need.",
       isCorrect: false
     },
     {
-      label: "❌ Ignoring the N+1 Problem",
+      label: " Ignoring the N+1 Problem",
       description: "Loops with lazy loading = performance disaster. Use SQL logging to detect!",
       isCorrect: false
     },
     {
-      label: "❌ Not Using Projections",
+      label: " Not Using Projections",
       description: "When you need specific fields, Select into a DTO instead of loading full entities.",
       isCorrect: false
     }

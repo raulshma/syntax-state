@@ -19,10 +19,10 @@ When you have multiple servers running your application (like Netflix or Amazon)
 
 | In-Memory Cache | Redis (Distributed) |
 |:----------------|:-------------------|
-| 🏠 Lives on each server | ☁️ Shared across all servers |
-| ❌ Data not shared | ✅ Everyone sees the same data |
-| 😰 Inconsistent after updates | 😎 Always consistent |
-| 💔 Lost after server restart | 💚 Persists (can save to disk) |
+|  Lives on each server | ️ Shared across all servers |
+|  Data not shared |  Everyone sees the same data |
+|  Inconsistent after updates |  Always consistent |
+|  Lost after server restart |  Persists (can save to disk) |
 
 ## Real-World Analogy
 
@@ -31,12 +31,12 @@ Think of a **shopping cart** on Amazon:
 **Without Redis:**
 - You add items on Server 1
 - Next request goes to Server 2
-- Your cart is empty! 😱
+- Your cart is empty! 
 
 **With Redis:**
 - You add items → stored in Redis
 - Next request goes to any server
-- Your cart is there! 🎉
+- Your cart is there! 
 
 <DotnetCodePreview 
   language="csharp"
@@ -84,10 +84,10 @@ public class ShoppingCartService
 
 ## How Does It Work?
 
-1. 🌐 **Multiple Servers** all connect to Redis
-2. 📦 **Server A** saves data to Redis
-3. ⚡ **Server B** can instantly read that data
-4. 🔄 Everyone stays synchronized!
+1.  **Multiple Servers** all connect to Redis
+2.  **Server A** saves data to Redis
+3.  **Server B** can instantly read that data
+4.  Everyone stays synchronized!
 
 <InfoBox type="tip">
 **Redis is FAST!** It can handle 100,000+ operations per second because everything is stored in RAM.
@@ -95,17 +95,17 @@ public class ShoppingCartService
 
 ## Common Use Cases
 
-✅ **Perfect for Redis:**
-- 🛒 Shopping carts
-- 👤 User sessions
-- 🎫 Authentication tokens
-- 📊 Real-time analytics
-- 🔔 Notification queues
+ **Perfect for Redis:**
+-  Shopping carts
+-  User sessions
+-  Authentication tokens
+-  Real-time analytics
+-  Notification queues
 
-❌ **Don't Use Redis For:**
-- 📁 Large files (over 512MB)
-- 🏦 Primary data storage (use a database)
-- 🔐 Unencrypted sensitive data
+ **Don't Use Redis For:**
+-  Large files (over 512MB)
+-  Primary data storage (use a database)
+-  Unencrypted sensitive data
 
 ## Basic Redis Operations
 
@@ -150,10 +150,10 @@ await _cache.SetStringAsync("session:abc", sessionData, options);
 
 | Feature | In-Memory | Redis |
 |:--------|:----------|:------|
-| Speed | ⚡⚡⚡ Super fast | ⚡⚡ Very fast |
-| Shared? | ❌ No | ✅ Yes |
-| Persistence | ❌ Lost on restart | ✅ Can persist |
-| Cost | 💰 Free (uses RAM) | 💰💰 Requires Redis server |
+| Speed |  Super fast |  Very fast |
+| Shared? |  No |  Yes |
+| Persistence |  Lost on restart |  Can persist |
+| Cost |  Free (uses RAM) |  Requires Redis server |
 | Setup | Easy | Moderate |
 
 <InfoBox type="warning">
@@ -162,13 +162,13 @@ await _cache.SetStringAsync("session:abc", sessionData, options);
 
 ## When to Choose Redis?
 
-✅ **Use Redis when:**
+ **Use Redis when:**
 - Multiple servers need shared cache
 - Cache must survive server restarts
 - You need pub/sub messaging
 - Session data for logged-in users
 
-❌ **Stick with in-memory when:**
+ **Stick with in-memory when:**
 - Single server application
 - Data is specific to each server
 - Ultra-low latency required

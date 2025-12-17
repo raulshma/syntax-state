@@ -171,14 +171,14 @@ async function demo() {
     const post = await fetchWithErrorHandling(
       'https://jsonplaceholder.typicode.com/posts/1'
     );
-    console.log("✅ Success:", post.title);
+    console.log(" Success:", post.title);
     
     // This will throw ApiError (404)
     await fetchWithErrorHandling(
       'https://jsonplaceholder.typicode.com/posts/99999'
     );
   } catch (error) {
-    console.log("❌ Error:", error.name);
+    console.log(" Error:", error.name);
     console.log("   Status:", error.status);
     console.log("   Message:", error.message);
   }
@@ -212,28 +212,28 @@ async function handleApiResponse(url) {
   switch (response.status) {
     case 200:
     case 201:
-      console.log("✅ Success!");
+      console.log(" Success!");
       return response.json();
       
     case 204:
-      console.log("✅ Success (no content)");
+      console.log(" Success (no content)");
       return null;
       
     case 400:
-      console.log("❌ Bad request - check your data");
+      console.log(" Bad request - check your data");
       throw new Error("Invalid request data");
       
     case 401:
-      console.log("🔐 Unauthorized - please log in");
+      console.log(" Unauthorized - please log in");
       // Redirect to login?
       throw new Error("Authentication required");
       
     case 403:
-      console.log("🚫 Forbidden - you don't have permission");
+      console.log(" Forbidden - you don't have permission");
       throw new Error("Access denied");
       
     case 404:
-      console.log("🔍 Not found");
+      console.log(" Not found");
       throw new Error("Resource not found");
       
     case 429:
@@ -244,11 +244,11 @@ async function handleApiResponse(url) {
     case 500:
     case 502:
     case 503:
-      console.log("💥 Server error - try again later");
+      console.log(" Server error - try again later");
       throw new Error("Server error");
       
     default:
-      console.log("❓ Unexpected status:", response.status);
+      console.log(" Unexpected status:", response.status);
       throw new Error("Unexpected response: " + response.status);
   }
 }
@@ -349,9 +349,9 @@ async function demo() {
       { retries: 2, timeout: 5000 }
     );
     const data = await response.json();
-    console.log("✅ Got data:", data.title);
+    console.log(" Got data:", data.title);
   } catch (error) {
-    console.log("❌ All retries failed:", error.message);
+    console.log(" All retries failed:", error.message);
   }
 }
 
@@ -419,12 +419,12 @@ class ApiClient {
 
 ### Error Handling Checklist
 
-- ✅ Always check `response.ok` or `response.status`
-- ✅ Wrap fetch in try-catch for network errors
-- ✅ Handle JSON parse errors separately
-- ✅ Implement timeouts with AbortController
-- ✅ Add retry logic for transient failures
-- ✅ Show user-friendly error messages
-- ✅ Log errors for debugging
+-  Always check `response.ok` or `response.status`
+-  Wrap fetch in try-catch for network errors
+-  Handle JSON parse errors separately
+-  Implement timeouts with AbortController
+-  Add retry logic for transient failures
+-  Show user-friendly error messages
+-  Log errors for debugging
 
 <ProgressCheckpoint section="resilient-requests" xpReward={20} />

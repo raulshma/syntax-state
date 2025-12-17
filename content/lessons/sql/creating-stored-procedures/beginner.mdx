@@ -2,7 +2,7 @@
 
 Store reusable SQL code in your database!
 
-## 📦 What is a Stored Procedure?
+##  What is a Stored Procedure?
 
 A stored procedure is saved SQL code you can run by name:
 
@@ -17,7 +17,7 @@ END;
 EXEC sp_get_active_customers;
 ```
 
-## 🎯 Why Use Stored Procedures?
+##  Why Use Stored Procedures?
 
 | Benefit             | Description                        |
 | ------------------- | ---------------------------------- |
@@ -26,7 +26,7 @@ EXEC sp_get_active_customers;
 | **Performance**     | Pre-compiled execution plan        |
 | **Maintainability** | Change logic in one place          |
 
-## 📝 Basic Syntax
+##  Basic Syntax
 
 ```sql
 -- SQL Server
@@ -45,7 +45,7 @@ END;
 $$ LANGUAGE plpgsql;
 ```
 
-## 🔧 Simple Examples
+##  Simple Examples
 
 ```sql
 -- Get all orders
@@ -76,7 +76,7 @@ END;
 EXEC sp_add_customer 'John Doe', 'john@example.com';
 ```
 
-## 🗑️ Drop a Procedure
+## ️ Drop a Procedure
 
 ```sql
 DROP PROCEDURE sp_get_active_customers;

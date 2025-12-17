@@ -2,7 +2,7 @@
 
 ## Section 1: Introduction to Generic Repositories
 
-### The Donut Shop Problem 🍩
+### The Donut Shop Problem 
 
 Imagine you run a bakery. You sell Donuts, Bagels, and Croissants.
 
@@ -13,7 +13,7 @@ Without a generic system, you might have:
 
 This is like writing a separate repository for every entity: `DonutRepository`, `BagelRepository`, `CroissantRepository`. They all do basically the same things: *Add*, *Get*, *Remove*.
 
-A **Generic Repository** is like a "Universal Box" 📦. It works for *any* pastry you throw at it.
+A **Generic Repository** is like a "Universal Box" . It works for *any* pastry you throw at it.
 
 <InfoBox type="info">
   **Definition:** A Generic Repository is a pattern where you create a single class that can handle standard CRUD operations for *any* entity type, using C# Generics (`<T>`).
@@ -154,7 +154,7 @@ Now, let's build the actual class using EF Core's `DbSet`.
 
 Is the Generic Repository always the right choice? Not necessarily.
 
-| Feature | Pros ✅ | Cons ❌ |
+| Feature | Pros  | Cons  |
 | :--- | :--- | :--- |
 | **Code Reuse** | Write CRUD logic once, use everywhere. | You might re-implement features EF Core already has. |
 | **Testing** | Easy to mock `IGenericRepository<T>` for unit tests. | `DbSet<T>` is strictly speaking a repository itself. |

@@ -246,12 +246,12 @@ Without proper loading, you can accidentally make hundreds of database queries:
   title="Loading Strategies"
   items={[
     {
-      label: "❌ N+1 Problem",
+      label: " N+1 Problem",
       description: "Loading blogs, then looping and accessing Posts triggers a query for EACH blog. 100 blogs = 101 queries!",
       isCorrect: false
     },
     {
-      label: "✅ Eager Loading",
+      label: " Eager Loading",
       description: "Use Include() to load related data in ONE query. 100 blogs with posts = 1 query!",
       isCorrect: true
     }
@@ -362,16 +362,16 @@ Don't load entire entities when you only need a few fields:
 
 <DotnetCodePreview
   title="Efficient Projections"
-  code={`// ❌ Loads all columns
+  code={`//  Loads all columns
 var customers = context.Customers.ToList();
 // Then in code: customers.Select(c => c.Name)
 
-// ✅ Only loads Name column
+//  Only loads Name column
 var names = context.Customers
     .Select(c => c.Name)
     .ToList();
 
-// ✅ Project to anonymous type
+//  Project to anonymous type
 var customerSummaries = context.Customers
     .Select(c => new 
     { 
@@ -381,7 +381,7 @@ var customerSummaries = context.Customers
     })
     .ToList();
 
-// ✅ Project to DTO class
+//  Project to DTO class
 var customerDtos = context.Customers
     .Select(c => new CustomerDto
     {
@@ -418,13 +418,13 @@ var customerDtos = context.Customers
 
 <DotnetCodePreview
   title="AsNoTracking Performance"
-  code={`// ✅ Read-only list - use AsNoTracking
+  code={`//  Read-only list - use AsNoTracking
 var products = await context.Products
     .AsNoTracking()
     .Where(p => p.IsActive)
     .ToListAsync();
 
-// ✅ Reports and dashboards
+//  Reports and dashboards
 var salesReport = await context.Orders
     .AsNoTracking()
     .GroupBy(o => o.CustomerId)
@@ -436,7 +436,7 @@ var salesReport = await context.Orders
     })
     .ToListAsync();
 
-// ❌ Don't use when you need to update
+//  Don't use when you need to update
 var customer = await context.Customers.FindAsync(1);
 customer.LastLogin = DateTime.UtcNow;
 await context.SaveChangesAsync(); // Works because tracked`}

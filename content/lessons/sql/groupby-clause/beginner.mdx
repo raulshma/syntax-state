@@ -2,7 +2,7 @@
 
 Learn to group rows together for powerful summaries!
 
-## 📊 What is GROUP BY?
+##  What is GROUP BY?
 
 GROUP BY collects rows into groups so you can calculate totals per group:
 
@@ -17,7 +17,7 @@ SELECT customer_id, SUM(total) FROM orders GROUP BY customer_id;
 -- ...
 ```
 
-## 📝 Basic Syntax
+##  Basic Syntax
 
 ```sql
 SELECT column, AGGREGATE_FUNCTION(other_column)
@@ -25,7 +25,7 @@ FROM table
 GROUP BY column;
 ```
 
-## 🎯 Simple Examples
+##  Simple Examples
 
 ```sql
 -- Orders per customer
@@ -44,7 +44,7 @@ FROM employees
 GROUP BY department;
 ```
 
-## ⚠️ The Golden Rule
+## ️ The Golden Rule
 
 > Every column in SELECT must be in GROUP BY or an aggregate function!
 
@@ -61,7 +61,7 @@ GROUP BY category;
 -- Error!
 ```
 
-## 📊 Multiple Aggregates
+##  Multiple Aggregates
 
 ```sql
 SELECT
@@ -75,7 +75,7 @@ FROM products
 GROUP BY category;
 ```
 
-## 🔄 With ORDER BY
+##  With ORDER BY
 
 ```sql
 SELECT category, SUM(sales) AS total_sales

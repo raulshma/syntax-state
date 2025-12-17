@@ -6,7 +6,7 @@ Become a performance detective! Learn how to analyze, profile, and identify bott
 
 ## Section 1: The Performance Landscape
 
-### Why Performance Matters 🎯
+### Why Performance Matters 
 
 Imagine your database is a library, and EF Core is your librarian. A slow librarian doesn't just annoy one person—they create a line that grows and grows until the whole library grinds to a halt!
 
@@ -68,7 +68,7 @@ Before optimizing, you must **measure**. Never guess where the slowness is—pro
 
 ## Section 2: Profiling Tools
 
-### Your Performance Detective Toolkit 🔍
+### Your Performance Detective Toolkit 
 
 EF Core gives you several ways to see what's happening under the hood. Let's master them all!
 
@@ -212,7 +212,7 @@ var orders = await context.Orders
 
 ## Section 3: Common Bottlenecks
 
-### The Usual Suspects 🕵️
+### The Usual Suspects ️
 
 Let's look at the most common performance killers and how to spot them.
 
@@ -220,7 +220,7 @@ Let's look at the most common performance killers and how to spot them.
   title="Bottleneck: Loading Too Much Data"
   steps={[
     {
-      linq: `// ❌ Loading entire entities for a dropdown
+      linq: `//  Loading entire entities for a dropdown
 var products = await context.Products
     .ToListAsync();
 
@@ -235,7 +235,7 @@ FROM [Products] AS [p]
       explanation: "Loading 1000 products with 20 columns = massive data transfer, even if you only need Id and Name!"
     },
     {
-      linq: `// ✅ Project only what you need
+      linq: `//  Project only what you need
 var products = await context.Products
     .Select(p => new { p.Id, p.Name })
     .ToListAsync();`,
@@ -287,7 +287,7 @@ WHERE [o].[CustomerEmail] = @email
 
 <DotnetCodePreview
   title="Dangerous Client Evaluation"
-  code={`// ❌ Custom method EF can't translate
+  code={`//  Custom method EF can't translate
 public bool IsVIP(Customer c) => c.TotalSpent > 10000;
 
 var vips = await context.Customers
@@ -295,18 +295,18 @@ var vips = await context.Customers
     .ToListAsync();
 // Result: Loads ALL customers, filters in memory!
 
-// ❌ Complex string operations
+//  Complex string operations
 var matches = await context.Products
     .Where(p => Regex.IsMatch(p.Name, pattern))
     .ToListAsync();
 // Result: Loads ALL products, regex runs in C#!
 
-// ✅ Inline the logic
+//  Inline the logic
 var vips = await context.Customers
     .Where(c => c.TotalSpent > 10000)  // EF can translate this
     .ToListAsync();
 
-// ✅ Use database functions
+//  Use database functions
 var matches = await context.Products
     .Where(p => EF.Functions.Like(p.Name, pattern))
     .ToListAsync();`}
@@ -368,7 +368,7 @@ Before deploying any EF Core code, ask yourself:
 
 <DotnetCodePreview
   title="Performance Review Checklist"
-  code={`// ✅ CHECKLIST FOR EVERY QUERY:
+  code={`//  CHECKLIST FOR EVERY QUERY:
 
 // 1. Am I loading only what I need?
 .Select(x => new { x.Id, x.Name })  // Not .ToList() on entities

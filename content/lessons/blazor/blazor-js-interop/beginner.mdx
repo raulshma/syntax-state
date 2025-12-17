@@ -1,4 +1,4 @@
-# JavaScript Interop: Bridging C# and JavaScript 🌉
+# JavaScript Interop: Bridging C# and JavaScript 
 
 Imagine Blazor and JavaScript are two countries that speak different languages. **JS Interop** is the translator that lets them talk to each other!
 
@@ -13,10 +13,10 @@ C# Land 🏰                JavaScript Land 🗼
 
 While Blazor lets you write C#, sometimes you need JavaScript for:
 
-- 📦 Using existing JavaScript libraries (Chart.js, Leaflet maps, etc.)
-- 🌐 Browser APIs not available in .NET (local storage, geolocation)
-- 🎨 Manipulating the DOM directly
-- 🔌 Integrating third-party widgets
+-  Using existing JavaScript libraries (Chart.js, Leaflet maps, etc.)
+-  Browser APIs not available in .NET (local storage, geolocation)
+-  Manipulating the DOM directly
+-  Integrating third-party widgets
 
 **Good news:** Blazor makes calling JavaScript from C# (and vice versa) super easy!
 
@@ -316,7 +316,7 @@ window.chartHelper = {
 
 **Note:** Use `OnAfterRenderAsync` because the DOM must exist before calling JS!
 
-## Important Tips ⚠️
+## Important Tips ️
 
 ### 1. Async is Required
 
@@ -363,7 +363,7 @@ if (JS != null)
 | **Call C# from JS**          | `DotNet.invokeMethodAsync('App', 'MethodName')`        |
 | **Wait for DOM**             | Use `OnAfterRenderAsync(bool firstRender)`             |
 
-## Try It Yourself! 🎨
+## Try It Yourself! 
 
 Create a simple color picker that uses JS and C#:
 
@@ -387,4 +387,4 @@ Create a simple color picker that uses JS and C#:
 }
 ```
 
-JavaScript Interop opens infinite possibilities - you get the best of both C# and JavaScript! 🌟
+JavaScript Interop opens infinite possibilities - you get the best of both C# and JavaScript! 
