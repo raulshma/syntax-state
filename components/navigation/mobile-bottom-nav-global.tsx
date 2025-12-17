@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
-  Map,
+  Map as MapIcon,
   Plus,
   MessageSquare,
   MoreHorizontal,
@@ -129,7 +129,7 @@ export function MobileBottomNavGlobal() {
         <NavItem
           href="/journeys"
           label="Journeys"
-          icon={Map}
+          icon={MapIcon}
           active={isActiveRoute(pathname, "/journeys")}
         />
 
